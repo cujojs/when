@@ -6,75 +6,19 @@ define([], function() {
 		Creates a new Promise
 	*/ 
 	
-	function Promise () {
-		this._thens = [];
-		this._progress = [];
-	}
+	function Promise () {}
 
 	Promise.prototype = {
-
-		/* This is the "front end" API. */
-
-		// then(onResolve, onReject): Code waiting for this promise uses the
-		// then() method to be notified when the promise is complete. There
-		// are two completion callbacks: onReject and onResolve. A more
-		// robust promise implementation will also have an onProgress handler.
-		then: function (onResolve, onReject, onProgress) {
-			// capture calls to then()
-			this._thens.push({ resolve: onResolve, reject: onReject, progress: onProgress });
-			onProgress && this._progress.push(onProgress);
-		},
-
-		// Some promise implementations also have a cancel() front end API that
-		// calls all of the onReject() callbacks (aka a "cancelable promise").
-		// cancel: function (reason) {},
-
-		/* This is the "back end" API. */
-
-		// resolve(resolvedValue): The resolve() method is called when a promise
-		// is resolved (duh). The resolved value (if any) is passed by the resolver
-		// to this method. All waiting onResolve callbacks are called
-		// and any future ones are, too, each being passed the resolved value.
-		resolve: function (val) { this._complete('resolve', val); },
-
-		// reject(exception): The reject() method is called when a promise cannot
-		// be resolved. Typically, you'd pass an exception as the single parameter,
-		// but any other argument, including none at all, is acceptable.
-		// All waiting and all future onReject callbacks are called when reject()
-		// is called and are passed the exception parameter.
-		reject: function (ex) { this._complete('reject', ex); },
-
-		// Some promises may have a progress handler. The back end API to signal a
-		// progress "event" has a single parameter. The contents of this parameter
-		// could be just about anything and is specific to your implementation.
-		
-		progress: function(statusObject) {
-			var i=0,
-				p;
-			while(p = this._progress[i++]) { p(statusObject); }
-		},
-
-		/* "Private" methods. */
-
-		_complete: function (which, arg) {
-			// switch over to sync then()
-			this.then = which === 'reject' ?
-				function (resolve, reject) { reject && reject(arg); } :
-                    function (resolve) { resolve && resolve(arg); };
-            // disallow multiple calls to resolve or reject
-			this.resolve = this.reject = this.progress =
-				function () { throw new Error('Promise already completed.'); };
-
-			// complete all waiting (async) then()s
-			var aThen,
-				i = 0;
-			while (aThen = this._thens[i++]) { aThen[which] && aThen[which](arg); }
-			delete this._thens;
-		}
+		// TODO: Promise implementation
+		then: function() {},
+		resolve: function() {},
+		reject: function() {},
+		progress: function() {}
 	};
 
 	/*
 		Function: isPromise
+		Determines if promiseOrValue is a promise or not.
 	*/
 	function isPromise(promiseOrValue) {
 		return promiseOrValue && typeof promiseOrValue.then === 'function';
@@ -87,6 +31,10 @@ define([], function() {
 		var result;
 
 		if(arguments.length == 1) {
+			// If exactly one arg, assume the caller wants a promise to
+			// be returned, no matter what.  If promiseOrValue is a
+			// promise, return it.  If it's a value, return a new
+			// promise, with promiseOrValue as the resolution value.
 			if(isPromise(promiseOrValue)) {
 				result = promiseOrValue;		
 			} else {
@@ -94,6 +42,10 @@ define([], function() {
 				result.then(promiseOrValue);
 			}
 		} else {
+			// If callback args were provided, implement the "traditional"
+			// when behavior, and return the result of registering
+			// the callbacks with promiseOrValue if it is a promise,
+			// or the result of invoking callback with promiseOrValue.
 			result = isPromise(promiseOrValue)
 				? promiseOrValue.then(callback, errback, progressHandler);
 				: callback(promiseOrValue);
@@ -187,6 +139,6 @@ define([], function() {
 
 });
 })(typeof define != "undefined" ? define : function(deps, factory){
-    // global when, if loaded directly
+    // global when, if not loaded via require
     this.when = factory();
 });
