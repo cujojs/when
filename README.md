@@ -1,0 +1,1 @@
+A lightweight Promise and `when()` implementation, plus other async goodies.
