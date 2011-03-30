@@ -106,7 +106,7 @@ define([], function() {
 		}
 
 		for (var i = 0; i < promisesOrValues.length; i++) {
-			when(promisesOrValues, resolve, reject, progress);
+			when(promisesOrValues[i], resolve, reject, progress);
 		}
 
 		return promise;
