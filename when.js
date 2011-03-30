@@ -39,7 +39,7 @@ define([], function() {
 				result = promiseOrValue;		
 			} else {
 				result = new Promise();
-				result.then(promiseOrValue);
+				result.resolve(promiseOrValue);
 			}
 		} else {
 			// If callback args were provided, implement the "traditional"
@@ -47,7 +47,7 @@ define([], function() {
 			// the callbacks with promiseOrValue if it is a promise,
 			// or the result of invoking callback with promiseOrValue.
 			result = isPromise(promiseOrValue)
-				? promiseOrValue.then(callback, errback, progressHandler);
+				? promiseOrValue.then(callback, errback, progressHandler)
 				: callback(promiseOrValue);
 		}
 
