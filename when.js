@@ -1,14 +1,15 @@
-(function(define) {
+(function(define, undef) {
 define([], function() {
 
-	/*
-		Constructor: Promise
-		Creates a new Promise
-	*/ 
-	
-	function Promise () {}
+	var freeze = Object.freeze || function() {};
 
-	Promise.prototype = {
+	/*
+		Constructor: Deferred
+		Creates a new Deferred
+	*/
+	function Deferred () {}
+
+	Deferred.prototype = {
 		// TODO: Promise implementation
 		then: function() {},
 		resolve: function() {},
@@ -38,7 +39,7 @@ define([], function() {
 			if(isPromise(promiseOrValue)) {
 				result = promiseOrValue;		
 			} else {
-				result = new Promise();
+				result = new Deferred();
 				result.resolve(promiseOrValue);
 			}
 		} else {
@@ -51,6 +52,7 @@ define([], function() {
 				: callback(promiseOrValue);
 		}
 
+		// TODO: Return Promise instead of Deferred
 		return result;
 	}
 
@@ -58,11 +60,11 @@ define([], function() {
 		Function: some
 	*/
 	function some(promisesOrValues, howMany) {
-		var toResolve, results, promise;
+		var toResolve, results, deferred;
 
 		toResolve = Math.max(0, Math.min(howMany, promises.length));
 		results = [];
-		promise = new Promise();
+		deferred = new Deferred();
 
 		// Resolver for promises.  Captures the value and resolves
 		// the returned promise when toResolve reaches zero.
@@ -72,7 +74,7 @@ define([], function() {
 			results.push(val);
 			if(--toResolve == 0) {
 				resolver = noop;
-				promise.resolve(results);
+				deferred.resolve(results);
 			}
 		}
 
@@ -88,7 +90,7 @@ define([], function() {
 		// promises have been rejected instead of only one?
 		function rejecter(err) {
 			rejecter = noop;
-			promise.reject(err);		
+			deferred.reject(err);		
 		}
 
 		// Wrapper so that rejecer can be replaced
@@ -98,7 +100,7 @@ define([], function() {
 
 		function handleProgress(update) {
 			handleProgress = noop;
-			promise.progress(update);
+			deferred.progress(update);
 		}
 
 		function progress(update) {
@@ -109,7 +111,8 @@ define([], function() {
 			when(promisesOrValues[i], resolve, reject, progress);
 		}
 
-		return promise;
+		// TODO: Return Promise instead of Deferred
+		return deferred;
 	}
 
 	/*
@@ -138,7 +141,7 @@ define([], function() {
 	return when;
 
 });
-})(typeof define != "undefined" ? define : function(deps, factory){
+})(typeof define != 'undefined' ? define : function(deps, factory){
     // global when, if not loaded via require
     this.when = factory();
 });
