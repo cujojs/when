@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>when Unit Tests</title>
+	<script type="text/javascript" src="util/doh/runner.js"></script>
+	<script type="text/javascript" src="../when.js"></script>
+	<script type="text/javascript">
+		(function(global, doh) {
+			function noop() {};
+			function identity(val) { return val; };
+			function constant(val) { return function() { return val; }; }
+			function assertIsPromise(it) {
+				doh.assertTrue(it && typeof it.then == 'function');
+			}
+
+			var fakePromise;
+
+			fakePromise = {
+				then: function() { return this; },
+				resolve: identity
+			};
+
+			doh.register('when', [
+				function testReturnPromiseForValue() {
+					assertIsPromise(when(1));
+				},
+				function testReturnPromiseForPromise() {
+					assertIsPromise(when(fakePromise));
+				},
+				function testReturnValueForValueWithCallbacks() {
+					// Should return the result of invoking the callback.
+					// In this case callback(1) will return 2
+
+					var callback = constant(2);
+					doh.assertEqual(2, when(1, callback));
+				},
+				function testReturnPromiseForPromiseWithCallbacks() {
+					assertIsPromise(when(fakePromise, identity));
+				}
+
+			]);
+
+			doh.run();
+			
+		})(window, doh);
+	</script>
+</head>
+<body>
+	
+</body>
+</html>

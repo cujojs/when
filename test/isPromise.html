@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>isPromise Unit Tests</title>
+	<script type="text/javascript" src="util/doh/runner.js"></script>
+	<script type="text/javascript" src="../when.js"></script>
+	<script type="text/javascript">
+		(function(global, doh) {
+			var fakePromise, undef;
+
+			fakePromise = {
+				then: function() {}
+			};
+
+			function assertIsPromise(it) {
+				doh.assertTrue(when.isPromise(it));
+			}
+
+			function assertIsNotPromise(it) {
+				doh.assertFalse(when.isPromise(it));
+			}
+
+			doh.register('isPromise', [
+				function testPromise() {
+					assertIsPromise(fakePromise);
+				},
+				function testNotPromise() {
+					assertIsNotPromise(1);
+					assertIsNotPromise("not a promise");
+					assertIsNotPromise(true);
+					assertIsNotPromise({});
+					assertIsNotPromise(undef);
+					assertIsNotPromise(null);
+					assertIsNotPromise(0);
+					assertIsNotPromise("");
+					assertIsNotPromise(false);
+				},
+				function testPromiseLikeButNotAPromise() {
+					assertIsNotPromise({ then: 1 });
+				}
+			]);
+
+			doh.run();
+			
+		})(window, doh);
+	</script>
+</head>
+<body>
+	
+</body>
+</html>
