@@ -4,6 +4,11 @@
  * to the MIT License at: http://www.opensource.org/licenses/mit-license.php.
  */
 
+/*
+	File: when.js
+	Version: 0.5
+*/
+
 (function(define, undef) {
 define([], function() {
 
