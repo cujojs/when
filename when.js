@@ -14,6 +14,10 @@ define([], function() {
 
 	var freeze = Object.freeze || function() {};
 
+	// No-op function used in function replacement in various
+	// places below.
+	function noop() {}
+
 	/*
 		Constructor: Deferred
 		Creates a new Deferred
