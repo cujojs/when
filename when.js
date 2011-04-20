@@ -71,7 +71,7 @@ define([], function() {
 		}
 
 		function notify(which, val) {
-			
+
 			while(listeners) {
 				var listener, ldeferred, newResult, handler;
 
@@ -141,7 +141,7 @@ define([], function() {
 			if(isPromise(promiseOrValue)) {
 				result = promiseOrValue;		
 			} else {
-				result = new Deferred();
+				result = Deferred();
 				result.resolve(promiseOrValue);
 			}
 		} else {
@@ -166,7 +166,7 @@ define([], function() {
 
 		toResolve = Math.max(0, Math.min(howMany, promises.length));
 		results = [];
-		deferred = new Deferred();
+		deferred = Deferred();
 
 		// Resolver for promises.  Captures the value and resolves
 		// the returned promise when toResolve reaches zero.
