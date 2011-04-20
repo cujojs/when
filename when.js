@@ -1,3 +1,9 @@
+/**
+ * @license Copyright (c) 2011 Brian Cavalier
+ * LICENSE: see the LICENSE.txt file. If file is missing, this file is subject
+ * to the MIT License at: http://www.opensource.org/licenses/mit-license.php.
+ */
+
 (function(define, undef) {
 define([], function() {
 
@@ -11,20 +17,19 @@ define([], function() {
 		var deferred, promise, resolver, result, listeners, tail;
 
 		function thenImpl(callback, errback, progback) {
-			var d, l;
+			var d, listener;
 
-			d = Deferred();
-			l = {
-				deferred: d,
+			listener = {
+				deferred: (d = Deferred()),
 				resolve: callback,
 				reject: errback,
 				progress: progback
 			};
 
 			if(listeners) {
-				tail = tail.next = l;
+				tail = tail.next = listener;
 			} else {
-				listeners = tail = l;
+				listeners = tail = listener;
 			}
 
 			return d.promise;
@@ -34,9 +39,13 @@ define([], function() {
 			return thenImpl(callback, errback, progback);
 		}
 
-		function resolve(val) { complete('resolve', val); }
-		
-		function reject(err) { complete('reject', err); }
+		function resolve(val) { 
+			complete('resolve', val);
+		}
+
+		function reject(err) {
+			complete('reject', err);
+		}
 		
 		function progress(update) {
 			var listener, progress;
@@ -51,31 +60,39 @@ define([], function() {
 		}
 
 		function complete(which, val) {
-			resolve = reject = function alreadyCompleted() {
-				throw new Error("Promise already completed");
-			};
-
 			// Save original thenImpl
 			var origThen = thenImpl;
 
 			// Replace thenImpl with one that immediately notifies
+			// with the result.
 			thenImpl = function newThen(callback, errback) {
 				var promise = origThen(callback, errback);
 				notify(which, result);
 				return promise;
 			};
 
+			// Replace complete so that this Deferred
+			// can only be completed once.  Note that this leaves
+			// notify() intact so that it can be used in the
+			// rewritten thenImpl above.
+			complete = function alreadyCompleted() {
+				throw new Error("Promise already completed");
+			};
+
+			// Final result of this Deferred.  This is immutable
 			result = val;
 
+			// Notify listeners
 			notify(which, val);
 		}
 
 		function notify(which, val) {
-
+			// Traverse all listeners registered directly with this Deferred,
+			// also making sure to handle chained thens
 			while(listeners) {
 				var listener, ldeferred, newResult, handler;
 
-				listener = listeners;
+				listener  = listeners;
 				ldeferred = listener.deferred;
 				listeners = listeners.next;
 
@@ -85,32 +102,40 @@ define([], function() {
 						newResult = handler(result);
 
 						if(isPromise(newResult)) {
+							// If the handler returned a promise, chained deferreds
+							// should complete only after that promise does.
 							newResult.then(ldeferred.resolve, ldeferred.reject, ldeferred.progress);
 						
 						} else {
+							// Complete deferred from chained then()
 							ldeferred[which](newResult === undef ? result : newResult);							
 
 						}
 					} catch(e) {
+						// Exceptions cause chained deferreds to complete
+						// TODO: Should this always reject()?
 						ldeferred[which](result);
 					}
 				}
 			}			
 		}
 
+		// The full Deferred object, with both Promise and Resolver parts
 		deferred = {};
 
 		// Promise and Resolver parts
-		promise  = deferred.promise  = {};
-		resolver = deferred.resolver = {};
 
 		// Expose Promise API
-		promise.then = deferred.then = then;
-		
+		promise = deferred.promise  = {
+			then: (deferred.then = then)
+		};
+
 		// Expose Resolver API
-		resolver.resolve  = deferred.resolve  = resolve;
-		resolver.reject   = deferred.reject   = reject;
-		resolver.progress = deferred.progress = progress;
+		resolver = deferred.resolver = {
+			resolve:  (deferred.resolve  = resolve),
+			reject:   (deferred.reject   = reject),
+			progress: (deferred.progress = progress)
+		};
 
 		// Freeze Promise and Resolver APIs
 		freeze(promise);
@@ -143,6 +168,8 @@ define([], function() {
 			} else {
 				result = Deferred();
 				result.resolve(promiseOrValue);
+				// Make sure we return only the promise
+				result = result.promise;
 			}
 		} else {
 			// If callback args were provided, implement the "traditional"
@@ -154,7 +181,6 @@ define([], function() {
 				: callback(promiseOrValue);
 		}
 
-		// TODO: Return Promise instead of Deferred
 		return result;
 	}
 
