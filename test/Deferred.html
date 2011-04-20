@@ -8,22 +8,95 @@
 	<script type="text/javascript">
 		(function(global, doh) {
 
+			function createHandler(testDeferred) {
+				return function(val) {
+					testDeferred.callback(val);
+				}
+			}
+
+			function initHandlers(promise, deferred) {
+				var handler = createHandler(deferred);
+				promise.then(handler, handler, handler);
+			}
+
 			doh.register('Promise', [
 				function testResolve() {
-					var dohd = new doh.Deferred();
-					var d = when.Deferred();
+					var dohd, d;
+					
+					dohd = new doh.Deferred();
+					d = when.Deferred();
 
-					d.then(function(val) {
-						dohd.callback(val);
-					});
+					initHandlers(d, dohd);
 
 					d.resolve(true);
 
 					return dohd;
 				},
+				function testAlreadyResolved() {
+					var dohd, d, success;
+					
+					dohd = new doh.Deferred();
+					d = when.Deferred();
+					success = true;
+
+					d.resolve(true);
+
+					try {
+						d.resolve(false);
+						success = false;
+					} catch(e) {}
+
+					try {
+						d.reject(false);
+						success = false;
+					} catch(e) {}
+
+					try {
+						d.progress(false);
+						success = false;
+					} catch(e) {}
+
+					doh.assertTrue(success);
+
+					initHandlers(d, dohd);
+
+					return dohd;
+				},
+				function testAlreadyRejected() {
+					var dohd, d, success;
+					
+					dohd = new doh.Deferred();
+					d = when.Deferred();
+					success = true;
+
+					d.reject(true);
+
+					try {
+						d.resolve(false);
+						success = false;
+					} catch(e) {}
+
+					try {
+						d.reject(false);
+						success = false;
+					} catch(e) {}
+
+					try {
+						d.progress(false);
+						success = false;
+					} catch(e) {}
+
+					doh.assertTrue(success);
+
+					initHandlers(d, dohd);
+
+					return dohd;
+				},
 				function testReject() {
-					var dohd = new doh.Deferred();
-					var d = when.Deferred();
+					var dohd, d;
+					
+					dohd = new doh.Deferred();
+					d = when.Deferred();
 
 					d.then(
 						function(val) { dohd.errback("Should have rejected"); },
@@ -35,8 +108,10 @@
 					return dohd;
 				},
 				function testProgress() {
-					var dohd = new doh.Deferred();
-					var d = when.Deferred();
+					var dohd, d;
+					
+					dohd = new doh.Deferred();
+					d = when.Deferred();
 
 					d.then(
 						function(val) { dohd.errback("Should have progressed"); },
@@ -49,20 +124,22 @@
 					return dohd;
 				},
 				function testThenAfterResolve() {
-					var dohd = new doh.Deferred();
-					var d = when.Deferred();
+					var dohd, d;
+					
+					dohd = new doh.Deferred();
+					d = when.Deferred();
 
 					d.resolve(true);
 
-					d.then(function(val) {
-						dohd.callback(val);
-					});
+					initHandlers(d, dohd);
 
 					return dohd;
 				},
 				function testThenChain() {
-					var dohd = new doh.Deferred();
-					var d = when.Deferred();
+					var dohd, d;
+					
+					dohd = new doh.Deferred();
+					d = when.Deferred();
 
 					d.then(function(val) {
 						
@@ -79,8 +156,10 @@
 					return dohd;
 				},
 				function testThenForward() {
-					var dohd = new doh.Deferred();
-					var d = when.Deferred();
+					var dohd, d;
+					
+					dohd = new doh.Deferred();
+					d = when.Deferred();
 
 					d.then(function(val) {
 						
@@ -99,8 +178,10 @@
 					return dohd;
 				},
 				function testThenForwardReject() {
-					var dohd = new doh.Deferred();
-					var d = when.Deferred();
+					var dohd, d;
+					
+					dohd = new doh.Deferred();
+					d = when.Deferred();
 
 					d.then(function(val) {
 						
@@ -117,8 +198,6 @@
 
 					return dohd;
 				}
-
-
 			]);
 
 			doh.run();

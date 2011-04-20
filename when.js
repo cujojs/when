@@ -12,11 +12,11 @@
 (function(define, undef) {
 define([], function() {
 
-	var freeze = Object.freeze || function() {};
-
 	// No-op function used in function replacement in various
 	// places below.
 	function noop() {}
+
+	var freeze = Object.freeze || noop;
 
 	/*
 		Constructor: Deferred
@@ -25,7 +25,7 @@ define([], function() {
 	function Deferred() {
 		var deferred, promise, resolver, result, listeners, tail;
 
-		function thenImpl(callback, errback, progback) {
+		function _then(callback, errback, progback) {
 			var d, listener;
 
 			listener = {
@@ -36,8 +36,10 @@ define([], function() {
 			};
 
 			if(listeners) {
+				// Append new listener if linked list already initialized
 				tail = tail.next = listener;
 			} else {
+				// Init linked list
 				listeners = tail = listener;
 			}
 
@@ -45,7 +47,7 @@ define([], function() {
 		}
 
 		function then(callback, errback, progback) {
-			return thenImpl(callback, errback, progback);
+			return _then(callback, errback, progback);
 		}
 
 		function resolve(val) { 
@@ -56,7 +58,7 @@ define([], function() {
 			complete('reject', err);
 		}
 		
-		function progress(update) {
+		function _progress(update) {
 			var listener, progress;
 			
 			listener = listeners;
@@ -68,13 +70,17 @@ define([], function() {
 			}
 		}
 
+		function progress(update) {
+			_progress(update);
+		}
+
 		function complete(which, val) {
 			// Save original thenImpl
-			var origThen = thenImpl;
+			var origThen = _then;
 
 			// Replace thenImpl with one that immediately notifies
 			// with the result.
-			thenImpl = function newThen(callback, errback) {
+			_then = function newThen(callback, errback) {
 				var promise = origThen(callback, errback);
 				notify(which, result);
 				return promise;
@@ -84,8 +90,10 @@ define([], function() {
 			// can only be completed once.  Note that this leaves
 			// notify() intact so that it can be used in the
 			// rewritten thenImpl above.
-			complete = function alreadyCompleted() {
-				throw new Error("Promise already completed");
+			// Replace progressImpl, so that subsequent attempts
+			// to issue progress throw.
+			complete = _progress = function alreadyCompleted() {
+				throw new Error("already completed");
 			};
 
 			// Final result of this Deferred.  This is immutable
@@ -244,8 +252,9 @@ define([], function() {
 			handleProgress(update);
 		}
 
-		for (var i = 0; i < promisesOrValues.length; i++) {
-			when(promisesOrValues[i], resolve, reject, progress);
+		var promiseOrValue, i = 0;
+		while((promiseOrValue = promisesOrValues[i++])) {
+			when(pv, resolve, reject, progress);
 		}
 
 		// TODO: Return Promise instead of Deferred
