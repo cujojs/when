@@ -7,15 +7,117 @@ define([], function() {
 		Constructor: Deferred
 		Creates a new Deferred
 	*/
-	function Deferred () {}
+	function Deferred() {
+		var deferred, promise, resolver, result, listeners, tail;
 
-	Deferred.prototype = {
-		// TODO: Promise implementation
-		then: function() {},
-		resolve: function() {},
-		reject: function() {},
-		progress: function() {}
-	};
+		function thenImpl(callback, errback, progback) {
+			var d, l;
+
+			d = Deferred();
+			l = {
+				deferred: d,
+				resolve: callback,
+				reject: errback,
+				progress: progback
+			};
+
+			if(listeners) {
+				tail = tail.next = l;
+			} else {
+				listeners = tail = l;
+			}
+
+			return d.promise;
+		}
+
+		function then(callback, errback, progback) {
+			return thenImpl(callback, errback, progback);
+		}
+
+		function resolve(val) { complete('resolve', val); }
+		
+		function reject(err) { complete('reject', err); }
+		
+		function progress(update) {
+			var listener, progress;
+			
+			listener = listeners;
+
+			while(listener) {
+				progress = listener.progress;
+				progress && progress(update);
+				listener = listener.next;
+			}
+		}
+
+		function complete(which, val) {
+			resolve = reject = function alreadyCompleted() {
+				throw new Error("Promise already completed");
+			};
+
+			// Save original thenImpl
+			var origThen = thenImpl;
+
+			// Replace thenImpl with one that immediately notifies
+			thenImpl = function newThen(callback, errback) {
+				var promise = origThen(callback, errback);
+				notify(which, result);
+				return promise;
+			};
+
+			result = val;
+
+			notify(which, val);
+		}
+
+		function notify(which, val) {
+			
+			while(listeners) {
+				var listener, ldeferred, newResult, handler;
+
+				listener = listeners;
+				ldeferred = listener.deferred;
+				listeners = listeners.next;
+
+				handler = listener[which];
+				if(handler) {
+					try {
+						newResult = handler(result);
+
+						if(isPromise(newResult)) {
+							newResult.then(ldeferred.resolve, ldeferred.reject, ldeferred.progress);
+						
+						} else {
+							ldeferred[which](newResult === undef ? result : newResult);							
+
+						}
+					} catch(e) {
+						ldeferred[which](result);
+					}
+				}
+			}			
+		}
+
+		deferred = {};
+
+		// Promise and Resolver parts
+		promise  = deferred.promise  = {};
+		resolver = deferred.resolver = {};
+
+		// Expose Promise API
+		promise.then = deferred.then = then;
+		
+		// Expose Resolver API
+		resolver.resolve  = deferred.resolve  = resolve;
+		resolver.reject   = deferred.reject   = reject;
+		resolver.progress = deferred.progress = progress;
+
+		// Freeze Promise and Resolver APIs
+		freeze(promise);
+		freeze(resolver);
+
+		return deferred;
+	}
 
 	/*
 		Function: isPromise
@@ -133,10 +235,12 @@ define([], function() {
 		Section: Public API
 	*/
 
+	when.Deferred  = Deferred;
+
 	when.isPromise = isPromise;
-	when.some = some;
-	when.all = all;
-	when.any = any;
+	when.some      = some;
+	when.all       = all;
+	when.any       = any;
 
 	return when;
 
