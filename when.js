@@ -20,7 +20,12 @@ define([], function() {
 
 	/*
 		Constructor: Deferred
-		Creates a new Deferred
+		Creates a new, CommonJS compliant, Deferred with fully isolated
+		resolver and promise parts, either or both of which may be given out
+		safely to consumers.
+		The Deferred itself has the full API: resolve, reject, progress, and
+		then. The resolver has resolve, reject, and progress.  The promise
+		only has then.
 	*/
 	function Deferred() {
 		var deferred, promise, resolver, result, listeners, tail;
@@ -163,7 +168,15 @@ define([], function() {
 
 	/*
 		Function: isPromise
-		Determines if promiseOrValue is a promise or not.
+		Determines if promiseOrValue is a promise or not.  Uses the feature
+		test from http://wiki.commonjs.org/wiki/Promises/A to determine if
+		promiseOrValue is a promise.
+
+		Parameters:
+			promiseOrValue - anything
+
+		Return:
+		true if and only if promiseOrValue is a promise.
 	*/
 	function isPromise(promiseOrValue) {
 		return promiseOrValue && typeof promiseOrValue.then === 'function';
@@ -271,7 +284,7 @@ define([], function() {
 	/*
 		Function: any
 	*/
-	function any() {
+	function any(promisesOrValues, callback, errback, progressHandler) {
 		return some(promisesOrValues, 1, callback, errback, progressHandler);		
 	}
 
