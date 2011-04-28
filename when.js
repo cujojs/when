@@ -130,12 +130,22 @@ define([], function() {
 						
 						} else {
 							// Complete deferred from chained then()
+							// FIXME: Which is correct?
+							// The first always mutates the chained value, even if it is undefined
+							// The second will only mutate if newResult !== undefined
+							// ldeferred[which](newResult);
+							
 							ldeferred[which](newResult === undef ? result : newResult);							
 
 						}
 					} catch(e) {
 						// Exceptions cause chained deferreds to complete
 						// TODO: Should this always reject()?
+						// ldeferred.reject(result);
+						// TODO: Should it *also* switch this promise's handlers to failed??
+						// I think no.
+						// which = 'reject';
+
 						ldeferred[which](result);
 					}
 				}
