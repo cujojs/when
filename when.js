@@ -140,13 +140,11 @@ define([], function() {
 						}
 					} catch(e) {
 						// Exceptions cause chained deferreds to complete
-						// TODO: Should this always reject()?
-						// ldeferred.reject(result);
 						// TODO: Should it *also* switch this promise's handlers to failed??
 						// I think no.
 						// which = 'reject';
 
-						ldeferred[which](result);
+						ldeferred.reject(e);
 					}
 				}
 			}			
