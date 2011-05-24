@@ -225,12 +225,17 @@ define([], function() {
 	/*
 		Function: some
 	*/
-	function some(promisesOrValues, howMany) {
-		var toResolve, results, deferred;
+	function some(promisesOrValues, howMany, callback, errback, progressHandler) {
+		var toResolve, results, ret, deferred;
 
-		toResolve = Math.max(0, Math.min(howMany, promises.length));
+		toResolve = Math.max(0, Math.min(howMany, promisesOrValues.length));
 		results = [];
 		deferred = Deferred();
+		ret = deferred.promise;
+
+		if(arguments.length > 2) {
+			ret = deferred.then(callback, errback, progressHandler);
+		}
 
 		// Resolver for promises.  Captures the value and resolves
 		// the returned promise when toResolve reaches zero.
@@ -273,27 +278,34 @@ define([], function() {
 			handleProgress(update);
 		}
 
-		var promiseOrValue, i = 0;
-		while((promiseOrValue = promisesOrValues[i++])) {
-			when(pv, resolve, reject, progress);
+		if(toResolve == 0) {
+			deferred.resolve(results)
+		} else {
+			var promiseOrValue, i = 0;
+			while((promiseOrValue = promisesOrValues[i++])) {
+				when(promiseOrValue, resolve, reject, progress);
+			}			
 		}
 
-		// TODO: Return Promise instead of Deferred
-		return deferred;
+		return ret;
 	}
 
 	/*
 		Function: all
 	*/
 	function all(promisesOrValues, callback, errback, progressHandler) {
-		return some(promisesOrValues, promisesOrValues.length, callback, errback, progressHandler);
+		return arguments.length == 1
+			? some(promisesOrValues, promisesOrValues.length)
+			: some(promisesOrValues, promisesOrValues.length, callback, errback, progressHandler);
 	}
 
 	/*
 		Function: any
 	*/
 	function any(promisesOrValues, callback, errback, progressHandler) {
-		return some(promisesOrValues, 1, callback, errback, progressHandler);		
+		return arguments.length == 1
+			? some(promisesOrValues, 1)
+			: some(promisesOrValues, 1, callback, errback, progressHandler);		
 	}
 
 	/*
