@@ -202,7 +202,7 @@ define([], function() {
 			// promise, return it.  If it's a value, return a new
 			// promise, with promiseOrValue as the resolution value.
 			if(isPromise(promiseOrValue)) {
-				result = promiseOrValue;		
+				result = chain(promiseOrValue, Deferred());
 			} else {
 				result = Deferred();
 				result.resolve(promiseOrValue);
@@ -231,11 +231,9 @@ define([], function() {
 		toResolve = Math.max(0, Math.min(howMany, promisesOrValues.length));
 		results = [];
 		deferred = Deferred();
-		ret = deferred.promise;
-
-		if(arguments.length > 2) {
-			ret = deferred.then(callback, errback, progressHandler);
-		}
+		ret = (arguments.length > 2)
+			? deferred.then(callback, errback, progressHandler)
+			: deferred.promise;
 
 		// Resolver for promises.  Captures the value and resolves
 		// the returned promise when toResolve reaches zero.
@@ -243,7 +241,7 @@ define([], function() {
 		// be resolved to cover case where n < promises.length
 		function resolver(val) {
 			results.push(val);
-			if(--toResolve == 0) {
+			if(--toResolve === 0) {
 				resolver = noop;
 				deferred.resolve(results);
 			}
@@ -278,8 +276,8 @@ define([], function() {
 			handleProgress(update);
 		}
 
-		if(toResolve == 0) {
-			deferred.resolve(results)
+		if(toResolve === 0) {
+			deferred.resolve(results);
 		} else {
 			var promiseOrValue, i = 0;
 			while((promiseOrValue = promisesOrValues[i++])) {
@@ -309,6 +307,33 @@ define([], function() {
 	}
 
 	/*
+		Function: chain
+		Chain two Promises such that when the first completes, the second
+		is completed with either the completion value of the first, or
+		in the case of resolve, completed with the optional resolveValue.
+
+		Parameters:
+			first - first Promise
+			second - Promise to complete when first Promise completes
+			resolveValue - optional value to use as the resolution value
+				used to resolve second, rather than the resolution
+				value of first.
+		
+		Returns:
+			second
+	*/
+	function chain(first, second, resolveValue) {
+		var args = arguments;
+		first.then(
+			function(val)    { second.resolve(args.length > 2 ? resolveValue : val); },
+			function(err)    { second.reject(err); },
+			function(update) { second.progress(update); }
+		);
+
+		return second;
+	}
+
+	/*
 		Section: Public API
 	*/
 
@@ -318,6 +343,7 @@ define([], function() {
 	when.some      = some;
 	when.all       = all;
 	when.any       = any;
+	when.chain     = chain;
 
 	return when;
 
