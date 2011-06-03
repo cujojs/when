@@ -14,19 +14,25 @@
 				doh.assertTrue(it && typeof it.then == 'function');
 			}
 
+			function createFakePromise() {
+				return {
+					then: function() { return createFakePromise(); },
+					resolve: identity
+				};
+			}
+
 			var fakePromise;
 
-			fakePromise = {
-				then: function() { return this; },
-				resolve: identity
-			};
+			fakePromise = createFakePromise();
 
 			doh.register('when', [
 				function testReturnPromiseForValue() {
 					assertIsPromise(when(1));
 				},
 				function testReturnPromiseForPromise() {
-					assertIsPromise(when(fakePromise));
+					var newPromise = when(fakePromise);
+					assertIsPromise(newPromise);
+					doh.assertFalse(newPromise === fakePromise);
 				},
 				function testReturnValueForValueWithCallbacks() {
 					// Should return the result of invoking the callback.
@@ -36,7 +42,9 @@
 					doh.assertEqual(2, when(1, callback));
 				},
 				function testReturnPromiseForPromiseWithCallbacks() {
-					assertIsPromise(when(fakePromise, identity));
+					var newPromise = when(fakePromise, identity);
+					assertIsPromise(newPromise);
+					doh.assertFalse(newPromise === fakePromise);
 				}
 
 			]);
