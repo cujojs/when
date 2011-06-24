@@ -243,7 +243,7 @@ define([], function() {
 		resolver = function(val) {
 			results.push(val);
 			if(--toResolve === 0) {
-				resolver = noop;
+				resolver = handleProgress = noop;
 				deferred.resolve(results);
 			}
 		};
@@ -259,7 +259,7 @@ define([], function() {
 		// TODO: Consider rejecting only when N (or promises.length - N?)
 		// promises have been rejected instead of only one?
 		rejecter = function(err) {
-			rejecter = noop;
+			rejecter = handleProgress = noop;
 			deferred.reject(err);		
 		};
 
@@ -269,7 +269,6 @@ define([], function() {
 		}
 
 		handleProgress = function(update) {
-			handleProgress = noop;
 			deferred.progress(update);
 		};
 
