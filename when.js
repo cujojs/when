@@ -28,9 +28,10 @@ define([], function() {
 		only has then.
 	*/
 	function Deferred() {
-		var deferred, promise, resolver, result, listeners, tail;
+		var deferred, promise, resolver, result, listeners, tail,
+			_then, _progress, complete;
 
-		function _then(callback, errback, progback) {
+		_then = function(callback, errback, progback) {
 			var d, listener;
 
 			listener = {
@@ -49,7 +50,7 @@ define([], function() {
 			}
 
 			return d.promise;
-		}
+		};
 
 		function then(callback, errback, progback) {
 			return _then(callback, errback, progback);
@@ -63,23 +64,23 @@ define([], function() {
 			complete('reject', err);
 		}
 		
-		function _progress(update) {
+		_progress = function(update) {
 			var listener, progress;
 			
 			listener = listeners;
 
 			while(listener) {
 				progress = listener.progress;
-				progress && progress(update);
+				if(progress) progress(update);
 				listener = listener.next;
 			}
-		}
+		};
 
 		function progress(update) {
 			_progress(update);
 		}
 
-		function complete(which, val) {
+		complete = function(which, val) {
 			// Save original thenImpl
 			var origThen = _then;
 
@@ -106,7 +107,7 @@ define([], function() {
 
 			// Notify listeners
 			notify(which, val);
-		}
+		};
 
 		function notify(which, val) {
 			// Traverse all listeners registered directly with this Deferred,
@@ -226,7 +227,7 @@ define([], function() {
 		Function: some
 	*/
 	function some(promisesOrValues, howMany, callback, errback, progressHandler) {
-		var toResolve, results, ret, deferred;
+		var toResolve, results, ret, deferred, resolver, rejecter, handleProgress;
 
 		toResolve = Math.max(0, Math.min(howMany, promisesOrValues.length));
 		results = [];
@@ -239,13 +240,13 @@ define([], function() {
 		// the returned promise when toResolve reaches zero.
 		// Overwrites resolver var with a noop once promise has
 		// be resolved to cover case where n < promises.length
-		function resolver(val) {
+		resolver = function(val) {
 			results.push(val);
 			if(--toResolve === 0) {
 				resolver = noop;
 				deferred.resolve(results);
 			}
-		}
+		};
 
 		// Wrapper so that resolver can be replaced
 		function resolve(val) {
@@ -257,20 +258,20 @@ define([], function() {
 		// once promise to cover case where n < promises.length.
 		// TODO: Consider rejecting only when N (or promises.length - N?)
 		// promises have been rejected instead of only one?
-		function rejecter(err) {
+		rejecter = function(err) {
 			rejecter = noop;
 			deferred.reject(err);		
-		}
+		};
 
 		// Wrapper so that rejecer can be replaced
 		function reject(err) {
 			rejecter(err);
 		}
 
-		function handleProgress(update) {
+		handleProgress = function(update) {
 			handleProgress = noop;
 			deferred.progress(update);
-		}
+		};
 
 		function progress(update) {
 			handleProgress(update);
