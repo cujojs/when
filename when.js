@@ -88,7 +88,7 @@ define([], function() {
 			// with the result.
 			_then = function newThen(callback, errback) {
 				var promise = origThen(callback, errback);
-				notify(which, result);
+				notify(which);
 				return promise;
 			};
 
@@ -106,11 +106,11 @@ define([], function() {
 			result = val;
 
 			// Notify listeners
-			notify(which, val);
+			notify(which);
 		};
 
-		function notify(which, val) {
-			// Traverse all listeners registered directly with this Deferred,
+        function notify(which) {
+            // Traverse all listeners registered directly with this Deferred,
 			// also making sure to handle chained thens
 			while(listeners) {
 				var listener, ldeferred, newResult, handler;
