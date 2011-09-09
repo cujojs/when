@@ -197,12 +197,12 @@ define([], function() {
 	function when(promiseOrValue, callback, errback, progressHandler) {
 		var deferred = defer();
 
-		function reject(err) {
-			return errback ? errback(err) : err;
-		}
-
 		function resolve(value) {
 			return callback ? callback(value) : value;
+		}
+
+		function reject(err) {
+			return errback ? errback(err) : err;
 		}
 
 		function progress(update) {
@@ -319,8 +319,8 @@ define([], function() {
 			a new Promise that will be resolved when resolver is completed, with
 			its completion value.
 	*/
-	function chain(promise, resolver, resolveValue) {
-		return _chain(_chain(promise, resolver, resolveValue), defer()).promise;
+	function chain(promiseOrValue, resolver, resolveValue) {
+		return _chain(_chain(when(promiseOrValue), resolver, resolveValue), defer()).promise;
 	}
 
 	function _chain(first, second, resolveValue) {

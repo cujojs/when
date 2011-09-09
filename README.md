@@ -16,7 +16,7 @@ when(promiseOrValue, callback, errback, progressback).then(anotherCallback, anot
 when.defer()
 ------------
 
-create a new Deferred containing separate `promise` and `resolver` parts:
+Create a new Deferred containing separate `promise` and `resolver` parts:
 
 ```javascript
 var deferred = when.defer();
@@ -37,13 +37,14 @@ deferred.progress(update);
 The `promise` API:
 
 ```javascript
-var promise = deferred.promise;
+// var promise = deferred.promise;
 promise.then(callback, errback, progressback);
 ```
 
 The `resolver` API:
 
 ```javascript
+// var resolver = deferred.resolver;
 resolver.resolve(value);
 resolver.reject(err);
 resolver.progress(update);
@@ -56,7 +57,7 @@ when.some()
 when.some(promisesOrValues, howMany, callback, errback, progressback)
 ```
 
-return a promise that will resolve when `howMany` of the supplied `promisesOrValues` have resolved.  The resolution value of the returned promise will be an array of length `howMany` containing the resolutions values of the triggering `promisesOrValues`.
+Return a promise that will resolve when `howMany` of the supplied `promisesOrValues` have resolved.  The resolution value of the returned promise will be an array of length `howMany` containing the resolutions values of the triggering `promisesOrValues`.
 
 when.all()
 ----------
@@ -80,10 +81,12 @@ when.chain()
 ------------
 
 ```javascript
-when.chain(promise, resolver, optionalValue)
+when.chain(promiseOrValue, resolver, optionalValue)
 ```
 
-Ensures that resolution of `promise` will cause `resolver` to complete (resolve or reject) with the completion value of `promise`, or instead with `optionalValue` if it is provided.
+Ensure that resolution of `promiseOrValue` will cause `resolver` to complete (resolve or reject) with the completion value of `promiseOrValue`, or instead with `optionalValue` if it is provided.
+
+**Note:** If `promiseOrValue` is not an immediate value, it can be anything that supports the `promiseOrValue` API, so you can pass a `deferred` as well.  Similarly, `resolver` can be anything that supports the `resolver` API, so a `deferred` will work there, too.
 
 References
 ----------
