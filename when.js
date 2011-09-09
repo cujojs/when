@@ -6,7 +6,7 @@
 
 /*
 	File: when.js
-	Version: 0.5
+	Version: 0.9.0
 */
 
 (function(define, undef) {
@@ -19,7 +19,7 @@ define([], function() {
 	var freeze = Object.freeze || noop;
 
 	/*
-		Constructor: Deferred
+		Function: Deferred
 		Creates a new, CommonJS compliant, Deferred with fully isolated
 		resolver and promise parts, either or both of which may be given out
 		safely to consumers.
@@ -27,7 +27,7 @@ define([], function() {
 		then. The resolver has resolve, reject, and progress.  The promise
 		only has then.
 	*/
-	function Deferred() {
+	function defer() {
 		var deferred, promise, resolver, result, listeners, tail,
 			_then, _progress, complete;
 
@@ -35,7 +35,7 @@ define([], function() {
 			var d, listener;
 
 			listener = {
-				deferred: (d = Deferred()),
+				deferred: (d = defer()),
 				resolve: callback,
 				reject: errback,
 				progress: progback
@@ -195,32 +195,32 @@ define([], function() {
 		Function: when
 	*/
 	function when(promiseOrValue, callback, errback, progressHandler) {
-		var result;
+		var deferred = defer();
 
-		if(arguments.length == 1) {
-			// If exactly one arg, assume the caller wants a promise to
-			// be returned, no matter what.  If promiseOrValue is a
-			// promise, return it.  If it's a value, return a new
-			// promise, with promiseOrValue as the resolution value.
-			if(isPromise(promiseOrValue)) {
-				result = chain(promiseOrValue, Deferred());
-			} else {
-				result = Deferred();
-				result.resolve(promiseOrValue);
-				// Make sure we return only the promise
-				result = result.promise;
-			}
-		} else {
-			// If callback args were provided, implement the "traditional"
-			// when behavior, and return the result of registering
-			// the callbacks with promiseOrValue if it is a promise,
-			// or the result of invoking callback with promiseOrValue.
-			result = isPromise(promiseOrValue)
-				? promiseOrValue.then(callback, errback, progressHandler)
-				: callback(promiseOrValue);
+		function reject(err) {
+			return errback ? errback(err) : err;
 		}
 
-		return result;
+		function resolve(value) {
+			return callback ? callback(value) : value;
+		}
+
+		function progress(update) {
+			progressHandler(update);
+		}
+		
+		if(isPromise(promiseOrValue)) {
+			// If it's a promise, ensure that deferred will complete when promiseOrValue
+			// completes.
+			deferred = _chain(promiseOrValue.then(resolve, reject, progress), deferred);
+
+		} else {
+			// If it's a value, resolve immediately
+			deferred.resolve(resolve(promiseOrValue));
+
+		}
+
+		return deferred.promise;
 	}
 
 	/*
@@ -231,8 +231,8 @@ define([], function() {
 
 		toResolve = Math.max(0, Math.min(howMany, promisesOrValues.length));
 		results = [];
-		deferred = Deferred();
-		ret = (arguments.length > 2)
+		deferred = defer();
+		ret = (callback || errback || progressHandler)
 			? deferred.then(callback, errback, progressHandler)
 			: deferred.promise;
 
@@ -292,37 +292,38 @@ define([], function() {
 		Function: all
 	*/
 	function all(promisesOrValues, callback, errback, progressHandler) {
-		return arguments.length == 1
-			? some(promisesOrValues, promisesOrValues.length)
-			: some(promisesOrValues, promisesOrValues.length, callback, errback, progressHandler);
+		return some(promisesOrValues, promisesOrValues.length, callback, errback, progressHandler);
 	}
 
 	/*
 		Function: any
 	*/
 	function any(promisesOrValues, callback, errback, progressHandler) {
-		return arguments.length == 1
-			? some(promisesOrValues, 1)
-			: some(promisesOrValues, 1, callback, errback, progressHandler);		
+		return some(promisesOrValues, 1, callback, errback, progressHandler);
 	}
 
 	/*
 		Function: chain
-		Chain two Promises such that when the first completes, the second
+		Chain a promise to a resolver such that when the first completes, the second
 		is completed with either the completion value of the first, or
 		in the case of resolve, completed with the optional resolveValue.
 
 		Parameters:
-			first - first Promise
-			second - Promise to complete when first Promise completes
+			promise - Promise, that when completed, will trigger completion of resolver
+			second - Resolver to complete when promise completes
 			resolveValue - optional value to use as the resolution value
 				used to resolve second, rather than the resolution
 				value of first.
 		
 		Returns:
-			second
+			a new Promise that will be resolved when resolver is completed, with
+			its completion value.
 	*/
-	function chain(first, second, resolveValue) {
+	function chain(promise, resolver, resolveValue) {
+		return _chain(_chain(promise, resolver, resolveValue), defer()).promise;
+	}
+
+	function _chain(first, second, resolveValue) {
 		var args = arguments;
 		first.then(
 			function(val)    { second.resolve(args.length > 2 ? resolveValue : val); },
@@ -337,7 +338,7 @@ define([], function() {
 		Section: Public API
 	*/
 
-	when.Deferred  = Deferred;
+	when.defer     = defer;
 
 	when.isPromise = isPromise;
 	when.some      = some;

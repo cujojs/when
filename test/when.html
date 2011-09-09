@@ -7,8 +7,8 @@
 	<script type="text/javascript" src="../when.js"></script>
 	<script type="text/javascript">
 		(function(global, doh) {
-			function noop() {};
-			function identity(val) { return val; };
+			function noop() {}
+			function identity(val) { return val; }
 			function constant(val) { return function() { return val; }; }
 			function assertIsPromise(it) {
 				doh.assertTrue(it && typeof it.then == 'function');
@@ -34,12 +34,19 @@
 					assertIsPromise(newPromise);
 					doh.assertFalse(newPromise === fakePromise);
 				},
-				function testReturnValueForValueWithCallbacks() {
-					// Should return the result of invoking the callback.
+				function testReturnPromiseForValueWithCallbacks() {
+					// Should return a promise even though a value was supplied
+                    // and that new promise should resolve with the value
+                    /// returned by the callback
 					// In this case callback(1) will return 2
 
-					var callback = constant(2);
-					doh.assertEqual(2, when(1, callback));
+                    var d = new doh.Deferred();
+
+                    var newPromise = when(1, constant(2));
+                    assertIsPromise(newPromise);
+                    newPromise.then(function(val) {
+                        d.resolve(val === 2);
+                    });
 				},
 				function testReturnPromiseForPromiseWithCallbacks() {
 					var newPromise = when(fakePromise, identity);

@@ -24,7 +24,7 @@
 					var dohd, d;
 					
 					dohd = new doh.Deferred();
-					d = when.Deferred();
+					d = when.defer();
 
 					initHandlers(d, dohd);
 
@@ -36,7 +36,7 @@
 					var dohd, d, success;
 					
 					dohd = new doh.Deferred();
-					d = when.Deferred();
+					d = when.defer();
 					success = true;
 
 					d.resolve(true);
@@ -66,7 +66,7 @@
 					var dohd, d, success;
 					
 					dohd = new doh.Deferred();
-					d = when.Deferred();
+					d = when.defer();
 					success = true;
 
 					d.reject(true);
@@ -96,7 +96,7 @@
 					var dohd, d;
 					
 					dohd = new doh.Deferred();
-					d = when.Deferred();
+					d = when.defer();
 
 					d.then(
 						function(val) { dohd.errback("Should have rejected"); },
@@ -111,7 +111,7 @@
 					var dohd, d;
 					
 					dohd = new doh.Deferred();
-					d = when.Deferred();
+					d = when.defer();
 
 					d.then(
 						function(val) { dohd.errback("Should have progressed"); },
@@ -127,7 +127,7 @@
 					var dohd, d;
 					
 					dohd = new doh.Deferred();
-					d = when.Deferred();
+					d = when.defer();
 
 					d.resolve(true);
 
@@ -139,7 +139,7 @@
 					var dohd, d;
 					
 					dohd = new doh.Deferred();
-					d = when.Deferred();
+					d = when.defer();
 
 					d.then(function(val) {
 						
@@ -159,11 +159,11 @@
 					var dohd, d;
 					
 					dohd = new doh.Deferred();
-					d = when.Deferred();
+					d = when.defer();
 
 					d.then(function(val) {
 						
-						var d2 = when.Deferred();
+						var d2 = when.defer();
 						d2.resolve("second");
 						return d2;
 
@@ -181,11 +181,11 @@
 					var dohd, d;
 					
 					dohd = new doh.Deferred();
-					d = when.Deferred();
+					d = when.defer();
 
 					d.then(function(val) {
 						
-						var d2 = when.Deferred();
+						var d2 = when.defer();
 						d2.reject("second");
 						return d2;
 
