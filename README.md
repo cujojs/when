@@ -1,4 +1,4 @@
-A lightweight CommonJS Promises/A and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining and chaining.
+A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining and chaining.
 
 when()
 ------
