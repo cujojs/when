@@ -4,15 +4,13 @@
 	<meta charset="UTF-8">
 	<title>when Unit Tests</title>
 	<script type="text/javascript" src="util/doh/runner.js"></script>
+    <script type="text/javascript" src="test-config.js"></script>
 	<script type="text/javascript" src="../when.js"></script>
 	<script type="text/javascript">
 		(function(global, doh) {
 			function noop() {}
 			function identity(val) { return val; }
 			function constant(val) { return function() { return val; }; }
-			function assertIsPromise(it) {
-				doh.assertTrue(it && typeof it.then == 'function');
-			}
 
 			function createFakePromise() {
 				return {
@@ -27,11 +25,11 @@
 
 			doh.register('when', [
 				function testReturnPromiseForValue() {
-					assertIsPromise(when(1));
+					doh.assertIsPromise(when(1));
 				},
 				function testReturnPromiseForPromise() {
 					var newPromise = when(fakePromise);
-					assertIsPromise(newPromise);
+					doh.assertIsPromise(newPromise);
 					doh.assertFalse(newPromise === fakePromise);
 				},
 				function testReturnPromiseForValueWithCallbacks() {
@@ -43,14 +41,14 @@
                     var d = new doh.Deferred();
 
                     var newPromise = when(1, constant(2));
-                    assertIsPromise(newPromise);
+                    doh.assertIsPromise(newPromise);
                     newPromise.then(function(val) {
                         d.resolve(val === 2);
                     });
 				},
 				function testReturnPromiseForPromiseWithCallbacks() {
 					var newPromise = when(fakePromise, identity);
-					assertIsPromise(newPromise);
+					doh.assertIsPromise(newPromise);
 					doh.assertFalse(newPromise === fakePromise);
 				}
 

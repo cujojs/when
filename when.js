@@ -309,8 +309,9 @@ define([], function() {
 		in the case of resolve, completed with the optional resolveValue.
 
 		Parameters:
-			promise - Promise, that when completed, will trigger completion of resolver
-			second - Resolver to complete when promise completes
+			promiseOrValue - Promise, that when completed, will trigger completion of resolver, or
+				value that will trigger immediate resolution of resolver
+			resolver - Resolver to complete when promise completes
 			resolveValue - optional value to use as the resolution value
 				used to resolve second, rather than the resolution
 				value of first.
@@ -320,18 +321,32 @@ define([], function() {
 			its completion value.
 	*/
 	function chain(promiseOrValue, resolver, resolveValue) {
-		return _chain(_chain(when(promiseOrValue), resolver, resolveValue), defer()).promise;
+		var inputPromise, initChain;
+
+		inputPromise = when(promiseOrValue);
+
+		// Check against args length instead of resolvedValue === undefined, since
+		// undefined may be a valid resolution value.
+		initChain = arguments.length > 2
+			? function(resolver) { return _chain(inputPromise, resolver, resolveValue) }
+			: function(resolver) { return _chain(inputPromise, resolver); };
+
+		// Setup chain to supplied resolver
+		initChain(resolver);
+
+		// Setup chain to new promise
+		return initChain(when.defer()).promise;
 	}
 
-	function _chain(first, second, resolveValue) {
+	function _chain(promise, deferred, resolveValue) {
 		var args = arguments;
-		first.then(
-			function(val)    { second.resolve(args.length > 2 ? resolveValue : val); },
-			function(err)    { second.reject(err); },
-			function(update) { second.progress(update); }
+		promise.then(
+			function(val)    { deferred.resolve(args.length > 2 ? resolveValue : val); },
+			function(err)    { deferred.reject(err); },
+			function(update) { deferred.progress(update); }
 		);
 
-		return second;
+		return deferred;
 	}
 
 	/*
