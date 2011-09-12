@@ -1,6 +1,6 @@
 A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining and chaining.
 
-when.js is derived from the async core of [wire.js](http://github.com/briancavalier/wire), and future versions of it will use when.js directly.
+when.js is derived from the async core of [wire.js](http://github.com/briancavalier/wire), and future versions of wire will use when.js directly.
 
 when()
 ------
