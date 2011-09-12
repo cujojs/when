@@ -6,7 +6,7 @@
 
 /*
 	File: when.js
-	Version: 0.9.0
+	Version: 0.9.1
 */
 
 (function(define, undef) {
