@@ -84,9 +84,11 @@ when.chain()
 when.chain(promiseOrValue, resolver, optionalValue)
 ```
 
-Ensure that resolution of `promiseOrValue` will cause `resolver` to complete (resolve or reject) with the completion value of `promiseOrValue`, or instead with `optionalValue` if it is provided.
+Ensure that resolution of `promiseOrValue` will complete `resolver` with the completion value of `promiseOrValue`, or instead with `optionalValue` if it is provided.
 
-**Note:** If `promiseOrValue` is not an immediate value, it can be anything that supports the `promiseOrValue` API, so you can pass a `deferred` as well.  Similarly, `resolver` can be anything that supports the `resolver` API, so a `deferred` will work there, too.
+Returns a new promise that will complete when `promiseOrValue` is completed, with the completion value of `promiseOrValue`, or instead with `optionalValue` if it is provided.
+
+**Note:** If `promiseOrValue` is not an immediate value, it can be anything that supports the promise API (i.e. `then()`), so you can pass a `deferred` as well.  Similarly, `resolver` can be anything that supports the resolver API (i.e. `resolve()`, `reject()`), so a `deferred` will work there, too.
 
 References
 ----------
