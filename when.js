@@ -212,7 +212,8 @@ define([], function() {
 		if(isPromise(promiseOrValue)) {
 			// If it's a promise, ensure that deferred will complete when promiseOrValue
 			// completes.
-			deferred = _chain(promiseOrValue.then(resolve, reject, progress), deferred);
+			promiseOrValue.then(resolve, reject, progress);
+			deferred = _chain(promiseOrValue, deferred);
 
 		} else {
 			// If it's a value, resolve immediately

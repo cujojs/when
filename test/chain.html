@@ -96,15 +96,14 @@
                     var d, input, deferred, handleResolved, handleRejected;
 
                     d = new doh.Deferred();
+
                     input = when.defer();
                     deferred = when.defer();
 
                     handleResolved = assertCompleted(1, d);
                     handleRejected = reject(d);
 
-                    deferred.then(handleResolved, handleRejected);
-
-                    when.chain(input.promise, deferred.resolver).then(handleResolved, handleRejected);
+                    when.chain(input, deferred).then(handleResolved, handleRejected);
 
                     input.resolve(1);
 
