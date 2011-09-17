@@ -1,0 +1,35 @@
+{
+    "name": "when",
+    "version": "0.9.2",
+    "description": "A light, fast, flexible Javascript IOC container.",
+    "keywords": ["promises"],
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "http://www.opensource.org/licenses/mit-license.php"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "git",
+            "url": "git://github.com/briancavalier/when.js.git"
+        }
+    ],
+    "bugs": "https://github.com/briancavalier/when.js/issues",
+    "maintainers": [
+        {
+            "name": "Brian Cavalier",
+            "web": "http://hovercraftstudios.com"
+        }
+    ],
+    "contributors": [
+        {
+            "name": "Brian Cavalier",
+            "web": "http://hovercraftstudios.com"
+        }
+    ],
+    "main": "./when",
+    "directories": {
+        "test": "test"
+    }
+}
