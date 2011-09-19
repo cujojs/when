@@ -5,7 +5,7 @@ when.js is derived from the async core of [wire.js](http://github.com/briancaval
 A Simple Example
 ================
 
-A simple example of using promise to signal when an image has loaded, adapted from @unscriptable's [tiny promise example](https://github.com/unscriptable/promises/blob/master/examples/tinyImageLoader.js)
+A simple example of using a promise to signal when an image has loaded, adapted from @unscriptable's [tiny promise example](https://github.com/unscriptable/promises/blob/master/examples/tinyImageLoader.js)
 
 ``` javascript
 function loadImage (src) {
