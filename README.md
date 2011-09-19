@@ -2,6 +2,46 @@ A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](ht
 
 when.js is derived from the async core of [wire.js](http://github.com/briancavalier/wire), and future versions of wire will use when.js directly.
 
+A Simple Example
+================
+
+A simple example of using promise to signal when an image has loaded, adapted from @unscriptable's [tiny promise example](https://github.com/unscriptable/promises/blob/master/examples/tinyImageLoader.js)
+
+``` javascript
+function loadImage (src) {
+	var deferred = when.defer(),
+		img = document.createElement('img');
+	img.onload = function () { 
+		deferred.resolve(img); 
+	};
+	img.onerror = function () { 
+		deferred.reject(new Error('Image not found: ' + src));
+	};
+	img.src = src;
+
+	// Return only the promise, so that the caller cannot
+	// resolve, reject, or otherwise muck with the original deferred.
+	return deferred.promise;
+}
+
+// example usage:
+loadImage('http://google.com/favicon.ico').then(
+	function gotIt (img) {
+		document.body.appendChild(img);
+	},
+	function doh (ex) {
+		document.body.appendChild(document.createTextNode(ex.message));
+	}
+).then(
+	function shout (img) {
+		alert('see my new ' + img.src + '?');
+	}
+);
+```
+
+API
+===
+
 when()
 ------
 
