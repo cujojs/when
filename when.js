@@ -17,7 +17,6 @@ define([], function() {
 	// Use freeze if it exists
 	var freeze = Object.freeze || noop;
 
-
 	// Creates a new, CommonJS compliant, Deferred with fully isolated
 	// resolver and promise parts, either or both of which may be given out
 	// safely to consumers.
