@@ -4,11 +4,9 @@
  * to the MIT License at: http://www.opensource.org/licenses/mit-license.php.
  */
 
-/*
-	File: when.js
-	Version: 0.9.2
-*/
-
+//
+// when.js 0.9.3
+//
 (function(define, undef) {
 define([], function() {
 
@@ -16,17 +14,16 @@ define([], function() {
 	// places below.
 	function noop() {}
 
+	// Use freeze if it exists
 	var freeze = Object.freeze || noop;
 
-	/*
-		Function: Deferred
-		Creates a new, CommonJS compliant, Deferred with fully isolated
-		resolver and promise parts, either or both of which may be given out
-		safely to consumers.
-		The Deferred itself has the full API: resolve, reject, progress, and
-		then. The resolver has resolve, reject, and progress.  The promise
-		only has then.
-	*/
+
+	// Creates a new, CommonJS compliant, Deferred with fully isolated
+	// resolver and promise parts, either or both of which may be given out
+	// safely to consumers.
+	// The Deferred itself has the full API: resolve, reject, progress, and
+	// then. The resolver has resolve, reject, and progress.  The promise
+	// only has then.
 	function defer() {
 		var deferred, promise, resolver, result, listeners, tail,
 			_then, _progress, complete;
@@ -56,17 +53,17 @@ define([], function() {
 			return _then(callback, errback, progback);
 		}
 
-		function resolve(val) { 
+		function resolve(val) {
 			complete('resolve', val);
 		}
 
 		function reject(err) {
 			complete('reject', err);
 		}
-		
+
 		_progress = function(update) {
 			var listener, progress;
-			
+
 			listener = listeners;
 
 			while(listener) {
@@ -95,8 +92,8 @@ define([], function() {
 			// Replace complete so that this Deferred
 			// can only be completed once.  Note that this leaves
 			// notify() intact so that it can be used in the
-			// rewritten thenImpl above.
-			// Replace progressImpl, so that subsequent attempts
+			// rewritten _then above.
+			// Replace _progress, so that subsequent attempts
 			// to issue progress throw.
 			complete = _progress = function alreadyCompleted() {
 				throw new Error("already completed");
@@ -128,15 +125,15 @@ define([], function() {
 							// If the handler returned a promise, chained deferreds
 							// should complete only after that promise does.
 							newResult.then(ldeferred.resolve, ldeferred.reject, ldeferred.progress);
-						
+
 						} else {
 							// Complete deferred from chained then()
 							// FIXME: Which is correct?
 							// The first always mutates the chained value, even if it is undefined
 							// The second will only mutate if newResult !== undefined
 							// ldeferred[which](newResult);
-							
-							ldeferred[which](newResult === undef ? result : newResult);							
+
+							ldeferred[which](newResult === undef ? result : newResult);
 
 						}
 					} catch(e) {
@@ -148,7 +145,7 @@ define([], function() {
 						ldeferred.reject(e);
 					}
 				}
-			}			
+			}
 		}
 
 		// The full Deferred object, with both Promise and Resolver parts
@@ -175,25 +172,26 @@ define([], function() {
 		return deferred;
 	}
 
-	/*
-		Function: isPromise
-		Determines if promiseOrValue is a promise or not.  Uses the feature
-		test from http://wiki.commonjs.org/wiki/Promises/A to determine if
-		promiseOrValue is a promise.
-
-		Parameters:
-			promiseOrValue - anything
-
-		Return:
-		true if and only if promiseOrValue is a promise.
-	*/
+	// Determines if promiseOrValue is a promise or not.  Uses the feature
+	// test from http://wiki.commonjs.org/wiki/Promises/A to determine if
+	// promiseOrValue is a promise.
+	//
+	// Parameters:
+	// 	promiseOrValue - anything
+	//
+	// Return true if promiseOrValue is a promise.
 	function isPromise(promiseOrValue) {
 		return promiseOrValue && typeof promiseOrValue.then === 'function';
 	}
 
-	/*
-		Function: when
-	*/
+	// Register a handler for a promise or immediate value
+	//
+	// Parameters:
+	// 	promiseOrValue - anything
+	//
+	// Returns a new promise that will resolve:
+	// 1. if promiseOrValue is a promise, when promiseOrValue resolves
+	// 2. if promiseOrValue is a value, immediately
 	function when(promiseOrValue, callback, errback, progressHandler) {
 		var deferred = defer();
 
@@ -208,7 +206,7 @@ define([], function() {
 		function progress(update) {
 			progressHandler(update);
 		}
-		
+
 		if(isPromise(promiseOrValue)) {
 			// If it's a promise, ensure that deferred will complete when promiseOrValue
 			// completes.
@@ -224,9 +222,9 @@ define([], function() {
 		return deferred.promise;
 	}
 
-	/*
-		Function: some
-	*/
+	// Return a promise that will resolve when howMany of the supplied promisesOrValues
+	// have resolved. The resolution value of the returned promise will be an array of
+	// length howMany containing the resolutions values of the triggering promisesOrValues.
 	function some(promisesOrValues, howMany, callback, errback, progressHandler) {
 		var toResolve, results, ret, deferred, resolver, rejecter, handleProgress;
 
@@ -261,7 +259,7 @@ define([], function() {
 		// promises have been rejected instead of only one?
 		rejecter = function(err) {
 			rejecter = handleProgress = noop;
-			deferred.reject(err);		
+			deferred.reject(err);
 		};
 
 		// Wrapper so that rejecer can be replaced
@@ -283,44 +281,40 @@ define([], function() {
 			var promiseOrValue, i = 0;
 			while((promiseOrValue = promisesOrValues[i++])) {
 				when(promiseOrValue, resolve, reject, progress);
-			}			
+			}
 		}
 
 		return ret;
 	}
 
-	/*
-		Function: all
-	*/
+	// Return a promise that will resolve only once all the supplied promisesOrValues
+	// have resolved. The resolution value of the returned promise will be an array
+	// containing the resolution values of each of the promisesOrValues.
 	function all(promisesOrValues, callback, errback, progressHandler) {
 		return some(promisesOrValues, promisesOrValues.length, callback, errback, progressHandler);
 	}
 
-	/*
-		Function: any
-	*/
+	// Return a promise that will resolve when any one of the supplied promisesOrValues
+	// has resolved. The resolution value of the returned promise will be the resolution
+	// value of the triggering promiseOrValue.
 	function any(promisesOrValues, callback, errback, progressHandler) {
 		return some(promisesOrValues, 1, callback, errback, progressHandler);
 	}
 
-	/*
-		Function: chain
-		Chain a promise to a resolver such that when the first completes, the second
-		is completed with either the completion value of the first, or
-		in the case of resolve, completed with the optional resolveValue.
-
-		Parameters:
-			promiseOrValue - Promise, that when completed, will trigger completion of resolver, or
-				value that will trigger immediate resolution of resolver
-			resolver - Resolver to complete when promise completes
-			resolveValue - optional value to use as the resolution value
-				used to resolve second, rather than the resolution
-				value of first.
-		
-		Returns:
-			a new Promise that will be resolved when resolver is completed, with
-			its completion value.
-	*/
+	// Ensure that resolution of promiseOrValue will complete resolver with the completion
+	// value of promiseOrValue, or instead with optionalValue if it is provided.
+	//
+	// Parameters:
+	// 	promiseOrValue - Promise, that when completed, will trigger completion of resolver,
+	//      or value that will trigger immediate resolution of resolver
+	// 	resolver - Resolver to complete when promise completes
+	// 	resolveValue - optional value to use as the resolution value
+	// 		used to resolve second, rather than the resolution
+	// 		value of first.
+	//
+	// Returns a new promise that will complete when promiseOrValue is completed,
+	// with the completion value of promiseOrValue, or instead with optionalValue if it
+	// is provided.
 	function chain(promiseOrValue, resolver, resolveValue) {
 		var inputPromise, initChain;
 
@@ -339,6 +333,7 @@ define([], function() {
 		return initChain(when.defer()).promise;
 	}
 
+	// Internal chain helper that does not create a new deferred/promise
 	function _chain(promise, deferred, resolveValue) {
 		var args = arguments;
 		promise.then(
@@ -350,9 +345,9 @@ define([], function() {
 		return deferred;
 	}
 
-	/*
-		Section: Public API
-	*/
+	//
+	// Public API
+	//
 
 	when.defer     = defer;
 
@@ -364,8 +359,13 @@ define([], function() {
 
 	return when;
 
-});
-})(typeof define != 'undefined' ? define : function(deps, factory){
-    // global when, if not loaded via require
-    this.when = factory();
-});
+}); // define
+})(typeof define != 'undefined'
+	// use define for AMD if available
+	? define
+	// If no define, look for module to export as a CommonJS module.
+	// If no define or module, attach to current context.
+	: typeof module != 'undefined'
+		? function(deps, factory) { module.exports = factory(); }
+		: function(deps, factory) { this.when = factory(); }
+);

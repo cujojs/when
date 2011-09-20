@@ -7,7 +7,7 @@ A Simple Example
 
 A simple example of using a promise to signal when an image has loaded, adapted from @unscriptable's [tiny promise example](https://github.com/unscriptable/promises/blob/master/examples/tinyImageLoader.js)
 
-``` javascript
+```javascript
 function loadImage (src) {
 	var deferred = when.defer(),
 		img = document.createElement('img');
@@ -91,6 +91,16 @@ resolver.resolve(value);
 resolver.reject(err);
 resolver.progress(update);
 ```
+
+when.isPromise()
+----------------
+
+```javscript
+var is = when.isPromise(anything);
+```
+
+Return true if `anything` is truthy and implements the then() promise API.  Note that this will return true for both a deferred (i.e. `when.defer()`), and a `deferred.promise` since both implement the promise API.
+
 
 when.some()
 -----------
