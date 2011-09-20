@@ -77,10 +77,10 @@ define([], function() {
 		}
 
 		complete = function(which, val) {
-			// Save original thenImpl
+			// Save original _then
 			var origThen = _then;
 
-			// Replace thenImpl with one that immediately notifies
+			// Replace _then with one that immediately notifies
 			// with the result.
 			_then = function newThen(callback, errback) {
 				var promise = origThen(callback, errback);
