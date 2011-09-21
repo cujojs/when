@@ -115,7 +115,7 @@ when.all()
 ----------
 
 ```javascript
-when.some(promisesOrValues, callback, errback, progressback)
+when.all(promisesOrValues, callback, errback, progressback)
 ```
 
 Return a promise that will resolve only once *all* the supplied `promisesOrValues` have resolved.  The resolution value of the returned promise will be an array containing the resolution values of each of the `promisesOrValues`.
