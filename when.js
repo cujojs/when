@@ -192,25 +192,20 @@ define([], function() {
 	// 1. if promiseOrValue is a promise, when promiseOrValue resolves
 	// 2. if promiseOrValue is a value, immediately
 	function when(promiseOrValue, callback, errback, progressHandler) {
-		var deferred = defer();
+		var deferred, resolve, reject;
 
-		function resolve(value) {
-			return callback ? callback(value) : value;
-		}
+		deferred = defer();
 
-		function reject(err) {
-			return errback ? errback(err) : err;
-		}
-
-		function progress(update) {
-			progressHandler(update);
-		}
+		resolve = callback ? callback : function(val) { return val; };
+		reject  = errback  ? errback  : function(err) { return err; };
 
 		if(isPromise(promiseOrValue)) {
 			// If it's a promise, ensure that deferred will complete when promiseOrValue
 			// completes.
-			promiseOrValue.then(resolve, reject, progress);
-			deferred = _chain(promiseOrValue, deferred);
+			promiseOrValue.then(resolve, reject,
+				function(update) { progressHandler(update); }
+			);
+			_chain(promiseOrValue, deferred);
 
 		} else {
 			// If it's a value, resolve immediately
