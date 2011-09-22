@@ -1,0 +1,104 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>when.some Unit Tests</title>
+	<script src="util/doh/runner.js"></script>
+    <script src="test-config.js"></script>
+	<script src="../when.js"></script>
+	<script>
+
+        (function(global, doh) {
+
+            function assertSome(expected, promisesOrValues, howMany) {
+                var dohd = new doh.Deferred();
+
+                if(arguments.length < 3) {
+                    howMany = promisesOrValues.length
+                }
+
+                when.some(promisesOrValues, howMany,
+                    function(val) {
+                        var len = Math.min(promisesOrValues.length, howMany);
+                        var success = len === val.length;
+
+                        for (var i = 0; i < len; i++) {
+                            success = success && expected[i] === val[i];
+                        }
+
+                        dohd.callback(success);
+                    },
+                    doh.rejecter(dohd)
+                );
+
+                return dohd;
+            }
+
+            function deferN(n) {
+                var values, deferreds;
+
+                values = [];
+                deferreds = [];
+
+                for(var i=0; i<n; i++) {
+                    values.push(i);
+                    deferreds.push(when.defer());
+                }
+
+                setTimeout(function() {
+                    for(var i=0; i<n; i++) {
+                        deferreds[i].resolve(values[i]);
+                    }
+                });
+
+                return { values: values, promises: deferreds };
+            }
+
+            doh.register('when.some', [
+                function testSomeResolvesWithValues() {
+                    var values = [1, "foo", new Date()];
+                    return assertSome(values, values, 2);
+				},
+                function testSomeResolvesZeroWithValues() {
+                    var values = [1, "foo", new Date()];
+                    return assertSome(values, values, 0);
+				},
+                function testSomeResolvesAllWithValues() {
+                    var values = [1, "foo", new Date()];
+                    return assertSome(values, values);
+				},
+                function testSomeResolvesWithPromises() {
+                    var n, fixture;
+
+                    n = 10;
+                    fixture = deferN(n);
+
+                    return assertSome(fixture.values, fixture.promises, n/2);
+                },
+                function testSomeResolvesZeroWithPromises() {
+                    var n, fixture;
+
+                    n = 10;
+                    fixture = deferN(n);
+
+                    return assertSome(fixture.values, fixture.promises, 0);
+                },
+                function testSomeResolvesAllWithPromises() {
+                    var n, fixture;
+
+                    n = 10;
+                    fixture = deferN(n);
+
+                    return assertSome(fixture.values, fixture.promises);
+                }
+			]);
+
+			doh.run();
+
+		})(window, doh);
+	</script>
+</head>
+<body>
+
+</body>
+</html>

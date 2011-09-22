@@ -2,32 +2,14 @@
 <html lang="en-US">
 <head>
 	<meta charset="UTF-8">
-	<title>chain() Unit Tests</title>
+	<title>when.chain Unit Tests</title>
 	<script src="util/doh/runner.js"></script>
     <script src="test-config.js"></script>
 	<script src="../when.js"></script>
 	<script>
 		(function(global, doh) {
 
-            function resolve(dohDeferred) {
-                return function(result) {
-                    dohDeferred.callback(true);
-                };
-            }
-
-            function assertCompleted(expected, dohDeferred) {
-                return function(result) {
-                    dohDeferred.callback(expected === result);
-                };
-            }
-
-            function reject(dohDeferred) {
-                return function(e) {
-                    dohDeferred.errback(e);
-                };
-            }
-
-			doh.register('chain', [
+			doh.register('when.chain', [
 				function testChainReturnsPromiseForPromise() {
                     var d1 = when.defer();
                     var d2 = when.defer();
@@ -67,8 +49,8 @@
                     input = when.defer();
                     deferred = when.defer();
 
-                    handleResolved = assertCompleted(1, d);
-                    handleRejected = reject(d);
+                    handleResolved = doh.assertResolutionEquals(1, d);
+                    handleRejected = doh.rejecter(d);
 
                     deferred.then(handleResolved, handleRejected);
                     
@@ -83,8 +65,8 @@
                     input = when.defer();
                     deferred = when.defer();
 
-                    handleResolved = assertCompleted(2, d);
-                    handleRejected = reject(d);
+                    handleResolved = doh.assertResolutionEquals(2, d);
+                    handleRejected = doh.rejecter(d);
 
                     deferred.then(handleResolved, handleRejected);
 
@@ -100,8 +82,8 @@
                     input = when.defer();
                     deferred = when.defer();
 
-                    handleResolved = assertCompleted(1, d);
-                    handleRejected = reject(d);
+                    handleResolved = doh.assertResolutionEquals(1, d);
+                    handleRejected = doh.rejecter(d);
 
                     when.chain(input, deferred).then(handleResolved, handleRejected);
 
@@ -116,8 +98,8 @@
                     input = when.defer();
                     deferred = when.defer();
 
-                    handleResolved = assertCompleted(2, d);
-                    handleRejected = reject(d);
+                    handleResolved = doh.assertResolutionEquals(2, d);
+                    handleRejected = doh.rejecter(d);
 
                     deferred.then(handleResolved, handleRejected);
 
@@ -134,8 +116,8 @@
                     input = when.defer();
                     deferred = when.defer();
 
-                    handleResolved = reject(d);
-                    handleRejected = assertCompleted(1, d);
+                    handleResolved = doh.rejecter(d);
+                    handleRejected = doh.assertResolutionEquals(1, d);
 
                     deferred.then(handleResolved, handleRejected);
 
@@ -152,8 +134,8 @@
                     input = when.defer();
                     deferred = when.defer();
 
-                    handleResolved = reject(d);
-                    handleRejected = assertCompleted(1, d);
+                    handleResolved = doh.rejecter(d);
+                    handleRejected = doh.assertResolutionEquals(1, d);
 
                     deferred.then(handleResolved, handleRejected);
 
