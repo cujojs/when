@@ -123,7 +123,7 @@ define([], function() {
 						if(isPromise(newResult)) {
 							// If the handler returned a promise, chained deferreds
 							// should complete only after that promise does.
-							newResult.then(ldeferred.resolve, ldeferred.reject, ldeferred.progress);
+							_chain(newResult, ldeferred);
 
 						} else {
 							// Complete deferred from chained then()
@@ -328,12 +328,18 @@ define([], function() {
 	}
 
 	// Internal chain helper that does not create a new deferred/promise
+	// Always returns it's 2nd arg.
+	// NOTE: deferred must be a when.js deferred, or a resolver whose functions
+	// can be called without their original context.
 	function _chain(promise, deferred, resolveValue) {
-		var args = arguments;
 		promise.then(
-			function(val)    { deferred.resolve(args.length > 2 ? resolveValue : val); },
-			function(err)    { deferred.reject(err); },
-			function(update) { deferred.progress(update); }
+			// If resolveValue was supplied, need to wrap up a new function
+			// If not, can use deferred.resolve directly
+			arguments.length > 2
+				? function() { deferred.resolve(resolveValue) }
+				: deferred.resolve,
+			deferred.reject,
+			deferred.progress
 		);
 
 		return deferred;
