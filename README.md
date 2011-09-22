@@ -1,43 +1,13 @@
-A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining and chaining.
+A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining and chaining, and has a robust unit test suite.
+
+It's under **950 bytes** when compiled with Google Closure (w/advanced optimizations) and gzipped.
 
 when.js is derived from the async core of [wire.js](http://github.com/briancavalier/wire), and future versions of wire will use when.js directly.
 
-A Simple Example
+Examples
 ================
 
-A simple example of using a promise to signal when an image has loaded, adapted from @unscriptable's [tiny promise example](https://github.com/unscriptable/promises/blob/master/examples/tinyImageLoader.js)
-
-```javascript
-function loadImage (src) {
-	var deferred = when.defer(),
-		img = document.createElement('img');
-	img.onload = function () { 
-		deferred.resolve(img); 
-	};
-	img.onerror = function () { 
-		deferred.reject(new Error('Image not found: ' + src));
-	};
-	img.src = src;
-
-	// Return only the promise, so that the caller cannot
-	// resolve, reject, or otherwise muck with the original deferred.
-	return deferred.promise;
-}
-
-// example usage:
-loadImage('http://google.com/favicon.ico').then(
-	function gotIt (img) {
-		document.body.appendChild(img);
-	},
-	function doh (ex) {
-		document.body.appendChild(document.createTextNode(ex.message));
-	}
-).then(
-	function shout (img) {
-		alert('see my new ' + img.src + '?');
-	}
-);
-```
+Check the wiki for [examples](https://github.com/briancavalier/when.js/wiki/Examples)
 
 API
 ===
@@ -146,3 +116,5 @@ References
 ----------
 
 Much of this code is based on @[unscriptable](http://github.com/unscriptable)'s [tiny promises](http://github.com/unscriptable/promises), the async innards of [wire.js](http://github.com/briancavalier/wire), and some gists [here](https://gist.github.com/870729), [here](https://gist.github.com/892345), [here](https://gist.github.com/894356), and [here](https://gist.github.com/894360)
+
+Some of the code has been influenced by the great work in [Q](https://github.com/kriskowal/q), [Dojo's Deferred](https://github.com/dojo/dojo), and [uber.js](https://github.com/phiggins42/uber.js).
