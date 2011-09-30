@@ -5,8 +5,8 @@
  */
 
 /**
- * @fileOverview when.js
- * @version 0.9.3
+ * when.js
+ * @version 0.9.4
  * @author brian@hovercraftstudios.com
  */
 (function(define, undef) {
@@ -204,8 +204,8 @@ define([], function() {
 		 * parts
 		 * @class Deferred
 		 * @name Deferred
-		 * @extends Resolver
-		 * @extends Promise
+		 * @augments Resolver
+		 * @augments Promise
 		 */
 		deferred = {};
 
