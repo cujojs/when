@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>when.map Unit Tests</title>
+	<script src="util/doh/runner.js"></script>
+    <script src="test-config.js"></script>
+	<script src="../when.js"></script>
+	<script>
+
+        (function(global, doh, async) {
+
+            doh.register('when.map', [
+                function testMapValues() {
+                    var dohd, fixture;
+
+                    dohd = new doh.Deferred();
+                    fixture = async.deferN(10);
+
+                    function mapper(val) {
+                        return val * 2;
+                    }
+
+                    when.map(fixture.promises, mapper).then(
+                        function(results) {
+                            var success, expected;
+
+                            success = true;
+                            expected = fixture.values.map(mapper);
+
+                            for (var i = 0, len = results.length; i < len; i++) {
+                                success = success && expected.indexOf(results[i]) >= 0;
+                            }
+
+                            dohd.callback(success);
+                        },
+                        function(e) {
+                            dohd.errback(e);
+                        },
+                        function(progress) {
+                            console.log(progress);
+                        }
+                    );
+
+                    return dohd;
+                }
+            ]);
+
+			doh.run();
+
+		})(window, doh, doh.asyncHelper);
+	</script>
+</head>
+<body>
+
+</body>
+</html>

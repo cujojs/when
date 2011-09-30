@@ -7,6 +7,10 @@ doh.registerUrl('when.isPromise', '../../isPromise.html');
 doh.registerUrl('when', '../../when.html');
 doh.registerUrl('when.defer', '../../defer.html');
 doh.registerUrl('when.some', '../../some.html');
+doh.registerUrl('when.any', '../../any.html');
 doh.registerUrl('when.chain', '../../chain.html');
+
+doh.registerUrl('when.map', '../../map.html');
+doh.registerUrl('when.reduce', '../../reduce.html');
 
 doh.run();

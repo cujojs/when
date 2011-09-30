@@ -41,7 +41,7 @@
 				(function(i) {
 					setTimeout(function() {
 						deferreds[i].resolve(values[i]);
-					}, Math.random() * 1000);
+					}, Math.random() * 100);
 				})(i);
 			}
 

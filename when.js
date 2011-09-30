@@ -370,10 +370,7 @@ define([], function() {
 		if(toResolve === 0) {
 			deferred.resolve(results);
 		} else {
-			var promiseOrValue, i = 0;
-			while((promiseOrValue = promisesOrValues[i++])) {
-				when(promiseOrValue, resolve, reject, progress);
-			}
+			_each(promisesOrValues, resolve, reject, progress);
 		}
 
 		return ret;
@@ -412,7 +409,61 @@ define([], function() {
 	 * @returns {Promise}
 	 */
 	function any(promisesOrValues, callback, errback, progressHandler) {
-		return some(promisesOrValues, 1, callback, errback, progressHandler);
+
+		function unwrapSingleResult(val) {
+			return callback(val[0]);
+		}
+		
+		return some(promisesOrValues, 1, unwrapSingleResult, errback, progressHandler);
+	}
+
+	function _each(promisesOrValues, resolve, reject, progress) {
+		var promiseOrValue, i = 0;
+
+		while ((promiseOrValue = promisesOrValues[i++])) {
+			when(promiseOrValue, resolve, reject, progress);
+		}
+	}
+
+	function each(promisesOrValues, resolve, reject, progress) {
+		return all(_each(promisesOrValues, resolve, reject, progress));
+	}
+
+	function map(promisesOrValues, mapFunc) {
+		var promiseOrValue, results, i = 0;
+
+		results = new Array(promisesOrValues.length);
+
+		for (; (promiseOrValue = promisesOrValues[i]); i++) {
+			results[i] = when(promiseOrValue)
+				.then(function(val) {
+					return mapFunc(val);
+				});
+		}
+
+		// Not sure whether it's better to return the array of promises
+		// or a single promise for all of them to complete
+		return all(results);
+	}
+
+	function reduce(promisesOrValues, reduceFunc, initialValue) {
+
+		var total = promisesOrValues.length;
+
+		function reduceNext(current, i) {
+			if (i === total) return current;
+
+			return when(current).then(
+				function(currentValue) {
+
+					return when(promisesOrValues[i]).then(
+						function(value) {
+							return reduceNext(reduceFunc(currentValue, value, i, total), i + 1);
+						});
+				});
+		}
+
+		return reduceNext(initialValue, 0);
 	}
 
 	/**
@@ -482,6 +533,10 @@ define([], function() {
 	when.some      = some;
 	when.all       = all;
 	when.any       = any;
+
+	when.reduce    = reduce;
+	when.map       = map;
+
 	when.chain     = chain;
 
 	return when;

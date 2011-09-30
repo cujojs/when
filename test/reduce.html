@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>when.reduce Unit Tests</title>
+	<script src="util/doh/runner.js"></script>
+    <script src="test-config.js"></script>
+	<script src="../when.js"></script>
+	<script>
+
+        (function(global, doh, async) {
+
+            doh.register('when.reduce', [
+                function testReduce() {
+                    var dohd, fixture, expected;
+
+                    dohd = new doh.Deferred();
+                    fixture = async.deferN(10);
+
+                    // Reducer is compatible with both when.reduce and
+                    // Array.prototype.reduce, except for the last
+                    // param
+                    function reducer(current, val, i, count) {
+                        return current + val;
+                    }
+
+                    expected = fixture.values.reduce(reducer);
+
+                    when.reduce(fixture.promises, reducer, 0).then(
+                        function(reduced) {
+                            dohd.callback(expected === reduced);
+                        },
+                        function(e) {
+                            dohd.errback(e);
+                        },
+                        function(progress) {
+                            console.log(progress);
+                        }
+                    );
+
+                    return dohd;
+				}
+			]);
+
+			doh.run();
+
+		})(window, doh, doh.asyncHelper);
+	</script>
+</head>
+<body>
+
+</body>
+</html>
