@@ -8,50 +8,18 @@
 	<script src="../when.js"></script>
 	<script>
 
-        (function(global, doh) {
+        (function(global, doh, async) {
 
-            function assertSome(expected, promisesOrValues, howMany) {
-                var dohd = new doh.Deferred();
 
-                if(arguments.length < 3) {
-                    howMany = promisesOrValues.length
-                }
+            var deferN, assertSome;
 
-                when.some(promisesOrValues, howMany,
-                    function(val) {
-                        var len = Math.min(promisesOrValues.length, howMany);
-                        var success = len === val.length;
+            deferN = async.deferN;
+            assertSome = async.assertSome;
 
-                        for (var i = 0; i < len; i++) {
-                            success = success && expected[i] === val[i];
-                        }
+            function testSome(n, howMany) {
+                var fixture = deferN(n);
 
-                        dohd.callback(success);
-                    },
-                    doh.rejecter(dohd)
-                );
-
-                return dohd;
-            }
-
-            function deferN(n) {
-                var values, deferreds;
-
-                values = [];
-                deferreds = [];
-
-                for(var i=0; i<n; i++) {
-                    values.push(i);
-                    deferreds.push(when.defer());
-                }
-
-                setTimeout(function() {
-                    for(var i=0; i<n; i++) {
-                        deferreds[i].resolve(values[i]);
-                    }
-                });
-
-                return { values: values, promises: deferreds };
+                return assertSome(fixture.values, fixture.promises, howMany);
             }
 
             doh.register('when.some', [
@@ -68,34 +36,19 @@
                     return assertSome(values, values);
 				},
                 function testSomeResolvesWithPromises() {
-                    var n, fixture;
-
-                    n = 10;
-                    fixture = deferN(n);
-
-                    return assertSome(fixture.values, fixture.promises, n/2);
+                    return testSome(10, 5);
                 },
                 function testSomeResolvesZeroWithPromises() {
-                    var n, fixture;
-
-                    n = 10;
-                    fixture = deferN(n);
-
-                    return assertSome(fixture.values, fixture.promises, 0);
+                    return testSome(10, 0);
                 },
                 function testSomeResolvesAllWithPromises() {
-                    var n, fixture;
-
-                    n = 10;
-                    fixture = deferN(n);
-
-                    return assertSome(fixture.values, fixture.promises);
+                    return testSome(10, 10);
                 }
 			]);
 
 			doh.run();
 
-		})(window, doh);
+		})(window, doh, doh.asyncHelper);
 	</script>
 </head>
 <body>
