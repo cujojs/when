@@ -213,7 +213,7 @@ define([], function() {
 
 		/**
 		 * The Promise API
-		 * @class Promise
+		 * @namespace Promise
 		 * @name Promise
 		 */
 		promise =
@@ -229,7 +229,7 @@ define([], function() {
 
 		/**
 		 * The Resolver API
-		 * @class Resolver
+		 * @namespace Resolver
 		 * @name Resolver
 		 */
 		resolver =
@@ -272,7 +272,7 @@ define([], function() {
 	 * @name when
 	 * @namespace
 	 *
-	 * @param promiseOrValue
+	 * @param promiseOrValue anything
 	 * @param {Function} [callback]
 	 * @param {Function} [errback]
 	 * @param {Function} [progressHandler]
@@ -309,7 +309,8 @@ define([], function() {
 	 *
 	 * @memberOf when
 	 * 
-	 * @param promisesOrValues
+	 * @param promisesOrValues {Array} array of anything, may contain a mix
+	 *      of {@link Promise}s and values
 	 * @param howMany
 	 * @param [callback]
 	 * @param [errback]
@@ -332,7 +333,11 @@ define([], function() {
 		// Overwrites resolver var with a noop once promise has
 		// be resolved to cover case where n < promises.length
 		resolver = function(val) {
+			// This orders the values based on promise resolution order
+			// Another strategy would be to use the original position of
+			// the corresponding promise.
 			results.push(val);
+			
 			if(--toResolve === 0) {
 				resolver = handleProgress = noop;
 				deferred.resolve(results);
@@ -383,7 +388,8 @@ define([], function() {
 	 *
 	 * @memberOf when
 	 *
-	 * @param promisesOrValues {Array}
+	 * @param promisesOrValues {Array} array of anything, may contain a mix
+	 *      of {@link Promise}s and values
 	 * @param [callback] {Function}
 	 * @param [errback] {Function}
 	 * @param [progressHandler] {Function}
@@ -401,7 +407,8 @@ define([], function() {
 	 *
 	 * @memberOf when
 	 *
-	 * @param promisesOrValues {Array}
+	 * @param promisesOrValues {Array} array of anything, may contain a mix
+	 *      of {@link Promise}s and values
 	 * @param [callback] {Function}
 	 * @param [errback] {Function}
 	 * @param [progressHandler] {Function}
@@ -417,18 +424,21 @@ define([], function() {
 		return some(promisesOrValues, 1, unwrapSingleResult, errback, progressHandler);
 	}
 
-	function _each(promisesOrValues, resolve, reject, progress) {
-		var promiseOrValue, i = 0;
-
-		while ((promiseOrValue = promisesOrValues[i++])) {
-			when(promiseOrValue, resolve, reject, progress);
-		}
-	}
-
-	function each(promisesOrValues, resolve, reject, progress) {
-		return all(_each(promisesOrValues, resolve, reject, progress));
-	}
-
+	/**
+	 * Traditional map function, similar to `Array.prototype.map()`, but allows
+	 * input to contain {@link Promise}s and/or values, and mapFunc may return
+	 * either a value or a {@link Promise}
+	 *
+	 * @memberOf when
+	 *
+	 * @param promisesOrValues {Array} array of anything, may contain a mix
+	 *      of {@link Promise}s and values
+	 * @param mapFunc {Function} mapping function mapFunc(value) which may return
+	 *      either a {@link Promise} or value
+	 *
+	 * @returns {Promise} a {@link Promise} that will resolve to an array containing
+	 *      the mapped output values.
+	 */
 	function map(promisesOrValues, mapFunc) {
 		var promiseOrValue, results, i = 0;
 
@@ -446,6 +456,21 @@ define([], function() {
 		return all(results);
 	}
 
+	/**
+	 * Traditional reduce function, similar to `Array.prototype.reduce()`, but
+	 * input may contain {@link Promise}s and/or values, but reduceFunc
+	 * may return either a value or a {@link Promise}, *and* initialValue may
+	 * be a {@link Promise} for the starting value.
+	 * 
+	 * @memberOf when
+	 *
+	 * @param promisesOrValues {Array} array of anything, may contain a mix
+	 *      of {@link Promise}s and values
+	 * @param reduceFunc {Function} reduce function reduce(currentValue, nextValue, index, total),
+	 *      where total is the total number of items being reduced, and will be the same
+	 *      in each call to reduceFunc.
+	 * @param initialValue starting value, or a {@link Promise} for the starting value
+	 */
 	function reduce(promisesOrValues, reduceFunc, initialValue) {
 
 		var total = promisesOrValues.length;
@@ -521,6 +546,14 @@ define([], function() {
 		);
 
 		return deferred;
+	}
+
+	function _each(promisesOrValues, resolve, reject, progress) {
+		var promiseOrValue, i = 0;
+
+		while ((promiseOrValue = promisesOrValues[i++])) {
+			when(promiseOrValue, resolve, reject, progress);
+		}
 	}
 
 	//
