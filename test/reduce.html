@@ -24,7 +24,7 @@
                         return current + val;
                     }
 
-                    expected = fixture.values.reduce(reducer);
+                    expected = fixture.values.reduce(reducer, 0);
 
                     when.reduce(fixture.promises, reducer, 0).then(
                         function(reduced) {
@@ -32,14 +32,71 @@
                         },
                         function(e) {
                             dohd.errback(e);
+                        }
+                    );
+
+                    return dohd;
+				},
+                function testReduceOrder() {
+                    var dohd, fixture, expected;
+
+                    dohd = new doh.Deferred();
+                    fixture = async.deferN(10);
+
+                    // Reducer is compatible with both when.reduce and
+                    // Array.prototype.reduce, except for the last
+                    // param
+                    function reducer(current, val, i, count) {
+                        return current + val;
+                    }
+
+                    expected = fixture.values.reduce(reducer, "");
+
+                    when.reduce(fixture.promises, reducer, "").then(
+                        function(reduced) {
+                            dohd.callback(expected === reduced);
                         },
-                        function(progress) {
-                            console.log(progress);
+                        function(e) {
+                            dohd.errback(e);
+                        }
+                    );
+
+                    return dohd;
+				},
+                function testReduceOrderArray() {
+                    var dohd, fixture, expected;
+
+                    dohd = new doh.Deferred();
+                    fixture = async.deferN(10);
+
+                    // Reducer is compatible with both when.reduce and
+                    // Array.prototype.reduce, except for the last
+                    // param
+                    function reducer(current, val, i, count) {
+                        current[i] = val;
+                        return current;
+                    }
+
+                    expected = fixture.values.reduce(reducer, []);
+
+                    when.reduce(fixture.promises, reducer, []).then(
+                        function(reduced) {
+                            var success = reduced.length && expected.length === reduced.length;
+
+                            for (var i = 0, len = expected.length; i < len; i++) {
+                                success = success && expected[i] === reduced[i];
+                            }
+                            
+                            dohd.callback(success);
+                        },
+                        function(e) {
+                            dohd.errback(e);
                         }
                     );
 
                     return dohd;
 				}
+
 			]);
 
 			doh.run();

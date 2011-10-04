@@ -20,6 +20,16 @@ define([], function() {
 	var freeze = Object.freeze || noop;
 
 	/**
+	 * Allocate a new Array of size n
+	 * @private
+	 * @param n {number} size of new Array
+	 * @returns {Array}
+	 */
+	function allocateArray(n) {
+		return new Array(n);
+	}
+
+	/**
 	 * Creates a new, CommonJS compliant, Deferred with fully isolated
 	 * resolver and promise parts, either or both of which may be given out
 	 * safely to consumers.
@@ -375,7 +385,10 @@ define([], function() {
 		if(toResolve === 0) {
 			deferred.resolve(results);
 		} else {
-			_each(promisesOrValues, resolve, reject, progress);
+			var promiseOrValue, i = 0;
+			while ((promiseOrValue = promisesOrValues[i++])) {
+				when(promiseOrValue, resolve, reject, progress);
+			}
 		}
 
 		return ret;
@@ -397,7 +410,18 @@ define([], function() {
 	 * @returns {Promise}
 	 */
 	function all(promisesOrValues, callback, errback, progressHandler) {
-		return some(promisesOrValues, promisesOrValues.length, callback, errback, progressHandler);
+
+		function reduceIntoArray(current, val, i) {
+			current[i] = val;
+			return current;
+		}
+
+		var results, promise;
+		
+		results = allocateArray(promisesOrValues.length);
+		promise = reduce(promisesOrValues, reduceIntoArray, results);
+
+		return when(promise, callback, errback, progressHandler);
 	}
 
 	/**
@@ -440,20 +464,15 @@ define([], function() {
 	 *      the mapped output values.
 	 */
 	function map(promisesOrValues, mapFunc) {
-		var promiseOrValue, results, i = 0;
 
-		results = new Array(promisesOrValues.length);
-
-		for (; (promiseOrValue = promisesOrValues[i]); i++) {
-			results[i] = when(promiseOrValue)
-				.then(function(val) {
-					return mapFunc(val);
-				});
+		function mapIntoArray(current, value, i) {
+			current[i] = mapFunc(value);
+			return current;
 		}
 
-		// Not sure whether it's better to return the array of promises
-		// or a single promise for all of them to complete
-		return all(results);
+		var results = allocateArray(promisesOrValues.length);
+
+		return reduce(promisesOrValues, mapIntoArray, results);
 	}
 
 	/**
@@ -470,25 +489,38 @@ define([], function() {
 	 *      where total is the total number of items being reduced, and will be the same
 	 *      in each call to reduceFunc.
 	 * @param initialValue starting value, or a {@link Promise} for the starting value
+	 *
+	 * @returns {Promise} that will resolve to the final reduced value
 	 */
 	function reduce(promisesOrValues, reduceFunc, initialValue) {
 
-		var total = promisesOrValues.length;
+		var total, deferred, reject;
 
+		total = promisesOrValues.length;
+		deferred = defer();
+		reject = deferred.reject;
+		
 		function reduceNext(current, i) {
 			if (i === total) return current;
-
+			
 			return when(current).then(
 				function(currentValue) {
+
+					// Maybe make progress updates optional?
+//					deferred.progress({ i: i, value: current });
 
 					return when(promisesOrValues[i]).then(
 						function(value) {
 							return reduceNext(reduceFunc(currentValue, value, i, total), i + 1);
-						});
-				});
+						},
+						reject
+					);
+				},
+				reject
+			);
 		}
 
-		return reduceNext(initialValue, 0);
+		return _chain(reduceNext(initialValue, 0), deferred).promise;
 	}
 
 	/**
@@ -546,14 +578,6 @@ define([], function() {
 		);
 
 		return deferred;
-	}
-
-	function _each(promisesOrValues, resolve, reject, progress) {
-		var promiseOrValue, i = 0;
-
-		while ((promiseOrValue = promisesOrValues[i++])) {
-			when(promiseOrValue, resolve, reject, progress);
-		}
 	}
 
 	//

@@ -15,7 +15,7 @@
                     var dohd, fixture;
 
                     dohd = new doh.Deferred();
-                    fixture = async.deferN(10);
+                    fixture = async.deferN(100);
 
                     function mapper(val) {
                         return val * 2;
@@ -36,9 +36,6 @@
                         },
                         function(e) {
                             dohd.errback(e);
-                        },
-                        function(progress) {
-                            console.log(progress);
                         }
                     );
 

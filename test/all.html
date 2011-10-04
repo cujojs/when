@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>when.all Unit Tests</title>
+	<script src="util/doh/runner.js"></script>
+    <script src="test-config.js"></script>
+	<script src="../when.js"></script>
+	<script>
+
+        (function(global, doh, async) {
+
+
+            var deferN, assertAll;
+
+            deferN = async.deferN;
+            assertAll = async.assertAll;
+
+            function testAll(n) {
+                var fixture = deferN(n);
+
+                return assertAll(fixture.values, fixture.promises, n);
+            }
+
+            doh.register('when.all', [
+                function testAllResolvesWithValues() {
+                    var values = [1, "foo", new Date()];
+                    return assertAll(values, values);
+				},
+                function testAllResolvesAllWithPromises() {
+                    return testAll(10);
+                }
+			]);
+
+			doh.run();
+
+		})(window, doh, doh.asyncHelper);
+	</script>
+</head>
+<body>
+
+</body>
+</html>

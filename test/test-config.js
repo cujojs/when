@@ -25,8 +25,33 @@
 	doh.assertResolutionEquals = assertResolutionEquals;
 	doh.rejecter = rejecter;
 
+	function getArrayAssertion(dohd, expected, expectedLength) {
+		// Use expectedLength if supplied, otherwise length of expected results
+		var len = arguments.length > 2 ? expectedLength : expected.length;
+
+		// Return a promise handler that will verify the results
+		return function(val) {
+			var success = len === val.length;
+
+			// This test may be overlay lax
+			// The question of order and array position for when.some
+			// is still up in the air, so this test simply ensures
+			// that the results values are somewhere in the expected
+			// set.
+			for (var i = 0; i < len; i++) {
+				success = success && (expected.indexOf(val[i]) >= 0);
+			}
+
+			dohd.callback(success);
+		}
+	}
+
 	doh.asyncHelper = {
 		deferN: function(n) {
+			// Create an array of N values, and N deferreds.
+			// Each deferred will resolve to its corresponding value
+			// after a random timeout
+			
 			var values, deferreds, i = 0;
 
 			values = [];
@@ -41,7 +66,7 @@
 				(function(i) {
 					setTimeout(function() {
 						deferreds[i].resolve(values[i]);
-					}, Math.random() * 100);
+					}, Math.random() * 50);
 				})(i);
 			}
 
@@ -54,23 +79,18 @@
 				howMany = promisesOrValues.length
 			}
 
-			// Yuck, using when.some in the test validation
 			when.some(promisesOrValues, howMany,
-				function(val) {
-					var len = Math.min(promisesOrValues.length, howMany);
-					var success = len === val.length;
+				getArrayAssertion(dohd, expected, Math.min(expected.length, howMany)),
+				doh.rejecter(dohd)
+			);
 
-					// This test may be overlay lax
-					// The question of order and array position for when.some
-					// is still up in the air, so this test simply ensures
-					// that the results values are somewhere in the expected
-					// set.
-					for (var i = 0; i < len; i++) {
-						success = success && (expected.indexOf(val[i]) >= 0);
-					}
+			return dohd;
+		},
+		assertAll: function(expected, promisesOrValues) {
+			var dohd = new doh.Deferred();
 
-					dohd.callback(success);
-				},
+			when.all(promisesOrValues,
+				getArrayAssertion(dohd, expected),
 				doh.rejecter(dohd)
 			);
 
