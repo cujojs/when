@@ -52,7 +52,7 @@ define([], function() {
 		 * @param errback
 		 * @param progback
 		 */
-		_then = function(callback, errback, progback) {
+		_then = function unresolvedThen(callback, errback, progback) {
 			var d, listener;
 
 			listener = {
@@ -170,43 +170,53 @@ define([], function() {
         function notify(which) {
             // Traverse all listeners registered directly with this Deferred,
 			// also making sure to handle chained thens
-			while(listeners) {
-				var listener, ldeferred, newResult, handler;
+            
+            function notifyAll(result) {
+                while (listeners) {
+                    var listener, ldeferred, newResult, handler;
 
-				listener  = listeners;
-				ldeferred = listener.deferred;
-				listeners = listeners.next;
+                    listener = listeners;
+                    listeners = listener.next;
+                    ldeferred = listener.deferred;
 
-				handler = listener[which];
-				if(handler) {
-					try {
-						newResult = handler(result);
+                    handler = listener[which];
+                    if (handler) {
+                        try {
+                            newResult = handler(result);
 
-						if(isPromise(newResult)) {
-							// If the handler returned a promise, chained deferreds
-							// should complete only after that promise does.
-							_chain(newResult, ldeferred);
+                            if (isPromise(newResult)) {
+                                // If the handler returned a promise, chained deferreds
+                                // should complete only after that promise does.
+                                _chain(newResult, ldeferred);
 
-						} else {
-							// Complete deferred from chained then()
-							// FIXME: Which is correct?
-							// The first always mutates the chained value, even if it is undefined
-							// The second will only mutate if newResult !== undefined
-							// ldeferred[which](newResult);
+                            } else {
+                                // Complete deferred from chained then()
+                                // FIXME: Which is correct?
+                                // The first always mutates the chained value, even if it is undefined
+                                // The second will only mutate if newResult !== undefined
+                                // ldeferred[which](newResult);
 
-							ldeferred[which](newResult === undef ? result : newResult);
+                                ldeferred[which](newResult === undef ? result : newResult);
 
-						}
-					} catch(e) {
-						// Exceptions cause chained deferreds to complete
-						// TODO: Should it *also* switch this promise's handlers to failed??
-						// I think no.
-						// which = 'reject';
+                            }
+                        } catch (e) {
+                            // Exceptions cause chained deferreds to complete
+                            // TODO: Should it *also* switch this promise's handlers to failed??
+                            // I think no.
+                            // which = 'reject';
 
-						ldeferred.reject(e);
-					}
-				}
-			}
+                            ldeferred.reject(e);
+                        }
+                    }
+                }
+            }
+
+            // In case this promise was resolved with another promise!
+            if(isPromise(result)) {
+                result.then(notifyAll);
+            } else {
+                notifyAll(result);
+            }
 		}
 
 		/**
@@ -290,27 +300,26 @@ define([], function() {
 	 * @returns {Promise}
 	 */
 	function when(promiseOrValue, callback, errback, progressHandler) {
-		var deferred, resolve, reject;
+        var resolve, reject;
+        
+        resolve = callback ? callback : function(val) { return val; };
+        reject = errback ? errback : function(err) { return err; };
 
-		deferred = defer();
+        return isPromise(promiseOrValue)
+            ? promiseOrValue.then(resolve, reject, progressHandler)
+            : resolved(resolve(promiseOrValue));
 
-		resolve = callback ? callback : function(val) { return val; };
-		reject  = errback  ? errback  : function(err) { return err; };
+    }
 
-		if(isPromise(promiseOrValue)) {
-			// If it's a promise, ensure that deferred will complete when promiseOrValue
-			// completes.
-			promiseOrValue.then(resolve, reject, progressHandler);
-			_chain(promiseOrValue, deferred);
-
-		} else {
-			// If it's a value, resolve immediately
-			deferred.resolve(resolve(promiseOrValue));
-
-		}
-
-		return deferred.promise;
-	}
+    /**
+     * Creates a promise that is immediately resolved to the supplied value
+     * @param value anything
+     */
+    function resolved(value) {
+        var deferred = defer();
+        deferred.resolve(value);
+        return deferred.promise;
+    }
 
 	/**
 	 * Return a promise that will resolve when howMany of the supplied promisesOrValues
@@ -503,13 +512,13 @@ define([], function() {
 		function reduceNext(current, i) {
 			if (i === total) return current;
 			
-			return when(current).then(
+			return when(current,
 				function(currentValue) {
 
 					// Maybe make progress updates optional?
 //					deferred.progress({ i: i, value: current });
 
-					return when(promisesOrValues[i]).then(
+					return when(promisesOrValues[i],
 						function(value) {
 							return reduceNext(reduceFunc(currentValue, value, i, total), i + 1);
 						},
