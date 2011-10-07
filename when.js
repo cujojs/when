@@ -43,8 +43,9 @@ define([], function() {
 	 * @returns {Deferred}
 	 */
 	function defer() {
-		var deferred, promise, resolver, result, listeners, tail,
-			_then, _progress, complete;
+        var deferred, promise, resolver, result, listeners, _then, _progress, complete;
+
+        listeners = [];
 
 		/**
 		 * @private
@@ -53,22 +54,14 @@ define([], function() {
 		 * @param progback
 		 */
 		_then = function unresolvedThen(callback, errback, progback) {
-			var d, listener;
-
-			listener = {
-				deferred: (d = defer()),
+            var d = defer();
+            
+            listeners.push({
+				deferred: d,
 				resolve: callback,
 				reject: errback,
 				progress: progback
-			};
-
-			if(listeners) {
-				// Append new listener if linked list already initialized
-				tail = tail.next = listener;
-			} else {
-				// Init linked list
-				listeners = tail = listener;
-			}
+			});
 
 			return d.promise;
 		};
@@ -115,15 +108,12 @@ define([], function() {
 		 * @param update
 		 */
 		_progress = function(update) {
-			var listener, progress;
+			var listener, progress, i = 0;
 
-			listener = listeners;
-
-			while(listener) {
-				progress = listener.progress;
-				if(progress) progress(update);
-				listener = listener.next;
-			}
+            while(listener = listeners[i++]) {
+                progress = listener.progress;
+                progress && progress(update);
+            }
 		};
 
 		/**
@@ -172,11 +162,10 @@ define([], function() {
 			// also making sure to handle chained thens
             
             function notifyAll(result) {
-                while (listeners) {
-                    var listener, ldeferred, newResult, handler;
+                var listener, ldeferred, newResult, handler, i = 0;
 
-                    listener = listeners;
-                    listeners = listener.next;
+                while(listener = listeners[i++]) {
+
                     ldeferred = listener.deferred;
 
                     handler = listener[which];
@@ -209,6 +198,8 @@ define([], function() {
                         }
                     }
                 }
+
+                listeners = [];
             }
 
             // In case this promise was resolved with another promise!
