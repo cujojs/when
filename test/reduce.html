@@ -37,6 +37,84 @@
 
                     return dohd;
 				},
+                function testReduceValues() {
+                    var dohd, fixture, expected;
+
+                    dohd = new doh.Deferred();
+                    fixture = async.deferN(10);
+
+                    // Reducer is compatible with both when.reduce and
+                    // Array.prototype.reduce, except for the last
+                    // param
+                    function reducer(current, val, i, count) {
+                        return current + val;
+                    }
+
+                    expected = fixture.values.reduce(reducer, 0);
+
+                    when.reduce(fixture.values, reducer, 0).then(
+                        function(reduced) {
+                            dohd.callback(expected === reduced);
+                        },
+                        function(e) {
+                            dohd.errback(e);
+                        }
+                    );
+
+                    return dohd;
+				},
+                function testReduceEmptyValues() {
+                    var dohd;
+
+                    dohd = new doh.Deferred();
+
+                    // Reducer is compatible with both when.reduce and
+                    // Array.prototype.reduce, except for the last
+                    // param
+                    function reducer(current, val, i, count) {
+                        return current + val;
+                    }
+
+                    when.reduce([], reducer, 0).then(
+                        function(reduced) {
+                            dohd.callback(0 === reduced);
+                        },
+                        function(e) {
+                            dohd.errback(e);
+                        }
+                    );
+
+                    return dohd;
+				},
+                function testReduceInitialPromise() {
+                    var dohd, initialValue, values, initial, expected;
+
+                    dohd = new doh.Deferred();
+                    initialValue = when.defer();
+                    values = [1,2,3];
+                    initial = 4;
+                    expected = values.reduce(reducer, initial);
+
+                    // Reducer is compatible with both when.reduce and
+                    // Array.prototype.reduce, except for the last
+                    // param
+                    function reducer(current, val, i, count) {
+                        return current + val;
+                    }
+
+                    when.reduce(values, reducer, initialValue).then(
+                        function(reduced) {
+                            dohd.callback(expected === reduced);
+                        },
+                        function(e) {
+                            dohd.errback(e);
+                        }
+                    );
+                    
+                    initialValue.resolve(initial);
+
+                    return dohd;
+				},
                 function testReduceOrder() {
                     var dohd, fixture, expected;
 
