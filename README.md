@@ -122,6 +122,47 @@ Returns a new promise that will complete when `promiseOrValue` is completed, wit
 
 **Note:** If `promiseOrValue` is not an immediate value, it can be anything that supports the promise API (i.e. `then()`), so you can pass a `deferred` as well.  Similarly, `resolver` can be anything that supports the resolver API (i.e. `resolve()`, `reject()`), so a `deferred` will work there, too.
 
+when.map()
+----------
+
+```javascript
+when.map(promisesOrValues, mapFunc)
+```
+
+Traditional map function, similar to `Array.prototype.map()`, but allows input to contain {@link Promise}s and/or values, and mapFunc may return either a value or a {@link Promise}
+
+The map function should have the signature:
+
+```javascript
+mapFunc(item)
+```
+
+Where:
+
+* `item` is a fully resolved value of a promise or value in `promisesOrValues`
+
+when.reduce()
+-------------
+
+```javascript
+when.reduce(promisesOrValues, reduceFunc, initialValue)
+```
+
+Traditional reduce function, similar to `Array.prototype.reduce()`, but input may contain {@link Promise}s and/or values, and reduceFunc may return either a value or a {@link Promise}, *and* initialValue may be a {@link Promise} for the starting value.
+
+The reduce function should have the signature:
+
+```javascript
+reduceFunc(currentValue, nextItem, index, total)
+```
+
+Where:
+
+* `currentValue` is the current accumulated reduce value
+* `nextItem` is the fully resolved value of the promise or value at `index` in `promisesOrValues`
+* `index` the *basis* of `nextItem` ... practically speaking, this is the array index of the promiseOrValue corresponding to `nextItem`
+* `total` is the total number of items in `promisesOrValues`
+
 References
 ----------
 
