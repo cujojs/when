@@ -16,6 +16,8 @@ define([], function() {
 	// places below.
 	function noop() {}
 
+    function identity(val) { return val; }
+
 	// Use freeze if it exists
 	var freeze, undef;
 
@@ -66,8 +68,8 @@ define([], function() {
             
             listeners.push({
 				deferred: d,
-				resolve: callback,
-				reject: errback
+				resolve: callback || identity,
+				reject: errback || identity
 			});
             
             progback && progressHandlers.push(progback);
@@ -193,33 +195,27 @@ define([], function() {
                 ldeferred = listener.deferred;
                 handler = listener[which];
 
-                if (handler) {
-                    try {
+                try {
 
-                        newResult = handler(result);
+                    newResult = handler(result);
 
-                        if (isPromise(newResult)) {
-                            // If the handler returned a promise, chained deferreds
-                            // should complete only after that promise does.
-                            _chain(newResult, ldeferred);
+                    if (isPromise(newResult)) {
+                        // If the handler returned a promise, chained deferreds
+                        // should complete only after that promise does.
+                        _chain(newResult, ldeferred);
 
-                        } else {
-                            // Complete deferred from chained then()
-                            // FIXME: Which is correct?
-                            // The first always mutates the chained value, even if it is undefined
-                            // The second will only mutate if newResult !== undefined
-                            // ldeferred[which](newResult);
-                            ldeferred[which](newResult === undef ? result : newResult);
+                    } else {
+                        // Complete deferred from chained then()
+                        // FIXME: Which is correct?
+                        // The first always mutates the chained value, even if it is undefined
+                        // The second will only mutate if newResult !== undefined
+                        // ldeferred[which](newResult);
+                        ldeferred[which](newResult === undef ? result : newResult);
 
-                        }
-                    } catch (e) {
-                        // Exceptions cause chained deferreds to reject
-                        ldeferred.reject(e);
                     }
-                } else {
-                    // If there is no handler, we still need to process chained deferreds
-                    ldeferred[which](result);
-
+                } catch (e) {
+                    // Exceptions cause chained deferreds to reject
+                    ldeferred.reject(e);
                 }
             }
 
@@ -307,10 +303,6 @@ define([], function() {
 	 * @returns {Promise}
 	 */
 	function when(promiseOrValue, callback, errback, progressHandler) {
-        var resolve, reject, result;
-
-        resolve = callback || function(val) { return val; };
-        reject = errback || function(err) { return err; };
 
         // promiseOrValue is a promise
         // Register listeners
@@ -318,11 +310,13 @@ define([], function() {
         // promiseOrValue is a value
         // In case the callback returns a promise, need to ensure preserve
         // the forwarding behavior *as if* promiseOrValue were a promise
-        result = isPromise(promiseOrValue)
-            ? promiseOrValue.then(resolve, reject, progressHandler)
-            : promise(resolve(promiseOrValue));
 
-        return result;
+        return isPromise(promiseOrValue)
+               // Register promise handlers directly.  then() will handle
+               // the case where any of the handlers are falsey
+            ? promiseOrValue.then(callback, errback, progressHandler)
+               // If callback is falsey, use identity
+            : promise((callback || identity)(promiseOrValue));
     }
 
     /**
