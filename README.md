@@ -1,8 +1,18 @@
 A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining and chaining, and has a robust unit test suite.
 
-It's under **950 bytes** when compiled with Google Closure (w/advanced optimizations) and gzipped.
+It's **just over 1k** when compiled with Google Closure (w/advanced optimizations) and gzipped.
 
 when.js is derived from the async core of [wire.js](http://github.com/briancavalier/wire), and future versions of wire will use when.js directly.
+
+What's New?
+===========
+
+**v0.10.0**
+
+* `when.map` and `when.reduce` - just like Array.map and Array.reduce, but they operate on promises and arrays of promises
+* Lots of internal size and performance optimizations
+* Still only 1k!
+
 
 Examples
 ================

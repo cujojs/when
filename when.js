@@ -6,7 +6,7 @@
 
 /**
  * when.js
- * @version 0.9.4
+ * @version 0.10.0
  * @author brian@hovercraftstudios.com
  */
 (function(define) {
