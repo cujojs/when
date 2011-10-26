@@ -16,9 +16,7 @@ define([], function() {
 	// places below.
 	function noop() {}
 
-    function identity(val) { return val; }
-
-	// Use freeze if it exists
+    // Use freeze if it exists
 	var freeze, undef;
 
     freeze = Object.freeze || noop;
@@ -68,8 +66,8 @@ define([], function() {
             
             listeners.push({
 				deferred: d,
-				resolve: callback || identity,
-				reject: errback || identity
+				resolve: callback,
+				reject: errback
 			});
             
             progback && progressHandlers.push(progback);
@@ -197,7 +195,7 @@ define([], function() {
 
                 try {
 
-                    newResult = handler(result);
+                    newResult = handler ? handler(result) : result;
 
                     if (isPromise(newResult)) {
                         // If the handler returned a promise, chained deferreds
@@ -315,13 +313,16 @@ define([], function() {
                // Register promise handlers directly.  then() will handle
                // the case where any of the handlers are falsey
             ? promiseOrValue.then(callback, errback, progressHandler)
-               // If callback is falsey, use identity
-            : promise((callback || identity)(promiseOrValue));
+               // Get a new promise
+               // If callback was provided, return promise for its result
+               // If not, return an already-resolved promise for promiseOrValue (which
+               // we know is a value)
+            : promise(callback ? callback(promiseOrValue) : promiseOrValue);
     }
 
     /**
      * @param promiseOrValue anything
-     * 
+     *
      * @returns if promiseOrValue is a {@link Promise} returns promiseOrValue,
      *   otherwise, returns a new, already-resolved, {@link Promise} whose resolution
      *   value is promiseOrValue.
@@ -441,8 +442,6 @@ define([], function() {
 	 * @returns {Promise}
 	 */
 	function all(promisesOrValues, callback, errback, progressHandler) {
-//        return some(promisesOrValues, promisesOrValues.length, callback, errback, progressHandler);
-//
 		var results, promise;
 
 		results = allocateArray(promisesOrValues.length);
