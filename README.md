@@ -129,7 +129,7 @@ when.map()
 when.map(promisesOrValues, mapFunc)
 ```
 
-Traditional map function, similar to `Array.prototype.map()`, but allows input to contain {@link Promise}s and/or values, and mapFunc may return either a value or a {@link Promise}
+Traditional map function, similar to `Array.prototype.map()`, but allows input to contain promises and/or values, and mapFunc may return either a value or a promise.
 
 The map function should have the signature:
 
@@ -148,7 +148,7 @@ when.reduce()
 when.reduce(promisesOrValues, reduceFunc, initialValue)
 ```
 
-Traditional reduce function, similar to `Array.prototype.reduce()`, but input may contain {@link Promise}s and/or values, and reduceFunc may return either a value or a {@link Promise}, *and* initialValue may be a {@link Promise} for the starting value.
+Traditional reduce function, similar to `Array.prototype.reduce()`, but input may contain promises and/or values, and reduceFunc may return either a value or a promise, *and* initialValue may be a promise for the starting value.
 
 The reduce function should have the signature:
 
