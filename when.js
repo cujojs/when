@@ -9,7 +9,7 @@
  * @version 0.9.4
  * @author brian@hovercraftstudios.com
  */
-(function(define, undef) {
+(function(define) {
 define([], function() {
 
 	// No-op function used in function replacement in various
@@ -17,7 +17,9 @@ define([], function() {
 	function noop() {}
 
 	// Use freeze if it exists
-	var freeze = Object.freeze || noop;
+	var freeze, undef;
+
+    freeze = Object.freeze || noop;
 
 	/**
 	 * Allocate a new Array of size n
@@ -211,12 +213,13 @@ define([], function() {
 
                         }
                     } catch (e) {
-                        // Exceptions cause chained deferreds to complete
-                        // TODO: Should it *also* switch this promise's handlers to failed??
-                        // I think no.
-                        // which = 'reject';
+                        // Exceptions cause chained deferreds to reject
                         ldeferred.reject(e);
                     }
+                } else {
+                    // If there is no handler, we still need to process chained deferreds
+                    ldeferred[which](result);
+
                 }
             }
 
@@ -306,8 +309,8 @@ define([], function() {
 	function when(promiseOrValue, callback, errback, progressHandler) {
         var resolve, reject, result;
 
-        resolve = callback ? callback : function(val) { return val; };
-        reject = errback ? errback : function(err) { return err; };
+        resolve = callback || function(val) { return val; };
+        reject = errback || function(err) { return err; };
 
         // promiseOrValue is a promise
         // Register listeners
