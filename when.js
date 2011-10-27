@@ -116,9 +116,9 @@ define([], function() {
 				listeners = listeners.next;
 
 				handler = listener[which];
-				if(handler) {
+//				if(handler) {
 					try {
-						newResult = handler(result);
+						newResult = handler ? handler(result) : result;
 
 						if(isPromise(newResult)) {
 							// If the handler returned a promise, chained deferreds
@@ -143,7 +143,7 @@ define([], function() {
 
 						ldeferred.reject(e);
 					}
-				}
+//				}
 			}
 		}
 
