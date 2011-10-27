@@ -569,7 +569,7 @@ define([], function() {
 	function chain(promiseOrValue, resolver, resolveValue) {
 		var inputPromise, initChain;
 
-		inputPromise = when(promiseOrValue);
+		inputPromise = promise(promiseOrValue);
 
 		// Check against args length instead of resolvedValue === undefined, since
 		// undefined may be a valid resolution value.
