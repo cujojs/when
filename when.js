@@ -116,35 +116,33 @@ define([], function() {
 				listeners = listeners.next;
 
 				handler = listener[which];
-//				if(handler) {
-					try {
-						newResult = handler ? handler(result) : result;
+                try {
+                    newResult = handler ? handler(result) : result;
 
-						if(isPromise(newResult)) {
-							// If the handler returned a promise, chained deferreds
-							// should complete only after that promise does.
-							_chain(newResult, ldeferred);
+                    if(isPromise(newResult)) {
+                        // If the handler returned a promise, chained deferreds
+                        // should complete only after that promise does.
+                        _chain(newResult, ldeferred);
 
-						} else {
-							// Complete deferred from chained then()
-							// FIXME: Which is correct?
-							// The first always mutates the chained value, even if it is undefined
-							// The second will only mutate if newResult !== undefined
-							// ldeferred[which](newResult);
+                    } else {
+                        // Complete deferred from chained then()
+                        // FIXME: Which is correct?
+                        // The first always mutates the chained value, even if it is undefined
+                        // The second will only mutate if newResult !== undefined
+                        // ldeferred[which](newResult);
 
-							ldeferred[which](newResult === undef ? result : newResult);
+                        ldeferred[which](newResult === undef ? result : newResult);
 
-						}
-					} catch(e) {
-						// Exceptions cause chained deferreds to complete
-						// TODO: Should it *also* switch this promise's handlers to failed??
-						// I think no.
-						// which = 'reject';
+                    }
+                } catch(e) {
+                    // Exceptions cause chained deferreds to complete
+                    // TODO: Should it *also* switch this promise's handlers to failed??
+                    // I think no.
+                    // which = 'reject';
 
-						ldeferred.reject(e);
-					}
-//				}
-			}
+                    ldeferred.reject(e);
+                }
+            }
 		}
 
 		// The full Deferred object, with both Promise and Resolver parts
