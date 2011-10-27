@@ -5,7 +5,7 @@
  */
 
 //
-// when.js 0.9.3
+// when.js 0.9.4
 //
 (function(define, undef) {
 define([], function() {

@@ -4,6 +4,13 @@ It's under **950 bytes** when compiled with Google Closure (w/advanced optimizat
 
 when.js is derived from the async core of [wire.js](http://github.com/briancavalier/wire), and future versions of wire will use when.js directly.
 
+What's New?
+===========
+
+### v0.9.4
+
+* Important fix for break in promise chains
+
 Examples
 ================
 
