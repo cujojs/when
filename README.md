@@ -13,6 +13,9 @@ What's New?
 * Lots of internal size and performance optimizations
 * Still only 1k!
 
+### v0.9.4
+
+* Important fix for break in promise chains
 
 Examples
 ================

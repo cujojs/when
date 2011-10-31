@@ -198,7 +198,22 @@
 					d.resolve("first");
 
 					return dohd;
-				}
+				},
+                function testPromiseChainWithGap() {
+                    var dohd, d;
+                    
+                    dohd = new doh.Deferred();
+
+                    d = when.defer();
+
+                    d.then(
+                    	function(v) { dohd.errback(v); }) // No rejection handler, but chain should still continue
+                    	.then(function(v) { dohd.errback(v); }, function(e) { dohd.callback(e); });
+
+                    d.reject(true);
+                    
+                    return dohd;
+                }
 			]);
 
 			doh.run();
