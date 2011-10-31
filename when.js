@@ -64,9 +64,9 @@ define([], function() {
             var d = defer();
 
             listeners.push({
-                deferred:d,
-                resolve:callback,
-                reject:errback
+                deferred: d,
+                resolve: callback,
+                reject: errback
             });
 
             progback && progressHandlers.push(progback);
