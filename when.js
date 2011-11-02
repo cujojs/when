@@ -325,6 +325,8 @@ define([], function() {
      * Note that this function is not safe to export since it will return its
      * input when promiseOrValue is a {@link Promise}
      *
+     * @private
+     *
      * @param promiseOrValue anything
      *
      * @returns if promiseOrValue is a {@link Promise} returns promiseOrValue,
@@ -336,7 +338,9 @@ define([], function() {
     }
 
     /**
-     * Creates a promise that is immediately resolved to the supplied value
+     * Creates a promise that is immediately resolved to the supplied value.
+     *
+     * @private
      *
      * @param value anything
      *
@@ -344,6 +348,7 @@ define([], function() {
      * value is the supplied value.
      */
     function resolved(value) {
+        // TODO: Consider making this public, along with a corresponding rejected()
         var deferred = defer();
         deferred.resolve(value);
         return deferred.promise;

@@ -38,19 +38,71 @@
                     /// returned by the callback
 					// In this case callback(1) will return 2
 
-                    var d = new doh.Deferred();
+                    var dohd = new doh.Deferred();
 
                     var newPromise = when(1, constant(2));
                     doh.assertIsPromise(newPromise);
                     newPromise.then(function(val) {
-                        d.resolve(val === 2);
+                        dohd.callback(val === 2);
                     });
+
+                    return dohd;
 				},
 				function testReturnPromiseForPromiseWithCallbacks() {
 					var newPromise = when(fakePromise, identity);
 					doh.assertIsPromise(newPromise);
 					doh.assertFalse(newPromise === fakePromise);
-				}
+				},
+                function testReturnResolvedPromiseForResolvedPromise() {
+                    var d, dohd, result;
+
+                    dohd = new doh.Deferred();
+                    
+                    d = when.defer();
+                    d.resolve(true);
+
+                    result = when(d);
+
+                    result.then(
+                        function(val) {
+                            dohd.callback(val);
+                        },
+                        function(e) {
+                            dohd.errback(e);
+                        }
+                    );
+
+                    return dohd
+                },
+                function testDeepPromiseChain() {
+                    var d, dohd, result;
+
+                    dohd = new doh.Deferred();
+                    
+                    d = when.defer();
+                    d.resolve(false);
+
+                    result = when(when(d.then(function(val) {
+                        var d = when.defer();
+                        d.resolve(val);
+                        return when(d.then(identity), identity).then(
+                                function(val) {
+                                    return !val;
+                                }
+                        );
+                    })));
+
+                    result.then(
+                        function(val) {
+                            dohd.callback(val);
+                        },
+                        function(e) {
+                            dohd.errback(e);
+                        }
+                    );
+
+                    return dohd
+                }
 
 			]);
 
