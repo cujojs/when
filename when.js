@@ -12,14 +12,17 @@
 (function(define) {
 define([], function() {
 
-    // No-op function used in function replacement in various
-    // places below.
-    function noop() {}
-
-    // Use freeze if it exists
     var freeze, undef;
 
+    /**
+     * Use freeze if it exists
+     */
     freeze = Object.freeze || noop;
+
+    /**
+     * No-Op function used in method replacement
+     */
+    function noop() {}
 
     /**
      * Allocate a new Array of size n
@@ -293,33 +296,35 @@ define([], function() {
      * @namespace
      *
      * @param promiseOrValue anything
-     * @param {Function} [callback]
-     * @param {Function} [errback]
-     * @param {Function} [progressHandler]
+     * @param {Function} [callback] callback to be called when promiseOrValue is
+     *   successfully resolved.  If promiseOrValue is an immediate value, callback
+     *   will be invoked immediately.
+     * @param {Function} [errback] callback to be called when promiseOrValue is
+     *   rejected.
+     * @param {Function} [progressHandler] callback to be called when progress updates
+     *   are issued for promiseOrValue.
      *
-     * @returns {Promise}
+     * @returns {Promise} a new {@link Promise} that will complete with the return
+     *   value of callback or errback or the completion value of promiseOrValue if
+     *   callback and/or errback is not supplied.
      */
     function when(promiseOrValue, callback, errback, progressHandler) {
+        // Get a promise for the input promiseOrValue
+        // See promise()
+        var inputPromise = promise(promiseOrValue);
 
-        // promiseOrValue is a promise
-        // Register listeners
-        //
-        // promiseOrValue is a value
-        // In case the callback returns a promise, need to ensure preserve
-        // the forwarding behavior *as if* promiseOrValue were a promise
-
-        return isPromise(promiseOrValue)
-            // Register promise handlers directly.  then() will handle
-            // the case where any of the handlers are falsey
-            ? promiseOrValue.then(callback, errback, progressHandler)
-            // Get a new promise
-            // If callback was provided, return promise for its result
-            // If not, return an already-resolved promise for promiseOrValue (which
-            // we know is a value)
-            : promise(callback ? callback(promiseOrValue) : promiseOrValue);
+        // Register promise handlers
+        return inputPromise.then(callback, errback, progressHandler);
     }
 
     /**
+     * Returns promiseOrValue if promiseOrValue is a {@link Promise}, or a new,
+     * already-resolved {@link Promise} whose resolution value is promiseOrValue if
+     * promiseOrValue is an immediate value.
+     *
+     * Note that this function is not safe to export since it will return its
+     * input when promiseOrValue is a {@link Promise}
+     *
      * @param promiseOrValue anything
      *
      * @returns if promiseOrValue is a {@link Promise} returns promiseOrValue,
@@ -335,7 +340,8 @@ define([], function() {
      *
      * @param value anything
      *
-     * @return {Promise}
+     * @return {Promise} a new, already resolved {@link Promise} whose resolution
+     * value is the supplied value.
      */
     function resolved(value) {
         var deferred = defer();

@@ -26,6 +26,10 @@
         {
             "name": "Brian Cavalier",
             "web": "http://hovercraftstudios.com"
+        },
+        {
+            "name": "John Hann",
+            "web": "http://unscriptable.com"
         }
     ],
     "main": "./when",
