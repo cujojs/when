@@ -16,11 +16,14 @@ define([], function() {
 
     /**
      * Use freeze if it exists
+     * @function
+     * @private
      */
     freeze = Object.freeze || noop;
 
     /**
      * No-Op function used in method replacement
+     * @private
      */
     function noop() {}
 
