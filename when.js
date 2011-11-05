@@ -510,8 +510,10 @@ define([], function() {
     function map(promisesOrValues, mapFunc) {
 
         function mapIntoArray(current, value, i) {
-            current[i] = mapFunc(value);
-            return current;
+            return when(mapFunc(value), function(resolved) {
+                current[i] = resolved;
+                return current;
+            });
         }
 
         var results = allocateArray(promisesOrValues.length);
