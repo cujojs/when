@@ -10,16 +10,26 @@
 
         (function(global, doh, async) {
 
+            function mapper(val) {
+                return val * 2;
+            }
+
+            function deferredMapper(val) {
+                var d = when.defer();
+
+                setTimeout(function() {
+                    d.resolve(mapper(val));
+                }, 0);
+
+                return d.promise;
+            }
+
             doh.register('when.map', [
                 function testMapValues() {
                     var dohd, fixture;
 
                     dohd = new doh.Deferred();
                     fixture = async.deferN(100);
-
-                    function mapper(val) {
-                        return val * 2;
-                    }
 
                     when.map(fixture.promises, mapper).then(
                         function(results) {
@@ -40,7 +50,34 @@
                     );
 
                     return dohd;
+                },
+                function testMapValuesDeferredMapper() {
+                    var dohd, fixture;
+
+                    dohd = new doh.Deferred();
+                    fixture = async.deferN(100);
+
+                    when.map(fixture.promises, deferredMapper).then(
+                        function(results) {
+                            var success, expected;
+
+                            success = true;
+                            expected = fixture.values.map(mapper);
+
+                            for (var i = 0, len = results.length; i < len; i++) {
+                                success = success && expected.indexOf(results[i]) >= 0;
+                            }
+
+                            dohd.callback(success);
+                        },
+                        function(e) {
+                            dohd.errback(e);
+                        }
+                    );
+
+                    return dohd;
                 }
+
             ]);
 
 			doh.run();
