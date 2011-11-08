@@ -191,9 +191,16 @@ define([], function() {
             // Traverse all listeners registered directly with this Deferred,
             // also making sure to handle chained thens
 
-            var listener, ldeferred, newResult, handler, i = 0;
+            var listener, ldeferred, newResult, handler, localListeners, i = 0;
 
-            while (listener = listeners[i++]) {
+            // Reset the listeners array asap.  Some of the promise chains in the loop
+            // below could run async, so need to ensure that no callers can corrupt
+            // the array we're iterating over, but also need to allow callers to register
+            // new listeners.
+            localListeners = listeners;
+            listeners = [];
+
+            while (listener = localListeners[i++]) {
 
                 ldeferred = listener.deferred;
                 handler = listener[which];
@@ -221,8 +228,6 @@ define([], function() {
                     ldeferred.reject(e);
                 }
             }
-
-            listeners = [];
         }
 
         /**
