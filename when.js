@@ -50,8 +50,6 @@ define([], function() {
             return reduced;
         };
 
-
-
     /**
      * Creates a new, CommonJS compliant, Deferred with fully isolated
      * resolver and promise parts, either or both of which may be given out
