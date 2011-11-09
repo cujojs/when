@@ -12,7 +12,7 @@
 (function(define) {
 define([], function() {
 
-    var freeze, undef;
+    var freeze, apReduce, reduceArray, undef;
 
     /**
      * Use freeze if it exists
@@ -36,6 +36,21 @@ define([], function() {
     function allocateArray(n) {
         return new Array(n);
     }
+
+    apReduce = Array.prototype.reduce;
+    reduceArray = apReduce
+        ? function(arr, reduceFunc, initialValue) { return apReduce.call(arr, reduceFunc, initialValue); }
+        : function(arr, reduceFunc, initialValue) {
+            var reduced = initialValue;
+
+            for(var i=0, len=arr.length; i<len; i++) {
+                reduced = reduceFunc(reduced, arr[i], i, arr);
+            }
+
+            return reduced;
+        };
+
+
 
     /**
      * Creates a new, CommonJS compliant, Deferred with fully isolated
@@ -514,10 +529,10 @@ define([], function() {
      */
     function map(promisesOrValues, mapFunc) {
 
-        function mapIntoArray(current, value, i) {
+        function mapIntoArray(array, value, i) {
             return when(mapFunc(value), function(resolved) {
-                current[i] = resolved;
-                return current;
+                array[i] = resolved;
+                return array;
             });
         }
 
@@ -545,33 +560,15 @@ define([], function() {
      */
     function reduce(promisesOrValues, reduceFunc, initialValue) {
 
-        var total, deferred, reject;
+        var total = promisesOrValues.length;
 
-        total = promisesOrValues.length;
-        deferred = defer();
-        reject = deferred.reject;
-
-        function reduceNext(current, i) {
-            if (i === total) return current;
-
-            return when(current,
-                function(currentValue) {
-
-                    // Maybe make progress updates optional?
-                    deferred.progress({ i: i, value: current });
-
-                    return when(promisesOrValues[i],
-                        function(value) {
-                            return reduceNext(reduceFunc(currentValue, value, i, total), i + 1);
-                        },
-                        reject
-                    );
-                },
-                reject
-            );
-        }
-
-        return chain(reduceNext(initialValue, 0), deferred);
+        return promise(reduceArray(promisesOrValues, function(current, val, i) {
+            return when(current, function(c) {
+                return when(val, function(value) {
+                    return reduceFunc(c, value, i, total);
+                });
+            });
+        }, initialValue));
     }
 
     /**
