@@ -2,7 +2,7 @@ A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](ht
 
 It's **just over 1k** when compiled with Google Closure (w/advanced optimizations) and gzipped.
 
-when.js is derived from the async core of [wire.js](http://github.com/briancavalier/wire), and future versions of wire will use when.js directly.
+when.js was derived from the async core of [wire.js](http://github.com/briancavalier/wire).
 
 What's New?
 ===========
