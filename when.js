@@ -450,6 +450,7 @@ define([], function() {
         if (toResolve === 0) {
             deferred.resolve(results);
         } else {
+            // TODO: Replace while with forEach
             var promiseOrValue, i = 0;
             while ((promiseOrValue = promisesOrValues[i++])) {
                 when(promiseOrValue, resolve, reject, progress);
