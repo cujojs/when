@@ -7,7 +7,7 @@ when.js is derived from the async core of [wire.js](http://github.com/briancaval
 What's New?
 ===========
 
-**v0.10.0**
+### v0.10.0
 
 * `when.map` and `when.reduce` - just like Array.map and Array.reduce, but they operate on promises and arrays of promises
 * Lots of internal size and performance optimizations

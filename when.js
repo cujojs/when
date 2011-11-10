@@ -6,6 +6,8 @@
 
 /**
  * when.js
+ * A lightweight CommonJS Promises/A and when() implementation
+ *
  * @version 0.10.0
  * @author brian@hovercraftstudios.com
  */
