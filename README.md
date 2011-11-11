@@ -7,6 +7,12 @@ when.js was derived from the async core of [wire.js](http://github.com/briancava
 What's New?
 ===========
 
+### v0.10.1
+
+* Minor tweaks from #2
+	* Add missing semis that WebStorm didn't catch
+	* Fix DOH submodule ref, and update README with info for running unit tests
+
 ### v0.10.0
 
 * `when.map` and `when.reduce` - just like Array.map and Array.reduce, but they operate on promises and arrays of promises

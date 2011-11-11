@@ -8,7 +8,7 @@
  * when.js
  * A lightweight CommonJS Promises/A and when() implementation
  *
- * @version 0.10.0
+ * @version 0.10.1
  * @author brian@hovercraftstudios.com
  */
 (function(define) {
