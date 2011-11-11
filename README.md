@@ -9,7 +9,7 @@ What's New?
 
 ### v0.10.1
 
-* Minor tweaks from #2
+* Minor tweaks (thanks @johan)
 	* Add missing semis that WebStorm didn't catch
 	* Fix DOH submodule ref, and update README with info for running unit tests
 
