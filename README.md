@@ -169,9 +169,11 @@ Where:
 Testing
 =======
 
-To run the unit tests, first pull in the dojo.util submodule "doh" by running
-`git submodule init` and `git submodule update` from the `when.js` directory.
-Then open test/index.html in your web browser.
+To run the unit tests, `from the when.js` dir:
+
+1. `git submodule init`
+2. `git submodule update`
+3. Open test.index.html in your browser
 
 References
 ----------
