@@ -592,7 +592,7 @@ define([], function() {
         // Check against args length instead of resolvedValue === undefined, since
         // undefined may be a valid resolution value.
         initChain = arguments.length > 2
-            ? function(resolver) { return _chain(inputPromise, resolver, resolveValue) }
+            ? function(resolver) { return _chain(inputPromise, resolver, resolveValue); }
             : function(resolver) { return _chain(inputPromise, resolver); };
 
         // Setup chain to supplied resolver
@@ -620,7 +620,7 @@ define([], function() {
             // If resolveValue was supplied, need to wrap up a new function
             // If not, can use deferred.resolve directly
             arguments.length > 2
-                ? function() { deferred.resolve(resolveValue) }
+                ? function() { deferred.resolve(resolveValue); }
                 : deferred.resolve,
             deferred.reject,
             deferred.progress
