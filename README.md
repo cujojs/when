@@ -166,6 +166,13 @@ Where:
 * `index` the *basis* of `nextItem` ... practically speaking, this is the array index of the promiseOrValue corresponding to `nextItem`
 * `total` is the total number of items in `promisesOrValues`
 
+Testing
+=======
+
+To run the unit tests, first pull in the dojo.util submodule "doh" by running
+`git submodule init` and `git submodule update` from the `when.js` directory.
+Then open test/index.html in your web browser.
+
 References
 ----------
 
