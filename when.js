@@ -43,10 +43,15 @@ define([], function() {
     reduceArray = apReduce
         ? function(arr, reduceFunc, initialValue) { return apReduce.call(arr, reduceFunc, initialValue); }
         : function(arr, reduceFunc, initialValue) {
-            var reduced = initialValue;
+            var reduced = initialValue || 0,
+                len = arr.length >>> 0,
+                k = 0;
 
-            for(var i=0, len=arr.length; i<len; i++) {
-                reduced = reduceFunc(reduced, arr[i], i, arr);
+            while (k < len) {
+                if (k in arr) {
+                    reduced = reduceFunc(reduced, arr[k], k, arr);
+                }
+                k++;
             }
 
             return reduced;
