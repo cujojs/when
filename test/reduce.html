@@ -1,12 +1,12 @@
 <!DOCTYPE HTML>
 <html lang="en-US">
 <head>
-	<meta charset="UTF-8">
-	<title>when.reduce Unit Tests</title>
-	<script src="util/doh/runner.js"></script>
+  <meta charset="UTF-8">
+  <title>when.reduce Unit Tests</title>
+  <script src="util/doh/runner.js"></script>
     <script src="test-config.js"></script>
-	<script src="../when.js"></script>
-	<script>
+  <script src="../when.js"></script>
+  <script>
 
         (function(global, doh, async) {
 
@@ -36,7 +36,7 @@
                     );
 
                     return dohd;
-				},
+                },
                 function testReduceValues() {
                     var dohd, fixture, expected;
 
@@ -62,7 +62,7 @@
                     );
 
                     return dohd;
-				},
+                },
                 function testReduceEmptyValues() {
                     var dohd;
 
@@ -85,7 +85,32 @@
                     );
 
                     return dohd;
-				},
+                },
+                function testReduceSparseValues() {
+                    var dohd, values;
+
+                    dohd = new doh.Deferred();
+
+                    values = [ , , 1, , 1, 1 ];
+
+                    // Reducer is compatible with both when.reduce and
+                    // Array.prototype.reduce, except for the last
+                    // param
+                    function reducer(current, val, i, count) {
+                        return current + val;
+                    }
+
+                    when.reduce(values, reducer, 0).then(
+                        function(reduced) {
+                            dohd.callback(3 === reduced);
+                        },
+                        function(e) {
+                            dohd.errback(e);
+                        }
+                    );
+
+                    return dohd;
+                },
                 function testReduceInitialPromise() {
                     var dohd, initialValue, values, initial, expected;
 
@@ -110,11 +135,11 @@
                             dohd.errback(e);
                         }
                     );
-                    
+
                     initialValue.resolve(initial);
 
                     return dohd;
-				},
+                },
                 function testReduceOrder() {
                     var dohd, fixture, expected;
 
@@ -140,7 +165,7 @@
                     );
 
                     return dohd;
-				},
+                },
                 function testReduceOrderArray() {
                     var dohd, fixture, expected;
 
@@ -164,7 +189,7 @@
                             for (var i = 0, len = expected.length; i < len; i++) {
                                 success = success && expected[i] === reduced[i];
                             }
-                            
+
                             dohd.callback(success);
                         },
                         function(e) {
@@ -173,14 +198,14 @@
                     );
 
                     return dohd;
-				}
+                }
 
-			]);
+      ]);
 
-			doh.run();
+      doh.run();
 
-		})(window, doh, doh.asyncHelper);
-	</script>
+    })(window, doh, doh.asyncHelper);
+  </script>
 </head>
 <body>
 
