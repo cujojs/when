@@ -57,8 +57,8 @@ define([], function() {
             var arr, args, reduced, len, i;
 
             i = 0;
-            arr = this;
-            len = arr.length;
+            arr = Object(this);
+            len = arr.length >>> 0;
             args = arguments;
 
             // If no initialValue, use first item of array (we know length !== 0 here)
