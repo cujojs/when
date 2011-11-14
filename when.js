@@ -14,7 +14,7 @@
 (function(define) {
 define([], function() {
 
-    var freeze, apReduce, reduceArray, undef;
+    var freeze, arrayProto, apSlice, apReduce, reduceArray, undef;
 
     /**
      * Use freeze if it exists
@@ -39,19 +39,53 @@ define([], function() {
         return new Array(n);
     }
 
-    apReduce = Array.prototype.reduce;
-    reduceArray = apReduce
-        ? function(arr, reduceFunc, initialValue) { return apReduce.call(arr, reduceFunc, initialValue); }
-        : function(arr, reduceFunc, initialValue) {
-            var reduced = initialValue || 0,
-                len = arr.length >>> 0,
-                k = 0;
+    arrayProto = [];
 
-            while (k < len) {
-                if (k in arr) {
-                    reduced = reduceFunc(reduced, arr[k], k, arr);
+    apSlice  = arrayProto.slice;
+    apReduce = arrayProto.reduce;
+
+    // ES5 reduce implementation if native not available
+    // See: http://es5.github.com/#x15.4.4.21 as there are many
+    // specifics and edge cases.
+    reduceArray = apReduce ||
+        function(reduceFunc /*, initialValue */) {
+            // ES5 dictates that reduce.length === 1
+
+            // This implementation deviates from ES5 spec in the following ways:
+            // 1. It does not check if reduceFunc is a Callable
+
+            var arr, args, reduced, len, i;
+
+            i = 0;
+            arr = this;
+            len = arr.length;
+            args = arguments;
+
+            // If no initialValue, use first item of array (we know length !== 0 here)
+            // and adjust i to start at second item
+            if(args.length <= 1) {
+                // Skip to the first real element in the array
+                for(;;) {
+                    if(i in arr) {
+                        reduced = arr[i++];
+                        break;
+                    }
+
+                    // If we reached the end of the array without finding any real
+                    // elements, it's a TypeError
+                    if(++i >= len) {
+                        throw new TypeError();
+                    }
                 }
-                k++;
+            } else {
+                // If initialValue provided, use it
+                reduced = args[1];
+            }
+
+            // Do the actual reduce
+            for(;i < len; ++i) {
+                // Skip holes
+                if(i in arr) reduced = reduceFunc(reduced, arr[i], i, arr);
             }
 
             return reduced;
@@ -439,7 +473,7 @@ define([], function() {
             deferred.reject(err);
         };
 
-        // Wrapper so that rejecer can be replaced
+        // Wrapper so that rejecter can be replaced
         function reject(err) {
             rejecter(err);
         }
@@ -566,15 +600,25 @@ define([], function() {
      */
     function reduce(promisesOrValues, reduceFunc, initialValue) {
 
-        var total = promisesOrValues.length;
+        var total, args;
+        
+        total = promisesOrValues.length;
 
-        return promise(reduceArray(promisesOrValues, function(current, val, i) {
-            return when(current, function(c) {
-                return when(val, function(value) {
+        // Skip promisesOrValues, since it will be used as 'this' in the call
+        // to the actual reduce engine below.
+        args = apSlice.call(arguments, 1);
+
+        // Wrap the supplied reduceFunc with one that handles promises and then
+        // deletegates to the supplied.
+        args[0] = function (current, val, i) {
+            return when(current, function (c) {
+                return when(val, function (value) {
                     return reduceFunc(c, value, i, total);
                 });
             });
-        }, initialValue));
+        };
+
+        return promise(reduceArray.apply(promisesOrValues, args));
     }
 
     /**
