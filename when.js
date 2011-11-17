@@ -14,8 +14,7 @@
 (function(define) {
 define([], function() {
 
-    var freeze, arrayProto, apSlice, apReduce, reduceArray, undef;
-
+    var freeze, reduceArray, undef;
     /**
      * Use freeze if it exists
      * @function
@@ -39,15 +38,10 @@ define([], function() {
         return new Array(n);
     }
 
-    arrayProto = [];
-
-    apSlice  = arrayProto.slice;
-    apReduce = arrayProto.reduce;
-
     // ES5 reduce implementation if native not available
     // See: http://es5.github.com/#x15.4.4.21 as there are many
     // specifics and edge cases.
-    reduceArray = apReduce ||
+    reduceArray = [].reduce ||
         function(reduceFunc /*, initialValue */) {
             // ES5 dictates that reduce.length === 1
 
@@ -309,7 +303,7 @@ define([], function() {
          * @type {Promise}
          */
             deferred.promise = {
-                then:(deferred.then = then)
+                then: (deferred.then = then)
             };
 
         /**
@@ -606,17 +600,21 @@ define([], function() {
 
         // Skip promisesOrValues, since it will be used as 'this' in the call
         // to the actual reduce engine below.
-        args = apSlice.call(arguments, 1);
 
         // Wrap the supplied reduceFunc with one that handles promises and then
         // deletegates to the supplied.
-        args[0] = function (current, val, i) {
-            return when(current, function (c) {
-                return when(val, function (value) {
-                    return reduceFunc(c, value, i, total);
+
+        args = [
+            function (current, val, i) {
+                return when(current, function (c) {
+                    return when(val, function (value) {
+                        return reduceFunc(c, value, i, total);
+                    });
                 });
-            });
-        };
+            }
+        ];
+
+        if (arguments.length >= 3) args.push(initialValue);
 
         return promise(reduceArray.apply(promisesOrValues, args));
     }
