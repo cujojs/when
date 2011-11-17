@@ -16,33 +16,36 @@
             deferN = async.deferN;
             assertSome = async.assertSome;
 
-            function testSome(n, howMany) {
+            function testSome(n, howMany, howManyExpected) {
                 var fixture = deferN(n);
-
-                return assertSome(fixture.values, fixture.promises, howMany);
+                
+                return assertSome(fixture.values, fixture.promises, howMany, howManyExpected);
             }
 
             doh.register('when.some', [
                 function testSomeResolvesWithValues() {
                     var values = [1, "foo", new Date()];
-                    return assertSome(values, values, 2);
+                    return assertSome(values, values, 2, 2);
 				},
                 function testSomeResolvesZeroWithValues() {
                     var values = [1, "foo", new Date()];
-                    return assertSome(values, values, 0);
+                    return assertSome(values, values, 0, 0);
 				},
                 function testSomeResolvesAllWithValues() {
                     var values = [1, "foo", new Date()];
-                    return assertSome(values, values);
+                    return assertSome(values, values, values.length, values.length);
 				},
                 function testSomeResolvesWithPromises() {
-                    return testSome(10, 5);
+                    return testSome(10, 5, 5);
                 },
                 function testSomeResolvesZeroWithPromises() {
-                    return testSome(10, 0);
+                    return testSome(10, 0, 0);
                 },
                 function testSomeResolvesAllWithPromises() {
-                    return testSome(10, 10);
+                    return testSome(10, 10, 10);
+                },
+                function testSomeResolvesTooManyWithCorrectNumber() {
+                    return testSome(10, 20, 10);
                 }
 			]);
 

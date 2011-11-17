@@ -26,19 +26,16 @@
 	doh.rejecter = rejecter;
 
 	function getArrayAssertion(dohd, expected, expectedLength) {
-		// Use expectedLength if supplied, otherwise length of expected results
-		var len = arguments.length > 2 ? expectedLength : expected.length;
-
 		// Return a promise handler that will verify the results
 		return function(val) {
-			var success = len === val.length;
+			var success = expectedLength === val.length;
 
 			// This test may be overlay lax
 			// The question of order and array position for when.some
 			// is still up in the air, so this test simply ensures
 			// that the results values are somewhere in the expected
 			// set.
-			for (var i = 0; i < len; i++) {
+			for (var i = 0; i < expectedLength; i++) {
 				success = success && (expected.indexOf(val[i]) >= 0);
 			}
 
@@ -72,15 +69,11 @@
 
 			return { values: values, promises: deferreds };
 		},
-		assertSome: function(expected, promisesOrValues, howMany) {
+		assertSome: function(expected, promisesOrValues, howMany, howManyExpected) {
 			var dohd = new doh.Deferred();
 
-			if (arguments.length < 3) {
-				howMany = promisesOrValues.length
-			}
-
 			when.some(promisesOrValues, howMany,
-				getArrayAssertion(dohd, expected, Math.min(expected.length, howMany)),
+				getArrayAssertion(dohd, expected, howManyExpected),
 				doh.rejecter(dohd)
 			);
 
@@ -90,7 +83,7 @@
 			var dohd = new doh.Deferred();
 
 			when.all(promisesOrValues,
-				getArrayAssertion(dohd, expected),
+				getArrayAssertion(dohd, expected, expected.length),
 				doh.rejecter(dohd)
 			);
 
