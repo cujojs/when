@@ -453,6 +453,10 @@ define([], function() {
             handleProgress(update);
         }
 
+        function complete() {
+            resolver = rejecter = handleProgress = noop;
+        }
+
         // No items in the input, resolve immediately
         if (!toResolve) {
             deferred.resolve(results);
@@ -469,7 +473,7 @@ define([], function() {
                 results.push(val);
 
                 if (!--toResolve) {
-                    resolver = rejecter = handleProgress = noop;
+                    complete();
                     deferred.resolve(results);
                 }
             };
@@ -480,7 +484,7 @@ define([], function() {
             // TODO: Consider rejecting only when N (or promises.length - N?)
             // promises have been rejected instead of only one?
             rejecter = function(err) {
-                resolver = rejecter = handleProgress = noop;
+                complete();
                 deferred.reject(err);
             };
 
