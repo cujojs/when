@@ -7,6 +7,11 @@ when.js was derived from the async core of [wire.js](http://github.com/briancava
 What's New?
 ===========
 
+### v0.10.2
+
+* `when.all/some/any/map/reduce` handle sparse arrays (thanks @[rwaldrn](https://github.com/rwldrn/))
+* Minor performance optimizations
+
 ### v0.10.1
 
 * Minor tweaks (thanks @[johan](http://github.com/johan))

@@ -1,6 +1,6 @@
 {
     "name": "when",
-    "version": "0.10.1",
+    "version": "0.10.2",
     "description": "A light, fast, flexible Javascript IOC container.",
     "keywords": ["promises"],
     "licenses": [

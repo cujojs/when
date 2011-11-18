@@ -8,19 +8,13 @@
  * when.js
  * A lightweight CommonJS Promises/A and when() implementation
  *
- * @version 0.10.1
+ * @version 0.10.2
  * @author brian@hovercraftstudios.com
  */
 (function(define) {
 define([], function() {
 
     var freeze, reduceArray, undef;
-    /**
-     * Use freeze if it exists
-     * @function
-     * @private
-     */
-    freeze = Object.freeze || noop;
 
     /**
      * No-Op function used in method replacement
@@ -37,6 +31,13 @@ define([], function() {
     function allocateArray(n) {
         return new Array(n);
     }
+
+    /**
+     * Use freeze if it exists
+     * @function
+     * @private
+     */
+    freeze = Object.freeze || noop;
 
     // ES5 reduce implementation if native not available
     // See: http://es5.github.com/#x15.4.4.21 as there are many
@@ -79,7 +80,8 @@ define([], function() {
             // Do the actual reduce
             for(;i < len; ++i) {
                 // Skip holes
-                if(i in arr) reduced = reduceFunc(reduced, arr[i], i, arr);
+                if(i in arr)
+                    reduced = reduceFunc(reduced, arr[i], i, arr);
             }
 
             return reduced;
@@ -427,66 +429,68 @@ define([], function() {
      * @returns {Promise}
      */
     function some(promisesOrValues, howMany, callback, errback, progressHandler) {
-        var toResolve, results, ret, deferred, resolver, rejecter, handleProgress;
+        var toResolve, results, ret, deferred, resolver, rejecter, handleProgress, len, i;
 
-        toResolve = Math.max(0, Math.min(howMany, promisesOrValues.length));
+        len = promisesOrValues.length >>> 0;
+
+        toResolve = Math.max(0, Math.min(howMany, len));
         results = [];
         deferred = defer();
-        ret = (callback || errback || progressHandler)
-            ? deferred.then(callback, errback, progressHandler)
-            : deferred.promise;
-
-        // Resolver for promises.  Captures the value and resolves
-        // the returned promise when toResolve reaches zero.
-        // Overwrites resolver var with a noop once promise has
-        // be resolved to cover case where n < promises.length
-        resolver = function(val) {
-            // This orders the values based on promise resolution order
-            // Another strategy would be to use the original position of
-            // the corresponding promise.
-            results.push(val);
-
-            if (--toResolve === 0) {
-                resolver = handleProgress = noop;
-                deferred.resolve(results);
-            }
-        };
+        ret = deferred.then(callback, errback, progressHandler);
 
         // Wrapper so that resolver can be replaced
         function resolve(val) {
             resolver(val);
         }
 
-        // Rejecter for promises.  Rejects returned promise
-        // immediately, and overwrites rejecter var with a noop
-        // once promise to cover case where n < promises.length.
-        // TODO: Consider rejecting only when N (or promises.length - N?)
-        // promises have been rejected instead of only one?
-        rejecter = function(err) {
-            rejecter = handleProgress = noop;
-            deferred.reject(err);
-        };
-
         // Wrapper so that rejecter can be replaced
         function reject(err) {
             rejecter(err);
         }
 
-        handleProgress = function(update) {
-            deferred.progress(update);
-        };
-
+        // Wrapper so that progress can be replaced
         function progress(update) {
             handleProgress(update);
         }
 
-        if (toResolve === 0) {
+        // No items in the input, resolve immediately
+        if (!toResolve) {
             deferred.resolve(results);
+
         } else {
+            // Resolver for promises.  Captures the value and resolves
+            // the returned promise when toResolve reaches zero.
+            // Overwrites resolver var with a noop once promise has
+            // be resolved to cover case where n < promises.length
+            resolver = function(val) {
+                // This orders the values based on promise resolution order
+                // Another strategy would be to use the original position of
+                // the corresponding promise.
+                results.push(val);
+
+                if (!--toResolve) {
+                    resolver = rejecter = handleProgress = noop;
+                    deferred.resolve(results);
+                }
+            };
+
+            // Rejecter for promises.  Rejects returned promise
+            // immediately, and overwrites rejecter var with a noop
+            // once promise to cover case where n < promises.length.
+            // TODO: Consider rejecting only when N (or promises.length - N?)
+            // promises have been rejected instead of only one?
+            rejecter = function(err) {
+                resolver = rejecter = handleProgress = noop;
+                deferred.reject(err);
+            };
+
+            handleProgress = deferred.progress;
+            
             // TODO: Replace while with forEach
-            var promiseOrValue, i = 0;
-            while ((promiseOrValue = promisesOrValues[i++])) {
-                when(promiseOrValue, resolve, reject, progress);
+            for(i = 0; i < len; ++i) {
+                if(i in promisesOrValues) {
+                    when(promisesOrValues[i], resolve, reject, progress);
+                }
             }
         }
 
