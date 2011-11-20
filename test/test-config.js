@@ -88,7 +88,24 @@
 			);
 
 			return dohd;
-		}
+		},
+        assertSameContents: function(array1, array2, dohd) {
+            var len1, len2, i, success;
+
+            len1 = array1.length;
+            len2 = array2.length;
+            
+            success = len1 === len2;
+
+            i = 0;
+            while(success && i < len1) {
+                success = success && array1[i] === array2[i];
+                ++i;
+            }
+            
+            dohd.callback(success);
+            
+        }
 	}
 
 })(this, doh);

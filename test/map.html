@@ -33,20 +33,10 @@
 
                     when.map(fixture.promises, mapper).then(
                         function(results) {
-                            var success, expected;
-
-                            success = true;
-                            expected = fixture.values.map(mapper);
-
-                            for (var i = 0, len = results.length; i < len; i++) {
-                                success = success && expected.indexOf(results[i]) >= 0;
-                            }
-
-                            dohd.callback(success);
+                            var expected = fixture.values.map(mapper);
+                            async.assertSameContents(expected, results, dohd);
                         },
-                        function(e) {
-                            dohd.errback(e);
-                        }
+                        doh.rejecter(dohd)
                     );
 
                     return dohd;
@@ -59,20 +49,10 @@
 
                     when.map(fixture.promises, deferredMapper).then(
                         function(results) {
-                            var success, expected;
-
-                            success = true;
-                            expected = fixture.values.map(mapper);
-
-                            for (var i = 0, len = results.length; i < len; i++) {
-                                success = success && expected.indexOf(results[i]) >= 0;
-                            }
-
-                            dohd.callback(success);
+                            var expected = fixture.values.map(mapper);
+                            async.assertSameContents(expected, results, dohd);
                         },
-                        function(e) {
-                            dohd.errback(e);
-                        }
+                        doh.rejecter(dohd)
                     );
 
                     return dohd;

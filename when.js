@@ -29,6 +29,7 @@ define([], function() {
      * @returns {Array}
      */
     function allocateArray(n) {
+        console.log("allocating Array " + n);
         return new Array(n);
     }
 
@@ -570,13 +571,24 @@ define([], function() {
      *      the mapped output values.
      */
     function map(promisesOrValues, mapFunc) {
-        var results = [];
 
-        for(var i = 0; i < promisesOrValues.length; i++) {
-            results.push(when(promisesOrValues[i]).then(mapFunc));
+        var results, len, i = 0;
+
+        // Since we know the resulting length, we can preallocate the results
+        // array to avoid array expansions.
+        len = promisesOrValues.length;
+        results = allocateArray(len);
+        
+        for(;i < len; ++i) {
+            results[i] = when(promisesOrValues[i], mapFunc);
         }
 
-        return when.all(results);
+        // Could use all() here, but that would result in another array
+        // being allocated, i.e. map() would end up allocating 2 arrays
+        // or size len instead of just 1.  Since all() uses reduce()
+        // anyway, avoid the additional allocation by calling reduce
+        // directly.
+        return reduce(results, reduceIntoArray, results);
     }
 
     /**
