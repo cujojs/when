@@ -9,6 +9,7 @@ What's New?
 
 ### v0.10.2
 
+* Performance optimizations for `when.map()` (thanks @[smitranic](https://github.com/smitranic))
 * `when.all/some/any/map/reduce` handle sparse arrays (thanks @[rwaldrn](https://github.com/rwldrn/))
 * Minor performance optimizations
 
