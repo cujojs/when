@@ -534,17 +534,13 @@ define([], function() {
      *      the mapped output values.
      */
     function map(promisesOrValues, mapFunc) {
+        var results = [];
 
-        function mapIntoArray(array, value, i) {
-            return when(mapFunc(value), function(resolved) {
-                array[i] = resolved;
-                return array;
-            });
+        for(var i = 0; i < promisesOrValues.length; i++) {
+            results.push(when(promisesOrValues[i]).then(mapFunc));
         }
 
-        var results = allocateArray(promisesOrValues.length);
-
-        return reduce(promisesOrValues, mapIntoArray, results);
+        return when.all(results);
     }
 
     /**
