@@ -29,7 +29,6 @@ define([], function() {
      * @returns {Array}
      */
     function allocateArray(n) {
-        console.log("allocating Array " + n);
         return new Array(n);
     }
 
@@ -437,7 +436,7 @@ define([], function() {
         toResolve = Math.max(0, Math.min(howMany, len));
         results = [];
         deferred = defer();
-        ret = deferred.then(callback, errback, progressHandler);
+        ret = when(deferred, callback, errback, progressHandler);
 
         // Wrapper so that resolver can be replaced
         function resolve(val) {
@@ -525,7 +524,7 @@ define([], function() {
 
         return when(promise, callback, errback, progressHandler);
     }
-
+    
     function reduceIntoArray(current, val, i) {
         current[i] = val;
         return current;
@@ -572,20 +571,21 @@ define([], function() {
      */
     function map(promisesOrValues, mapFunc) {
 
-        var results, len, i = 0;
-
+        var results, i;
+        
         // Since we know the resulting length, we can preallocate the results
         // array to avoid array expansions.
-        len = promisesOrValues.length;
-        results = allocateArray(len);
-        
-        for(;i < len; ++i) {
-            results[i] = when(promisesOrValues[i], mapFunc);
+        i = promisesOrValues.length;
+        results = allocateArray(i);
+
+        for(;i >= 0; --i) {
+            if(i in promisesOrValues)
+                results[i] = when(promisesOrValues[i], mapFunc);
         }
 
         // Could use all() here, but that would result in another array
         // being allocated, i.e. map() would end up allocating 2 arrays
-        // or size len instead of just 1.  Since all() uses reduce()
+        // of size len instead of just 1.  Since all() uses reduce()
         // anyway, avoid the additional allocation by calling reduce
         // directly.
         return reduce(results, reduceIntoArray, results);

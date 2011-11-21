@@ -35,6 +35,10 @@
                     var values = [1, "foo", new Date()];
                     return assertSome(values, values, values.length, values.length);
 				},
+                function testSomeResolvesSparseArray() {
+                    var values = [, 1, , 1, 1];
+                    return assertSome(values, values, 3, 3);
+				},
                 function testSomeResolvesWithPromises() {
                     return testSome(10, 5, 5);
                 },

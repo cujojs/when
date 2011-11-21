@@ -8,6 +8,7 @@ doh.registerUrl('when', '../../when.html');
 doh.registerUrl('when.defer', '../../defer.html');
 doh.registerUrl('when.some', '../../some.html');
 doh.registerUrl('when.any', '../../any.html');
+doh.registerUrl('when.all', '../../all.html');
 doh.registerUrl('when.chain', '../../chain.html');
 
 doh.registerUrl('when.map', '../../map.html');

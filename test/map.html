@@ -19,7 +19,7 @@
 
                 setTimeout(function() {
                     d.resolve(mapper(val));
-                }, 0);
+                }, Math.random() * 50);
 
                 return d.promise;
             }
@@ -34,7 +34,7 @@
                     when.map(fixture.promises, mapper).then(
                         function(results) {
                             var expected = fixture.values.map(mapper);
-                            async.assertSameContents(expected, results, dohd);
+                            async.assertSameContents(dohd, expected, results);
                         },
                         doh.rejecter(dohd)
                     );
@@ -50,7 +50,7 @@
                     when.map(fixture.promises, deferredMapper).then(
                         function(results) {
                             var expected = fixture.values.map(mapper);
-                            async.assertSameContents(expected, results, dohd);
+                            async.assertSameContents(dohd, expected, results);
                         },
                         doh.rejecter(dohd)
                     );

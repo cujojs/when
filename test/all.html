@@ -28,11 +28,14 @@
                 function testAllResolvesAllWithPromises() {
                     return testAll(10);
                 },
+                function testAllResolvesSparseArray() {
+                    var values = [, 1, , 1, 1];
+                    return assertAll(values, values);
+				},
                 function testAllEmptyValues() {
                     var dohd = new doh.Deferred();
-                    
-                    var p = when.all([]);
-                    p.then(
+
+                    when.all([]).then(
                         function(result) {
                             dohd.callback(result.length === 0);
                         },

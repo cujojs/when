@@ -25,25 +25,43 @@
 	doh.assertResolutionEquals = assertResolutionEquals;
 	doh.rejecter = rejecter;
 
-	function getArrayAssertion(dohd, expected, expectedLength) {
-		// Return a promise handler that will verify the results
-		return function(val) {
-			var success = expectedLength === val.length;
+    function getArrayAssertion(dohd, expected, expectedLength) {
+        // Return a promise handler that will verify the results
+        return function (val) {
+            var success = expectedLength === val.length;
 
-			// This test may be overlay lax
-			// The question of order and array position for when.some
-			// is still up in the air, so this test simply ensures
-			// that the results values are somewhere in the expected
-			// set.
-			for (var i = 0; i < expectedLength; i++) {
-				success = success && (expected.indexOf(val[i]) >= 0);
-			}
+            // This test may be overlay lax
+            // The question of order and array position for when.some
+            // is still up in the air, so this test simply ensures
+            // that the results values are somewhere in the expected
+            // set.
+            for (var i = 0; i < expectedLength; i++) {
+                success = success && (expected.indexOf(val[i]) >= 0);
+            }
 
-			dohd.callback(success);
-		}
-	}
+            dohd.callback(success);
+        }
+    }
 
-	doh.asyncHelper = {
+    function assertSameContents(dohd, array1, array2) {
+        var len1, len2, i, success;
+
+        len1 = array1.length;
+        len2 = array2.length;
+
+        success = len1 === len2;
+
+        i = 0;
+        while (success && i < len1) {
+            success = success && array1[i] === array2[i];
+            ++i;
+        }
+
+        dohd.callback(success);
+
+    }
+
+    doh.asyncHelper = {
 		deferN: function(n) {
 			// Create an array of N values, and N deferreds.
 			// Each deferred will resolve to its corresponding value
@@ -83,29 +101,15 @@
 			var dohd = new doh.Deferred();
 
 			when.all(promisesOrValues,
-				getArrayAssertion(dohd, expected, expected.length),
+				function(results) {
+                    assertSameContents(dohd, expected, results);
+                },
 				doh.rejecter(dohd)
 			);
 
 			return dohd;
 		},
-        assertSameContents: function(array1, array2, dohd) {
-            var len1, len2, i, success;
-
-            len1 = array1.length;
-            len2 = array2.length;
-            
-            success = len1 === len2;
-
-            i = 0;
-            while(success && i < len1) {
-                success = success && array1[i] === array2[i];
-                ++i;
-            }
-            
-            dohd.callback(success);
-            
-        }
+        assertSameContents: assertSameContents
 	}
 
 })(this, doh);
