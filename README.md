@@ -11,7 +11,7 @@ What's New?
 
 * Performance optimizations for `when.map()` (thanks @[smitranic](https://github.com/smitranic)), especially for large arrays where the `mapFunc` is also async (i.e. returns a promise)
 * `when.all/some/any/map/reduce` handle sparse arrays (thanks @[rwaldrn](https://github.com/rwldrn/))
-* Minor performance optimizations
+* Other minor performance optimizations
 
 ### v0.10.1
 
