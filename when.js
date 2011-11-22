@@ -11,8 +11,12 @@
  * @version 0.10.2
  * @author brian@hovercraftstudios.com
  */
-(function(define) {
-define([], function() {
+
+// Boilerplate for AMD, Node, and browser global
+(typeof define == "function" ? define : function (factory) { typeof module != 'undefined' ? (module.exports = factory()) : (this.when = factory()); })(function() {
+//(function(factory){ try { define(factory); } catch(e) { try {  module.exports = factory(); } catch(e) { this.when = factory(); }}})(function() {
+//(function(factory){try{define(factory);}catch(e){module.exports = factory();}})(function(){
+// End boilerplate
 
     var freeze, reduceArray, undef;
 
@@ -710,13 +714,4 @@ define([], function() {
 
     return when;
 
-}); // define
-})(typeof define != 'undefined'
-    // use define for AMD if available
-    ? define
-    // If no define, look for module to export as a CommonJS module.
-    // If no define or module, attach to current context.
-    : typeof module != 'undefined'
-    ? function(deps, factory) { module.exports = factory(); }
-    : function(deps, factory) { this.when = factory(); }
-);
+}); // Boilerplate
