@@ -7,6 +7,11 @@ when.js was derived from the async core of [wire.js](http://github.com/briancava
 What's New?
 ===========
 
+### v0.10.3
+
+* Minor `package.json` updates
+* Slightly smaller module boilerplate
+
 ### v0.10.2
 
 * Performance optimizations for `when.map()` (thanks @[smitranic](https://github.com/smitranic)), especially for large arrays where the `mapFunc` is also async (i.e. returns a promise)
