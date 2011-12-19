@@ -8,14 +8,12 @@
  * when.js
  * A lightweight CommonJS Promises/A and when() implementation
  *
- * @version 0.10.2
+ * @version 0.10.3
  * @author brian@hovercraftstudios.com
  */
 
 // Boilerplate for AMD, Node, and browser global
 (typeof define == "function" ? define : function (factory) { typeof module != 'undefined' ? (module.exports = factory()) : (this.when = factory()); })(function() {
-//(function(factory){ try { define(factory); } catch(e) { try {  module.exports = factory(); } catch(e) { this.when = factory(); }}})(function() {
-//(function(factory){try{define(factory);}catch(e){module.exports = factory();}})(function(){
 // End boilerplate
 
     var freeze, reduceArray, undef;
