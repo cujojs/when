@@ -12,7 +12,7 @@
     "repositories": [
         {
             "type": "git",
-            "url": "git://github.com/briancavalier/when.js.git"
+            "url": "https://github.com/briancavalier/when.js"
         }
     ],
     "bugs": "https://github.com/briancavalier/when.js/issues",
