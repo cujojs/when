@@ -33,13 +33,13 @@
     function allocateArray(n) {
         return new Array(n);
     }
-
+    
     /**
      * Use freeze if it exists
      * @function
      * @private
      */
-    freeze = Object.freeze || noop;
+    freeze = Object.freeze || function(o) { return o; };
 
     // ES5 reduce implementation if native not available
     // See: http://es5.github.com/#x15.4.4.21 as there are many
@@ -224,7 +224,8 @@
                 throw new Error("already completed");
             };
 
-            // Free progressHandlers array
+            // Free progressHandlers array since we'll never issue progress events
+            // for this promise again now that it's completed
             progressHandlers = undef;
 
             // Final result of this Deferred.  This is immutable
@@ -293,6 +294,7 @@
         deferred = {};
 
         // Promise and Resolver parts
+        // Freeze Promise and Resolver APIs
 
         /**
          * The Promise API
@@ -306,9 +308,9 @@
          * @name promise
          * @type {Promise}
          */
-            deferred.promise = {
+            deferred.promise = freeze({
                 then: (deferred.then = then)
-            };
+            });
 
         /**
          * The Resolver API
@@ -322,15 +324,11 @@
          * @name resolver
          * @type {Resolver}
          */
-            deferred.resolver = {
+            deferred.resolver = freeze({
                 resolve:  (deferred.resolve  = resolve),
                 reject:   (deferred.reject   = reject),
                 progress: (deferred.progress = progress)
-            };
-
-        // Freeze Promise and Resolver APIs
-        freeze(promise);
-        freeze(resolver);
+            });
 
         return deferred;
     }
