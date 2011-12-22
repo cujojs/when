@@ -35,5 +35,6 @@
     "main": "./when",
     "directories": {
         "test": "test"
-    }
+    },
+	"dojoBuild": "when.profile.js"
 }
