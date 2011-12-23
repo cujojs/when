@@ -36,5 +36,5 @@
     "directories": {
         "test": "test"
     },
-	"dojoBuild": "when.profile.js"
+    "dojoBuild": "when.profile.js"
 }
