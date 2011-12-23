@@ -8,14 +8,13 @@
  * when.js
  * A lightweight CommonJS Promises/A and when() implementation
  *
- * @version 0.10.3
+ * @version 0.10.4
  * @author brian@hovercraftstudios.com
  */
 
 // Boilerplate for AMD, Node, and browser global
-(typeof define == "function" ? define : function (factory) { typeof module != 'undefined' ? (module.exports = factory()) : (this.when = factory()); })(function() {
-// End boilerplate
-
+(function(define) {
+define(function() {
     var freeze, reduceArray, undef;
 
     /**
@@ -489,7 +488,7 @@
             };
 
             handleProgress = deferred.progress;
-            
+
             // TODO: Replace while with forEach
             for(i = 0; i < len; ++i) {
                 if(i in promisesOrValues) {
@@ -524,7 +523,7 @@
 
         return when(promise, callback, errback, progressHandler);
     }
-    
+
     function reduceIntoArray(current, val, i) {
         current[i] = val;
         return current;
@@ -572,7 +571,7 @@
     function map(promisesOrValues, mapFunc) {
 
         var results, i;
-        
+
         // Since we know the resulting length, we can preallocate the results
         // array to avoid array expansions.
         i = promisesOrValues.length;
@@ -611,7 +610,7 @@
     function reduce(promisesOrValues, reduceFunc, initialValue) {
 
         var total, args;
-        
+
         total = promisesOrValues.length;
 
         // Skip promisesOrValues, since it will be used as 'this' in the call
@@ -709,5 +708,5 @@
     when.chain     = chain;
 
     return when;
-
-}); // Boilerplate
+});
+})(typeof define == "function" ? define : function (factory) { typeof module != 'undefined' ? (module.exports = factory()) : (this.when = factory()); } );

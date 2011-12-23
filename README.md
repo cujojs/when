@@ -7,6 +7,10 @@ when.js was derived from the async core of [wire.js](http://github.com/briancava
 What's New?
 ===========
 
+### v0.10.4
+
+* **Important Fix for some AMD build/optimizer tools**: Switching back to more verbose, builder-friendly boilerplate
+
 ### v0.10.3
 
 * Minor `package.json` updates
