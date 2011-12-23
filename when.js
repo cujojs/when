@@ -12,7 +12,6 @@
  * @author brian@hovercraftstudios.com
  */
 
-// Boilerplate for AMD, Node, and browser global
 (function(define) {
 define(function() {
     var freeze, reduceArray, undef;
@@ -715,4 +714,5 @@ define(function() {
         ? (module.exports = factory())
         : (this.when      = factory());
     }
+    // Boilerplate for AMD, Node, and browser global
 );
