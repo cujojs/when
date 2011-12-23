@@ -709,4 +709,10 @@ define(function() {
 
     return when;
 });
-})(typeof define == "function" ? define : function (factory) { typeof module != 'undefined' ? (module.exports = factory()) : (this.when = factory()); } );
+})(typeof define == 'function'
+    ? define
+    : function (factory) { typeof module != 'undefined'
+        ? (module.exports = factory())
+        : (this.when      = factory());
+    }
+);

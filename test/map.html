@@ -29,7 +29,7 @@
                     var dohd, fixture;
 
                     dohd = new doh.Deferred();
-                    fixture = async.deferN(100);
+                    fixture = async.deferN(10);
 
                     when.map(fixture.promises, mapper).then(
                         function(results) {
@@ -45,7 +45,7 @@
                     var dohd, fixture;
 
                     dohd = new doh.Deferred();
-                    fixture = async.deferN(100);
+                    fixture = async.deferN(10);
 
                     when.map(fixture.promises, deferredMapper).then(
                         function(results) {
