@@ -10,8 +10,11 @@ What's New?
 ### v0.10.4
 
 * **Important Fix for some AMD build/optimizer tools**: Switching back to more verbose, builder-friendly boilerplate
+    * If you are using when.js 0.10.3 with the dojo or RequireJS build tools, you should update to v.10.4 as soon as possible.
 
 ### v0.10.3
+
+**Warning**: This version will not work with most AMD build tools.  You should update to 0.10.4 as soon as possible.
 
 * Minor `package.json` updates
 * Slightly smaller module boilerplate
