@@ -595,6 +595,8 @@ define(function() {
         i = promisesOrValues.length;
         results = allocateArray(i);
 
+        // Since mapFunc may be async, get all invocations of it into flight
+        // asap, and then use reduce() to collect all the results
         for(;i >= 0; --i) {
             if(i in promisesOrValues)
                 results[i] = when(promisesOrValues[i], mapFunc);
