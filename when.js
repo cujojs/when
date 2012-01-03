@@ -635,7 +635,7 @@ define(function() {
         // to the actual reduce engine below.
 
         // Wrap the supplied reduceFunc with one that handles promises and then
-        // deletegates to the supplied.
+        // delegates to the supplied.
 
         args = [
             function (current, val, i) {
