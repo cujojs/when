@@ -271,7 +271,6 @@ define(function() {
                         // If the handler returned a promise, chained deferreds
                         // should complete only after that promise does.
                         newResult.then(ldeferred.resolve, ldeferred.reject, ldeferred.progress);
-//                        _chain(newResult, ldeferred);
 
                     } else {
                         // Complete deferred from chained then()
@@ -416,10 +415,12 @@ define(function() {
                 // so we don't trust its implementation entirely.  Introduce a trusted
                 // middleman when.js promise
                 promiseOrValue.then(deferred.resolve, deferred.reject, deferred.progress);
+
             } else {
                 // It's a value, not a promise.  Create an already-resolved promise
                 // for it.
                 deferred.resolve(promiseOrValue);
+
             }
 
             promise = deferred.promise;
