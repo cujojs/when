@@ -8,7 +8,7 @@
  * when.js
  * A lightweight CommonJS Promises/A and when() implementation
  *
- * @version 0.10.4
+ * @version 0.11.0
  * @author brian@hovercraftstudios.com
  */
 
@@ -266,11 +266,11 @@ define(function() {
                 try {
 
                     newResult = handler ? handler(result) : result;
-
+                    
                     if (isPromise(newResult)) {
                         // If the handler returned a promise, chained deferreds
                         // should complete only after that promise does.
-                        newResult.then(ldeferred.resolve, ldeferred.reject, ldeferred.progress);
+                        when(newResult, ldeferred.resolve, ldeferred.reject, ldeferred.progress);
 
                     } else {
                         // Complete deferred from chained then()

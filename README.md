@@ -7,6 +7,11 @@ when.js was derived from the async core of [wire.js](http://github.com/briancava
 What's New?
 ===========
 
+### v0.11.0
+
+* `when.js` now *assimilates* thenables that pass the [Promises/A duck-type test](http://wiki.commonjs.org/wiki/Promises/A), but which may not be Promises/A compliant, such as jQuery's Deferred.
+    * `when()`, and `when.all/some/any/map/reduce/chain()` are all now guaranteed to return a fully Promises/A compliant promise, even when their input is a thenable that is not compliant.
+
 ### v0.10.4
 
 * **Important Fix for some AMD build/optimizer tools**: Switching back to more verbose, builder-friendly boilerplate
