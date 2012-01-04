@@ -266,7 +266,10 @@ define(function() {
                 try {
 
                     newResult = handler ? handler(result) : result;
-                    
+
+                    // NOTE: isPromise is also called by promise(), which is called by when(),
+                    // resulting in 2 calls to isPromise here.  It's harmless, but need to
+                    // refactor to avoid that.
                     if (isPromise(newResult)) {
                         // If the handler returned a promise, chained deferreds
                         // should complete only after that promise does.
@@ -392,9 +395,9 @@ define(function() {
      *
      * @param promiseOrValue anything
      *
-     * @returns if promiseOrValue is a {@link Promise} returns promiseOrValue,
-     *   otherwise, returns a new, already-resolved, {@link Promise} whose resolution
-     *   value is:
+     * @returns Guaranteed to return a trusted Promise.  If promiseOrValue is a when.js {@link Promise}
+     *   returns promiseOrValue, otherwise, returns a new, already-resolved, when.js {@link Promise}
+     *   whose resolution value is:
      *   * the resolution value of promiseOrValue if it's a foreign promise, or
      *   * promiseOrValue if it's a value
      */
@@ -414,6 +417,9 @@ define(function() {
                 // It's a compliant promise, but we don't know where it came from,
                 // so we don't trust its implementation entirely.  Introduce a trusted
                 // middleman when.js promise
+
+                // IMPORTANT: This is the only place when.js should ever call .then() on
+                // an untrusted promise.
                 promiseOrValue.then(deferred.resolve, deferred.reject, deferred.progress);
 
             } else {

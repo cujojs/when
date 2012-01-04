@@ -5,6 +5,7 @@ doh.registerUrl('_fake', '../../_fake-doh.html');
 
 doh.registerUrl('when.isPromise', '../../isPromise.html');
 doh.registerUrl('when', '../../when.html');
+doh.registerUrl('assimilate', '../../assimilate.html');
 doh.registerUrl('when.defer', '../../defer.html');
 doh.registerUrl('when.some', '../../some.html');
 doh.registerUrl('when.any', '../../any.html');
