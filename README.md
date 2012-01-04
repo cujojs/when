@@ -9,7 +9,7 @@ What's New?
 
 ### v0.11.0
 
-* `when.js` now *assimilates* thenables that pass the [Promises/A duck-type test](http://wiki.commonjs.org/wiki/Promises/A), but which may not be fully Promises/A compliant, such as jQuery's Deferred.
+* `when.js` now *assimilates* thenables that pass the [Promises/A duck-type test](http://wiki.commonjs.org/wiki/Promises/A), but which may not be fully Promises/A compliant, such as [jQuery's Deferred](http://api.jquery.com/category/deferred-object/) and [curl's global API](https://github.com/unscriptable/curl) (See the **API at a glance** section)
     * `when()`, and `when.all/some/any/map/reduce/chain()` are all now guaranteed to return a fully Promises/A compliant promise, even when their input is not compliant.
     * Any non-compliant thenable returned by a callback or errback will also be assimilated to protect subsequent promises and callbacks in a promise chain, and preserve Promises/A forwarding guarantees.
 
