@@ -67,7 +67,33 @@
                     assertThenThrows(null, 1);
                     assertThenThrows(null, 1, null);
                     assertThenThrows(null, null, 1);
-				}
+				},
+                function testWhenAllThrowsWithVariadic() {
+                    var success = true;
+                    
+                    try {
+                        // Oops, called with variadic args instead of array
+                        // The correct call would be:
+                        // when.all([1, 2, 3], f);
+                        when.all(1, 2, 3, f);
+                        success = false;
+                    } catch(e) {}
+                    
+                    doh.assertTrue(success);
+                },
+                function testWhenSomeThrowsWithVariadic() {
+                    var success = true;
+
+                    try {
+                        // Oops, called with variadic args instead of array
+                        // The correct call would be:
+                        // when.some([1, 2, 3], 2, f);
+                        when.some(1, 2, 3, 2, f);
+                        success = false;
+                    } catch(e) {}
+
+                    doh.assertTrue(success);
+                }
 			]);
 
 			doh.run();
