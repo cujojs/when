@@ -129,22 +129,23 @@ define(function() {
             // Check parameters and fail immediately if any supplied parameter
             // is not null/undefined and is also not a function.
             // That is, any non-null/undefined parameter must be a function.
-            var arg, i = arguments.length;
+            var arg, deferred, i = arguments.length;
             while(i) {
                 arg = arguments[--i];
                 if (arg != null && typeof arg != 'function') throw new Error('callback is not a function');
             }
-            var d = defer();
+
+            deferred = defer();
 
             listeners.push({
-                deferred: d,
+                deferred: deferred,
                 resolve: callback,
                 reject: errback
             });
 
             progback && progressHandlers.push(progback);
 
-            return d.promise;
+            return deferred.promise;
         };
 
         /**
