@@ -127,12 +127,12 @@ define(function() {
          */
         _then = function unresolvedThen(callback, errback, progback) {
             // Check parameters and fail immediately if any supplied parameter
-            // is truthy and is also not a function.
+            // is not null/undefined and is also not a function.
             // That is, any non-null/undefined parameter must be a function.
             var arg, i = arguments.length;
             while(i) {
                 arg = arguments[--i];
-                if (arg && typeof arg != 'function') throw new Error('callback is not a function');
+                if (arg != null && typeof arg != 'function') throw new Error('callback is not a function');
             }
             var d = defer();
 
@@ -149,8 +149,8 @@ define(function() {
 
         /**
          * Registers a handler for this {@link Deferred}'s {@link Promise}.  Even though all arguments
-         * are optional, each argument that *is* supplied must be falsey, or a Function.
-         * Any other truthy value will cause an Error to be thrown.
+         * are optional, each argument that *is* supplied must be null, undefined, or a Function.
+         * Any other value will cause an Error to be thrown.
          *
          * @memberOf Promise
          *
