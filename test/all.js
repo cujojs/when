@@ -15,4 +15,6 @@ doh.registerUrl('when.chain', '../../chain.html');
 doh.registerUrl('when.map', '../../map.html');
 doh.registerUrl('when.reduce', '../../reduce.html');
 
+doh.registerUrl('checkHandlers', '../../checkHandlers.html');
+
 doh.run();
