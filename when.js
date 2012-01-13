@@ -8,7 +8,7 @@
  * when.js
  * A lightweight CommonJS Promises/A and when() implementation
  *
- * @version 0.11.0
+ * @version 0.11.1
  * @author brian@hovercraftstudios.com
  */
 
@@ -122,8 +122,18 @@ define(function() {
          * @param [callback] {Function} resolution handler
          * @param [errback] {Function} rejection handler
          * @param [progback] {Function} progress handler
+         *
+         * @throws {Error} if any argument is not null, undefined, or a Function
          */
         _then = function unresolvedThen(callback, errback, progback) {
+            // Check parameters and fail immediately if any supplied parameter
+            // is truthy and is also not a function.
+            // That is, any non-null/undefined parameter must be a function.
+            var arg, i = arguments.length;
+            while(i) {
+                arg = arguments[--i];
+                if (arg && typeof arg != 'function') throw new Error('callback is not a function');
+            }
             var d = defer();
 
             listeners.push({
@@ -138,13 +148,17 @@ define(function() {
         };
 
         /**
-         * Registers a handler for this {@link Deferred}'s {@link Promise}
+         * Registers a handler for this {@link Deferred}'s {@link Promise}.  Even though all arguments
+         * are optional, each argument that *is* supplied must be falsey, or a Function.
+         * Any other truthy value will cause an Error to be thrown.
          *
          * @memberOf Promise
          *
-         * @param callback {Function}
-         * @param [errback] {Function}
-         * @param [progback] {Function}
+         * @param [callback] {Function} resolution handler
+         * @param [errback] {Function} rejection handler
+         * @param [progback] {Function} progress handler
+         *
+         * @throws {Error} if any argument is not null, undefined, or a Function
          */
         function then(callback, errback, progback) {
             return _then(callback, errback, progback);

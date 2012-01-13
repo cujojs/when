@@ -7,6 +7,11 @@ when.js was derived from the async core of [wire.js](http://github.com/briancava
 What's New?
 ===========
 
+### v0.11.1
+
+* Added `when/apply` helper module for using arguments-based and variadic callbacks with `when.all`, `when.some`, `when.map`, or any promise that resolves to an array.
+* Fix #15:`.then()`, `when()`, and all other methods that accept callback/errback/progress handlers will throw if you pass something that's not a function.
+
 ### v0.11.0
 
 * `when.js` now *assimilates* thenables that pass the [Promises/A duck-type test](http://wiki.commonjs.org/wiki/Promises/A), but which may not be fully Promises/A compliant, such as [jQuery's Deferred](http://api.jquery.com/category/deferred-object/) and [curl's global API](https://github.com/unscriptable/curl) (See the **API at a glance** section)
