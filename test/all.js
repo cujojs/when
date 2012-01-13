@@ -17,4 +17,6 @@ doh.registerUrl('when.reduce', '../../reduce.html');
 
 doh.registerUrl('checkHandlers', '../../checkHandlers.html');
 
+doh.registerUrl('when/apply', '../../apply.html');
+
 doh.run();

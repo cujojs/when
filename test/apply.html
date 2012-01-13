@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>check handler parameters Unit Tests</title>
+	<script src="util/doh/runner.js"></script>
+    <script src="test-config.js"></script>
+	<script src="../apply.js"></script>
+	<script>
+
+        (function(global, doh, async) {
+            
+            // variadic arguments-based callback
+            function f() {
+                var sum, i = arguments.length;
+                
+                sum = 0;
+                while(i) {
+                    sum += arguments[--i];
+                }
+                
+                return sum;
+            }
+            
+            doh.register('checkHandlers', [
+                function testApplySpreadsArray() {
+                    doh.assertEqual(15, when_apply(f)([1,2,3,4,5]));
+                },
+                function testApplyFailsForNonArrayLike() {
+                    var success = false;
+
+                    try {
+                        when_apply(f)(1,2,3,4,5);
+                    } catch(e) {
+                        success = true;
+                    }
+
+                    doh.assertTrue(success);
+                }
+			]);
+
+			doh.run();
+
+		})(window, doh, doh.asyncHelper);
+	</script>
+</head>
+<body>
+
+</body>
+</html>

@@ -13,13 +13,14 @@
             function assertThenThrows() {
                 var success, d;
 
-                success = true;
+                success = false;
                 d = when.defer();
 
                  try {
                      d.promise.then.apply(d.promise, arguments);
-                     success = false;
-                 } catch(e) {}
+                 } catch(e) {
+                     success = true;
+                 }
 
                 doh.assertTrue(success);
             }
@@ -27,14 +28,13 @@
             function assertThenAllows() {
                 var success, d;
 
-                success = true;
+                success = false;
                 d = when.defer();
 
                  try {
                      d.promise.then.apply(d.promise, arguments);
-                 } catch(e) {
-                     success = false;
-                 }
+                     success = true;
+                 } catch(e) {}
 
                 doh.assertTrue(success);
             }
