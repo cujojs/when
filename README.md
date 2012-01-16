@@ -201,6 +201,25 @@ Where:
 * `index` the *basis* of `nextItem` ... practically speaking, this is the array index of the promiseOrValue corresponding to `nextItem`
 * `total` is the total number of items in `promisesOrValues`
 
+when/apply
+----------
+
+```javascript
+function functionThatAcceptsMultipleArgs(array) {
+    // ...
+}
+
+var functionThatAcceptsAnArray = apply(functionThatAcceptsMultipleArgs);
+```
+
+Helper that allows using callbacks that take multiple args, instead of an array, with `when.all/some/map`:
+
+```javascript
+when.all(arrayOfPromisesOrValues, apply(functionThatAcceptsMultipleArgs));
+```
+
+[See the wiki](https://github.com/briancavalier/when.js/wiki/when-apply) for more info and examples.
+
 Testing
 =======
 
