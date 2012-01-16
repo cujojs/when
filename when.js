@@ -1,14 +1,15 @@
-/** @license MIT License, Copyright (c) 2011-2012 Brian Cavalier */
+/** @license MIT License (c) copyright B Cavalier & J Hann */
 
 /**
- * when.js
+ * when
  * A lightweight CommonJS Promises/A and when() implementation
  *
- * LICENSE: see the LICENSE.txt file. If file is missing, this file is subject
- * to the MIT License at: http://www.opensource.org/licenses/mit-license.php.
+ * when is part of the cujo.js family of libraries (http://cujojs.com/)
+ *
+ * Licensed under the MIT License at:
+ * http://www.opensource.org/licenses/mit-license.php
  *
  * @version 0.11.1
- * @author brian@hovercraftstudios.com
  */
 
 (function(define) {
