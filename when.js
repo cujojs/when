@@ -1,12 +1,11 @@
-/**
- * @license Copyright (c) 2011 Brian Cavalier
- * LICENSE: see the LICENSE.txt file. If file is missing, this file is subject
- * to the MIT License at: http://www.opensource.org/licenses/mit-license.php.
- */
+/** @license MIT License, Copyright (c) 2011-2012 Brian Cavalier */
 
 /**
  * when.js
  * A lightweight CommonJS Promises/A and when() implementation
+ *
+ * LICENSE: see the LICENSE.txt file. If file is missing, this file is subject
+ * to the MIT License at: http://www.opensource.org/licenses/mit-license.php.
  *
  * @version 0.11.1
  * @author brian@hovercraftstudios.com
@@ -392,10 +391,10 @@ define(function() {
     function when(promiseOrValue, callback, errback, progressHandler) {
         // Get a promise for the input promiseOrValue
         // See promise()
-        var inputPromise = promise(promiseOrValue);
+        var trustedPromise = promise(promiseOrValue);
 
         // Register promise handlers
-        return inputPromise.then(callback, errback, progressHandler);
+        return trustedPromise.then(callback, errback, progressHandler);
     }
 
     /**
