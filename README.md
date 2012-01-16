@@ -9,8 +9,8 @@ What's New?
 
 ### v0.11.1
 
-* [#14](https://github.com/briancavalier/when.js/issues/14) Added [when/apply](https://github.com/briancavalier/when.js/wiki/when-apply) helper module for using arguments-based and variadic callbacks with `when.all`, `when.some`, `when.map`, or any promise that resolves to an array.
-* [#15](https://github.com/briancavalier/when.js/issues/15)`.then()`, `when()`, and all other methods that accept callback/errback/progress handlers will throw if you pass something that's not a function.
+* Added [when/apply](https://github.com/briancavalier/when.js/wiki/when-apply) helper module for using arguments-based and variadic callbacks with `when.all`, `when.some`, `when.map`, or any promise that resolves to an array. ([#14](https://github.com/briancavalier/when.js/issues/14) )
+* `.then()`, `when()`, and all other methods that accept callback/errback/progress handlers will throw if you pass something that's not a function. ([#15](https://github.com/briancavalier/when.js/issues/15))
 
 ### v0.11.0
 
