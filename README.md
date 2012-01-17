@@ -1,3 +1,19 @@
+Please Note: this project has moved from briancavalier/when to cujojs/when.
+Any existing forks have been automatically moved to cujojs/when. However,
+you'll need to update your clone and submodule remotes manually.
+
+Update the url in your .git/config, and also .gitmodules for submodules:
+
+```
+git://github.com/cujojs/when.git
+https://cujojs@github.com/cujojs/when.git
+```
+
+Helpful link for updating submodules:
+[Git Submodules: Adding, Using, Removing, Updating](http://chrisjean.com/2009/04/20/git-submodules-adding-using-removing-and-updating/)
+
+----
+
 A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining and chaining, and has a robust unit test suite.
 
 It's **just over 1k** when compiled with Google Closure (w/advanced optimizations) and gzipped.
