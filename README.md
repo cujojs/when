@@ -18,19 +18,19 @@ A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](ht
 
 It's **just over 1k** when compiled with Google Closure (w/advanced optimizations) and gzipped.
 
-when.js was derived from the async core of [wire.js](http://github.com/briancavalier/wire).
+when.js was derived from the async core of [wire.js](https://github.com/cujojs/wire).
 
 What's New?
 ===========
 
 ### v0.11.1
 
-* Added [when/apply](https://github.com/briancavalier/when.js/wiki/when-apply) helper module for using arguments-based and variadic callbacks with `when.all`, `when.some`, `when.map`, or any promise that resolves to an array. ([#14](https://github.com/briancavalier/when.js/issues/14))
-* `.then()`, `when()`, and all other methods that accept callback/errback/progress handlers will throw if you pass something that's not a function. ([#15](https://github.com/briancavalier/when.js/issues/15))
+* Added [when/apply](https://github.com/cujojs/when/wiki/when-apply) helper module for using arguments-based and variadic callbacks with `when.all`, `when.some`, `when.map`, or any promise that resolves to an array. ([#14](https://github.com/cujojs/when/issues/14))
+* `.then()`, `when()`, and all other methods that accept callback/errback/progress handlers will throw if you pass something that's not a function. ([#15](https://github.com/cujojs/when/issues/15))
 
 ### v0.11.0
 
-* `when.js` now *assimilates* thenables that pass the [Promises/A duck-type test](http://wiki.commonjs.org/wiki/Promises/A), but which may not be fully Promises/A compliant, such as [jQuery's Deferred](http://api.jquery.com/category/deferred-object/) and [curl's global API](https://github.com/unscriptable/curl) (See the **API at a glance** section)
+* `when.js` now *assimilates* thenables that pass the [Promises/A duck-type test](http://wiki.commonjs.org/wiki/Promises/A), but which may not be fully Promises/A compliant, such as [jQuery's Deferred](http://api.jquery.com/category/deferred-object/) and [curl's global API](https://github.com/cujojs/curl) (See the **API at a glance** section)
     * `when()`, and `when.all/some/any/map/reduce/chain()` are all now guaranteed to return a fully Promises/A compliant promise, even when their input is not compliant.
     * Any non-compliant thenable returned by a callback or errback will also be assimilated to protect subsequent promises and callbacks in a promise chain, and preserve Promises/A forwarding guarantees.
 
@@ -54,7 +54,7 @@ What's New?
 
 ### v0.10.1
 
-* Minor tweaks (thanks @[johan](http://github.com/johan))
+* Minor tweaks (thanks @[johan](https://github.com/johan))
 	* Add missing semis that WebStorm didn't catch
 	* Fix DOH submodule ref, and update README with info for running unit tests
 
@@ -71,7 +71,7 @@ What's New?
 Examples
 ================
 
-Check the wiki for [examples](https://github.com/briancavalier/when.js/wiki/Examples)
+Check the wiki for [examples](https://github.com/cujojs/when/wiki/Examples)
 
 API
 ===
@@ -234,7 +234,7 @@ Helper that allows using callbacks that take multiple args, instead of an array,
 when.all(arrayOfPromisesOrValues, apply(functionThatAcceptsMultipleArgs));
 ```
 
-[See the wiki](https://github.com/briancavalier/when.js/wiki/when-apply) for more info and examples.
+[See the wiki](https://github.com/cujojs/when/wiki/when-apply) for more info and examples.
 
 Testing
 =======
@@ -248,6 +248,6 @@ To run the unit tests, `from the when.js` dir:
 References
 ----------
 
-Much of this code is based on @[unscriptable](http://github.com/unscriptable)'s [tiny promises](http://github.com/unscriptable/promises), the async innards of [wire.js](http://github.com/briancavalier/wire), and some gists [here](https://gist.github.com/870729), [here](https://gist.github.com/892345), [here](https://gist.github.com/894356), and [here](https://gist.github.com/894360)
+Much of this code is based on @[unscriptable](https://github.com/unscriptable)'s [tiny promises](https://github.com/unscriptable/promises), the async innards of [wire.js](https://github.com/cujojs/wire), and some gists [here](https://gist.github.com/870729), [here](https://gist.github.com/892345), [here](https://gist.github.com/894356), and [here](https://gist.github.com/894360)
 
 Some of the code has been influenced by the great work in [Q](https://github.com/kriskowal/q), [Dojo's Deferred](https://github.com/dojo/dojo), and [uber.js](https://github.com/phiggins42/uber.js).
