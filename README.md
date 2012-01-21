@@ -18,7 +18,7 @@ A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](ht
 
 It's **just over 1k** when compiled with Google Closure (w/advanced optimizations) and gzipped.
 
-when.js was derived from the async core of [wire.js](http://github.com/cujojs/wire).
+when.js was derived from the async core of [wire.js](https://github.com/cujojs/wire).
 
 What's New?
 ===========
@@ -54,7 +54,7 @@ What's New?
 
 ### v0.10.1
 
-* Minor tweaks (thanks @[johan](http://github.com/johan))
+* Minor tweaks (thanks @[johan](https://github.com/johan))
 	* Add missing semis that WebStorm didn't catch
 	* Fix DOH submodule ref, and update README with info for running unit tests
 
@@ -248,6 +248,6 @@ To run the unit tests, `from the when.js` dir:
 References
 ----------
 
-Much of this code is based on @[unscriptable](http://github.com/unscriptable)'s [tiny promises](http://github.com/unscriptable/promises), the async innards of [wire.js](http://github.com/cujojs/wire), and some gists [here](https://gist.github.com/870729), [here](https://gist.github.com/892345), [here](https://gist.github.com/894356), and [here](https://gist.github.com/894360)
+Much of this code is based on @[unscriptable](https://github.com/unscriptable)'s [tiny promises](https://github.com/unscriptable/promises), the async innards of [wire.js](https://github.com/cujojs/wire), and some gists [here](https://gist.github.com/870729), [here](https://gist.github.com/892345), [here](https://gist.github.com/894356), and [here](https://gist.github.com/894360)
 
 Some of the code has been influenced by the great work in [Q](https://github.com/kriskowal/q), [Dojo's Deferred](https://github.com/dojo/dojo), and [uber.js](https://github.com/phiggins42/uber.js).
