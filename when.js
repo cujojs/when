@@ -108,7 +108,7 @@ define(function() {
      * @returns {Deferred}
      */
     function defer() {
-        var deferred, promise, resolver, result, listeners, progressHandlers, _then, _progress, complete;
+        var deferred, promise, result, listeners, progressHandlers, _then, _progress, complete;
 
         listeners = [];
         progressHandlers = [];
@@ -314,7 +314,7 @@ define(function() {
          * @augments Resolver
          * @augments Promise
          */
-        deferred = {};
+        deferred = new Promise();
 
         // Promise and Resolver parts
         // Freeze Promise and Resolver APIs
@@ -326,7 +326,7 @@ define(function() {
          */
         promise = new Promise();
         promise.then = deferred.then = then;
-        
+
         /**
          * The {@link Promise} for this {@link Deferred}
          * @memberOf Deferred
@@ -336,22 +336,18 @@ define(function() {
         deferred.promise = freeze(promise);
 
         /**
-         * The Resolver API
+         * The {@link Resolver} for this {@link Deferred}
          * @namespace Resolver
          * @name Resolver
-         */
-        resolver =
-        /**
-         * The {@link Resolver} for this {@link Deferred}
          * @memberOf Deferred
          * @name resolver
          * @type {Resolver}
          */
-            deferred.resolver = freeze({
-                resolve:  (deferred.resolve  = resolve),
-                reject:   (deferred.reject   = reject),
-                progress: (deferred.progress = progress)
-            });
+        deferred.resolver = freeze({
+            resolve:  (deferred.resolve  = resolve),
+            reject:   (deferred.reject   = reject),
+            progress: (deferred.progress = progress)
+        });
 
         return deferred;
     }
