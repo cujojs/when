@@ -9,7 +9,7 @@
  * Licensed under the MIT License at:
  * http://www.opensource.org/licenses/mit-license.php
  *
- * @version 0.11.1
+ * @version 1.0.0
  */
 
 (function(define) {
@@ -314,7 +314,7 @@ define(function() {
          * @augments Resolver
          * @augments Promise
          */
-        deferred = new Promise();
+        deferred = {};
 
         // Promise and Resolver parts
         // Freeze Promise and Resolver APIs

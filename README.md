@@ -23,6 +23,11 @@ when.js was derived from the async core of [wire.js](https://github.com/cujojs/w
 What's New?
 ===========
 
+### v1.0.0
+
+* First official when.js release as a part of [cujojs](https://github.com/cujojs).
+* Minor size optimizations.
+
 ### v0.11.1
 
 * Added [when/apply](https://github.com/cujojs/when/wiki/when-apply) helper module for using arguments-based and variadic callbacks with `when.all`, `when.some`, `when.map`, or any promise that resolves to an array. ([#14](https://github.com/cujojs/when/issues/14))
@@ -69,7 +74,7 @@ What's New?
 * Important fix for break in promise chains
 
 Examples
-================
+========
 
 Check the wiki for [examples](https://github.com/cujojs/when/wiki/Examples)
 

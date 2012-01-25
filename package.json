@@ -1,6 +1,6 @@
 {
     "name": "when",
-    "version": "0.11.1",
+    "version": "1.0.0",
     "description": "A lightweight Promise and when() implementation, plus other async goodies.",
     "keywords": ["promises", "when", "async"],
     "licenses": [
@@ -12,10 +12,10 @@
     "repositories": [
         {
             "type": "git",
-            "url": "https://github.com/briancavalier/when.js"
+            "url": "https://github.com/cujojs/when"
         }
     ],
-    "bugs": "https://github.com/briancavalier/when.js/issues",
+    "bugs": "https://github.com/cujojs/when/issues",
     "maintainers": [
         {
             "name": "Brian Cavalier",
