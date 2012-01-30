@@ -1,5 +1,5 @@
 {
-    "name": "when",
+    "name": "cujo-when",
     "version": "1.0.0",
     "description": "A lightweight Promise and when() implementation, plus other async goodies.",
     "keywords": ["promises", "when", "async"],
@@ -17,12 +17,6 @@
     ],
     "bugs": "https://github.com/cujojs/when/issues",
     "maintainers": [
-        {
-            "name": "Brian Cavalier",
-            "web": "http://hovercraftstudios.com"
-        }
-    ],
-    "contributors": [
         {
             "name": "Brian Cavalier",
             "web": "http://hovercraftstudios.com"

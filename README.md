@@ -26,7 +26,6 @@ What's New?
 ### v1.0.0
 
 * First official when.js release as a part of [cujojs](https://github.com/cujojs).
-* Minor size optimizations.
 
 ### v0.11.1
 
