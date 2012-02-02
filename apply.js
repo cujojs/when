@@ -1,11 +1,7 @@
-/**
- * @license Copyright (c) 2011 Brian Cavalier
- * LICENSE: see the LICENSE.txt file. If file is missing, this file is subject
- * to the MIT License at: http://www.opensource.org/licenses/mit-license.php.
- */
+/** @license MIT License (c) copyright B Cavalier & J Hann */
 
 /**
- * apply.ja
+ * apply.js
  * Helper for using arguments-based and variadic callbacks with any
  * {@link Promise} that resolves to an array.
  *

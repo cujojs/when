@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>when/delay Unit Tests</title>
+	<script src="util/doh/runner.js"></script>
+	<script src="test-config.js"></script>
+	<script src="../when.js"></script>
+	<script src="../delay.js"></script>
+	<script>
+
+		(function(global, doh, async) {
+
+			var delay = when_delay;
+
+			function now() {
+				return (new Date()).getTime();
+			}
+
+			doh.register('when/delay', [
+				function testDelayResolves() {
+					return async.assertResolved(delay(0));
+				},
+				function testDelayResolvesWithValue() {
+					return async.assertResolved(delay(1, 0), 1);
+				},
+				function testDelayResolvesAfterDelay() {
+					var start, dohd;
+
+					dohd = new doh.Deferred();
+					start = now();
+
+					delay(50).then(
+						function() {
+							dohd.callback((now() - start) >= 50);
+						},
+						dohd.errback
+					);
+
+					return dohd;
+				},
+				function testDelayRejectsImmediately() {
+					var d, dohd;
+					d = when.defer();
+					d.reject(1);
+
+					return async.assertRejected(delay(d, 0), 1);
+				}
+			]);
+
+			doh.run();
+
+		})(window, doh, doh.asyncHelper);
+	</script>
+</head>
+<body>
+
+</body>
+</html>

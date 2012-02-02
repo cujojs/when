@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>when/cancelable Unit Tests</title>
+	<script src="util/doh/runner.js"></script>
+	<script src="test-config.js"></script>
+	<script src="../when.js"></script>
+	<script src="../cancelable.js"></script>
+	<script>
+
+		(function(global, doh, async) {
+
+			var cancelable = when_cancelable;
+
+			doh.register('when/cancelable', [
+				function testHasCancel() {
+					var c = cancelable(when.defer(), function() {});
+					doh.assertTrue(typeof c.cancel == 'function');
+				},
+				function testCancelCausesRejection() {
+					var c = cancelable(when.defer(), function() { return 1; });
+					c.cancel();
+
+					return async.assertRejected(c, 1);
+				},
+				function testRejectDoesNotCallCanceler() {
+					var c = cancelable(when.defer(), function() { return 1; });
+					c.reject(2);
+
+					return async.assertRejected(c, 2);
+				}
+			]);
+
+			doh.run();
+
+		})(window, doh, doh.asyncHelper);
+	</script>
+</head>
+<body>
+
+</body>
+</html>

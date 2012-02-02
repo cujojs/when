@@ -17,6 +17,11 @@ doh.registerUrl('when.reduce', '../../reduce.html');
 
 doh.registerUrl('checkHandlers', '../../checkHandlers.html');
 
+// Helpers
+doh.registerUrl('when/cancelable', '../../cancelable.html');
+doh.registerUrl('when/timeout', '../../timeout.html');
+doh.registerUrl('when/delay', '../../delay.html');
+
 doh.registerUrl('when/apply', '../../apply.html');
 
 doh.run();

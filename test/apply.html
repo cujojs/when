@@ -2,7 +2,7 @@
 <html lang="en-US">
 <head>
 	<meta charset="UTF-8">
-	<title>check handler parameters Unit Tests</title>
+	<title>when/apply Unit Tests</title>
 	<script src="util/doh/runner.js"></script>
     <script src="test-config.js"></script>
 	<script src="../apply.js"></script>
@@ -22,7 +22,7 @@
                 return sum;
             }
             
-            doh.register('checkHandlers', [
+            doh.register('when/apply', [
                 function testApplySpreadsArray() {
                     doh.assertEqual(15, when_apply(f)([1,2,3,4,5]));
                 },

@@ -109,7 +109,40 @@
 
 			return dohd;
 		},
-        assertSameContents: assertSameContents
+        assertSameContents: assertSameContents,
+        assertRejected: function(promise, value) {
+            var dohd, args;
+
+            dohd = new doh.Deferred();
+
+            args = arguments;
+
+            promise.then(
+                function(e) { dohd.errback(e); },
+                function(v) {
+                    dohd.callback(args.length < 2 ? true : (value === v));
+                }
+            );
+
+            return dohd;
+        },
+        assertResolved: function(promise, value) {
+            var dohd, args;
+
+            dohd = new doh.Deferred();
+
+            args = arguments;
+
+            promise.then(
+                function(v) {
+                    dohd.callback(args.length < 2 ? true : (value === v));
+                },
+                function(e) { dohd.errback(e); }
+            );
+
+            return dohd;
+        }
+
 	}
 
 })(this, doh);
