@@ -26,6 +26,8 @@ What's New?
 ### v1.0.0
 
 * First official when.js release as a part of [cujojs](https://github.com/cujojs).
+* Added when/cancelable decorator for creating cancelable deferreds
+* Added when/delay and when/timeout helpers for creating delayed promises and promises that timeout and reject if not resolved first.
 
 ### v0.11.1
 
