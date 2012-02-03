@@ -74,10 +74,10 @@ What's New?
 
 * Important fix for break in promise chains
 
-Examples
-========
+Docs & Examples
+===============
 
-Check the wiki for [examples](https://github.com/cujojs/when/wiki/Examples)
+See the API section below, and the [wiki for more detailed docs](https://github.com/cujojs/when/wiki) and [examples](https://github.com/cujojs/when/wiki/Examples)
 
 API
 ===
