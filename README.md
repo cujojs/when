@@ -245,11 +245,10 @@ when.all(arrayOfPromisesOrValues, apply(functionThatAcceptsMultipleArgs));
 Testing
 =======
 
-To run the unit tests, `from the when.js` dir:
+To run the unit tests, from the when.js dir:
 
-1. `git submodule init`
-2. `git submodule update`
-3. Open test.index.html in your browser
+1. `git submodule init && git submodule update`
+1. Open test/index.html in your browser
 
 References
 ----------
