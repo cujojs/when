@@ -26,7 +26,7 @@
                         return current + val;
                     }
 
-                    expected = fixture.values.reduce(reducer, 0);
+                    expected = 45;
 
                     when.reduce(fixture.promises, reducer, 0).then(
                         function(reduced) {
@@ -52,7 +52,7 @@
                         return current + val;
                     }
 
-                    expected = fixture.values.reduce(reducer);
+                    expected = 45;
 
                     when.reduce(fixture.values, reducer).then(
                         function(reduced) {
@@ -157,7 +157,7 @@
                     initialValue = when.defer();
                     values = [1,2,3];
                     initial = 4;
-                    expected = values.reduce(reducer, initial);
+                    expected = 10;
 
                     // Reducer is compatible with both when.reduce and
                     // Array.prototype.reduce, except for the last
@@ -192,7 +192,7 @@
                         return current + val;
                     }
 
-                    expected = fixture.values.reduce(reducer, "");
+                    expected = "0123456789";
 
                     when.reduce(fixture.promises, reducer, "").then(
                         function(reduced) {
@@ -219,7 +219,7 @@
                         return current;
                     }
 
-                    expected = fixture.values.reduce(reducer, []);
+                    expected = [0,1,2,3,4,5,6,7,8,9];
 
                     when.reduce(fixture.promises, reducer, []).then(
                         function(reduced) {

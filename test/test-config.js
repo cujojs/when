@@ -25,6 +25,19 @@
 	doh.assertResolutionEquals = assertResolutionEquals;
 	doh.rejecter = rejecter;
 
+    function indexOf(array, val) {
+        var len, i;
+        len = array.length;
+        i = 0;
+        for(;i<len; i++) {
+            if(i in array && array[i] === val) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
     function getArrayAssertion(dohd, expected, expectedLength) {
         // Return a promise handler that will verify the results
         return function (val) {
@@ -36,7 +49,7 @@
             // that the results values are somewhere in the expected
             // set.
             for (var i = 0; i < expectedLength; i++) {
-                success = success && (expected.indexOf(val[i]) >= 0);
+                success = success && (indexOf(expected, val[i]) >= 0);
             }
 
             dohd.callback(success);
@@ -62,6 +75,22 @@
     }
 
     doh.asyncHelper = {
+        indexOf: indexOf,
+        map: function(array, mapper) {
+            var result, len, i;
+
+            result = [];
+            len = array.length;
+            i = 0;
+
+            for(;i<len; i++) {
+                if(i in array) {
+                    result[i] = mapper(array[i]);
+                }
+            }
+
+            return result;
+        },
 		deferN: function(n) {
 			// Create an array of N values, and N deferreds.
 			// Each deferred will resolve to its corresponding value
@@ -81,7 +110,7 @@
 				(function(i) {
 					setTimeout(function() {
 						deferreds[i].resolve(values[i]);
-					}, Math.random() * 50);
+					}, Math.random() * 10);
 				})(i);
 			}
 

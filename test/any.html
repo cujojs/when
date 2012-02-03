@@ -33,7 +33,7 @@
 
                     when.any(fixture.promises,
                         function(val) {
-                            dohd.callback(fixture.values.indexOf(val) >= 0);
+                            dohd.callback(async.indexOf(fixture.values, val) >= 0);
                         },
                         function(e) {
                             dohd.errback(e);
