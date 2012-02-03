@@ -30,7 +30,11 @@
 					dohd = new doh.Deferred();
 					start = now();
 
-					delay(50).then(
+					// NOTE: FF 9.0.1 seems to fire setTimeout early when the
+					// timeout value is small (< 200ms).  The smaller the number,
+					// the bigger the difference.  So, we can only verify the
+					// timeout here with a fairly low resolution.
+					delay(100).then(
 						function() {
 							dohd.callback((now() - start) >= 50);
 						},
