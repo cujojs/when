@@ -261,6 +261,7 @@ define(function() {
          * @param which {String} either "resolve" or "reject"
          */
         function notify(which) {
+//			console.log(which, result);
             // Traverse all listeners registered directly with this Deferred,
             // also making sure to handle chained thens
 
@@ -285,20 +286,20 @@ define(function() {
                     // NOTE: isPromise is also called by promise(), which is called by when(),
                     // resulting in 2 calls to isPromise here.  It's harmless, but need to
                     // refactor to avoid that.
-                    if (isPromise(newResult)) {
+//                    if (isPromise(newResult)) {
                         // If the handler returned a promise, chained deferreds
                         // should complete only after that promise does.
-                        when(newResult, ldeferred.resolve, ldeferred.reject, ldeferred.progress);
+                        when(newResult === undef ? result : newResult, ldeferred[which], ldeferred.reject, ldeferred.progress);
 
-                    } else {
+//                    } else {
                         // Complete deferred from chained then()
                         // FIXME: Which is correct?
                         // The first always mutates the chained value, even if it is undefined
                         // The second will only mutate if newResult !== undefined
                         // ldeferred[which](newResult);
-                        ldeferred[which](newResult === undef ? result : newResult);
+//                        ldeferred[which](newResult === undef ? result : newResult);
 
-                    }
+//                    }
                 } catch (e) {
                     // Exceptions cause chained deferreds to reject
                     ldeferred.reject(e);
@@ -394,6 +395,37 @@ define(function() {
         return trustedPromise.then(callback, errback, progressHandler);
     }
 
+	when.resolved = resolved;
+	function resolved(v) {
+		var p = new Promise();
+		p.then = function(cb, eb) {
+			return next(v, cb);
+		};
+
+		return p;
+	}
+
+	when.rejected = rejected;
+	function rejected(e) {
+		var p = new Promise();
+		p.then = function(cb, eb) {
+			return next(e, eb);
+		};
+
+		return p;
+	}
+
+	function next(val, cb) {
+		var result;
+		try {
+			result = promise(cb ? cb(val) : val);
+		} catch(e) {
+			result = rejected(e);
+		}
+
+		return result;
+	}
+
     /**
      * Returns promiseOrValue if promiseOrValue is a {@link Promise}, a new Promise if
      * promiseOrValue is a foreign promise, or a new, already-resolved {@link Promise}
@@ -422,9 +454,9 @@ define(function() {
         } else {
             // It's not a when.js promise.  Check to see if it's a foreign promise
             // or a value.
-            deferred = defer();
 
             if(isPromise(promiseOrValue)) {
+				deferred = defer();
                 // It's a compliant promise, but we don't know where it came from,
                 // so we don't trust its implementation entirely.  Introduce a trusted
                 // middleman when.js promise
@@ -432,15 +464,16 @@ define(function() {
                 // IMPORTANT: This is the only place when.js should ever call .then() on
                 // an untrusted promise.
                 promiseOrValue.then(deferred.resolve, deferred.reject, deferred.progress);
+				promise = deferred.promise;
 
             } else {
                 // It's a value, not a promise.  Create an already-resolved promise
                 // for it.
-                deferred.resolve(promiseOrValue);
-
+//                deferred.resolve(promiseOrValue);
+				promise = resolved(promiseOrValue);
             }
 
-            promise = deferred.promise;
+//            promise = deferred.promise;
         }
 
         return promise;
