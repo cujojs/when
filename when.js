@@ -108,7 +108,7 @@ define(function() {
      * @returns {Deferred}
      */
     function defer() {
-        var deferred, promise, result, listeners, progressHandlers, _then, _progress, complete;
+        var deferred, promise, listeners, progressHandlers, _then, _progress, complete;
 
         listeners = [];
         progressHandlers = [];
@@ -174,7 +174,7 @@ define(function() {
          * @param val anything
          */
         function resolve(val) {
-            complete('resolve', val);
+            complete(resolved(val));
         }
 
         /**
@@ -186,7 +186,7 @@ define(function() {
          * @param err anything
          */
         function reject(err) {
-            complete('reject', err);
+            complete(rejected(err));
         }
 
         /**
@@ -219,17 +219,10 @@ define(function() {
          * @param which {String} either "resolve" or "reject"
          * @param val anything resolution value or rejection reason
          */
-        complete = function(which, val) {
-            // Save original _then
-            var origThen = _then;
-
+        complete = function(promise) {
             // Replace _then with one that immediately notifies
             // with the result.
-            _then = function newThen(callback, errback) {
-                var promise = origThen(callback, errback);
-                notify(which);
-                return promise;
-            };
+			_then = promise.then;
 
             // Replace complete so that this Deferred
             // can only be completed once.  Note that this leaves
@@ -248,24 +241,21 @@ define(function() {
             // for this promise again now that it's completed
             progressHandlers = undef;
 
-            // Final result of this Deferred.  This is immutable
-            result = val;
-
             // Notify listeners
-            notify(which);
+            notify(promise);
         };
 
         /**
          * Notify all listeners of resolution or rejection
          *
-         * @param which {String} either "resolve" or "reject"
+         * @param promise {String} either "resolve" or "reject"
          */
-        function notify(which) {
+        function notify(promise) {
 //			console.log(which, result);
             // Traverse all listeners registered directly with this Deferred,
             // also making sure to handle chained thens
 
-            var listener, ldeferred, newResult, handler, localListeners, i = 0;
+            var listener, ldeferred, localListeners, i = 0;
 
             // Reset the listeners array asap.  Some of the promise chains in the loop
             // below could run async, so need to ensure that no callers can corrupt
@@ -275,35 +265,9 @@ define(function() {
             listeners = [];
 
             while (listener = localListeners[i++]) {
-
                 ldeferred = listener.deferred;
-                handler = listener[which];
-
-                try {
-
-                    newResult = handler ? handler(result) : result;
-
-                    // NOTE: isPromise is also called by promise(), which is called by when(),
-                    // resulting in 2 calls to isPromise here.  It's harmless, but need to
-                    // refactor to avoid that.
-//                    if (isPromise(newResult)) {
-                        // If the handler returned a promise, chained deferreds
-                        // should complete only after that promise does.
-                        when(newResult === undef ? result : newResult, ldeferred[which], ldeferred.reject, ldeferred.progress);
-
-//                    } else {
-                        // Complete deferred from chained then()
-                        // FIXME: Which is correct?
-                        // The first always mutates the chained value, even if it is undefined
-                        // The second will only mutate if newResult !== undefined
-                        // ldeferred[which](newResult);
-//                        ldeferred[which](newResult === undef ? result : newResult);
-
-//                    }
-                } catch (e) {
-                    // Exceptions cause chained deferreds to reject
-                    ldeferred.reject(e);
-                }
+				promise.then(listener.resolve, listener.reject)
+					.then(ldeferred.resolve, ldeferred.reject, ldeferred.progress);
             }
         }
 
@@ -395,35 +359,34 @@ define(function() {
         return trustedPromise.then(callback, errback, progressHandler);
     }
 
-	when.resolved = resolved;
-	function resolved(v) {
-		var p = new Promise();
-		p.then = function(cb, eb) {
-			return next(v, cb);
-		};
-
-		return p;
+	function enqueue(task) {
+		setTimeout(task, 0);
 	}
 
-	when.rejected = rejected;
-	function rejected(e) {
+	when.resolve = resolved;
+	function resolved(value) {
 		var p = new Promise();
-		p.then = function(cb, eb) {
-			return next(e, eb);
+		p.then = function(callback) {
+			return next(value, callback);
 		};
-
-		return p;
+		return freeze(p);
 	}
 
-	function next(val, cb) {
-		var result;
+	when.reject = rejected;
+	function rejected(reason) {
+		var p = new Promise();
+		p.then = function(callback, errback) {
+			return next(reason, errback);
+		};
+		return freeze(p);
+	}
+
+	function next(val, handler) {
 		try {
-			result = promise(cb ? cb(val) : val);
+			return promise(handler ? handler(val) : val);
 		} catch(e) {
-			result = rejected(e);
+			return rejected(e);
 		}
-
-		return result;
 	}
 
     /**
@@ -469,11 +432,8 @@ define(function() {
             } else {
                 // It's a value, not a promise.  Create an already-resolved promise
                 // for it.
-//                deferred.resolve(promiseOrValue);
 				promise = resolved(promiseOrValue);
             }
-
-//            promise = deferred.promise;
         }
 
         return promise;
