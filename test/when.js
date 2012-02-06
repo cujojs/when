@@ -19,19 +19,16 @@ function FakePromise(val) {
 buster.testCase('when', {
 	'should return a promise for a value': function() {
 		var result = when(1);
-		assert.isObject(result);
 		assert.typeOf(result.then, 'function');
 	},
 
 	'should return a promise for a promise': function() {
 		var result = when(fakePromise);
-		assert.isObject(result);
 		assert.typeOf(result.then, 'function');
 	},
 
 	'should not return the input promise': function() {
 		var result = when(fakePromise, identity);
-		assert.isObject(result);
 		assert.typeOf(result.then, 'function');
 		refute.same(result, fakePromise);
 	},
@@ -39,7 +36,6 @@ buster.testCase('when', {
 	'should return a promise that forwards for a value': function(done) {
 		var result = when(1, constant(2));
 
-		assert.isObject(result);
 		assert.typeOf(result.then, 'function');
 
 		result.then(

@@ -8,6 +8,11 @@ defer = when.defer;
 
 function f() {}
 
+function fail() {
+	buster.fail();
+	done();
+}
+
 buster.testCase('promise.then', {
 
 	'should allow a single callback function': function() {
@@ -50,9 +55,90 @@ buster.testCase('promise.then', {
 		assert.exception(function() { defer().promise.then(null, 1, null); });
 		assert.exception(function() { defer().promise.then(null, null, 1); });
 
+	},
+
+	'should forward callback result to next callback': function(done) {
+		var d = when.defer();
+
+		d.promise.then(
+			function(val) {
+				return val + 1;
+			},
+			fail
+		).then(
+			function(val) {
+				assert.equals(val, 2);
+				done();
+			},
+			fail
+		);
+
+		d.resolve(1);
+	},
+
+	'should forward promised callback result value to next callback': function(done) {
+		var d = when.defer();
+
+		d.promise.then(
+			function(val) {
+				var d = when.defer();
+				d.resolve(val + 1);
+				return d.promise;
+			},
+			fail
+		).then(
+			function(val) {
+				assert.equals(val, 2);
+				done();
+			},
+			fail
+		);
+
+		d.resolve(1);
+	},
+
+	'should switch from callbacks to errbacks when callback returns a rejection': function(done) {
+		var d = when.defer();
+
+		d.promise.then(
+			function(val) {
+				var d = when.defer();
+				d.reject(val + 1);
+				return d.promise;
+			},
+			fail
+		).then(
+			fail,
+			function(val) {
+				assert.equals(val, 2);
+				done();
+			}
+		);
+
+		d.resolve(1);
+	},
+
+	'should switch from errbacks to callbacks when errback returns a resolution': function(done) {
+		var d = when.defer();
+
+		d.promise.then(
+			fail,
+			function(val) {
+				var d = when.defer();
+				d.resolve(val + 1);
+				return d.promise;
+			}
+		).then(
+			function(val) {
+				assert.equals(val, 2);
+				done();
+			},
+			fail
+		);
+
+		d.reject(1);
 	}
 
-	// TODO: more throw tests
 	// TODO: all()/some() tests for throw with variadic instead of array. see checkHandlers.html
 });
 })(

@@ -111,6 +111,12 @@ buster.testCase('when.some', {
 				done();
 			}
 		);
+	},
+
+	'should throw if called with something other than an array': function() {
+		assert.exception(function() {
+			when.some(1, 2, 3, 2);
+		});
 	}
 
 });

@@ -86,6 +86,12 @@ buster.testCase('when.all', {
 				done();
 			}
 		);
+	},
+
+	'should throw if called with something other than an array': function() {
+		assert.exception(function() {
+			when.all(1, 2, 3);
+		});
 	}
 });
 
