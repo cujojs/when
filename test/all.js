@@ -1,9 +1,6 @@
 (function(buster, when) {
 
-var assert, refute;
-
-assert = buster.assert;
-refute = buster.refute;
+var assert = buster.assert;
 
 function resolved(val) {
 	var d = when.defer();
