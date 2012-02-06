@@ -1,14 +1,6 @@
-// Test boilerplate
-var buster, assert, refute, when;
+(function(buster, when) {
 
-if (typeof require != "undefined") {
-	buster = require("buster");
-	when = require('../when');
-}
-
-assert = buster.assert;
-refute = buster.refute;
-// end boilerplate
+var assert = buster.assert;
 
 var defer, undef;
 
@@ -17,6 +9,7 @@ defer = when.defer;
 function f() {}
 
 buster.testCase('promise.then', {
+
 	'should allow a single callback function': function() {
 		assert.typeOf(defer().promise.then(f).then, 'function');
 	},
@@ -62,3 +55,7 @@ buster.testCase('promise.then', {
 	// TODO: more throw tests
 	// TODO: all()/some() tests for throw with variadic instead of array. see checkHandlers.html
 });
+})(
+	this.buster || require('buster'),
+	this.when   || require('../when')
+);

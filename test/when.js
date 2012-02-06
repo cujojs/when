@@ -1,14 +1,7 @@
-// Test boilerplate
-var buster, assert, refute, when;
+(function(buster, when) {
 
-if (typeof require != "undefined") {
-	buster = require("buster");
-	when = require('../when');
-}
-
-assert = buster.assert;
-refute = buster.refute;
-// end boilerplate
+var assert = buster.assert;
+var refute = buster.refute;
 
 function identity(val) { return val; }
 function constant(val) { return function() { return val; }; }
@@ -172,3 +165,7 @@ buster.testCase('when', {
 	}
 
 });
+})(
+	this.buster || require('buster'),
+	this.when   || require('../when')
+);

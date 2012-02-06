@@ -1,14 +1,6 @@
-// Test boilerplate
-var buster, assert, refute, when;
+(function(buster, when) {
 
-if (typeof require != "undefined") {
-	buster = require("buster");
-	when = require('../when');
-}
-
-assert = buster.assert;
-refute = buster.refute;
-// end boilerplate
+var assert = buster.assert;
 
 function plus(sum, val) {
 	return sum + val;
@@ -31,6 +23,7 @@ function later(val) {
 }
 
 buster.testCase('when.reduce', {
+
 	'should reduce values without initial value': function(done) {
 		when.reduce([1,2,3], plus).then(
 			function(result) {
@@ -202,3 +195,8 @@ buster.testCase('when.reduce', {
 		)
 	}
 });
+
+})(
+	this.buster || require('buster'),
+	this.when   || require('../when')
+);

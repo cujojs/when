@@ -1,29 +1,14 @@
-// Test boilerplate
-var buster, assert, refute, when, when_delay;
+(function(buster, when, delay) {
 
-if (typeof require != "undefined") {
-	buster = require("buster");
-	when = require('../when');
-	when_delay = require('../delay');
-}
-
-assert = buster.assert;
-refute = buster.refute;
-// end boilerplate
+var assert = buster.assert;
 
 function now() {
 	return (new Date()).getTime();
 }
 
-function FakePromise(val) {
-	this.then = function() {
-		return this;
-	}
-}
-
 buster.testCase('when/delay', {
 	'should resolve after delay': function(done) {
-		when_delay(0).then(
+		delay(0).then(
 			function() {
 				assert(true);
 				done();
@@ -36,7 +21,7 @@ buster.testCase('when/delay', {
 	},
 
 	'should resolve with provided value after delay': function(done) {
-		when_delay(1, 0).then(
+		delay(1, 0).then(
 			function(val) {
 				assert.equals(val, 1);
 				done();
@@ -51,7 +36,7 @@ buster.testCase('when/delay', {
 	'should delay by the provided value': function(done) {
 		var start = now();
 
-		when_delay(100).then(
+		delay(100).then(
 			function() {
 				assert((now() - start) > 50);
 				done();
@@ -67,7 +52,7 @@ buster.testCase('when/delay', {
 		var d = when.defer();
 		d.reject(1);
 
-		when_delay(d.promise, 0).then(
+		delay(d.promise, 0).then(
 			function() {
 				buster.fail();
 				done();
@@ -79,3 +64,8 @@ buster.testCase('when/delay', {
 		);
 	}
 });
+})(
+	this.buster || require('buster'),
+	this.when || require('../when'),
+	this.when_delay || require('../delay')
+);

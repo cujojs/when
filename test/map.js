@@ -1,14 +1,6 @@
-// Test boilerplate
-var buster, assert, refute, when;
+(function(buster, when) {
 
-if (typeof require != "undefined") {
-	buster = require("buster");
-	when = require('../when');
-}
-
-assert = buster.assert;
-refute = buster.refute;
-// end boilerplate
+var assert = buster.assert;
 
 function mapper(val) {
 	return val * 2;
@@ -31,6 +23,7 @@ function resolved(val) {
 }
 
 buster.testCase('when.map', {
+
 	'should map input values array': function(done) {
 		var input = [1, 2, 3];
 		when.map(input, mapper).then(
@@ -102,3 +95,7 @@ buster.testCase('when.map', {
 	}
 
 });
+})(
+	this.buster || require('buster'),
+	this.when   || require('../when')
+);
