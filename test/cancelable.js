@@ -1,12 +1,15 @@
 // Test boilerplate
-var buster, assert, refute, when;
+var buster, assert, refute, when, when_cancelable;
 
-buster = require('buster');
+if (typeof require != "undefined") {
+	buster = require("buster");
+	when = require('../when');
+	when_cancelable = require('../cancelable');
+}
+
 assert = buster.assert;
 refute = buster.refute;
 
-when = require('../when');
-cancelable = require('../cancelable');
 // end boilerplate
 
 function FakePromise(val) {
@@ -17,12 +20,12 @@ function FakePromise(val) {
 
 buster.testCase('when/cancelable', {
 	'should decorate deferred with a cancel() method': function() {
-		var c = cancelable(when.defer(), function() {});
+		var c = when_cancelable(when.defer(), function() {});
 		assert.typeOf(c.cancel, 'function');
 	},
 
 	'should propagate a rejection when a cancelabled deferred is canceled': function(done) {
-		var c = cancelable(when.defer(), function() { return 1; });
+		var c = when_cancelable(when.defer(), function() { return 1; });
 		c.cancel();
 
 		c.then(
@@ -38,7 +41,7 @@ buster.testCase('when/cancelable', {
 	},
 
 	'should not invoke canceler when rejected normally': function(done) {
-		var c = cancelable(when.defer(), function() { return 1; });
+		var c = when_cancelable(when.defer(), function() { return 1; });
 		c.reject(2);
 
 		c.then(

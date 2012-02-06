@@ -1,12 +1,14 @@
 // Test boilerplate
-var buster, assert, refute, when;
+var buster, assert, refute, when, when_timeout;
 
-buster = require('buster');
+if (typeof require != "undefined") {
+	buster = require("buster");
+	when = require('../when');
+	when_timeout = require('../timeout');
+}
+
 assert = buster.assert;
 refute = buster.refute;
-
-when = require('../when');
-timeout = require('../timeout');
 // end boilerplate
 
 function FakePromise(val) {
@@ -17,7 +19,7 @@ function FakePromise(val) {
 
 buster.testCase('when/timeout', {
 	'should reject after timeout': function(done) {
-		timeout(new FakePromise(1), 0).then(
+		when_timeout(new FakePromise(1), 0).then(
 			function() {
 				buster.fail();
 				done();
@@ -33,7 +35,7 @@ buster.testCase('when/timeout', {
 		var d = when.defer();
 		d.reject(1);
 
-		timeout(d, 0).then(
+		when_timeout(d, 0).then(
 			function() {
 				buster.fail();
 				done();
@@ -49,7 +51,7 @@ buster.testCase('when/timeout', {
 		var d = when.defer();
 		d.resolve(1);
 
-		timeout(d, 0).then(
+		when_timeout(d, 0).then(
 			function(val) {
 				assert.equals(val, 1);
 				done();

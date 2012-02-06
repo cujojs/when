@@ -1,10 +1,15 @@
 // Test boilerplate
-var buster, when;
+var buster, assert, refute, when;
 
-buster = require('buster');
-when = require('../when');
+if (typeof require != "undefined") {
+	buster = require("buster");
+	when = require('../when');
+}
+
+assert = buster.assert;
+refute = buster.refute;
+
 // end boilerplate
-
 var fakePromise, undef;
 
 fakePromise = {
@@ -12,11 +17,11 @@ fakePromise = {
 };
 
 function assertIsPromise(it) {
-    buster.assert(when.isPromise(it));
+    assert(when.isPromise(it));
 }
 
 function assertIsNotPromise(it) {
-    buster.refute(when.isPromise(it));
+    refute(when.isPromise(it));
 }
 
 buster.testCase('when.isPromise', {

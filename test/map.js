@@ -1,11 +1,13 @@
 // Test boilerplate
 var buster, assert, refute, when;
 
-buster = require('buster');
+if (typeof require != "undefined") {
+	buster = require("buster");
+	when = require('../when');
+}
+
 assert = buster.assert;
 refute = buster.refute;
-
-when = require('../when');
 // end boilerplate
 
 function mapper(val) {

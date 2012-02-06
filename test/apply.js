@@ -1,11 +1,13 @@
 // Test boilerplate
-var buster, assert, refute, when;
+var buster, assert, refute, when_apply;
 
-buster = require('buster');
+if (typeof require != "undefined") {
+	buster = require("buster");
+	when_apply = require('../apply');
+}
+
 assert = buster.assert;
 refute = buster.refute;
-
-apply = require('../apply');
 // end boilerplate
 
 // variadic arguments-based callback
@@ -22,12 +24,12 @@ function f() {
 
 buster.testCase('when/apply', {
 	'should spread array onto arguments': function() {
-		assert.equals(6, apply(f)([1,2,3]));
+		assert.equals(6, when_apply(f)([1,2,3]));
 	},
 
 	'should fail for non Array-like input': function() {
 		assert.exception(function() {
-			apply(f)(1,2,3);
+			when_apply(f)(1,2,3);
 		});
 	}
 });

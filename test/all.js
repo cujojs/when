@@ -1,27 +1,26 @@
-// DOH seems to faily consistently on the first test suite, so I'm putting
-// in this fake suite so it will fail and all the real tests results will
-// be meaningful.
-doh.registerUrl('_fake', '../../_fake-doh.html');
+// Test boilerplate
+var buster, assert, refute, when;
 
-doh.registerUrl('when.isPromise', '../../isPromise.html');
-doh.registerUrl('when', '../../when.html');
-doh.registerUrl('assimilate', '../../assimilate.html');
-doh.registerUrl('when.defer', '../../defer.html');
-doh.registerUrl('when.some', '../../some.html');
-doh.registerUrl('when.any', '../../any.html');
-doh.registerUrl('when.all', '../../all.html');
-doh.registerUrl('when.chain', '../../chain.html');
+if (typeof require != "undefined") {
+	buster = require("buster");
+	when = require('../when');
+}
 
-doh.registerUrl('when.map', '../../map.html');
-doh.registerUrl('when.reduce', '../../reduce.html');
+assert = buster.assert;
+refute = buster.refute;
+// end boilerplate
 
-doh.registerUrl('checkHandlers', '../../checkHandlers.html');
-
-// Helpers
-doh.registerUrl('when/cancelable', '../../cancelable.html');
-doh.registerUrl('when/timeout', '../../timeout.html');
-doh.registerUrl('when/delay', '../../delay.html');
-
-doh.registerUrl('when/apply', '../../apply.html');
-
-doh.run();
+buster.testCase('when.all', {
+	'should resolve with empty input': function(done) {
+		when.all([],
+			function(result) {
+				assert.equals(result, []);
+				done();
+			},
+			function() {
+				buster.fail();
+				done();
+			}
+		);
+	}
+});
