@@ -359,15 +359,15 @@ define(function() {
         return trustedPromise.then(callback, errback, progressHandler);
     }
 
-	function enqueue(task) {
-		setTimeout(task, 0);
-	}
-
 	when.resolve = resolved;
 	function resolved(value) {
 		var p = new Promise();
 		p.then = function(callback) {
-			return next(value, callback);
+			try {
+				return promise(callback ? callback(value) : value);
+			} catch(e) {
+				return rejected(e);
+			}
 		};
 		return freeze(p);
 	}
@@ -376,17 +376,13 @@ define(function() {
 	function rejected(reason) {
 		var p = new Promise();
 		p.then = function(callback, errback) {
-			return next(reason, errback);
+			try {
+				return promise(rejected(errback ? errback(reason) : reason));
+			} catch(e) {
+				return rejected(e);
+			}
 		};
 		return freeze(p);
-	}
-
-	function next(val, handler) {
-		try {
-			return promise(handler ? handler(val) : val);
-		} catch(e) {
-			return rejected(e);
-		}
 	}
 
     /**
@@ -418,8 +414,8 @@ define(function() {
             // It's not a when.js promise.  Check to see if it's a foreign promise
             // or a value.
 
+			deferred = defer();
             if(isPromise(promiseOrValue)) {
-				deferred = defer();
                 // It's a compliant promise, but we don't know where it came from,
                 // so we don't trust its implementation entirely.  Introduce a trusted
                 // middleman when.js promise
@@ -433,6 +429,8 @@ define(function() {
                 // It's a value, not a promise.  Create an already-resolved promise
                 // for it.
 				promise = resolved(promiseOrValue);
+//				deferred.resolve(promiseOrValue);
+//				promise = deferred.promise;
             }
         }
 
