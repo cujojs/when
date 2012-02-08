@@ -94,6 +94,61 @@ define(function() {
      */
     function Promise() {}
 
+	/**
+	 * Create an already-resolved promise for the supplied value
+	 *
+	 * @param value anything
+	 * @return {Promise}
+	 */
+	function resolved(value) {
+
+		var p = new Promise();
+
+		p.then = function(callback) {
+			checkCallbacks(arguments);
+
+			try {
+				return promise(callback ? callback(value) : value);
+			} catch(e) {
+				return rejected(e);
+			}
+		};
+
+		return freeze(p);
+	}
+
+	/**
+	 * Create an already-rejected {@link Promise} with the supplied
+	 * rejection reason.
+	 *
+	 * @param reason rejection reason
+	 * @return {Promise}
+	 */
+	function rejected(reason) {
+
+		var p = new Promise();
+
+		p.then = function(callback, errback) {
+			checkCallbacks(arguments);
+
+			try {
+				return errback ? promise(errback(reason)) : rejected(reason);
+			} catch(e) {
+				return rejected(e);
+			}
+		};
+
+		return freeze(p);
+	}
+
+	/**
+	 * Helper that checks arrayOfCallbacks to ensure that each element is either
+	 * a function, or null or undefined.
+	 *
+	 * @param arrayOfCallbacks {Array} array to check
+	 * @throws {Error} if any element of arrayOfCallbacks is something other than
+	 * a Functions, null, or undefined.
+	 */
 	function checkCallbacks(arrayOfCallbacks) {
 		var arg, i = arrayOfCallbacks.length;
 		while(i) {
@@ -141,11 +196,10 @@ define(function() {
 
             var deferred = defer();
 
-            listeners.push({
-                deferred: deferred,
-                resolve: callback,
-                reject: errback
-            });
+			listeners.push(function(promise) {
+				promise.then(callback, errback)
+					.then(deferred.resolve, deferred.reject, deferred.progress);
+			});
 
             progback && progressHandlers.push(progback);
 
@@ -220,22 +274,17 @@ define(function() {
          *
          * @private
          *
-         * @param which {String} either "resolve" or "reject"
-         * @param val anything resolution value or rejection reason
+         * @param completed {Promise} the completed value of this deferred
          */
         complete = function(completed) {
-			var listener, ldeferred, localListeners, i = 0;
+			var listener, i = 0;
 
-            // Replace _then with one that immediately notifies
-            // with the result.
+			// Replace _then with one that directly notifies with the result.
 			_then = completed.then;
 
-            // Replace complete so that this Deferred
-            // can only be completed once.  Note that this leaves
-            // notify() intact so that it can be used in the
-            // rewritten _then above.
-            // Replace _progress, so that subsequent attempts
-            // to issue progress throw.
+            // Replace complete so that this Deferred can only be completed
+            // once. Also Replace _progress, so that subsequent attempts to issue
+            // progress throw.
             complete = _progress = function alreadyCompleted() {
                 // TODO: Consider silently returning here so that parties who
                 // have a reference to the resolver cannot tell that the promise
@@ -248,20 +297,13 @@ define(function() {
             progressHandlers = undef;
 
 			// Notify listeners
-			// Traverse all listeners registered directly with this Deferred,
-			// also making sure to handle chained thens
+			// Traverse all listeners registered directly with this Deferred
 
-			// Reset the listeners array asap.  Some of the promise chains in the loop
-			// below could run async, so need to ensure that no callers can corrupt
-			// the array we're iterating over, but also need to allow callers to register
-			// new listeners.
-			localListeners = listeners;
-			listeners = [];
-			while (listener = localListeners[i++]) {
-				ldeferred = listener.deferred;
-				completed.then(listener.resolve, listener.reject)
-					.then(ldeferred.resolve, ldeferred.reject, ldeferred.progress);
+			while (listener = listeners[i++]) {
+				listener(completed);
 			}
+
+			listeners = [];
 		};
 
 		/**
@@ -351,48 +393,6 @@ define(function() {
         // Register promise handlers
         return trustedPromise.then(callback, errback, progressHandler);
     }
-
-	function resolved(value) {
-//		return function(callback) {
-//			checkCallbacks(arguments);
-//			try {
-//				return promise(callback ? callback(value) : value);
-//			} catch(e) {
-//				return rejected(e);
-//			}
-//		};
-		var p = new Promise();
-		p.then = function(callback) {
-			checkCallbacks(arguments);
-			try {
-				return promise(callback ? callback(value) : value);
-			} catch(e) {
-				return rejected(e);
-			}
-		};
-		return freeze(p);
-	}
-
-	function rejected(reason) {
-//		return function(callback, errback) {
-//			checkCallbacks(arguments);
-//			try {
-//				return errback ? promise(errback(reason)) : rejected(reason);
-//			} catch(e) {
-//				return rejected(e);
-//			}
-//		};
-		var p = new Promise();
-		p.then = function(callback, errback) {
-			checkCallbacks(arguments);
-			try {
-				return errback ? promise(errback(reason)) : rejected(reason);
-			} catch(e) {
-				return rejected(e);
-			}
-		};
-		return freeze(p);
-	}
 
     /**
      * Returns promiseOrValue if promiseOrValue is a {@link Promise}, a new Promise if
