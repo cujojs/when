@@ -104,6 +104,28 @@ buster.testCase('promise', {
 		d.resolve(1);
 	},
 
+	'should forward previous rejection value instead of undefined': function(done) {
+		var d = when.defer();
+
+		d.promise.then(
+			fail(done),
+			function() {
+				// presence of rejection handler is enough to switch back
+				// to resolve mode, even though it returns undefined.
+				// The ONLY way to propagate a rejection is to re-throw or
+				// return a rejected promise;
+			}
+		).then(
+			function(val) {
+				assert.equals(val, 1);
+				done();
+			},
+			fail(done)
+		);
+
+		d.reject(1);
+	},
+
 	'should forward promised callback result value to next callback': function(done) {
 		var d = when.defer();
 

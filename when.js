@@ -96,6 +96,7 @@ define(function() {
 
 	/**
 	 * Create an already-resolved promise for the supplied value
+	 * @private
 	 *
 	 * @param value anything
 	 * @return {Promise}
@@ -117,13 +118,14 @@ define(function() {
 		};
 
 		// Not frozen because this should never be exposed
-		// to callers;
+		// to callers
 		return p;
 	}
 
 	/**
 	 * Create an already-rejected {@link Promise} with the supplied
 	 * rejection reason.
+	 * @private
 	 *
 	 * @param reason rejection reason
 	 * @return {Promise}
@@ -150,7 +152,7 @@ define(function() {
 		};
 
 		// Not frozen because this should never be exposed
-		// to callers;
+		// to callers
 		return p;
 	}
 
