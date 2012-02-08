@@ -2,7 +2,7 @@
 
 var assert = buster.assert;
 
-var defer, undef;
+var defer, isFrozen, undef;
 
 defer = when.defer;
 
@@ -15,7 +15,14 @@ function fail(done) {
 	};
 }
 
+// In case of testing in an environment without Object.isFrozen
+isFrozen = Object.isFrozen || function() { return true; };
+
 buster.testCase('promise', {
+
+	'should be frozen': function() {
+		assert(Object.isFrozen(defer().promise));
+	},
 
 	'should allow a single callback function': function() {
 		assert.typeOf(defer().promise.then(f).then, 'function');
@@ -70,6 +77,25 @@ buster.testCase('promise', {
 		).then(
 			function(val) {
 				assert.equals(val, 2);
+				done();
+			},
+			fail(done)
+		);
+
+		d.resolve(1);
+	},
+
+	'should forward previous result instead of undefined': function(done) {
+		var d = when.defer();
+
+		d.promise.then(
+			function() {
+				// intentionally return undefined
+			},
+			fail(done)
+		).then(
+			function(val) {
+				assert.equals(val, 1);
 				done();
 			},
 			fail(done)

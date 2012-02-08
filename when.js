@@ -107,14 +107,18 @@ define(function() {
 		p.then = function(callback) {
 			checkCallbacks(arguments);
 
+			var nextValue;
 			try {
-				return promise(callback ? callback(value) : value);
+				nextValue = callback && callback(value);
+				return promise(nextValue === undef ? value : nextValue);
 			} catch(e) {
 				return rejected(e);
 			}
 		};
 
-		return freeze(p);
+		// Not frozen because this should never be exposed
+		// to callers;
+		return p;
 	}
 
 	/**
@@ -131,14 +135,23 @@ define(function() {
 		p.then = function(callback, errback) {
 			checkCallbacks(arguments);
 
+			var nextValue;
 			try {
-				return errback ? promise(errback(reason)) : rejected(reason);
+				if(errback) {
+					nextValue = errback(reason);
+					return promise(nextValue === undef ? reason : nextValue)
+				}
+
+				return rejected(reason);
+
 			} catch(e) {
 				return rejected(e);
 			}
 		};
 
-		return freeze(p);
+		// Not frozen because this should never be exposed
+		// to callers;
+		return p;
 	}
 
 	/**
