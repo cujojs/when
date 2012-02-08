@@ -8,12 +8,14 @@ defer = when.defer;
 
 function f() {}
 
-function fail() {
-	buster.fail();
-	done();
+function fail(done) {
+	return function() {
+		buster.fail();
+		done();
+	};
 }
 
-buster.testCase('promise.then', {
+buster.testCase('promise', {
 
 	'should allow a single callback function': function() {
 		assert.typeOf(defer().promise.then(f).then, 'function');
@@ -64,13 +66,13 @@ buster.testCase('promise.then', {
 			function(val) {
 				return val + 1;
 			},
-			fail
+			fail(done)
 		).then(
 			function(val) {
 				assert.equals(val, 2);
 				done();
 			},
-			fail
+			fail(done)
 		);
 
 		d.resolve(1);
@@ -85,13 +87,13 @@ buster.testCase('promise.then', {
 				d.resolve(val + 1);
 				return d.promise;
 			},
-			fail
+			fail(done)
 		).then(
 			function(val) {
 				assert.equals(val, 2);
 				done();
 			},
-			fail
+			fail(done)
 		);
 
 		d.resolve(1);
@@ -106,9 +108,9 @@ buster.testCase('promise.then', {
 				d.reject(val + 1);
 				return d.promise;
 			},
-			fail
+			fail(done)
 		).then(
-			fail,
+			fail(done),
 			function(val) {
 				assert.equals(val, 2);
 				done();
@@ -116,6 +118,44 @@ buster.testCase('promise.then', {
 		);
 
 		d.resolve(1);
+	},
+
+	'should switch from callbacks to errbacks when callback throws': function(done) {
+		var d = when.defer();
+
+		d.promise.then(
+			function(val) {
+				throw val + 1;
+			},
+			fail(done)
+		).then(
+			fail(done),
+			function(val) {
+				assert.equals(val, 2);
+				done();
+			}
+		);
+
+		d.resolve(1);
+	},
+
+	'should switch from errbacks to callbacks when errback does not explicitly propagate': function(done) {
+		var d = when.defer();
+
+		d.promise.then(
+			fail(done),
+			function(val) {
+				return val + 1;
+			}
+		).then(
+			function(val) {
+				assert.equals(val, 2);
+				done();
+			},
+			fail(done)
+		);
+
+		d.reject(1);
 	},
 
 	'should switch from errbacks to callbacks when errback returns a resolution': function(done) {
@@ -137,9 +177,51 @@ buster.testCase('promise.then', {
 		);
 
 		d.reject(1);
-	}
+	},
 
-	// TODO: all()/some() tests for throw with variadic instead of array. see checkHandlers.html
+	'should propagate rejections when errback throws': function(done) {
+		var d = when.defer();
+
+		d.promise.then(
+			fail(done),
+			function(val) {
+				throw val + 1;
+			}
+		).then(
+			fail(done),
+			function(val) {
+				assert.equals(val, 2);
+				done();
+			}
+		);
+
+		d.reject(1);
+	},
+
+	'should propagate rejections when errback returns a rejection': function(done) {
+		var d = when.defer();
+
+		d.promise.then(
+			fail(done),
+			function(val) {
+				var d = when.defer();
+				d.reject(val + 1);
+				return d.promise;
+			}
+		).then(
+			function() {
+				buster.fail();
+				done();
+			},
+			function(val) {
+				assert.equals(val, 2);
+				done();
+			}
+		);
+
+		d.reject(1);
+	},
+
 });
 })(
 	this.buster || require('buster'),

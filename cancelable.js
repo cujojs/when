@@ -43,7 +43,7 @@ define(function() {
         // deferred is canceled.  Can now safely give out deferred.promise
         deferred.promise = deferred.then(null,
             function cancelHandler(e) {
-                return e === canceled ? canceler(deferred) : e;
+                throw e === canceled ? canceler(deferred) : e;
             });
 
         // Replace deferred.then to allow it to be called safely and observe the cancellation

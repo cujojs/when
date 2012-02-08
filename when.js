@@ -94,6 +94,14 @@ define(function() {
      */
     function Promise() {}
 
+	function checkCallbacks(arrayOfCallbacks) {
+		var arg, i = arrayOfCallbacks.length;
+		while(i) {
+			arg = arrayOfCallbacks[--i];
+			if (arg != null && typeof arg != 'function') throw new Error('callback is not a function');
+		}
+	}
+
     /**
      * Creates a new, CommonJS compliant, Deferred with fully isolated
      * resolver and promise parts, either or both of which may be given out
@@ -129,13 +137,9 @@ define(function() {
             // Check parameters and fail immediately if any supplied parameter
             // is not null/undefined and is also not a function.
             // That is, any non-null/undefined parameter must be a function.
-            var arg, deferred, i = arguments.length;
-            while(i) {
-                arg = arguments[--i];
-                if (arg != null && typeof arg != 'function') throw new Error('callback is not a function');
-            }
+			checkCallbacks(arguments);
 
-            deferred = defer();
+            var deferred = defer();
 
             listeners.push({
                 deferred: deferred,
@@ -219,10 +223,12 @@ define(function() {
          * @param which {String} either "resolve" or "reject"
          * @param val anything resolution value or rejection reason
          */
-        complete = function(promise) {
+        complete = function(completed) {
+			var listener, ldeferred, localListeners, i = 0;
+
             // Replace _then with one that immediately notifies
             // with the result.
-			_then = promise.then;
+			_then = completed.then;
 
             // Replace complete so that this Deferred
             // can only be completed once.  Note that this leaves
@@ -241,37 +247,24 @@ define(function() {
             // for this promise again now that it's completed
             progressHandlers = undef;
 
-            // Notify listeners
-            notify(promise);
-        };
+			// Notify listeners
+			// Traverse all listeners registered directly with this Deferred,
+			// also making sure to handle chained thens
 
-        /**
-         * Notify all listeners of resolution or rejection
-         *
-         * @param promise {String} either "resolve" or "reject"
-         */
-        function notify(promise) {
-//			console.log(which, result);
-            // Traverse all listeners registered directly with this Deferred,
-            // also making sure to handle chained thens
-
-            var listener, ldeferred, localListeners, i = 0;
-
-            // Reset the listeners array asap.  Some of the promise chains in the loop
-            // below could run async, so need to ensure that no callers can corrupt
-            // the array we're iterating over, but also need to allow callers to register
-            // new listeners.
-            localListeners = listeners;
-            listeners = [];
-
-            while (listener = localListeners[i++]) {
-                ldeferred = listener.deferred;
-				promise.then(listener.resolve, listener.reject)
+			// Reset the listeners array asap.  Some of the promise chains in the loop
+			// below could run async, so need to ensure that no callers can corrupt
+			// the array we're iterating over, but also need to allow callers to register
+			// new listeners.
+			localListeners = listeners;
+			listeners = [];
+			while (listener = localListeners[i++]) {
+				ldeferred = listener.deferred;
+				completed.then(listener.resolve, listener.reject)
 					.then(ldeferred.resolve, ldeferred.reject, ldeferred.progress);
-            }
-        }
+			}
+		};
 
-        /**
+		/**
          * The full Deferred object, with both {@link Promise} and {@link Resolver}
          * parts
          * @class Deferred
@@ -359,10 +352,18 @@ define(function() {
         return trustedPromise.then(callback, errback, progressHandler);
     }
 
-	when.resolve = resolved;
 	function resolved(value) {
+//		return function(callback) {
+//			checkCallbacks(arguments);
+//			try {
+//				return promise(callback ? callback(value) : value);
+//			} catch(e) {
+//				return rejected(e);
+//			}
+//		};
 		var p = new Promise();
 		p.then = function(callback) {
+			checkCallbacks(arguments);
 			try {
 				return promise(callback ? callback(value) : value);
 			} catch(e) {
@@ -372,12 +373,20 @@ define(function() {
 		return freeze(p);
 	}
 
-	when.reject = rejected;
 	function rejected(reason) {
+//		return function(callback, errback) {
+//			checkCallbacks(arguments);
+//			try {
+//				return errback ? promise(errback(reason)) : rejected(reason);
+//			} catch(e) {
+//				return rejected(e);
+//			}
+//		};
 		var p = new Promise();
 		p.then = function(callback, errback) {
+			checkCallbacks(arguments);
 			try {
-				return promise(rejected(errback ? errback(reason) : reason));
+				return errback ? promise(errback(reason)) : rejected(reason);
 			} catch(e) {
 				return rejected(e);
 			}
@@ -428,9 +437,8 @@ define(function() {
             } else {
                 // It's a value, not a promise.  Create an already-resolved promise
                 // for it.
-				promise = resolved(promiseOrValue);
-//				deferred.resolve(promiseOrValue);
-//				promise = deferred.promise;
+				deferred.resolve(promiseOrValue);
+				promise = deferred.promise;
             }
         }
 
