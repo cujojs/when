@@ -26,6 +26,7 @@ What's New?
 ### v1.0.1
 
 * Fix for rejections propagating in some cases when they shouldn't have been ([#19](https://github.com/cujojs/when/issues/19))
+* Using [buster.js](http://busterjs.org/) for unit tests now.
 
 ### v1.0.0
 
@@ -44,39 +45,7 @@ What's New?
     * `when()`, and `when.all/some/any/map/reduce/chain()` are all now guaranteed to return a fully Promises/A compliant promise, even when their input is not compliant.
     * Any non-compliant thenable returned by a callback or errback will also be assimilated to protect subsequent promises and callbacks in a promise chain, and preserve Promises/A forwarding guarantees.
 
-### v0.10.4
-
-* **Important Fix for some AMD build/optimizer tools**: Switching back to more verbose, builder-friendly boilerplate
-    * If you are using when.js 0.10.3 with the dojo or RequireJS build tools, you should update to v.10.4 as soon as possible.
-
-### v0.10.3
-
-**Warning**: This version will not work with most AMD build tools.  You should update to 0.10.4 as soon as possible.
-
-* Minor `package.json` updates
-* Slightly smaller module boilerplate
-
-### v0.10.2
-
-* Performance optimizations for `when.map()` (thanks @[smitranic](https://github.com/smitranic)), especially for large arrays where the `mapFunc` is also async (i.e. returns a promise)
-* `when.all/some/any/map/reduce` handle sparse arrays (thanks @[rwaldrn](https://github.com/rwldrn/))
-* Other minor performance optimizations
-
-### v0.10.1
-
-* Minor tweaks (thanks @[johan](https://github.com/johan))
-	* Add missing semis that WebStorm didn't catch
-	* Fix DOH submodule ref, and update README with info for running unit tests
-
-### v0.10.0
-
-* `when.map` and `when.reduce` - just like Array.map and Array.reduce, but they operate on promises and arrays of promises
-* Lots of internal size and performance optimizations
-* Still only 1k!
-
-### v0.9.4
-
-* Important fix for break in promise chains
+[Full Changelog](https://github.com/cujojs/when/wiki/Changelog)
 
 Docs & Examples
 ===============
@@ -246,17 +215,15 @@ when.all(arrayOfPromisesOrValues, apply(functionThatAcceptsMultipleArgs));
 
 [See the wiki](https://github.com/cujojs/when/wiki/when-apply) for more info and examples.
 
-Testing
-=======
+Running the Unit Tests
+======================
 
-To run the unit tests, from the when.js dir:
-
-1. `git submodule init && git submodule update`
-1. Open test/index.html in your browser
+1. npm install -g buster (if you don't have [buster.js](http://busterjs.org/) installed already)
+2. buster test -e node
 
 References
 ----------
 
-Much of this code is based on @[unscriptable](https://github.com/unscriptable)'s [tiny promises](https://github.com/unscriptable/promises), the async innards of [wire.js](https://github.com/cujojs/wire), and some gists [here](https://gist.github.com/870729), [here](https://gist.github.com/892345), [here](https://gist.github.com/894356), and [here](https://gist.github.com/894360)
+Much of this code was inspired by @[unscriptable](https://github.com/unscriptable)'s [tiny promises](https://github.com/unscriptable/promises), the async innards of [wire.js](https://github.com/cujojs/wire), and some gists [here](https://gist.github.com/870729), [here](https://gist.github.com/892345), [here](https://gist.github.com/894356), and [here](https://gist.github.com/894360)
 
 Some of the code has been influenced by the great work in [Q](https://github.com/kriskowal/q), [Dojo's Deferred](https://github.com/dojo/dojo), and [uber.js](https://github.com/phiggins42/uber.js).
