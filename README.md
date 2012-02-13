@@ -23,6 +23,10 @@ when.js was derived from the async core of [wire.js](https://github.com/cujojs/w
 What's New?
 ===========
 
+### v1.0.1
+
+* Fix for rejections propagating in some cases when they shouldn't have been ([#19](https://github.com/cujojs/when/issues/19))
+
 ### v1.0.0
 
 * First official when.js release as a part of [cujojs](https://github.com/cujojs).

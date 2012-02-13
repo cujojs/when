@@ -9,7 +9,7 @@
  * Licensed under the MIT License at:
  * http://www.opensource.org/licenses/mit-license.php
  *
- * @version 1.0.0
+ * @version 1.0.1
  */
 
 (function(define) {
@@ -31,7 +31,7 @@ define(function() {
     function allocateArray(n) {
         return new Array(n);
     }
-    
+
     /**
      * Use freeze if it exists
      * @function
@@ -94,83 +94,83 @@ define(function() {
      */
     function Promise() {}
 
-	/**
-	 * Create an already-resolved promise for the supplied value
-	 * @private
-	 *
-	 * @param value anything
-	 * @return {Promise}
-	 */
-	function resolved(value) {
+    /**
+     * Create an already-resolved promise for the supplied value
+     * @private
+     *
+     * @param value anything
+     * @return {Promise}
+     */
+    function resolved(value) {
 
-		var p = new Promise();
+        var p = new Promise();
 
-		p.then = function(callback) {
-			checkCallbacks(arguments);
+        p.then = function(callback) {
+            checkCallbacks(arguments);
 
-			var nextValue;
-			try {
-				nextValue = callback && callback(value);
-				return promise(nextValue === undef ? value : nextValue);
-			} catch(e) {
-				return rejected(e);
-			}
-		};
+            var nextValue;
+            try {
+                nextValue = callback && callback(value);
+                return promise(nextValue === undef ? value : nextValue);
+            } catch(e) {
+                return rejected(e);
+            }
+        };
 
-		// Not frozen because this should never be exposed
-		// to callers
-		return p;
-	}
+        // Not frozen because this should never be exposed
+        // to callers
+        return p;
+    }
 
-	/**
-	 * Create an already-rejected {@link Promise} with the supplied
-	 * rejection reason.
-	 * @private
-	 *
-	 * @param reason rejection reason
-	 * @return {Promise}
-	 */
-	function rejected(reason) {
+    /**
+     * Create an already-rejected {@link Promise} with the supplied
+     * rejection reason.
+     * @private
+     *
+     * @param reason rejection reason
+     * @return {Promise}
+     */
+    function rejected(reason) {
 
-		var p = new Promise();
+        var p = new Promise();
 
-		p.then = function(callback, errback) {
-			checkCallbacks(arguments);
+        p.then = function(callback, errback) {
+            checkCallbacks(arguments);
 
-			var nextValue;
-			try {
-				if(errback) {
-					nextValue = errback(reason);
-					return promise(nextValue === undef ? reason : nextValue)
-				}
+            var nextValue;
+            try {
+                if(errback) {
+                    nextValue = errback(reason);
+                    return promise(nextValue === undef ? reason : nextValue)
+                }
 
-				return rejected(reason);
+                return rejected(reason);
 
-			} catch(e) {
-				return rejected(e);
-			}
-		};
+            } catch(e) {
+                return rejected(e);
+            }
+        };
 
-		// Not frozen because this should never be exposed
-		// to callers
-		return p;
-	}
+        // Not frozen because this should never be exposed
+        // to callers
+        return p;
+    }
 
-	/**
-	 * Helper that checks arrayOfCallbacks to ensure that each element is either
-	 * a function, or null or undefined.
-	 *
-	 * @param arrayOfCallbacks {Array} array to check
-	 * @throws {Error} if any element of arrayOfCallbacks is something other than
-	 * a Functions, null, or undefined.
-	 */
-	function checkCallbacks(arrayOfCallbacks) {
-		var arg, i = arrayOfCallbacks.length;
-		while(i) {
-			arg = arrayOfCallbacks[--i];
-			if (arg != null && typeof arg != 'function') throw new Error('callback is not a function');
-		}
-	}
+    /**
+     * Helper that checks arrayOfCallbacks to ensure that each element is either
+     * a function, or null or undefined.
+     *
+     * @param arrayOfCallbacks {Array} array to check
+     * @throws {Error} if any element of arrayOfCallbacks is something other than
+     * a Functions, null, or undefined.
+     */
+    function checkCallbacks(arrayOfCallbacks) {
+        var arg, i = arrayOfCallbacks.length;
+        while(i) {
+            arg = arrayOfCallbacks[--i];
+            if (arg != null && typeof arg != 'function') throw new Error('callback is not a function');
+        }
+    }
 
     /**
      * Creates a new, CommonJS compliant, Deferred with fully isolated
@@ -207,14 +207,14 @@ define(function() {
             // Check parameters and fail immediately if any supplied parameter
             // is not null/undefined and is also not a function.
             // That is, any non-null/undefined parameter must be a function.
-			checkCallbacks(arguments);
+            checkCallbacks(arguments);
 
             var deferred = defer();
 
-			listeners.push(function(promise) {
-				promise.then(callback, errback)
-					.then(deferred.resolve, deferred.reject, deferred.progress);
-			});
+            listeners.push(function(promise) {
+                promise.then(callback, errback)
+                    .then(deferred.resolve, deferred.reject, deferred.progress);
+            });
 
             progback && progressHandlers.push(progback);
 
@@ -292,10 +292,10 @@ define(function() {
          * @param completed {Promise} the completed value of this deferred
          */
         complete = function(completed) {
-			var listener, i = 0;
+            var listener, i = 0;
 
-			// Replace _then with one that directly notifies with the result.
-			_then = completed.then;
+            // Replace _then with one that directly notifies with the result.
+            _then = completed.then;
 
             // Replace complete so that this Deferred can only be completed
             // once. Also Replace _progress, so that subsequent attempts to issue
@@ -311,17 +311,17 @@ define(function() {
             // for this promise again now that it's completed
             progressHandlers = undef;
 
-			// Notify listeners
-			// Traverse all listeners registered directly with this Deferred
+            // Notify listeners
+            // Traverse all listeners registered directly with this Deferred
 
-			while (listener = listeners[i++]) {
-				listener(completed);
-			}
+            while (listener = listeners[i++]) {
+                listener(completed);
+            }
 
-			listeners = [];
-		};
+            listeners = [];
+        };
 
-		/**
+        /**
          * The full Deferred object, with both {@link Promise} and {@link Resolver}
          * parts
          * @class Deferred
@@ -438,7 +438,7 @@ define(function() {
             // It's not a when.js promise.  Check to see if it's a foreign promise
             // or a value.
 
-			deferred = defer();
+            deferred = defer();
             if(isPromise(promiseOrValue)) {
                 // It's a compliant promise, but we don't know where it came from,
                 // so we don't trust its implementation entirely.  Introduce a trusted
@@ -447,13 +447,13 @@ define(function() {
                 // IMPORTANT: This is the only place when.js should ever call .then() on
                 // an untrusted promise.
                 promiseOrValue.then(deferred.resolve, deferred.reject, deferred.progress);
-				promise = deferred.promise;
+                promise = deferred.promise;
 
             } else {
                 // It's a value, not a promise.  Create an already-resolved promise
                 // for it.
-				deferred.resolve(promiseOrValue);
-				promise = deferred.promise;
+                deferred.resolve(promiseOrValue);
+                promise = deferred.promise;
             }
         }
 
