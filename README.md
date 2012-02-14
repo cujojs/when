@@ -223,6 +223,21 @@ Where:
 * `index` the *basis* of `nextItem` ... practically speaking, this is the array index of the promiseOrValue corresponding to `nextItem`
 * `total` is the total number of items in `promisesOrValues`
 
+when.execute()
+--------------
+
+The internal function that is used to call/execute a handler.
+This function can be configured.
+
+```javascript
+when.execute(handler, value)
+```
+
+Where:
+
+* `handler` is the function (or something *executable*) that will be called
+* `value` is the data that will be passed to the function
+
 when/apply
 ----------
 
@@ -241,6 +256,38 @@ when.all(arrayOfPromisesOrValues, apply(functionThatAcceptsMultipleArgs));
 ```
 
 [See the wiki](https://github.com/cujojs/when/wiki/when-apply) for more info and examples.
+
+Configuration
+=============
+
+The exported `when` object can be configured/customized in some extent.
+To do this it is necessary to create the global `when` object before loading of the `when.js` module.
+
+```javascript
+when = {
+    customize: function(api) {
+        // Deletes global config object
+        delete this.when; 
+    },
+    execute: function(handler, value) {
+        // This is the default implementation
+        return handler(value);
+    },
+    functionalHandler: false
+};
+```
+
+The following configuration parameters are supported:
+
+* `customize`: function that should be called before returning module definition;
+    the module definition is passed as an argument; for example, can be used to change public API
+    or clear/delete global config.
+* `execute`: function that should be used to call/execute any handler/callback instead of default implementation; 
+    a handler is passed as the first argument, the resolution/rejection/progress value is passed as the second argument.
+* `functionalHandler`: a boolean value that specifies whether only functions are allowed as handlers/callbacks;
+    it is useful when redefining `execute` function; the default value is `true`.
+    
+All of the configuration parameters are optional. 
 
 Testing
 =======

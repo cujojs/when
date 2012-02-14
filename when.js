@@ -12,9 +12,28 @@
  * @version 1.0.0
  */
 
-(function(define) {
+/*
+ * External/global configuration object can be used to configure behavior of when.
+ * <p>
+ * Configuration settings (name - type - default - description):
+ * <ul>
+ * <li>customize - Function - null - function that should be called before returning module definition;
+ *      the module definition is passed as an argument; for example, can be used to change public API
+ *      or clear/delete global config. 
+ * <li>execute - Function - null - function that should be used to call/execute any handler/callback instead of
+ *          default implementation; a handler is passed as the first argument, 
+ *          the resolution/rejection/progress value is passed as the second argument. 
+ * <li>functionalHandler - Boolean - true - specifies whether only functions are allowed as handlers/callbacks.
+ * </ul>
+ *    
+ */ 
+(function(define, externalConfig) {
 define(function() {
-    var freeze, reduceArray, undef;
+    var execute, freeze, reduceArray, undef,
+        // gets or initializes configuration data
+        config = (externalConfig && Object(externalConfig)) || {},
+        // specifies whether only functions are allowed as handlers/callbacks
+        functionalHandler = ("functionalHandler" in config) ? config.functionalHandler : true;
 
     /**
      * No-Op function used in method replacement
@@ -31,6 +50,19 @@ define(function() {
     function allocateArray(n) {
         return new Array(n);
     }
+
+    /**
+     * Calls/executes the given handler.
+     * @private
+     * @param handler {Function} the handler that should be executed.
+     * @param param {Any} the value that should be passed to the handler.
+     * @returns {Any} the handler's call result.
+     */
+    execute = typeof config.execute === "function" 
+                ? config.execute  
+                : function(handler, param) {
+                    return handler(param);
+                };
     
     /**
      * Use freeze if it exists
@@ -126,15 +158,19 @@ define(function() {
          * @throws {Error} if any argument is not null, undefined, or a Function
          */
         _then = function unresolvedThen(callback, errback, progback) {
+            // If only functional handlers are allowed then
             // Check parameters and fail immediately if any supplied parameter
             // is not null/undefined and is also not a function.
             // That is, any non-null/undefined parameter must be a function.
-            var arg, deferred, i = arguments.length;
-            while(i) {
-                arg = arguments[--i];
-                if (arg != null && typeof arg != 'function') throw new Error('callback is not a function');
+            var arg, deferred, i;
+            
+            if (functionalHandler && (i = arguments.length)) {
+                while(i) {
+                    arg = arguments[--i];
+                    if (arg != null && typeof arg != 'function') throw new Error('callback is not a function');
+                }
             }
-
+    
             deferred = defer();
 
             listeners.push({
@@ -195,7 +231,7 @@ define(function() {
          */
         _progress = function(update) {
             var progress, i = 0;
-            while (progress = progressHandlers[i++]) progress(update);
+            while (progress = progressHandlers[i++]) execute(progress, update);
         };
 
         /**
@@ -264,7 +300,9 @@ define(function() {
             // Traverse all listeners registered directly with this Deferred,
             // also making sure to handle chained thens
 
-            var listener, ldeferred, newResult, handler, localListeners, i = 0;
+            var listener, ldeferred, newResult, handler, localListeners,
+                exec = execute, 
+                i = 0;
 
             // Reset the listeners array asap.  Some of the promise chains in the loop
             // below could run async, so need to ensure that no callers can corrupt
@@ -280,7 +318,7 @@ define(function() {
 
                 try {
 
-                    newResult = handler ? handler(result) : result;
+                    newResult = handler ? exec(handler, result) : result;
 
                     // NOTE: isPromise is also called by promise(), which is called by when(),
                     // resulting in 2 calls to isPromise here.  It's harmless, but need to
@@ -711,6 +749,12 @@ define(function() {
 
     when.chain     = chain;
 
+    when.execute = execute;
+
+    if (config.customize) {
+        execute(config.customize, when);
+    }
+
     return when;
 });
 })(typeof define == 'function'
@@ -718,6 +762,7 @@ define(function() {
     : function (factory) { typeof module != 'undefined'
         ? (module.exports = factory())
         : (this.when      = factory());
-    }
+    },
     // Boilerplate for AMD, Node, and browser global
+    this['when']   // Configuration object
 );
