@@ -23,23 +23,28 @@ when.js was derived from the async core of [wire.js](https://github.com/cujojs/w
 What's New?
 ===========
 
-### v1.0.1
+### 1.0.2
+
+* Updated README for running unit tests in both Node and Browsers.  See **Running the Unit Tests** below.
+* Set package name to 'when' in package.json
+
+### 1.0.1
 
 * Fix for rejections propagating in some cases when they shouldn't have been ([#19](https://github.com/cujojs/when/issues/19))
 * Using [buster.js](http://busterjs.org/) for unit tests now.
 
-### v1.0.0
+### 1.0.0
 
 * First official when.js release as a part of [cujojs](https://github.com/cujojs).
 * Added [when/cancelable](https://github.com/cujojs/when/wiki/when-cancelable) decorator for creating cancelable deferreds
 * Added [when/delay](https://github.com/cujojs/when/wiki/when-delay) and [when/timeout](https://github.com/cujojs/when/wiki/when-timeout) helpers for creating delayed promises and promises that timeout and reject if not resolved first.
 
-### v0.11.1
+### 0.11.1
 
 * Added [when/apply](https://github.com/cujojs/when/wiki/when-apply) helper module for using arguments-based and variadic callbacks with `when.all`, `when.some`, `when.map`, or any promise that resolves to an array. ([#14](https://github.com/cujojs/when/issues/14))
 * `.then()`, `when()`, and all other methods that accept callback/errback/progress handlers will throw if you pass something that's not a function. ([#15](https://github.com/cujojs/when/issues/15))
 
-### v0.11.0
+### 0.11.0
 
 * `when.js` now *assimilates* thenables that pass the [Promises/A duck-type test](http://wiki.commonjs.org/wiki/Promises/A), but which may not be fully Promises/A compliant, such as [jQuery's Deferred](http://api.jquery.com/category/deferred-object/) and [curl's global API](https://github.com/cujojs/curl) (See the **API at a glance** section)
     * `when()`, and `when.all/some/any/map/reduce/chain()` are all now guaranteed to return a fully Promises/A compliant promise, even when their input is not compliant.
@@ -218,8 +223,19 @@ when.all(arrayOfPromisesOrValues, apply(functionThatAcceptsMultipleArgs));
 Running the Unit Tests
 ======================
 
-1. npm install -g buster (if you don't have [buster.js](http://busterjs.org/) installed already)
-2. buster test -e node
+Install [buster.js](http://busterjs.org/)
+
+`npm install -g buster`
+
+Run unit tests in Node:
+
+1. `buster test -e node`
+
+Run unit tests in Browsers (and Node):
+
+1. `buster server` - this will print a url
+2. Point browsers at <buster server url>/capture, e.g. `localhost:1111/capture`
+3. `buster test` or `buster test -e browser`
 
 References
 ----------
