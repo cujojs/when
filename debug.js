@@ -1,7 +1,7 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
 (function(define) {
-define(['./when'], function(origWhen) {
+define(['./when'], function(when) {
 
 	function debugPromise(p) {
 		// TODO: Need to find a way for promises returned by .then()
@@ -18,33 +18,32 @@ define(['./when'], function(origWhen) {
 		return p;
 	}
 
-	function when() {
-		return debugPromise(origWhen.apply(null, arguments));
+	function whenDebug() {
+		return debugPromise(when.apply(null, arguments));
 	}
 
 	function defer() {
-		var d = origWhen.defer();
+		var d = when.defer();
 
 		debugPromise(d.promise);
-//		d.promise = debugPromise(d.promise);
-//		d.then = d.promise.then;
 
 		return d;
 	}
 
-	when.defer = defer;
+	whenDebug.defer = defer;
+	whenDebug.isPromise = when.isPromise;
 
-	for(var p in origWhen) {
-		if(origWhen.hasOwnProperty(p) && !(p in when)) {
+	for(var p in when) {
+		if(when.hasOwnProperty(p) && !(p in whenDebug)) {
 			(function(p, orig) {
-				when[p] = function() {
-					return debugPromise(orig.apply(origWhen, arguments));
+				whenDebug[p] = function() {
+					return debugPromise(orig.apply(when, arguments));
 				}
-			})(p, origWhen[p]);
+			})(p, when[p]);
 		}
 	}
 
-	return when;
+	return whenDebug;
 
 });
 })(typeof define == 'function'
