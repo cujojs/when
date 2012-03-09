@@ -41,10 +41,12 @@ define(function() {
 
         // Replace deferred's promise with a promise that will always call canceler() first, *if*
         // deferred is canceled.  Can now safely give out deferred.promise
-        deferred.promise = deferred.then(null,
+        deferred.promise = deferred.then(
+            function(v) { return v; },
             function cancelHandler(e) {
                 throw e === canceled ? canceler(deferred) : e;
-            });
+            }
+        );
 
         // Replace deferred.then to allow it to be called safely and observe the cancellation
         deferred.then = deferred.promise.then;

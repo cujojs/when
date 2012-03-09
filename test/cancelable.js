@@ -39,6 +39,17 @@ buster.testCase('when/cancelable', {
 			}
 		);
 
+	},
+
+	'should invoke the callback with the resolved value': function() {
+		var c = cancelable(when.defer(), function() {});
+		c.then(
+			function(v) {
+				assert.same(1, v);
+				done();
+			}
+		);
+		c.resolve(1);
 	}
 });
 
