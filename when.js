@@ -110,7 +110,7 @@ define(function() {
 
             var nextValue;
             try {
-                nextValue = callback && callback(value);
+				if(callback) nextValue = callback(value);
                 return promise(nextValue === undef ? value : nextValue);
             } catch(e) {
                 return rejected(e);

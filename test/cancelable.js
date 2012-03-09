@@ -38,6 +38,22 @@ buster.testCase('when/cancelable', {
 				done();
 			}
 		);
+	},
+
+	'should propagate the unaltered resolution value': function(done) {
+		var c = cancelable(when.defer(), function() { return false; });
+		c.resolve(true);
+
+		c.then(
+			function(val) {
+				assert(val);
+				done();
+			},
+			function() {
+				buster.fail();
+				done();
+			}
+		);
 
 	}
 });
