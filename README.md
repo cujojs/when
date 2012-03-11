@@ -23,6 +23,10 @@ when.js was derived from the async core of [wire.js](https://github.com/cujojs/w
 What's New?
 ===========
 
+### 1.0.3
+
+* Fix for specific situation where `null` could incorrectly be used as a promise resolution value ([#23](https://github.com/cujojs/when/pull/23))
+
 ### 1.0.2
 
 * Updated README for running unit tests in both Node and Browsers.  See **Running the Unit Tests** below.
