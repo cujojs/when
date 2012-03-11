@@ -66,6 +66,28 @@ buster.testCase('promise', {
 
 	},
 
+	'should forward result when callback is null': function(done) {
+		var d = when.defer();
+
+		function fail(e) {
+			buster.fail(e);
+			done();
+		}
+
+		d.promise.then(
+			null,
+			fail
+		).then(
+			function(val) {
+				assert.equals(val, 1);
+				done();
+			},
+			fail
+		);
+
+		d.resolve(1);
+	},
+
 	'should forward callback result to next callback': function(done) {
 		var d = when.defer();
 
