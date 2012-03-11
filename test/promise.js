@@ -290,7 +290,7 @@ buster.testCase('promise', {
 		);
 
 		d.reject(1);
-	},
+	}
 
 });
 })(
