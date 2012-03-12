@@ -54,8 +54,22 @@ buster.testCase('when/cancelable', {
 				done();
 			}
 		);
+	},
 
+	'should propagate the unaltered progress value': function(done) {
+		var nonce = {},
+			c = cancelable(when.defer());
+		c.then(
+			null,
+			null,
+			function(status){
+				assert.same(nonce, status);
+				done();
+			}
+		);
+		c.progress(nonce);
 	}
+
 });
 
 })(
