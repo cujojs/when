@@ -54,8 +54,22 @@ buster.testCase('when/cancelable', {
 				done();
 			}
 		);
+	},
 
+	'should call progback for cancellable deferred': function(done) {
+		var expected, c;
+
+		expected = {};
+		c = cancelable(when.defer());
+
+		c.then(null, null, function (status) {
+			assert.same(status, expected);
+			done();
+		});
+
+		c.progress(expected);
 	}
+
 });
 
 })(

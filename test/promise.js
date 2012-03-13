@@ -290,6 +290,20 @@ buster.testCase('promise', {
 		);
 
 		d.reject(1);
+	},
+
+	'should call progback': function(done) {
+		var expected, d;
+
+		expected = {};
+		d = when.defer();
+
+		d.promise.then(null, null, function (status) {
+			assert.same(status, expected);
+			done();
+		});
+
+		d.progress(expected);
 	}
 
 });
