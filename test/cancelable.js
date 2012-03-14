@@ -8,7 +8,7 @@ buster.testCase('when/cancelable', {
 		assert.typeOf(c.cancel, 'function');
 	},
 
-	'should propagate a rejection when a cancelabled deferred is canceled': function(done) {
+	'should propagate a rejection when a cancelable deferred is canceled': function(done) {
 		var c = cancelable(when.defer(), function() { return 1; });
 		c.cancel();
 
@@ -56,7 +56,7 @@ buster.testCase('when/cancelable', {
 		);
 	},
 
-	'should call progback for cancellable deferred': function(done) {
+	'should call progback for cancelable deferred': function(done) {
 		var expected, c;
 
 		expected = {};

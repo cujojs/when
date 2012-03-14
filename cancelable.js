@@ -18,9 +18,6 @@
 (function(define) {
 define(['./when'], function(when) {
 
-    // private flag to indicate that a rejection is actually a cancel
-    var canceled = {};
-
     /**
      * Makes deferred cancelable, adding a cancel() method.
      *
@@ -34,30 +31,24 @@ define(['./when'], function(when) {
      */
     return function(deferred, canceler) {
 
-        // Add a cancel method to the deferred to reject the original
+		var delegate = when.defer();
+
+        // Add a cancel method to the deferred to reject the delegate
         // with the special canceled indicator.
         deferred.cancel = function() {
-            deferred.reject(canceled);
+            delegate.reject(canceler(deferred));
         };
 
-        // Setup a rejection handler that will run before all others to
-        // detect the canceled indicator and run the provided canceler
-        // function if necessary.
-        function cancelHandler(e) {
-            d.reject(e === canceled ? canceler(deferred) : e);
-        }
+		// Ensure that the original resolve, reject, and progress all forward
+		// to the delegate
+        deferred.then(delegate.resolve, delegate.reject, delegate.progress);
 
-        // Replace deferred's promise with a promise that will always call canceler() first,
-        // *if* deferred is canceled.  Can now safely give out deferred.promise
-        var d = when.defer();
-
-        deferred.then(d.resolve, cancelHandler, d.progress);
-
-        deferred.promise = d.promise;
+		// Replace deferred's promise with the delegate promise
+		deferred.promise = delegate.promise;
 
         // Also replace deferred.then to allow it to be called safely and
         // observe the cancellation
-        deferred.then = d.promise.then;
+        deferred.then = delegate.promise.then;
 
         return deferred;
     };
