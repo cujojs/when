@@ -20,8 +20,47 @@ It's **just over 1k** when compiled with Google Closure (w/advanced optimization
 
 when.js was derived from the async core of [wire.js](https://github.com/cujojs/wire).
 
+Quick Start
+===========
+
+### AMD
+
+1. `git clone https://github.com/cujojs/when` or `git submodule add https://github.com/cujojs/when`
+1. Configure your loader with a package:
+
+	```javascript
+	packages: [
+		{ name: 'when', location: 'path/to/when/', main: 'when' },
+		// ... other packages ...
+	]
+	```
+
+1. `define(['when', ...], function(when, ...) { ... });` or `require(['when', ...], function(when, ...) { ... });`
+
+### Script Tag
+
+1. `git clone https://github.com/cujojs/when` or `git submodule add https://github.com/cujojs/when`
+1. `<script src="path/to/when/when.js"></script>`
+1. `when` will be available as `window.when`
+
+### Node
+
+1. `npm install https://github.com/cujojs/when`
+1. `var when = require('when');`
+
+Why isn't when.js available as `npm install when`? Read here
+
+### RingoJS
+
+1. `ringo-admin install cujojs/when`
+1. `var when = require('when');`
+
 What's New?
 ===========
+
+### 1.0.4
+
+* Fix for cancelable deferred not invoking progress callbacks. ([#24](https://github.com/cujojs/when/pull/24) Thanks [@scothis](https://github.com/scothis))
 
 ### 1.0.3
 
