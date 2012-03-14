@@ -45,7 +45,7 @@ Quick Start
 
 ### Node
 
-1. `npm install https://github.com/cujojs/when`
+1. `npm install git://github.com/cujojs/when` (**NOTE:*** npm seems to require a url that starts with "git" rather than http or https)
 1. `var when = require('when');`
 
 Why isn't when.js available as `npm install when`? Read here
