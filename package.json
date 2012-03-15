@@ -26,6 +26,9 @@
             "web": "http://unscriptable.com"
         }
     ],
+    "devDependencies": {
+        "buster": "~0.4"
+    },
     "main": "./when",
     "directories": {
         "test": "test"
