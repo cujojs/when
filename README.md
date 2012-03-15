@@ -14,6 +14,8 @@ Helpful link for updating submodules:
 
 ----
 
+[![Build Status](https://secure.travis-ci.org/cujojs/when.png)](http://travis-ci.org/cujojs/when)
+
 A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining and chaining, and has a robust unit test suite.
 
 It's **just over 1k** when compiled with Google Closure (w/advanced optimizations) and gzipped.
