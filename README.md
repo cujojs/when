@@ -27,6 +27,7 @@ What's New?
 
 ### 1.0.4
 
+* [Travis CI](http://travis-ci.org/cujojs/when) integration
 * Fix for cancelable deferred not invoking progress callbacks. ([#24](https://github.com/cujojs/when/pull/24) Thanks [@scothis](https://github.com/scothis))
 * The promise returned by `when.chain` now rejects when the input promise rejects.
 
