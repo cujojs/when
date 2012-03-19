@@ -38,15 +38,9 @@ buster.testCase('when.chain', {
 		var d = when.defer();
 
 		d.promise.then(
-			function(val) {
-				assert.equals(val, 1);
-				done();
-			},
-			function() {
-				fail();
-				done();
-			}
-		);
+			function(val) { assert.equals(val, 1); },
+			function() { fail('promise should not have rejected'); }
+		).then(done, done);
 
 		when.chain(1, d.resolver);
 	},
@@ -57,15 +51,9 @@ buster.testCase('when.chain', {
 		d = when.defer();
 
 		d.promise.then(
-			function(val) {
-				assert.equals(val, 1);
-				done();
-			},
-			function() {
-				fail();
-				done();
-			}
-		);
+			function(val) { assert.equals(val, 1); },
+			function() { fail('promise should not have rejected'); }
+		).then(done, done);
 
 		input = when.defer();
 		input.resolve(1);
@@ -77,15 +65,9 @@ buster.testCase('when.chain', {
 		var d = when.defer();
 
 		d.promise.then(
-			function(val) {
-				assert.equals(val, 2);
-				done();
-			},
-			function() {
-				fail();
-				done();
-			}
-		);
+			function(val) { assert.equals(val, 2); },
+			function() { fail('promise should not have rejected'); }
+		).then(done, done);
 
 		when.chain(1, d.resolver, 2);
 	},
@@ -96,15 +78,9 @@ buster.testCase('when.chain', {
 		d = when.defer();
 
 		d.promise.then(
-			function(val) {
-				assert.equals(val, 2);
-				done();
-			},
-			function() {
-				fail();
-				done();
-			}
-		);
+			function(val) { assert.equals(val, 2); },
+			function() { fail('promise should not have rejected'); }
+		).then(done, done);
 
 		input = when.defer();
 		input.resolve(1);
@@ -118,15 +94,9 @@ buster.testCase('when.chain', {
 		d = when.defer();
 
 		d.promise.then(
-			function () {
-				fail();
-				done();
-			},
-			function (val) {
-				assert.equals(val, 1);
-				done();
-			}
-		);
+			function() { fail('promise should not have resolved'); },
+			function (val) { assert.equals(val, 1); }
+		).then(done, done);
 
 		input = when.defer();
 		input.reject(1);
@@ -140,15 +110,9 @@ buster.testCase('when.chain', {
 		d = when.defer();
 
 		d.promise.then(
-			function () {
-				fail();
-				done();
-			},
-			function (val) {
-				assert.equals(val, 1);
-				done();
-			}
-		);
+			function() { fail('promise should not have resolved'); },
+			function (val) { assert.equals(val, 1); }
+		).then(done, done);
 
 		input = when.defer();
 		input.reject(1);
@@ -165,10 +129,8 @@ buster.testCase('when.chain', {
 		input.resolve(1);
 
 		when.chain(input, d).then(
-			function(val) {
-				assert.equals(val, 1);
-			},
-			fail
+			function(val) { assert.equals(val, 1); },
+			function() { fail('promise should not have rejected'); }
 		).then(done, done);
 	},
 
@@ -181,14 +143,12 @@ buster.testCase('when.chain', {
 		input.resolve(1);
 
 		when.chain(input, d, 2).then(
-			function(val) {
-				assert.equals(val, 2);
-			},
-			fail
+			function(val) { assert.equals(val, 2); },
+			function() { fail('promise should not have rejected'); }
 		).then(done, done);
 	},
 
-	'should return a preomise that rejects with the input promise rejection value': function(done) {
+	'should return a promise that rejects with the input promise rejection value': function(done) {
 		var d, input;
 
 		input = when.defer();
@@ -197,10 +157,8 @@ buster.testCase('when.chain', {
 		input.reject(1);
 
 		when.chain(input, d).then(
-			fail,
-			function(val) {
-				assert.equals(val, 1);
-			}
+			function() { fail('promise should not have resolved'); },
+			function(val) { assert.equals(val, 1); }
 		).then(done, done);
 	}
 

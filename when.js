@@ -117,9 +117,7 @@ define(function() {
             }
         };
 
-        // Not frozen because this should never be exposed
-        // to callers
-        return p;
+        return freeze(p);
     }
 
     /**
@@ -151,9 +149,7 @@ define(function() {
             }
         };
 
-        // Not frozen because this should never be exposed
-        // to callers
-        return p;
+        return freeze(p);
     }
 
     /**
