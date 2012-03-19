@@ -22,6 +22,36 @@ It's **just over 1k** when compiled with Google Closure (w/advanced optimization
 
 when.js was derived from the async core of [wire.js](https://github.com/cujojs/wire).
 
+What's New?
+===========
+
+### 1.0.4
+
+* Fix for cancelable deferred not invoking progress callbacks. ([#24](https://github.com/cujojs/when/pull/24) Thanks [@scothis](https://github.com/scothis))
+* The promise returned by `when.chain` now rejects when the input promise rejects.
+
+### 1.0.3
+
+* Fix for specific situation where `null` could incorrectly be used as a promise resolution value ([#23](https://github.com/cujojs/when/pull/23))
+
+### 1.0.2
+
+* Updated README for running unit tests in both Node and Browsers.  See **Running the Unit Tests** below.
+* Set package name to 'when' in package.json
+
+### 1.0.1
+
+* Fix for rejections propagating in some cases when they shouldn't have been ([#19](https://github.com/cujojs/when/issues/19))
+* Using [buster.js](http://busterjs.org/) for unit tests now.
+
+### 1.0.0
+
+* First official when.js release as a part of [cujojs](https://github.com/cujojs).
+* Added [when/cancelable](https://github.com/cujojs/when/wiki/when-cancelable) decorator for creating cancelable deferreds
+* Added [when/delay](https://github.com/cujojs/when/wiki/when-delay) and [when/timeout](https://github.com/cujojs/when/wiki/when-timeout) helpers for creating delayed promises and promises that timeout and reject if not resolved first.
+
+[Full Changelog](https://github.com/cujojs/when/wiki/Changelog)
+
 Quick Start
 ===========
 
@@ -47,55 +77,13 @@ Quick Start
 
 ### Node
 
-1. `npm install git://github.com/cujojs/when` (**NOTE:*** npm seems to require a url that starts with "git" rather than http or https)
+1. `npm install git://github.com/cujojs/when` (**NOTE:** npm seems to require a url that starts with "git" rather than http or https)
 1. `var when = require('when');`
-
-Why isn't when.js available as `npm install when`? Read here
 
 ### RingoJS
 
 1. `ringo-admin install cujojs/when`
 1. `var when = require('when');`
-
-What's New?
-===========
-
-### 1.0.4
-
-* Fix for cancelable deferred not invoking progress callbacks. ([#24](https://github.com/cujojs/when/pull/24) Thanks [@scothis](https://github.com/scothis))
-
-### 1.0.3
-
-* Fix for specific situation where `null` could incorrectly be used as a promise resolution value ([#23](https://github.com/cujojs/when/pull/23))
-
-### 1.0.2
-
-* Updated README for running unit tests in both Node and Browsers.  See **Running the Unit Tests** below.
-* Set package name to 'when' in package.json
-
-### 1.0.1
-
-* Fix for rejections propagating in some cases when they shouldn't have been ([#19](https://github.com/cujojs/when/issues/19))
-* Using [buster.js](http://busterjs.org/) for unit tests now.
-
-### 1.0.0
-
-* First official when.js release as a part of [cujojs](https://github.com/cujojs).
-* Added [when/cancelable](https://github.com/cujojs/when/wiki/when-cancelable) decorator for creating cancelable deferreds
-* Added [when/delay](https://github.com/cujojs/when/wiki/when-delay) and [when/timeout](https://github.com/cujojs/when/wiki/when-timeout) helpers for creating delayed promises and promises that timeout and reject if not resolved first.
-
-### 0.11.1
-
-* Added [when/apply](https://github.com/cujojs/when/wiki/when-apply) helper module for using arguments-based and variadic callbacks with `when.all`, `when.some`, `when.map`, or any promise that resolves to an array. ([#14](https://github.com/cujojs/when/issues/14))
-* `.then()`, `when()`, and all other methods that accept callback/errback/progress handlers will throw if you pass something that's not a function. ([#15](https://github.com/cujojs/when/issues/15))
-
-### 0.11.0
-
-* `when.js` now *assimilates* thenables that pass the [Promises/A duck-type test](http://wiki.commonjs.org/wiki/Promises/A), but which may not be fully Promises/A compliant, such as [jQuery's Deferred](http://api.jquery.com/category/deferred-object/) and [curl's global API](https://github.com/cujojs/curl) (See the **API at a glance** section)
-    * `when()`, and `when.all/some/any/map/reduce/chain()` are all now guaranteed to return a fully Promises/A compliant promise, even when their input is not compliant.
-    * Any non-compliant thenable returned by a callback or errback will also be assimilated to protect subsequent promises and callbacks in a promise chain, and preserve Promises/A forwarding guarantees.
-
-[Full Changelog](https://github.com/cujojs/when/wiki/Changelog)
 
 Docs & Examples
 ===============
