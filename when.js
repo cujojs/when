@@ -702,9 +702,14 @@ define(function() {
 
         return when(promiseOrValue,
             function(val) {
-                resolver.resolve(useResolveValue ? resolveValue : val);
+				if(useResolveValue) val = resolveValue;
+                resolver.resolve(val);
+				return val;
             },
-            resolver.reject,
+			function(e) {
+				resolver.reject(e);
+				return rejected(e);
+			},
             resolver.progress
         );
     }

@@ -1,7 +1,10 @@
 (function(buster, when) {
 
-var assert = buster.assert;
-var refute = buster.refute;
+var assert, refute, fail;
+
+assert = buster.assert;
+refute = buster.refute;
+fail = buster.assertions.fail;
 
 buster.testCase('when.chain', {
 	'should return a promise for an input value': function() {
@@ -40,7 +43,7 @@ buster.testCase('when.chain', {
 				done();
 			},
 			function() {
-				buster.fail();
+				fail();
 				done();
 			}
 		);
@@ -59,7 +62,7 @@ buster.testCase('when.chain', {
 				done();
 			},
 			function() {
-				buster.fail();
+				fail();
 				done();
 			}
 		);
@@ -79,7 +82,7 @@ buster.testCase('when.chain', {
 				done();
 			},
 			function() {
-				buster.fail();
+				fail();
 				done();
 			}
 		);
@@ -98,7 +101,7 @@ buster.testCase('when.chain', {
 				done();
 			},
 			function() {
-				buster.fail();
+				fail();
 				done();
 			}
 		);
@@ -116,7 +119,7 @@ buster.testCase('when.chain', {
 
 		d.promise.then(
 			function () {
-				buster.fail();
+				fail();
 				done();
 			},
 			function (val) {
@@ -138,7 +141,7 @@ buster.testCase('when.chain', {
 
 		d.promise.then(
 			function () {
-				buster.fail();
+				fail();
 				done();
 			},
 			function (val) {
@@ -151,7 +154,56 @@ buster.testCase('when.chain', {
 		input.reject(1);
 
 		when.chain(input.promise, d.resolver, 2);
+	},
+
+	'should return a preomise that resolves with the input promise resolution value': function(done) {
+		var d, input;
+
+		input = when.defer();
+		d = when.defer();
+
+		input.resolve(1);
+
+		when.chain(input, d).then(
+			function(val) {
+				assert.equals(val, 1);
+			},
+			fail
+		).then(done, done);
+	},
+
+	'should return a preomise that resolves with the optional resolution value': function(done) {
+		var d, input;
+
+		input = when.defer();
+		d = when.defer();
+
+		input.resolve(1);
+
+		when.chain(input, d, 2).then(
+			function(val) {
+				assert.equals(val, 2);
+			},
+			fail
+		).then(done, done);
+	},
+
+	'should return a preomise that rejects with the input promise rejection value': function(done) {
+		var d, input;
+
+		input = when.defer();
+		d = when.defer();
+
+		input.reject(1);
+
+		when.chain(input, d).then(
+			fail,
+			function(val) {
+				assert.equals(val, 1);
+			}
+		).then(done, done);
 	}
+
 })
 
 })(
