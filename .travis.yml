@@ -1,7 +1,3 @@
 language: node_js
 node_js:
   - 0.6
-# whitelist
-branches:
-  only:
-    - dev
