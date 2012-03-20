@@ -147,7 +147,7 @@ resolver.progress(update);
 when.isPromise()
 ----------------
 
-```javscript
+```javascript
 var is = when.isPromise(anything);
 ```
 
