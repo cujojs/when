@@ -41,15 +41,23 @@ define(['./when'], function(when) {
             timeout && deferred.reject(new Error('timed out'));
         }, msec);
 
-        function cancelTimeout(value) {
+        function cancelTimeout() {
             clearTimeout(timeout);
             timeout = undef;
-            return value;
         }
 
         when(promise, deferred.resolve, deferred.reject);
 
-        return deferred.then(cancelTimeout, cancelTimeout);
+        return deferred.then(
+			function(value) {
+				cancelTimeout();
+				return value;
+			},
+			function(reason) {
+				cancelTimeout();
+				throw reason;
+			}
+		);
     };
 
 });

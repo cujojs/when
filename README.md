@@ -14,6 +14,8 @@ Helpful link for updating submodules:
 
 ----
 
+[![Build Status](https://secure.travis-ci.org/cujojs/when.png)](http://travis-ci.org/cujojs/when)
+
 A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining and chaining, and has a robust unit test suite.
 
 It's **just over 1k** when compiled with Google Closure (w/advanced optimizations) and gzipped.
@@ -23,56 +25,66 @@ when.js was derived from the async core of [wire.js](https://github.com/cujojs/w
 What's New?
 ===========
 
-### v1.0.0
+### 1.0.4
+
+* [Travis CI](http://travis-ci.org/cujojs/when) integration
+* Fix for cancelable deferred not invoking progress callbacks. ([#24](https://github.com/cujojs/when/pull/24) Thanks [@scothis](https://github.com/scothis))
+* The promise returned by `when.chain` now rejects when the input promise rejects.
+
+### 1.0.3
+
+* Fix for specific situation where `null` could incorrectly be used as a promise resolution value ([#23](https://github.com/cujojs/when/pull/23))
+
+### 1.0.2
+
+* Updated README for running unit tests in both Node and Browsers.  See **Running the Unit Tests** below.
+* Set package name to 'when' in package.json
+
+### 1.0.1
+
+* Fix for rejections propagating in some cases when they shouldn't have been ([#19](https://github.com/cujojs/when/issues/19))
+* Using [buster.js](http://busterjs.org/) for unit tests now.
+
+### 1.0.0
 
 * First official when.js release as a part of [cujojs](https://github.com/cujojs).
 * Added [when/cancelable](https://github.com/cujojs/when/wiki/when-cancelable) decorator for creating cancelable deferreds
 * Added [when/delay](https://github.com/cujojs/when/wiki/when-delay) and [when/timeout](https://github.com/cujojs/when/wiki/when-timeout) helpers for creating delayed promises and promises that timeout and reject if not resolved first.
 
-### v0.11.1
+[Full Changelog](https://github.com/cujojs/when/wiki/Changelog)
 
-* Added [when/apply](https://github.com/cujojs/when/wiki/when-apply) helper module for using arguments-based and variadic callbacks with `when.all`, `when.some`, `when.map`, or any promise that resolves to an array. ([#14](https://github.com/cujojs/when/issues/14))
-* `.then()`, `when()`, and all other methods that accept callback/errback/progress handlers will throw if you pass something that's not a function. ([#15](https://github.com/cujojs/when/issues/15))
+Quick Start
+===========
 
-### v0.11.0
+### AMD
 
-* `when.js` now *assimilates* thenables that pass the [Promises/A duck-type test](http://wiki.commonjs.org/wiki/Promises/A), but which may not be fully Promises/A compliant, such as [jQuery's Deferred](http://api.jquery.com/category/deferred-object/) and [curl's global API](https://github.com/cujojs/curl) (See the **API at a glance** section)
-    * `when()`, and `when.all/some/any/map/reduce/chain()` are all now guaranteed to return a fully Promises/A compliant promise, even when their input is not compliant.
-    * Any non-compliant thenable returned by a callback or errback will also be assimilated to protect subsequent promises and callbacks in a promise chain, and preserve Promises/A forwarding guarantees.
+1. `git clone https://github.com/cujojs/when` or `git submodule add https://github.com/cujojs/when`
+1. Configure your loader with a package:
 
-### v0.10.4
+	```javascript
+	packages: [
+		{ name: 'when', location: 'path/to/when/', main: 'when' },
+		// ... other packages ...
+	]
+	```
 
-* **Important Fix for some AMD build/optimizer tools**: Switching back to more verbose, builder-friendly boilerplate
-    * If you are using when.js 0.10.3 with the dojo or RequireJS build tools, you should update to v.10.4 as soon as possible.
+1. `define(['when', ...], function(when, ...) { ... });` or `require(['when', ...], function(when, ...) { ... });`
 
-### v0.10.3
+### Script Tag
 
-**Warning**: This version will not work with most AMD build tools.  You should update to 0.10.4 as soon as possible.
+1. `git clone https://github.com/cujojs/when` or `git submodule add https://github.com/cujojs/when`
+1. `<script src="path/to/when/when.js"></script>`
+1. `when` will be available as `window.when`
 
-* Minor `package.json` updates
-* Slightly smaller module boilerplate
+### Node
 
-### v0.10.2
+1. `npm install git://github.com/cujojs/when` (**NOTE:** npm seems to require a url that starts with "git" rather than http or https)
+1. `var when = require('when');`
 
-* Performance optimizations for `when.map()` (thanks @[smitranic](https://github.com/smitranic)), especially for large arrays where the `mapFunc` is also async (i.e. returns a promise)
-* `when.all/some/any/map/reduce` handle sparse arrays (thanks @[rwaldrn](https://github.com/rwldrn/))
-* Other minor performance optimizations
+### RingoJS
 
-### v0.10.1
-
-* Minor tweaks (thanks @[johan](https://github.com/johan))
-	* Add missing semis that WebStorm didn't catch
-	* Fix DOH submodule ref, and update README with info for running unit tests
-
-### v0.10.0
-
-* `when.map` and `when.reduce` - just like Array.map and Array.reduce, but they operate on promises and arrays of promises
-* Lots of internal size and performance optimizations
-* Still only 1k!
-
-### v0.9.4
-
-* Important fix for break in promise chains
+1. `ringo-admin install cujojs/when`
+1. `var when = require('when');`
 
 Docs & Examples
 ===============
@@ -135,7 +147,7 @@ resolver.progress(update);
 when.isPromise()
 ----------------
 
-```javscript
+```javascript
 var is = when.isPromise(anything);
 ```
 
@@ -289,17 +301,26 @@ The following configuration parameters are supported:
     
 All of the configuration parameters are optional. 
 
-Testing
-=======
+Running the Unit Tests
+======================
 
-To run the unit tests, from the when.js dir:
+Install [buster.js](http://busterjs.org/)
 
-1. `git submodule init && git submodule update`
-1. Open test/index.html in your browser
+`npm install -g buster`
+
+Run unit tests in Node:
+
+1. `buster test -e node`
+
+Run unit tests in Browsers (and Node):
+
+1. `buster server` - this will print a url
+2. Point browsers at <buster server url>/capture, e.g. `localhost:1111/capture`
+3. `buster test` or `buster test -e browser`
 
 References
 ----------
 
-Much of this code is based on @[unscriptable](https://github.com/unscriptable)'s [tiny promises](https://github.com/unscriptable/promises), the async innards of [wire.js](https://github.com/cujojs/wire), and some gists [here](https://gist.github.com/870729), [here](https://gist.github.com/892345), [here](https://gist.github.com/894356), and [here](https://gist.github.com/894360)
+Much of this code was inspired by @[unscriptable](https://github.com/unscriptable)'s [tiny promises](https://github.com/unscriptable/promises), the async innards of [wire.js](https://github.com/cujojs/wire), and some gists [here](https://gist.github.com/870729), [here](https://gist.github.com/892345), [here](https://gist.github.com/894356), and [here](https://gist.github.com/894360)
 
 Some of the code has been influenced by the great work in [Q](https://github.com/kriskowal/q), [Dojo's Deferred](https://github.com/dojo/dojo), and [uber.js](https://github.com/phiggins42/uber.js).

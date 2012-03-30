@@ -1,6 +1,6 @@
 {
-    "name": "cujo-when",
-    "version": "1.0.0",
+    "name": "when",
+    "version": "1.0.4",
     "description": "A lightweight Promise and when() implementation, plus other async goodies.",
     "keywords": ["promises", "when", "async"],
     "licenses": [
@@ -26,8 +26,14 @@
             "web": "http://unscriptable.com"
         }
     ],
+    "devDependencies": {
+        "buster": "~0.4"
+    },
     "main": "./when",
     "directories": {
         "test": "test"
+    },
+    "scripts": {
+        "test": "buster test -e node"
     }
 }

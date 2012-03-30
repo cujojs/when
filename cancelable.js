@@ -16,10 +16,7 @@
  */
 
 (function(define) {
-define(function() {
-
-    // private flag to indicate that a rejection is actually a cancel
-    var canceled = {};
+define(['./when'], function(when) {
 
     /**
      * Makes deferred cancelable, adding a cancel() method.
@@ -34,20 +31,24 @@ define(function() {
      */
     return function(deferred, canceler) {
 
-        // Add a cancel method to the deferred
+        var delegate = when.defer();
+
+        // Add a cancel method to the deferred to reject the delegate
+        // with the special canceled indicator.
         deferred.cancel = function() {
-            deferred.reject(canceled);
+            delegate.reject(canceler(deferred));
         };
 
-        // Replace deferred's promise with a promise that will always call canceler() first, *if*
-        // deferred is canceled.  Can now safely give out deferred.promise
-        deferred.promise = deferred.then(null,
-            function cancelHandler(e) {
-                return e === canceled ? canceler(deferred) : e;
-            });
+        // Ensure that the original resolve, reject, and progress all forward
+        // to the delegate
+        deferred.then(delegate.resolve, delegate.reject, delegate.progress);
 
-        // Replace deferred.then to allow it to be called safely and observe the cancellation
-        deferred.then = deferred.promise.then;
+        // Replace deferred's promise with the delegate promise
+        deferred.promise = delegate.promise;
+
+        // Also replace deferred.then to allow it to be called safely and
+        // observe the cancellation
+        deferred.then = delegate.promise.then;
 
         return deferred;
     };
@@ -55,9 +56,9 @@ define(function() {
 });
 })(typeof define == 'function'
     ? define
-    : function (factory) { typeof module != 'undefined'
-        ? (module.exports = factory())
-        : (this.when_cancelable = factory());
+    : function (deps, factory) { typeof module != 'undefined'
+        ? (module.exports = factory(require('./when')))
+        : (this.when_cancelable = factory(this.when));
     }
     // Boilerplate for AMD, Node, and browser global
 );
