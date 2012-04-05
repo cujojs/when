@@ -113,7 +113,7 @@ define(['./when'], function(when) {
 	 * @return {Deferred} a Deferred with debug logging
 	 */
 	function deferDebug(id) {
-		var d, status, value, origResolve, origReject;
+		var d, status, value, origResolve, origReject, origThen;
 
 		// Delegate to create a Deferred;
 		d = when.defer();
@@ -160,9 +160,27 @@ define(['./when'], function(when) {
 
 		// Setup final state change handlers
 		d.then(
-			function() { status = 'resolved'; },
-			function() { status = 'REJECTED'; }
+			function(v) { status = 'resolved'; return v; },
+			function(e) { status = 'REJECTED'; throw e; }
 		);
+
+		// Experimenting with setting up ways to also debug promises returned
+		// by .then().  Also need to find a way to extend the id in a way that
+		// makes it obvious the returned promise is NOT the original, but is
+		// related to it--it's downstream in the promise chain.
+		origThen = d.promise.then;
+		d.then = d.promise.then = function() {
+			var p = origThen.apply(undef, arguments);
+
+			p = beget(p);
+			p.id = d.id + '+';
+			p.toString = function() {
+				return toString('Promise', p.id, status, value);
+			};
+			
+			// See below. Not sure if debug promises should be frozen
+			return freeze(debugPromise(p));
+		};
 
 		// Add an id to all directly created promises.  It'd be great
 		// to find a way to propagate this id to promise created by .then()
