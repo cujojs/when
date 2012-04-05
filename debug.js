@@ -64,7 +64,7 @@ define(['./when'], function(when) {
 			},
 			function(err) {
 				if(p.id) {
-					console.err(p);
+					console.error(p);
 				} else {
 					console.error('[object Promise] REJECTED:', err);
 				}
