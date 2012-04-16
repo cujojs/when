@@ -56,7 +56,7 @@ buster.testCase('promise', {
 		assert.typeOf(defer().promise.then(null, null, f).then, 'function');
 	},
 
-	'should throw if non-function arguments are provided': function() {
+	'//should throw if non-function arguments are provided': function() {
 		assert.exception(function() { defer().promise.then(1); });
 		assert.exception(function() { defer().promise.then(1, null); });
 		assert.exception(function() { defer().promise.then(1, null, null); });

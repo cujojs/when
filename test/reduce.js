@@ -1,6 +1,9 @@
 (function(buster, when) {
 
-var assert = buster.assert;
+var assert, fail;
+
+assert = buster.assert;
+fail = buster.assertions.fail;
 
 function plus(sum, val) {
 	return sum + val;
@@ -132,10 +135,18 @@ buster.testCase('when.reduce', {
 		);
 	},
 
-	'should throw TypeError when input is empty and no initial value or promise provided': function() {
-		assert.exception(function() {
-			when.reduce([], plus);
-		}, 'TypeError');
+	'should reject with TypeError when input is empty and no initial value or promise provided': function(done) {
+		when.reduce([], plus).then(
+			function() {
+				fail();
+			},
+			function(e) {
+				assert(e instanceof TypeError);
+			}
+		).then(done);
+//		assert.exception(function() {
+//			when.reduce([], plus);
+//		}, 'TypeError');
 	},
 
 	'should allow sparse array input without initial': function(done) {
