@@ -620,16 +620,16 @@ define(function() {
 
     function _map(promisesOrValues, mapFunc) {
 
-        var results, i;
+        var results, len, i;
 
         // Since we know the resulting length, we can preallocate the results
         // array to avoid array expansions.
-        i = promisesOrValues.length;
-        results = allocateArray(i);
+        len = promisesOrValues.length >>> 0;
+        results = allocateArray(len);
 
         // Since mapFunc may be async, get all invocations of it into flight
         // asap, and then use reduce() to collect all the results
-        for(;i >= 0; --i) {
+        for(i = 0; i < len; i++) {
             if(i in promisesOrValues)
                 results[i] = when(promisesOrValues[i], mapFunc);
         }
