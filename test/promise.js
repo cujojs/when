@@ -24,6 +24,10 @@ buster.testCase('promise', {
 		assert(Object.isFrozen(defer().promise));
 	},
 
+	'should return a promise': function() {
+		assert.typeOf(defer().promise.then().then, 'function');
+	},
+
 	'should allow a single callback function': function() {
 		assert.typeOf(defer().promise.then(f).then, 'function');
 	},
@@ -304,6 +308,50 @@ buster.testCase('promise', {
 		});
 
 		d.progress(expected);
+	},
+
+	'always': {
+		'should return a promise': function() {
+			assert.typeOf(defer().promise.always().then, 'function');
+		},
+
+		'should register callback': function(done) {
+			var d = when.defer();
+
+			d.promise.always(
+				function(val) {
+					assert.equals(val, 1);
+					done();
+				}
+			);
+
+			d.resolve(1);
+		},
+
+		'should register errback': function(done) {
+			var d = when.defer();
+
+			d.promise.always(
+				function(val) {
+					assert.equals(val, 1);
+					done();
+				}
+			);
+
+			d.reject(1);
+		},
+
+		'should register progback': function(done) {
+			var d = when.defer();
+
+			d.promise.always(null, function (status) {
+				assert.equals(status, 1);
+				done();
+			});
+
+			d.progress(1);
+		}
+
 	}
 
 });

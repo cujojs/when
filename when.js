@@ -94,6 +94,12 @@ define(function() {
      */
     function Promise() {}
 
+	Promise.prototype = freeze({
+		always: function(alwaysback, progback) {
+			return this.then(alwaysback, alwaysback, progback);
+		}
+	});
+
     /**
      * Create an already-resolved promise for the supplied value
      * @private
