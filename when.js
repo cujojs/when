@@ -551,7 +551,7 @@ define(function() {
      *
      * @memberOf when
      *
-     * @param promisesOrValues {Array} array of anything, may contain a mix
+     * @param promisesOrValues {Array|Promise} array of anything, may contain a mix
      *      of {@link Promise}s and values
      * @param [callback] {Function}
      * @param [errback] {Function}
@@ -563,12 +563,9 @@ define(function() {
 
 		checkCallbacks(1, arguments);
 
-        var results, promise;
-
-        results = [];//allocateArray(promisesOrValues.length);
-        promise = reduce(promisesOrValues, reduceIntoArray, results);
-
-        return when(promise, callback, errback, progressHandler);
+		return when(promisesOrValues, function(promisesOrValues) {
+			return _reduce(promisesOrValues, reduceIntoArray, []);
+		}).then(callback, errback, progressHandler);
     }
 
     function reduceIntoArray(current, val, i) {
@@ -583,7 +580,7 @@ define(function() {
      *
      * @memberOf when
      *
-     * @param promisesOrValues {Array} array of anything, may contain a mix
+     * @param promisesOrValues {Array|Promise} array of anything, may contain a mix
      *      of {@link Promise}s and values
      * @param [callback] {Function}
      * @param [errback] {Function}
@@ -600,21 +597,27 @@ define(function() {
         return some(promisesOrValues, 1, unwrapSingleResult, errback, progressHandler);
     }
 
-    /**
-     * Traditional map function, similar to `Array.prototype.map()`, but allows
-     * input to contain {@link Promise}s and/or values, and mapFunc may return
-     * either a value or a {@link Promise}
-     *
-     * @memberOf when
-     *
-     * @param promisesOrValues {Array} array of anything, may contain a mix
-     *      of {@link Promise}s and values
-     * @param mapFunc {Function} mapping function mapFunc(value) which may return
-     *      either a {@link Promise} or value
-     *
-     * @returns {Promise} a {@link Promise} that will resolve to an array containing
-     *      the mapped output values.
-     */
+	/**
+	 * Traditional map function, similar to `Array.prototype.map()`, but allows
+	 * input to contain {@link Promise}s and/or values, and mapFunc may return
+	 * either a value or a {@link Promise}
+	 *
+	 * @memberOf when
+	 *
+	 * @param promise {Array|Promise} array of anything, may contain a mix
+	 *      of {@link Promise}s and values
+	 * @param mapFunc {Function} mapping function mapFunc(value) which may return
+	 *      either a {@link Promise} or value
+	 *
+	 * @returns {Promise} a {@link Promise} that will resolve to an array containing
+	 *      the mapped output values.
+	 */
+	function map(promise, mapFunc) {
+		return when(promise, function(array) {
+			return _map(array, mapFunc);
+		});
+	}
+
     function _map(promisesOrValues, mapFunc) {
 
         var results, i;
@@ -639,12 +642,24 @@ define(function() {
         return _reduce(results, reduceIntoArray, results);
     }
 
-	function map(promise, mapFunc) {
-		return when(promise, function(array) {
-			return _map(array, mapFunc);
-		});
-	}
-
+	/**
+	 * Traditional reduce function, similar to `Array.prototype.reduce()`, but
+	 * input may contain {@link Promise}s and/or values, and reduceFunc
+	 * may return either a value or a {@link Promise}, *and* initialValue may
+	 * be a {@link Promise} for the starting value.
+	 *
+	 * @memberOf when
+	 *
+	 * @param promise {Array|Promise} array of anything, may contain a mix
+	 *      of {@link Promise}s and values.  May also be a {@link Promise} for
+	 *      an array.
+	 * @param reduceFunc {Function} reduce function reduce(currentValue, nextValue, index, total),
+	 *      where total is the total number of items being reduced, and will be the same
+	 *      in each call to reduceFunc.
+	 * @param initialValue starting value, or a {@link Promise} for the starting value
+	 *
+	 * @returns {Promise} that will resolve to the final reduced value
+	 */
 	function reduce(promise, reduceFunc, initialValue) {
 		var args = slice.call(arguments, 1);
 		return when(promise, function(array) {
@@ -652,23 +667,6 @@ define(function() {
 		});
 	}
 
-    /**
-     * Traditional reduce function, similar to `Array.prototype.reduce()`, but
-     * input may contain {@link Promise}s and/or values, but reduceFunc
-     * may return either a value or a {@link Promise}, *and* initialValue may
-     * be a {@link Promise} for the starting value.
-     *
-     * @memberOf when
-     *
-     * @param promisesOrValues {Array} array of anything, may contain a mix
-     *      of {@link Promise}s and values
-     * @param reduceFunc {Function} reduce function reduce(currentValue, nextValue, index, total),
-     *      where total is the total number of items being reduced, and will be the same
-     *      in each call to reduceFunc.
-     * @param initialValue starting value, or a {@link Promise} for the starting value
-     *
-     * @returns {Promise} that will resolve to the final reduced value
-     */
     function _reduce(promisesOrValues, reduceFunc, initialValue) {
 
         var total, args;
@@ -693,7 +691,7 @@ define(function() {
 
         if (arguments.length > 2) args.push(initialValue);
 
-        return reduceArray.apply(promisesOrValues, args);
+		return reduceArray.apply(promisesOrValues, args);
     }
 
     /**

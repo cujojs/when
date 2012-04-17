@@ -1,6 +1,9 @@
 (function(buster, when) {
 
-var assert = buster.assert;
+var assert, fail;
+
+assert = buster.assert;
+fail = buster.assertions.fail;
 
 function resolved(val) {
 	var d = when.defer();
@@ -20,13 +23,9 @@ buster.testCase('when.all', {
 		when.all([],
 			function(result) {
 				assert.equals(result, []);
-				done();
 			},
-			function() {
-				buster.fail();
-				done();
-			}
-		);
+			fail
+		).then(done, done);
 	},
 
 	'should resolve values array': function(done) {
@@ -34,13 +33,9 @@ buster.testCase('when.all', {
 		when.all(input,
 			function(results) {
 				assert.equals(results, input);
-				done();
 			},
-			function() {
-				buster.fail();
-				done();
-			}
-		);
+			fail
+		).then(done, done);
 	},
 
 	'should resolve promises array': function(done) {
@@ -48,13 +43,9 @@ buster.testCase('when.all', {
 		when.all(input,
 			function(results) {
 				assert.equals(results, [1, 2, 3]);
-				done();
 			},
-			function() {
-				buster.fail();
-				done();
-			}
-		);
+			fail
+		).then(done, done);
 	},
 
 	'should resolve sparse array input': function(done) {
@@ -62,33 +53,48 @@ buster.testCase('when.all', {
 		when.all(input,
 			function(results) {
 				assert.equals(results, input);
-				done();
 			},
-			function() {
-				buster.fail();
-				done();
-			}
-		);
+			fail
+		).then(done, done);
 	},
 
 	'should reject if any input promise rejects': function(done) {
 		var input = [resolved(1), rejected(2), resolved(3)];
 		when.all(input,
-			function() {
-				buster.fail();
-				done();
-			},
+			fail,
 			function(failed) {
 				assert.equals(failed, 2);
-				done();
 			}
-		);
+		).then(done, done);
 	},
 
 	'should throw if called with something other than an array': function() {
 		assert.exception(function() {
 			when.all(1, 2, 3);
 		});
+	},
+
+	'should accept a promise for an array': function(done) {
+		var expected, input;
+
+		expected = [1, 2, 3];
+		input = resolved(expected);
+
+		when.all(input,
+			function(results) {
+				assert.equals(results, expected);
+			},
+			fail
+		).then(done, done);
+	},
+
+	'should resolve to empty array when input promise does not resolve to array': function(done) {
+		when.all(resolved(1),
+			function(result) {
+				assert.equals(result, []);
+			},
+			fail
+		).then(done, done);
 	}
 });
 

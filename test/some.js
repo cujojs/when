@@ -1,6 +1,9 @@
 (function(buster, when) {
 
-var assert = buster.assert;
+var assert, fail;
+
+assert = buster.assert;
+fail = buster.assertions.fail;
 
 function resolved(val) {
 	var d = when.defer();
@@ -117,7 +120,31 @@ buster.testCase('when.some', {
 		assert.exception(function() {
 			when.some(1, 2, 3, 2);
 		});
+	},
+
+	'should accept a promise for an array': function(done) {
+		var expected, input;
+
+		expected = [1, 2, 3];
+		input = resolved(expected);
+
+		when.some(input, 2,
+			function(results) {
+				assert.equals(results, expected.slice(0, 2));
+			},
+			fail
+		).then(done, done);
+	},
+
+	'should resolve to empty array when input promise does not resolve to array': function(done) {
+		when.some(resolved(1), 1,
+			function(result) {
+				assert.equals(result, []);
+			},
+			fail
+		).then(done, done);
 	}
+
 
 });
 })(

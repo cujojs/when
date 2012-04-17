@@ -1,19 +1,15 @@
 (function(buster, when) {
 
-var assert = buster.assert;
+var assert, fail;
+
+assert = buster.assert;
+fail = buster.assertions.fail;
 
 var defer, isFrozen, undef;
 
 defer = when.defer;
 
 function f() {}
-
-function fail(done) {
-	return function() {
-		buster.fail();
-		done();
-	};
-}
 
 // In case of testing in an environment without Object.isFrozen
 isFrozen = Object.isFrozen || function() { return true; };
@@ -69,21 +65,15 @@ buster.testCase('promise', {
 	'should forward result when callback is null': function(done) {
 		var d = when.defer();
 
-		function fail(e) {
-			buster.fail(e);
-			done();
-		}
-
 		d.promise.then(
 			null,
 			fail
 		).then(
 			function(val) {
 				assert.equals(val, 1);
-				done();
 			},
 			fail
-		);
+		).then(done, done);
 
 		d.resolve(1);
 	},
@@ -95,14 +85,13 @@ buster.testCase('promise', {
 			function(val) {
 				return val + 1;
 			},
-			fail(done)
+			fail
 		).then(
 			function(val) {
 				assert.equals(val, 2);
-				done();
 			},
-			fail(done)
-		);
+			fail
+		).then(done, done);
 
 		d.resolve(1);
 	},
@@ -114,14 +103,13 @@ buster.testCase('promise', {
 			function() {
 				// intentionally return undefined
 			},
-			fail(done)
+			fail
 		).then(
 			function(val) {
 				assert.equals(val, 1);
-				done();
 			},
-			fail(done)
-		);
+			fail
+		).then(done, done);
 
 		d.resolve(1);
 	},
@@ -130,7 +118,7 @@ buster.testCase('promise', {
 		var d = when.defer();
 
 		d.promise.then(
-			fail(done),
+			fail,
 			function() {
 				// presence of rejection handler is enough to switch back
 				// to resolve mode, even though it returns undefined.
@@ -140,10 +128,9 @@ buster.testCase('promise', {
 		).then(
 			function(val) {
 				assert.equals(val, 1);
-				done();
 			},
-			fail(done)
-		);
+			fail
+		).then(done, done);
 
 		d.reject(1);
 	},
@@ -157,14 +144,13 @@ buster.testCase('promise', {
 				d.resolve(val + 1);
 				return d.promise;
 			},
-			fail(done)
+			fail
 		).then(
 			function(val) {
 				assert.equals(val, 2);
-				done();
 			},
-			fail(done)
-		);
+			fail
+		).then(done, done);
 
 		d.resolve(1);
 	},
@@ -178,14 +164,13 @@ buster.testCase('promise', {
 				d.reject(val + 1);
 				return d.promise;
 			},
-			fail(done)
+			fail
 		).then(
-			fail(done),
+			fail,
 			function(val) {
 				assert.equals(val, 2);
-				done();
 			}
-		);
+		).then(done, done);
 
 		d.resolve(1);
 	},
@@ -197,14 +182,13 @@ buster.testCase('promise', {
 			function(val) {
 				throw val + 1;
 			},
-			fail(done)
+			fail
 		).then(
-			fail(done),
+			fail,
 			function(val) {
 				assert.equals(val, 2);
-				done();
 			}
-		);
+		).then(done, done);
 
 		d.resolve(1);
 	},
@@ -213,17 +197,16 @@ buster.testCase('promise', {
 		var d = when.defer();
 
 		d.promise.then(
-			fail(done),
+			fail,
 			function(val) {
 				return val + 1;
 			}
 		).then(
 			function(val) {
 				assert.equals(val, 2);
-				done();
 			},
-			fail(done)
-		);
+			fail
+		).then(done, done);
 
 		d.reject(1);
 	},
@@ -241,10 +224,9 @@ buster.testCase('promise', {
 		).then(
 			function(val) {
 				assert.equals(val, 2);
-				done();
 			},
 			fail
-		);
+		).then(done, done);
 
 		d.reject(1);
 	},
@@ -253,17 +235,16 @@ buster.testCase('promise', {
 		var d = when.defer();
 
 		d.promise.then(
-			fail(done),
+			fail,
 			function(val) {
 				throw val + 1;
 			}
 		).then(
-			fail(done),
+			fail,
 			function(val) {
 				assert.equals(val, 2);
-				done();
 			}
-		);
+		).then(done, done);
 
 		d.reject(1);
 	},
@@ -272,22 +253,18 @@ buster.testCase('promise', {
 		var d = when.defer();
 
 		d.promise.then(
-			fail(done),
+			fail,
 			function(val) {
 				var d = when.defer();
 				d.reject(val + 1);
 				return d.promise;
 			}
 		).then(
-			function() {
-				buster.fail();
-				done();
-			},
+			fail,
 			function(val) {
 				assert.equals(val, 2);
-				done();
 			}
-		);
+		).then(done, done);
 
 		d.reject(1);
 	},
