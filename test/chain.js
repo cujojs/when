@@ -14,7 +14,7 @@ buster.testCase('when.chain', {
 
 		result = when.chain(1, d.resolver);
 
-		assert.typeOf(result.then, 'function');
+		assert(typeof result.then == 'function');
 		refute.equals(result, d);
 		refute.equals(result, d.promise);
 	},
@@ -27,7 +27,7 @@ buster.testCase('when.chain', {
 
 		result = when.chain(d1.promise, d2.resolver);
 
-		assert.typeOf(result.then, 'function');
+		assert(typeof result.then == 'function');
 		refute.equals(result, d1);
 		refute.equals(result, d1.promise);
 		refute.equals(result, d2);
