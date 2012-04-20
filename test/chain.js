@@ -166,5 +166,5 @@ buster.testCase('when.chain', {
 
 })(
 	this.buster || require('buster'),
-	this.when   || require('../when')
+	this.when   || require('..')
 );

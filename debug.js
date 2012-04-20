@@ -55,16 +55,10 @@ define(['./when'], function(when) {
 		// TODO: Need to find a way for promises returned by .then()
 		// to also be debug promises.
 		p.then(
-			function(val) {
-				if(p.id) {
-					console.log(p.toString());
-				} else {
-					console.log('[object Promise] resolved:', val);
-				}
-			},
+			undef,
 			function(err) {
 				if(p.id) {
-					console.error(p);
+					console.error(p.toString());
 				} else {
 					console.error('[object Promise] REJECTED:', err);
 				}
@@ -112,8 +106,8 @@ define(['./when'], function(when) {
 	 * up in debug output
 	 * @return {Deferred} a Deferred with debug logging
 	 */
-	function deferDebug(id) {
-		var d, status, value, origResolve, origReject, origThen;
+	function deferDebug() {
+		var d, status, value, origResolve, origReject, origThen, id;
 
 		// Delegate to create a Deferred;
 		d = when.defer();
@@ -123,7 +117,8 @@ define(['./when'], function(when) {
 
 		// if no id provided, generate one.  Not sure if this is
 		// useful or not.
-		if(arguments.length == 0) id = ++promiseId;
+		id = arguments[arguments.length - 1];
+		if(id === undef) id = ++promiseId;
 
 		// Promise and resolver are frozen, so have to delegate
 		// in order to setup toString() on promise, resolver,
@@ -142,7 +137,7 @@ define(['./when'], function(when) {
 		d.resolve = d.resolver.resolve = function(val) {
 			value = val;
 			status = 'resolving';
-			console.log(toString('Resolver', id, status, val));
+//			console.log(d.resolver.toString());
 			return origResolve.apply(undef, arguments);
 		};
 
@@ -150,7 +145,7 @@ define(['./when'], function(when) {
 		d.reject = d.resolver.reject = function(err) {
 			value = err;
 			status = 'REJECTING';
-			console.log(toString('Resolver', id, status, err));
+//			console.error(d.resolver.toString());
 			return origReject.apply(undef, arguments);
 		};
 

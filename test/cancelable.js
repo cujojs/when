@@ -74,6 +74,6 @@ buster.testCase('when/cancelable', {
 
 })(
 	this.buster || require('buster'),
-	this.when || require('../when'),
+	this.when || require('..'),
 	this.when_cancelable || require('../cancelable')
 );

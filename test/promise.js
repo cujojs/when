@@ -290,7 +290,7 @@ buster.testCase('promise', {
 		);
 
 		d.reject(1);
-	}
+	},
 
 	'should call progback': function(done) {
 		var expected, d;
@@ -309,5 +309,5 @@ buster.testCase('promise', {
 });
 })(
 	this.buster || require('buster'),
-	this.when   || require('../when')
+	this.when   || require('..')
 );

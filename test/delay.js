@@ -66,6 +66,6 @@ buster.testCase('when/delay', {
 });
 })(
 	this.buster || require('buster'),
-	this.when || require('../when'),
+	this.when || require('..'),
 	this.when_delay || require('../delay')
 );

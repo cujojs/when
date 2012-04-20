@@ -97,5 +97,5 @@ buster.testCase('when.map', {
 });
 })(
 	this.buster || require('buster'),
-	this.when   || require('../when')
+	this.when   || require('..')
 );

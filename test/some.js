@@ -122,5 +122,5 @@ buster.testCase('when.some', {
 });
 })(
 	this.buster || require('buster'),
-	this.when   || require('../when')
+	this.when   || require('..')
 );
