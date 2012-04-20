@@ -91,8 +91,10 @@ define(function() {
      * Trusted Promise constructor.  A Promise created from this constructor is
      * a trusted when.js promise.  Any other duck-typed promise is considered
      * untrusted.
-     */
-    function Promise() {}
+	 *
+	 * @constructor
+	 */
+	function Promise() {}
 
     /**
      * Create an already-resolved promise for the supplied value
@@ -152,10 +154,28 @@ define(function() {
         return freeze(p);
     }
 
+	/**
+	 * Returns a rejected promise for the supplied promiseOrValue. If
+	 * promiseOrValue is a value, it will be the rejection value of the
+	 * returned promise.  If promiseOrValue is a promise, its
+	 * completion value will be the rejected value of the returned promise
+	 *
+	 * @param promiseOrValue {*} the rejected value of the returned {@link Promise}
+	 *
+	 * @return {Promise} rejected {@link Promise}
+	 */
+	function reject(promiseOrValue) {
+		return when(promiseOrValue, function(value) {
+			return rejected(value);
+		});
+	}
+
     /**
      * Helper that checks arrayOfCallbacks to ensure that each element is either
      * a function, or null or undefined.
-     *
+	 *
+	 * @private
+	 *
      * @param arrayOfCallbacks {Array} array to check
      * @throws {Error} if any element of arrayOfCallbacks is something other than
      * a Functions, null, or undefined.
@@ -322,19 +342,12 @@ define(function() {
          * parts
          * @class Deferred
          * @name Deferred
-         * @augments Resolver
-         * @augments Promise
          */
         deferred = {};
 
         // Promise and Resolver parts
         // Freeze Promise and Resolver APIs
 
-        /**
-         * The Promise API
-         * @namespace Promise
-         * @name Promise
-         */
         promise = new Promise();
         promise.then = deferred.then = then;
 
@@ -348,11 +361,9 @@ define(function() {
 
         /**
          * The {@link Resolver} for this {@link Deferred}
-         * @namespace Resolver
-         * @name Resolver
          * @memberOf Deferred
          * @name resolver
-         * @type {Resolver}
+		 * @class Resolver
          */
         deferred.resolver = freeze({
             resolve:  (deferred.resolve  = resolve),
@@ -715,6 +726,8 @@ define(function() {
     //
 
     when.defer     = defer;
+
+	when.reject    = reject;
 
     when.isPromise = isPromise;
     when.some      = some;
