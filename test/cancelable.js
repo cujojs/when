@@ -5,7 +5,7 @@ var assert = buster.assert;
 buster.testCase('when/cancelable', {
 	'should decorate deferred with a cancel() method': function() {
 		var c = cancelable(when.defer(), function() {});
-		assert.typeOf(c.cancel, 'function');
+		assert(typeof c.cancel == 'function');
 	},
 
 	'should propagate a rejection when a cancelable deferred is canceled': function(done) {
@@ -74,6 +74,6 @@ buster.testCase('when/cancelable', {
 
 })(
 	this.buster || require('buster'),
-	this.when || require('../when'),
+	this.when || require('..'),
 	this.when_cancelable || require('../cancelable')
 );

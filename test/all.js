@@ -94,5 +94,5 @@ buster.testCase('when.all', {
 
 })(
 	this.buster || require('buster'),
-	this.when   || require('../when')
+	this.when   || require('..')
 );

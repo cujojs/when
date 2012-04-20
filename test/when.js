@@ -19,24 +19,24 @@ function FakePromise(val) {
 buster.testCase('when', {
 	'should return a promise for a value': function() {
 		var result = when(1);
-		assert.typeOf(result.then, 'function');
+		assert(typeof result.then == 'function');
 	},
 
 	'should return a promise for a promise': function() {
 		var result = when(fakePromise);
-		assert.typeOf(result.then, 'function');
+		assert(typeof result.then == 'function');
 	},
 
 	'should not return the input promise': function() {
 		var result = when(fakePromise, identity);
-		assert.typeOf(result.then, 'function');
+		assert(typeof result.then == 'function');
 		refute.same(result, fakePromise);
 	},
 
 	'should return a promise that forwards for a value': function(done) {
 		var result = when(1, constant(2));
 
-		assert.typeOf(result.then, 'function');
+		assert(typeof result.then == 'function');
 
 		result.then(
 			function(val) {
@@ -163,5 +163,5 @@ buster.testCase('when', {
 });
 })(
 	this.buster || require('buster'),
-	this.when   || require('../when')
+	this.when   || require('..')
 );

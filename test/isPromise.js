@@ -55,5 +55,5 @@ buster.testCase('when.isPromise', {
 
 })(
 	this.buster || require('buster'),
-	this.when   || require('../when')
+	this.when   || require('..')
 );

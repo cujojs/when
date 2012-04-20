@@ -57,6 +57,6 @@ buster.testCase('when/timeout', {
 });
 })(
 	this.buster || require('buster'),
-	this.when || require('../when'),
+	this.when || require('..'),
 	this.when_timeout || require('../timeout')
 );
