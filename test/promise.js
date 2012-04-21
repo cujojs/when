@@ -25,39 +25,39 @@ buster.testCase('promise', {
 	},
 
 	'should return a promise': function() {
-		assert.typeOf(defer().promise.then().then, 'function');
+		assert.isFunction(defer().promise.then().then);
 	},
 
 	'should allow a single callback function': function() {
-		assert(typeof defer().promise.then(f).then == 'function');
+		assert.isFunction(defer().promise.then(f).then);
 	},
 
 	'should allow a callback and errback function': function() {
-		assert(typeof defer().promise.then(f, f).then == 'function');
+		assert.isFunction(defer().promise.then(f, f).then);
 	},
 
 	'should allow a callback, errback, and progback function': function() {
-		assert(typeof defer().promise.then(f, f, f).then == 'function');
+		assert.isFunction(defer().promise.then(f, f, f).then);
 	},
 
 	'should allow null and undefined': function() {
-		assert(typeof defer().promise.then().then == 'function');
+		assert.isFunction(defer().promise.then().then);
 
-		assert(typeof defer().promise.then(null).then == 'function');
-		assert(typeof defer().promise.then(null, null).then == 'function');
-		assert(typeof defer().promise.then(null, null, null).then == 'function');
+		assert.isFunction(defer().promise.then(null).then);
+		assert.isFunction(defer().promise.then(null, null).then);
+		assert.isFunction(defer().promise.then(null, null, null).then);
 
-		assert(typeof defer().promise.then(undef).then == 'function');
-		assert(typeof defer().promise.then(undef, undef).then == 'function');
-		assert(typeof defer().promise.then(undef, undef, undef).then == 'function');
+		assert.isFunction(defer().promise.then(undef).then);
+		assert.isFunction(defer().promise.then(undef, undef).then);
+		assert.isFunction(defer().promise.then(undef, undef, undef).then);
 	},
 
 	'should allow functions and null or undefined to be mixed': function() {
-		assert(typeof defer().promise.then(f, null).then == 'function');
-		assert(typeof defer().promise.then(f, null, null).then == 'function');
-		assert(typeof defer().promise.then(null, f).then == 'function');
-		assert(typeof defer().promise.then(null, f, null).then == 'function');
-		assert(typeof defer().promise.then(null, null, f).then == 'function');
+		assert.isFunction(defer().promise.then(f, null).then);
+		assert.isFunction(defer().promise.then(f, null, null).then);
+		assert.isFunction(defer().promise.then(null, f).then);
+		assert.isFunction(defer().promise.then(null, f, null).then);
+		assert.isFunction(defer().promise.then(null, null, f).then);
 	},
 
 	'should throw if non-function arguments are provided': function() {
@@ -312,7 +312,7 @@ buster.testCase('promise', {
 
 	'always': {
 		'should return a promise': function() {
-			assert.typeOf(defer().promise.always().then, 'function');
+			assert.isFunction(defer().promise.always().then);
 		},
 
 		'should register callback': function(done) {
