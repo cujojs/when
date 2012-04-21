@@ -25,6 +25,13 @@ when.js was derived from the async core of [wire.js](https://github.com/cujojs/w
 What's New?
 ===========
 
+### 1.1.0
+
+* `when.all/any/some/map/reduce` can all now accept a promise for an array in addition to an actual array as input.  This allows interesting things like `when.reduce(when.map(...))`
+* `when.reject()`
+* `promise.always`
+* **Highly experimental** when/debug module: a drop-in replacement for the main `when` module that enables debug logging for promises created or consumed by when.js
+
 ### 1.0.4
 
 * [Travis CI](http://travis-ci.org/cujojs/when) integration
