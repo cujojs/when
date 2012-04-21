@@ -618,6 +618,14 @@ define(function() {
 		});
 	}
 
+	/**
+	 * Private map helper to map an array of promises
+	 * @private
+	 *
+	 * @param promisesOrValues {Array}
+	 * @param mapFunc {Function}
+	 * @return {Promise}
+	 */
     function _map(promisesOrValues, mapFunc) {
 
         var results, len, i;
@@ -667,6 +675,15 @@ define(function() {
 		});
 	}
 
+	/**
+	 * Private reduce to reduce an array of promises
+	 * @private
+	 *
+	 * @param promisesOrValues {Array}
+	 * @param reduceFunc {Function}
+	 * @param initialValue {*}
+	 * @return {Promise}
+	 */
     function _reduce(promisesOrValues, reduceFunc, initialValue) {
 
         var total, args;
