@@ -16,80 +16,27 @@
 define(function() {
     var freeze, reduceArray, slice, undef;
 
-    /**
-     * No-Op function used in method replacement
-     * @private
-     */
-    function noop() {}
+	//
+	// Public API
+	//
 
-    /**
-     * Allocate a new Array of size n
-     * @private
-     * @param n {number} size of new Array
-     * @returns {Array}
-     */
-    function allocateArray(n) {
-        return new Array(n);
-    }
+	when.defer     = defer;
+	when.reject    = reject;
+	when.isPromise = isPromise;
 
-    /**
-     * Use freeze if it exists
-     * @function
-     * @private
-     */
-    freeze = Object.freeze || function(o) { return o; };
+	when.all       = all;
+	when.some      = some;
+	when.any       = any;
 
-	slice = [].slice;
+	when.map       = map;
+	when.reduce    = reduce;
 
-	// ES5 reduce implementation if native not available
-    // See: http://es5.github.com/#x15.4.4.21 as there are many
-    // specifics and edge cases.
-    reduceArray = [].reduce ||
-        function(reduceFunc /*, initialValue */) {
-            // ES5 dictates that reduce.length === 1
+	when.chain     = chain;
 
-            // This implementation deviates from ES5 spec in the following ways:
-            // 1. It does not check if reduceFunc is a Callable
+	/** Object.freeze */
+	freeze = Object.freeze || function(o) { return o; };
 
-            var arr, args, reduced, len, i;
-
-            i = 0;
-            arr = Object(this);
-            len = arr.length >>> 0;
-            args = arguments;
-
-            // If no initialValue, use first item of array (we know length !== 0 here)
-            // and adjust i to start at second item
-            if(args.length <= 1) {
-                // Skip to the first real element in the array
-                for(;;) {
-                    if(i in arr) {
-                        reduced = arr[i++];
-                        break;
-                    }
-
-                    // If we reached the end of the array without finding any real
-                    // elements, it's a TypeError
-                    if(++i >= len) {
-                        throw new TypeError();
-                    }
-                }
-            } else {
-                // If initialValue provided, use it
-                reduced = args[1];
-            }
-
-            // Do the actual reduce
-            for(;i < len; ++i) {
-                // Skip holes
-                if(i in arr)
-                    reduced = reduceFunc(reduced, arr[i], i, arr);
-            }
-
-            return reduced;
-        };
-
-    /**
+	/**
      * Trusted Promise constructor.  A Promise created from this constructor is
      * a trusted when.js promise.  Any other duck-typed promise is considered
      * untrusted.
@@ -173,24 +120,6 @@ define(function() {
 			return rejected(value);
 		});
 	}
-
-    /**
-     * Helper that checks arrayOfCallbacks to ensure that each element is either
-     * a function, or null or undefined.
-	 *
-	 * @private
-	 *
-     * @param arrayOfCallbacks {Array} array to check
-     * @throws {Error} if any element of arrayOfCallbacks is something other than
-     * a Functions, null, or undefined.
-     */
-    function checkCallbacks(start, arrayOfCallbacks) {
-        var arg, i = arrayOfCallbacks.length;
-        while(i > start) {
-            arg = arrayOfCallbacks[--i];
-            if (arg != null && typeof arg != 'function') throw new Error('callback is not a function');
-        }
-    }
 
     /**
      * Creates a new, CommonJS compliant, Deferred with fully isolated
@@ -650,9 +579,9 @@ define(function() {
         // Since we know the resulting length, we can preallocate the results
         // array to avoid array expansions.
         len = promisesOrValues.length >>> 0;
-        results = allocateArray(len);
+		results = new Array(len);
 
-        // Since mapFunc may be async, get all invocations of it into flight
+		// Since mapFunc may be async, get all invocations of it into flight
         // asap, and then use reduce() to collect all the results
         for(i = 0; i < len; i++) {
             if(i in promisesOrValues)
@@ -757,25 +686,85 @@ define(function() {
         );
     }
 
-    //
-    // Public API
-    //
+	//
+	// Utility functions
+	//
 
-    when.defer     = defer;
+	/**
+	 * Helper that checks arrayOfCallbacks to ensure that each element is either
+	 * a function, or null or undefined.
+	 *
+	 * @private
+	 *
+	 * @param arrayOfCallbacks {Array} array to check
+	 * @throws {Error} if any element of arrayOfCallbacks is something other than
+	 * a Functions, null, or undefined.
+	 */
+	function checkCallbacks(start, arrayOfCallbacks) {
+		var arg, i = arrayOfCallbacks.length;
+		while(i > start) {
+			arg = arrayOfCallbacks[--i];
+			if (arg != null && typeof arg != 'function') throw new Error('callback is not a function');
+		}
+	}
 
-	when.reject    = reject;
+	/**
+	 * No-Op function used in method replacement
+	 * @private
+	 */
+	function noop() {}
 
-    when.isPromise = isPromise;
-    when.some      = some;
-    when.all       = all;
-    when.any       = any;
+	slice = [].slice;
 
-    when.reduce    = reduce;
-    when.map       = map;
+	// ES5 reduce implementation if native not available
+	// See: http://es5.github.com/#x15.4.4.21 as there are many
+	// specifics and edge cases.
+	reduceArray = [].reduce ||
+		function(reduceFunc /*, initialValue */) {
+			// ES5 dictates that reduce.length === 1
 
-    when.chain     = chain;
+			// This implementation deviates from ES5 spec in the following ways:
+			// 1. It does not check if reduceFunc is a Callable
 
-    return when;
+			var arr, args, reduced, len, i;
+
+			i = 0;
+			arr = Object(this);
+			len = arr.length >>> 0;
+			args = arguments;
+
+			// If no initialValue, use first item of array (we know length !== 0 here)
+			// and adjust i to start at second item
+			if(args.length <= 1) {
+				// Skip to the first real element in the array
+				for(;;) {
+					if(i in arr) {
+						reduced = arr[i++];
+						break;
+					}
+
+					// If we reached the end of the array without finding any real
+					// elements, it's a TypeError
+					if(++i >= len) {
+						throw new TypeError();
+					}
+				}
+			} else {
+				// If initialValue provided, use it
+				reduced = args[1];
+			}
+
+			// Do the actual reduce
+			for(;i < len; ++i) {
+				// Skip holes
+				if(i in arr)
+					reduced = reduceFunc(reduced, arr[i], i, arr);
+			}
+
+			return reduced;
+		};
+
+	return when;
 });
 })(typeof define == 'function'
     ? define

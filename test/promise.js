@@ -56,16 +56,6 @@ buster.testCase('promise', {
 		assert.isFunction(defer().promise.then(null, null, f).then);
 	},
 
-	'//should throw if non-function arguments are provided': function() {
-		assert.exception(function() { defer().promise.then(1); });
-		assert.exception(function() { defer().promise.then(1, null); });
-		assert.exception(function() { defer().promise.then(1, null, null); });
-		assert.exception(function() { defer().promise.then(null, 1); });
-		assert.exception(function() { defer().promise.then(null, 1, null); });
-		assert.exception(function() { defer().promise.then(null, null, 1); });
-
-	},
-
 	'should forward result when callback is null': function(done) {
 		var d = when.defer();
 

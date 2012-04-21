@@ -79,6 +79,12 @@ buster.testCase('when.any', {
 		).then(done, done);
 	},
 
+	'should throw if called with something other than a valid input plus callbacks': function() {
+		assert.exception(function() {
+			when.any(1, 2, 3);
+		});
+	},
+
 	'should accept a promise for an array': function(done) {
 		var expected, input;
 

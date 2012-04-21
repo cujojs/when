@@ -116,7 +116,7 @@ buster.testCase('when.some', {
 		);
 	},
 
-	'should throw if called with something other than an array': function() {
+	'should throw if called with something other than a valid input, count, and callbacks': function() {
 		assert.exception(function() {
 			when.some(1, 2, 3, 2);
 		});

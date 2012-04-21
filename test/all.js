@@ -68,7 +68,7 @@ buster.testCase('when.all', {
 		).then(done, done);
 	},
 
-	'should throw if called with something other than an array': function() {
+	'should throw if called with something other than a valid input plus callbacks': function() {
 		assert.exception(function() {
 			when.all(1, 2, 3);
 		});
