@@ -1,7 +1,10 @@
 (function(buster, when) {
 
-var assert = buster.assert;
-var refute = buster.refute;
+var assert, refute, fail;
+
+assert = buster.assert;
+refute = buster.refute;
+fail = buster.assertions.fail;
 
 function contains(array, item) {
 	for(var i=array.length - 1; i >= 0; --i) {
@@ -31,13 +34,9 @@ buster.testCase('when.any', {
 		when.any([],
 			function(result) {
 				refute.defined(result);
-				done();
 			},
-			function() {
-				buster.fail();
-				done()
-			}
-		);
+			fail
+		).then(done, done);
 	},
 
 	'should resolve with an input value': function(done) {
@@ -45,13 +44,9 @@ buster.testCase('when.any', {
 		when.any(input,
 			function(result) {
 				assert(contains(input, result));
-				done();
 			},
-			function () {
-				buster.fail();
-				done()
-			}
-		);
+			fail
+		).then(done, done);
 	},
 
 	'should resolve with a promised input value': function(done) {
@@ -59,27 +54,19 @@ buster.testCase('when.any', {
 		when.any(input,
 			function(result) {
 				assert(contains([1, 2, 3], result));
-				done();
 			},
-			function() {
-				buster.fail();
-				done()
-			}
-		);
+			fail
+		).then(done, done);
 	},
 
 	'should reject with a rejected input value': function(done) {
 		var input = [rejected(1), resolved(2), resolved(3)];
 		when.any(input,
-			function() {
-				buster.fail();
-				done()
-			},
+			fail,
 			function(result) {
 				assert.equals(result, 1);
-				done();
 			}
-		);
+		).then(done, done);
 	},
 
 	'should resolve when first input promise resolves': function(done) {
@@ -87,13 +74,32 @@ buster.testCase('when.any', {
 		when.any(input,
 			function(result) {
 				assert.equals(result, 1);
-				done();
 			},
-			function() {
-				buster.fail();
-				done()
-			}
-		);
+			fail
+		).then(done, done);
+	},
+
+	'should accept a promise for an array': function(done) {
+		var expected, input;
+
+		expected = [1, 2, 3];
+		input = resolved(expected);
+
+		when.any(input,
+			function(result) {
+				assert.equals(result, 1);
+			},
+			fail
+		).then(done, done);
+	},
+
+	'should resolve to undefined when input promise does not resolve to array': function(done) {
+		when.any(resolved(1),
+			function(result) {
+				refute.defined(result);
+			},
+			fail
+		).then(done, done);
 	}
 
 });

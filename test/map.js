@@ -1,6 +1,9 @@
 (function(buster, when) {
 
-var assert = buster.assert;
+var assert, fail;
+
+assert = buster.assert;
+fail = buster.assertions.fail;
 
 function mapper(val) {
 	return val * 2;
@@ -29,13 +32,9 @@ buster.testCase('when.map', {
 		when.map(input, mapper).then(
 			function(results) {
 				assert.equals(results, [2,4,6]);
-				done();
 			},
-			function() {
-				buster.fail();
-				done();
-			}
-		);
+			fail
+		).then(done, done);
 	},
 
 	'should map input promises array': function(done) {
@@ -43,13 +42,9 @@ buster.testCase('when.map', {
 		when.map(input, mapper).then(
 			function(results) {
 				assert.equals(results, [2,4,6]);
-				done();
 			},
-			function() {
-				buster.fail();
-				done();
-			}
-		);
+			fail
+		).then(done, done);
 	},
 
 	'should map mixed input array': function(done) {
@@ -57,13 +52,9 @@ buster.testCase('when.map', {
 		when.map(input, mapper).then(
 			function(results) {
 				assert.equals(results, [2,4,6]);
-				done();
 			},
-			function() {
-				buster.fail();
-				done();
-			}
-		);
+			fail
+		).then(done, done);
 	},
 
 	'should map input when mapper returns a promise': function(done) {
@@ -71,13 +62,27 @@ buster.testCase('when.map', {
 		when.map(input, deferredMapper).then(
 			function(results) {
 				assert.equals(results, [2,4,6]);
-				done();
 			},
-			function() {
-				buster.fail();
-				done();
-			}
-		);
+			fail
+		).then(done, done);
+	},
+
+	'should accept a promise for an array': function(done) {
+		when.map(resolved([1, resolved(2), 3]), mapper).then(
+			function(result) {
+				assert.equals(result, [2,4,6]);
+			},
+			fail
+		).then(done, done);
+	},
+
+	'should resolve to empty array when input promise does not resolve to an array': function(done) {
+		when.map(resolved(123), mapper).then(
+			function(result) {
+				assert.equals(result, []);
+			},
+			fail
+		).then(done, done);
 	},
 
 	'should map input promises when mapper returns a promise': function(done) {
@@ -85,13 +90,9 @@ buster.testCase('when.map', {
 		when.map(input, deferredMapper).then(
 			function(results) {
 				assert.equals(results, [2,4,6]);
-				done();
 			},
-			function() {
-				buster.fail();
-				done();
-			}
-		);
+			fail
+		).then(done, done);
 	}
 
 });

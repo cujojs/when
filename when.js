@@ -14,7 +14,7 @@
 
 (function(define) {
 define(function() {
-    var freeze, reduceArray, undef;
+    var freeze, reduceArray, slice, undef;
 
     /**
      * No-Op function used in method replacement
@@ -39,7 +39,9 @@ define(function() {
      */
     freeze = Object.freeze || function(o) { return o; };
 
-    // ES5 reduce implementation if native not available
+	slice = [].slice;
+
+	// ES5 reduce implementation if native not available
     // See: http://es5.github.com/#x15.4.4.21 as there are many
     // specifics and edge cases.
     reduceArray = [].reduce ||
@@ -114,8 +116,6 @@ define(function() {
         var p = new Promise();
 
         p.then = function(callback) {
-            checkCallbacks(arguments);
-
             var nextValue;
             try {
                 if(callback) nextValue = callback(value);
@@ -141,8 +141,6 @@ define(function() {
         var p = new Promise();
 
         p.then = function(callback, errback) {
-            checkCallbacks(arguments);
-
             var nextValue;
             try {
                 if(errback) {
@@ -186,9 +184,9 @@ define(function() {
      * @throws {Error} if any element of arrayOfCallbacks is something other than
      * a Functions, null, or undefined.
      */
-    function checkCallbacks(arrayOfCallbacks) {
+    function checkCallbacks(start, arrayOfCallbacks) {
         var arg, i = arrayOfCallbacks.length;
-        while(i) {
+        while(i > start) {
             arg = arrayOfCallbacks[--i];
             if (arg != null && typeof arg != 'function') throw new Error('callback is not a function');
         }
@@ -226,11 +224,6 @@ define(function() {
          * @throws {Error} if any argument is not null, undefined, or a Function
          */
         _then = function unresolvedThen(callback, errback, progback) {
-            // Check parameters and fail immediately if any supplied parameter
-            // is not null/undefined and is also not a function.
-            // That is, any non-null/undefined parameter must be a function.
-            checkCallbacks(arguments);
-
             var deferred = defer();
 
             listeners.push(function(promise) {
@@ -490,76 +483,82 @@ define(function() {
      * @returns {Promise}
      */
     function some(promisesOrValues, howMany, callback, errback, progressHandler) {
-        var toResolve, results, ret, deferred, resolver, rejecter, handleProgress, len, i;
 
-        len = promisesOrValues.length >>> 0;
+		checkCallbacks(2, arguments);
 
-        toResolve = Math.max(0, Math.min(howMany, len));
-        results = [];
-        deferred = defer();
-        ret = when(deferred, callback, errback, progressHandler);
+		return when(promisesOrValues, function(promisesOrValues) {
 
-        // Wrapper so that resolver can be replaced
-        function resolve(val) {
-            resolver(val);
-        }
+			var toResolve, results, ret, deferred, resolver, rejecter, handleProgress, len, i;
 
-        // Wrapper so that rejecter can be replaced
-        function reject(err) {
-            rejecter(err);
-        }
+			len = promisesOrValues.length >>> 0;
 
-        // Wrapper so that progress can be replaced
-        function progress(update) {
-            handleProgress(update);
-        }
+			toResolve = Math.max(0, Math.min(howMany, len));
+			results = [];
+			deferred = defer();
+			ret = when(deferred, callback, errback, progressHandler);
 
-        function complete() {
-            resolver = rejecter = handleProgress = noop;
-        }
+			// Wrapper so that resolver can be replaced
+			function resolve(val) {
+				resolver(val);
+			}
 
-        // No items in the input, resolve immediately
-        if (!toResolve) {
-            deferred.resolve(results);
+			// Wrapper so that rejecter can be replaced
+			function reject(err) {
+				rejecter(err);
+			}
 
-        } else {
-            // Resolver for promises.  Captures the value and resolves
-            // the returned promise when toResolve reaches zero.
-            // Overwrites resolver var with a noop once promise has
-            // be resolved to cover case where n < promises.length
-            resolver = function(val) {
-                // This orders the values based on promise resolution order
-                // Another strategy would be to use the original position of
-                // the corresponding promise.
-                results.push(val);
+			// Wrapper so that progress can be replaced
+			function progress(update) {
+				handleProgress(update);
+			}
 
-                if (!--toResolve) {
-                    complete();
-                    deferred.resolve(results);
-                }
-            };
+			function complete() {
+				resolver = rejecter = handleProgress = noop;
+			}
 
-            // Rejecter for promises.  Rejects returned promise
-            // immediately, and overwrites rejecter var with a noop
-            // once promise to cover case where n < promises.length.
-            // TODO: Consider rejecting only when N (or promises.length - N?)
-            // promises have been rejected instead of only one?
-            rejecter = function(err) {
-                complete();
-                deferred.reject(err);
-            };
+			// No items in the input, resolve immediately
+			if (!toResolve) {
+				deferred.resolve(results);
 
-            handleProgress = deferred.progress;
+			} else {
+				// Resolver for promises.  Captures the value and resolves
+				// the returned promise when toResolve reaches zero.
+				// Overwrites resolver var with a noop once promise has
+				// be resolved to cover case where n < promises.length
+				resolver = function(val) {
+					// This orders the values based on promise resolution order
+					// Another strategy would be to use the original position of
+					// the corresponding promise.
+					results.push(val);
 
-            // TODO: Replace while with forEach
-            for(i = 0; i < len; ++i) {
-                if(i in promisesOrValues) {
-                    when(promisesOrValues[i], resolve, reject, progress);
-                }
-            }
-        }
+					if (!--toResolve) {
+						complete();
+						deferred.resolve(results);
+					}
+				};
 
-        return ret;
+				// Rejecter for promises.  Rejects returned promise
+				// immediately, and overwrites rejecter var with a noop
+				// once promise to cover case where n < promises.length.
+				// TODO: Consider rejecting only when N (or promises.length - N?)
+				// promises have been rejected instead of only one?
+				rejecter = function(err) {
+					complete();
+					deferred.reject(err);
+				};
+
+				handleProgress = deferred.progress;
+
+				// TODO: Replace while with forEach
+				for(i = 0; i < len; ++i) {
+					if(i in promisesOrValues) {
+						when(promisesOrValues[i], resolve, reject, progress);
+					}
+				}
+			}
+
+			return ret;
+		});
     }
 
     /**
@@ -569,7 +568,7 @@ define(function() {
      *
      * @memberOf when
      *
-     * @param promisesOrValues {Array} array of anything, may contain a mix
+     * @param promisesOrValues {Array|Promise} array of anything, may contain a mix
      *      of {@link Promise}s and values
      * @param [callback] {Function}
      * @param [errback] {Function}
@@ -578,12 +577,12 @@ define(function() {
      * @returns {Promise}
      */
     function all(promisesOrValues, callback, errback, progressHandler) {
-        var results, promise;
 
-        results = allocateArray(promisesOrValues.length);
-        promise = reduce(promisesOrValues, reduceIntoArray, results);
+		checkCallbacks(1, arguments);
 
-        return when(promise, callback, errback, progressHandler);
+		return when(promisesOrValues, function(promisesOrValues) {
+			return _reduce(promisesOrValues, reduceIntoArray, []);
+		}).then(callback, errback, progressHandler);
     }
 
     function reduceIntoArray(current, val, i) {
@@ -598,7 +597,7 @@ define(function() {
      *
      * @memberOf when
      *
-     * @param promisesOrValues {Array} array of anything, may contain a mix
+     * @param promisesOrValues {Array|Promise} array of anything, may contain a mix
      *      of {@link Promise}s and values
      * @param [callback] {Function}
      * @param [errback] {Function}
@@ -615,33 +614,47 @@ define(function() {
         return some(promisesOrValues, 1, unwrapSingleResult, errback, progressHandler);
     }
 
-    /**
-     * Traditional map function, similar to `Array.prototype.map()`, but allows
-     * input to contain {@link Promise}s and/or values, and mapFunc may return
-     * either a value or a {@link Promise}
-     *
-     * @memberOf when
-     *
-     * @param promisesOrValues {Array} array of anything, may contain a mix
-     *      of {@link Promise}s and values
-     * @param mapFunc {Function} mapping function mapFunc(value) which may return
-     *      either a {@link Promise} or value
-     *
-     * @returns {Promise} a {@link Promise} that will resolve to an array containing
-     *      the mapped output values.
-     */
-    function map(promisesOrValues, mapFunc) {
+	/**
+	 * Traditional map function, similar to `Array.prototype.map()`, but allows
+	 * input to contain {@link Promise}s and/or values, and mapFunc may return
+	 * either a value or a {@link Promise}
+	 *
+	 * @memberOf when
+	 *
+	 * @param promise {Array|Promise} array of anything, may contain a mix
+	 *      of {@link Promise}s and values
+	 * @param mapFunc {Function} mapping function mapFunc(value) which may return
+	 *      either a {@link Promise} or value
+	 *
+	 * @returns {Promise} a {@link Promise} that will resolve to an array containing
+	 *      the mapped output values.
+	 */
+	function map(promise, mapFunc) {
+		return when(promise, function(array) {
+			return _map(array, mapFunc);
+		});
+	}
 
-        var results, i;
+	/**
+	 * Private map helper to map an array of promises
+	 * @private
+	 *
+	 * @param promisesOrValues {Array}
+	 * @param mapFunc {Function}
+	 * @return {Promise}
+	 */
+    function _map(promisesOrValues, mapFunc) {
+
+        var results, len, i;
 
         // Since we know the resulting length, we can preallocate the results
         // array to avoid array expansions.
-        i = promisesOrValues.length;
-        results = allocateArray(i);
+        len = promisesOrValues.length >>> 0;
+        results = allocateArray(len);
 
         // Since mapFunc may be async, get all invocations of it into flight
         // asap, and then use reduce() to collect all the results
-        for(;i >= 0; --i) {
+        for(i = 0; i < len; i++) {
             if(i in promisesOrValues)
                 results[i] = when(promisesOrValues[i], mapFunc);
         }
@@ -651,27 +664,44 @@ define(function() {
         // of size len instead of just 1.  Since all() uses reduce()
         // anyway, avoid the additional allocation by calling reduce
         // directly.
-        return reduce(results, reduceIntoArray, results);
+        return _reduce(results, reduceIntoArray, results);
     }
 
-    /**
-     * Traditional reduce function, similar to `Array.prototype.reduce()`, but
-     * input may contain {@link Promise}s and/or values, but reduceFunc
-     * may return either a value or a {@link Promise}, *and* initialValue may
-     * be a {@link Promise} for the starting value.
-     *
-     * @memberOf when
-     *
-     * @param promisesOrValues {Array} array of anything, may contain a mix
-     *      of {@link Promise}s and values
-     * @param reduceFunc {Function} reduce function reduce(currentValue, nextValue, index, total),
-     *      where total is the total number of items being reduced, and will be the same
-     *      in each call to reduceFunc.
-     * @param initialValue starting value, or a {@link Promise} for the starting value
-     *
-     * @returns {Promise} that will resolve to the final reduced value
-     */
-    function reduce(promisesOrValues, reduceFunc, initialValue) {
+	/**
+	 * Traditional reduce function, similar to `Array.prototype.reduce()`, but
+	 * input may contain {@link Promise}s and/or values, and reduceFunc
+	 * may return either a value or a {@link Promise}, *and* initialValue may
+	 * be a {@link Promise} for the starting value.
+	 *
+	 * @memberOf when
+	 *
+	 * @param promise {Array|Promise} array of anything, may contain a mix
+	 *      of {@link Promise}s and values.  May also be a {@link Promise} for
+	 *      an array.
+	 * @param reduceFunc {Function} reduce function reduce(currentValue, nextValue, index, total),
+	 *      where total is the total number of items being reduced, and will be the same
+	 *      in each call to reduceFunc.
+	 * @param initialValue starting value, or a {@link Promise} for the starting value
+	 *
+	 * @returns {Promise} that will resolve to the final reduced value
+	 */
+	function reduce(promise, reduceFunc, initialValue) {
+		var args = slice.call(arguments, 1);
+		return when(promise, function(array) {
+			return _reduce.apply(undef, [array].concat(args));
+		});
+	}
+
+	/**
+	 * Private reduce to reduce an array of promises
+	 * @private
+	 *
+	 * @param promisesOrValues {Array}
+	 * @param reduceFunc {Function}
+	 * @param initialValue {*}
+	 * @return {Promise}
+	 */
+    function _reduce(promisesOrValues, reduceFunc, initialValue) {
 
         var total, args;
 
@@ -693,9 +723,9 @@ define(function() {
             }
         ];
 
-        if (arguments.length >= 3) args.push(initialValue);
+        if (arguments.length > 2) args.push(initialValue);
 
-        return promise(reduceArray.apply(promisesOrValues, args));
+		return reduceArray.apply(promisesOrValues, args);
     }
 
     /**
