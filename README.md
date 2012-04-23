@@ -27,10 +27,10 @@ What's New?
 
 ### 1.1.0
 
-* `when.all/any/some/map/reduce` can all now accept a promise for an array in addition to an actual array as input.  This allows interesting things like `when.reduce(when.map(...))`
-* `when.reject()`
-* `promise.always`
-* **Highly experimental** when/debug module: a drop-in replacement for the main `when` module that enables debug logging for promises created or consumed by when.js
+* `when.all/any/some/map/reduce` can all now accept a promise for an array in addition to an actual array as input.  This allows composing functions to do interesting things like `when.reduce(when.map(...))`
+* `when.reject(promiseOrValue)` that returns a new, rejected promise.
+* `promise.always(callback)` as a shortcut for `promise.then(callback, callback)`
+* **Highly experimental** [when/debug](https://github.com/cujojs/when/wiki/when-debug) module: a drop-in replacement for the main `when` module that enables debug logging for promises created or consumed by when.js
 
 ### 1.0.4
 
@@ -126,15 +126,6 @@ var promise = deferred.promise;
 var resolver = deferred.resolver;
 ```
 
-The deferred has the full `promise` + `resolver` API:
-
-```javascript
-deferred.then(callback, errback, progressback);
-deferred.resolve(value);
-deferred.reject(reason);
-deferred.progress(update);
-```
-
 The `promise` API:
 
 ```javascript
@@ -151,6 +142,38 @@ resolver.reject(err);
 resolver.progress(update);
 ```
 
+The deferred has the full `promise` + `resolver` API:
+
+```javascript
+deferred.then(callback, errback, progressback);
+deferred.resolve(value);
+deferred.reject(reason);
+deferred.progress(update);
+```
+
+when.reject()
+-------------
+
+```javascript
+var rejected = when.reject(anything);
+```
+
+Return a rejected promise for the supplied promiseOrValue. If promiseOrValue is a value, it will be the rejection value of the returned promise.  If promiseOrValue is a promise, its completion value will be the rejected value of the returned promise.
+
+This can be useful in situations where you need to reject a promise *without* throwing an exception.  For example, it allows you to propagate a rejection with the value of another promise.
+
+```javascript
+when(doSomething(),
+	handleSuccess,
+	function(error) {
+		// doSomething failed, but we want to do some processing on the error
+		// to return something more useful to the caller.
+		// This allows processError to return either a value or a promise.
+		return when.reject(processError(e));
+	}
+);
+```
+
 when.isPromise()
 ----------------
 
@@ -159,7 +182,6 @@ var is = when.isPromise(anything);
 ```
 
 Return true if `anything` is truthy and implements the then() promise API.  Note that this will return true for both a deferred (i.e. `when.defer()`), and a `deferred.promise` since both implement the promise API.
-
 
 when.some()
 -----------
