@@ -130,7 +130,14 @@ The `promise` API:
 
 ```javascript
 // var promise = deferred.promise;
+
+// Main promise API
 promise.then(callback, errback, progressback);
+
+// Extended promise API
+
+// Register an alwaysback that will be called when the promise resolves or rejects
+promise.always(alwaysback [, progressback]);
 ```
 
 The `resolver` API:
