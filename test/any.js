@@ -99,6 +99,16 @@ buster.testCase('when.any', {
 		).then(done, done);
 	},
 
+	'should allow zero handlers': function(done) {
+		var input = [1, 2, 3];
+		when.any(input).then(
+			function(result) {
+				assert(contains(input, result));
+			},
+			fail
+		).then(done, done);
+	},
+
 	'should resolve to undefined when input promise does not resolve to array': function(done) {
 		when.any(resolved(1),
 			function(result) {
