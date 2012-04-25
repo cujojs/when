@@ -48,6 +48,10 @@ define(function() {
 	Promise.prototype = freeze({
 		always: function(alwaysback, progback) {
 			return this.then(alwaysback, alwaysback, progback);
+		},
+
+		otherwise: function(errback) {
+			return this.then(undef, errback);
 		}
 	});
 

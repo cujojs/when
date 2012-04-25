@@ -319,6 +319,25 @@ buster.testCase('promise', {
 			d.progress(1);
 		}
 
+	},
+
+	'otherwise': {
+		'should return a promise': function() {
+			assert.isFunction(defer().promise.otherwise().then);
+		},
+
+		'should register errback': function(done) {
+			var d = when.defer();
+
+			d.promise.otherwise(
+				function(val) {
+					assert.equals(val, 1);
+					done();
+				}
+			);
+
+			d.reject(1);
+		}
 	}
 
 });
