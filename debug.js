@@ -40,11 +40,18 @@
 (function(define) {
 define(['./when'], function(when) {
 
-	var promiseId, freeze, pending, undef;
+	var promiseId, freeze, pending, exceptionsToRethrow, undef;
 
 	promiseId = 0;
 	freeze = Object.freeze || function(o) { return o; };
 	pending = {};
+
+	exceptionsToRethrow = {
+		RangeError: 1,
+		ReferenceError: 1,
+		SyntaxError: 1,
+		TypeError: 1
+	};
 
 	/**
 	 * Setup debug output handlers for the supplied promise.
@@ -66,6 +73,28 @@ define(['./when'], function(when) {
 		);
 
 		return p;
+	}
+
+	function wrapCallback(cb) {
+		if(typeof cb != 'function') return cb;
+
+		return function(v) {
+			try {
+				return cb(v);
+			} catch(err) {
+				if(err) {
+					if (err.name in exceptionsToRethrow) {
+						setTimeout(function() {
+							throw err;
+						}, 0);
+					} else if (err.stack) {
+						console.error(err.stack);
+					}
+				}
+
+				throw err;
+			}				
+		}
 	}
 
 	/**
@@ -164,17 +193,27 @@ define(['./when'], function(when) {
 		// makes it obvious the returned promise is NOT the original, but is
 		// related to it--it's downstream in the promise chain.
 		origThen = d.promise.then;
-		d.then = d.promise.then = function() {
-			var p = origThen.apply(undef, arguments);
+		d.then = d.promise.then = function(cb, eb, pb) {
+			var args, p, id;
 
+			id = d.id + '+';
+
+			args = [];
+
+			if(arguments.length > 0) args[0] = wrapCallback(cb, id);
+			if(arguments.length > 1) args[1] = wrapCallback(eb, id);
+			if(arguments.length > 2) args[2] = wrapCallback(pb, id);
+
+			var p = origThen.apply(null, args);
+
+			p.id = id;
 			p = beget(p);
-			p.id = d.id + '+';
 			p.toString = function() {
 				return toString('Promise', p.id, status, value);
 			};
 			
 			// See below. Not sure if debug promises should be frozen
-			return freeze(debugPromise(p));
+			return freeze(p);
 		};
 
 		// Add an id to all directly created promises.  It'd be great
