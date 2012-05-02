@@ -25,6 +25,12 @@ when.js was derived from the async core of [wire.js](https://github.com/cujojs/w
 What's New?
 ===========
 
+### 1.1.1
+
+* Updated [wiki](https://github.com/cujojs/when/wiki) map/reduce examples, and added simple promise forwarding example
+* Fix for calling `when.any()` without a callback ([#33](https://github.com/cujojs/when/issues/33))
+* Fix version number in `when.js` source ([#36](https://github.com/cujojs/when/issues/36))
+
 ### 1.1.0
 
 * `when.all/any/some/map/reduce` can all now accept a promise for an array in addition to an actual array as input.  This allows composing functions to do interesting things like `when.reduce(when.map(...))`
