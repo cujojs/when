@@ -1,6 +1,6 @@
 {
     "name": "when",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "description": "A lightweight Promise and when() implementation, plus other async goodies.",
     "keywords": ["promises", "when", "async"],
     "licenses": [

@@ -25,6 +25,10 @@ when.js was derived from the async core of [wire.js](https://github.com/cujojs/w
 What's New?
 ===========
 
+### 1.2.0
+
+* `promise.otherwise(errback)` as a shortcut for `promise.then(null, errback)`
+
 ### 1.1.1
 
 * Updated [wiki](https://github.com/cujojs/when/wiki) map/reduce examples, and added simple promise forwarding example
