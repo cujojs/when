@@ -136,9 +136,11 @@ define(function() {
 	 * @memberOf when
 	 * @function
 	 *
+     * @param [fn] {Function} Handler function which will be supplied with
+     *  the newly created Deferred instance.
 	 * @returns {Deferred}
 	 */
-	function defer() {
+	function defer(fn) {
 		var deferred, promise, listeners, progressHandlers, _then, _progress, complete;
 
 		listeners = [];
@@ -302,6 +304,12 @@ define(function() {
 			reject:   (deferred.reject   = reject),
 			progress: (deferred.progress = progress)
 		});
+
+        // If a function was supplied; pass the created deferred instance
+        // through.
+        if (typeof (fn) === 'function') {
+            fn(deferred);
+        }
 
 		return deferred;
 	}

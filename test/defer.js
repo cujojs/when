@@ -193,7 +193,17 @@ buster.testCase('when.defer', {
 				done();
 			}
 		);
-	}
+	},
+    
+    'supplies deferred instance to handler function': function() {
+        var handlerInvoked = false;
+        when.defer(function(d) { 
+            assert(typeof d.resolve == 'function');
+            handlerInvoked = true;
+        });
+        
+        assert(handlerInvoked);
+    }
 
 });
 
