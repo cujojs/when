@@ -131,15 +131,17 @@ define(['./when'], function(when) {
 	/**
 	 * Replacement for when.defer() that sets up debug logging
 	 * on the created Deferred, its resolver, and its promise.
-	 * @param [id] anything optional identifier for this Deferred that will show
+	 * @param [fn] {Function} Handler function which will be supplied with
+     *  the newly created Deferred instance.
+     * @param [id] anything optional identifier for this Deferred that will show
 	 * up in debug output
 	 * @return {Deferred} a Deferred with debug logging
 	 */
-	function deferDebug() {
+	function deferDebug(fn) {
 		var d, status, value, origResolve, origReject, origThen, id;
 
 		// Delegate to create a Deferred;
-		d = when.defer();
+		d = when.defer(fn);
 
 		status = 'pending';
 		value = pending;
