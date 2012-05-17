@@ -28,6 +28,7 @@ What's New?
 ### 1.2.0
 
 * `promise.otherwise(errback)` as a shortcut for `promise.then(null, errback)`
+* [when/debug](https://github.com/cujojs/when/wiki/when-debug) now detects exceptions that typically represent coding errors, such as SyntaxError, ReferenceError, etc. and propagates them to the host environment.  In other words, you'll get a very loud stack trace.
 
 ### 1.1.1
 
@@ -122,6 +123,12 @@ when(promiseOrValue, callback, errback, progressback)
 // Always returns a promise, so can be chained:
 
 when(promiseOrValue, callback, errback, progressback).then(anotherCallback, anotherErrback, anotherProgressback)
+```
+
+You can also use `when()` to get an already-resolved promise for a value, similarly to using `when.reject()` to get a rejected promise (see below):
+
+```javascript
+var resolved = when(anything);
 ```
 
 when.defer()
