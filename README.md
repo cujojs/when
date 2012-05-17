@@ -43,32 +43,6 @@ What's New?
 * `promise.always(callback)` as a shortcut for `promise.then(callback, callback)`
 * **Highly experimental** [when/debug](https://github.com/cujojs/when/wiki/when-debug) module: a drop-in replacement for the main `when` module that enables debug logging for promises created or consumed by when.js
 
-### 1.0.4
-
-* [Travis CI](http://travis-ci.org/cujojs/when) integration
-* Fix for cancelable deferred not invoking progress callbacks. ([#24](https://github.com/cujojs/when/pull/24) Thanks [@scothis](https://github.com/scothis))
-* The promise returned by `when.chain` now rejects when the input promise rejects.
-
-### 1.0.3
-
-* Fix for specific situation where `null` could incorrectly be used as a promise resolution value ([#23](https://github.com/cujojs/when/pull/23))
-
-### 1.0.2
-
-* Updated README for running unit tests in both Node and Browsers.  See **Running the Unit Tests** below.
-* Set package name to 'when' in package.json
-
-### 1.0.1
-
-* Fix for rejections propagating in some cases when they shouldn't have been ([#19](https://github.com/cujojs/when/issues/19))
-* Using [buster.js](http://busterjs.org/) for unit tests now.
-
-### 1.0.0
-
-* First official when.js release as a part of [cujojs](https://github.com/cujojs).
-* Added [when/cancelable](https://github.com/cujojs/when/wiki/when-cancelable) decorator for creating cancelable deferreds
-* Added [when/delay](https://github.com/cujojs/when/wiki/when-delay) and [when/timeout](https://github.com/cujojs/when/wiki/when-timeout) helpers for creating delayed promises and promises that timeout and reject if not resolved first.
-
 [Full Changelog](https://github.com/cujojs/when/wiki/Changelog)
 
 Quick Start
@@ -125,6 +99,8 @@ when(promiseOrValue, callback, errback, progressback)
 when(promiseOrValue, callback, errback, progressback).then(anotherCallback, anotherErrback, anotherProgressback)
 ```
 
+**Getting an already-resolved Promise**
+
 You can also use `when()` to get an already-resolved promise for a value, similarly to using `when.reject()` to get a rejected promise (see below):
 
 ```javascript
@@ -143,21 +119,32 @@ var promise = deferred.promise;
 var resolver = deferred.resolver;
 ```
 
-The `promise` API:
+**Promise API**
 
 ```javascript
 // var promise = deferred.promise;
 
+// then()
 // Main promise API
+// Register callback, errback, and/or progressback
 promise.then(callback, errback, progressback);
-
-// Extended promise API
-
-// Register an alwaysback that will be called when the promise resolves or rejects
-promise.always(alwaysback [, progressback]);
 ```
 
-The `resolver` API:
+**Extended Promise API**
+
+Convenience methods that are not part of the Promises/A proposal.
+
+```js
+// always()
+// Register an alwaysback that will be called when the promise resolves or rejects
+promise.always(alwaysback [, progressback]);
+
+// otherwise()
+// Convenience method to register only an errback
+promise.otherwise(errback);
+```
+
+**Resolver API**
 
 ```javascript
 // var resolver = deferred.resolver;
