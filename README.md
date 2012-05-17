@@ -27,7 +27,7 @@ What's New?
 
 ### 1.2.0
 
-* `promise.otherwise(errback)` as a shortcut for `promise.then(null, errback)`
+* `promise.otherwise(errback)` as a shortcut for `promise.then(null, errback)`. See discussion [here](https://github.com/cujojs/when/issues/13) and [here](https://github.com/cujojs/when/issues/29). Thanks to [@jonnyreeves](https://github.com/jonnyreeves/) for suggesting the name "otherwise".
 * [when/debug](https://github.com/cujojs/when/wiki/when-debug) now detects exceptions that typically represent coding errors, such as SyntaxError, ReferenceError, etc. and propagates them to the host environment.  In other words, you'll get a very loud stack trace.
 
 ### 1.1.1
