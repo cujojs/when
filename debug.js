@@ -93,7 +93,7 @@ define(['./when'], function(when) {
 				}
 
 				throw err;
-			}				
+			}
 		}
 	}
 

@@ -96,7 +96,7 @@ define(function() {
 			try {
 				if(errback) {
 					nextValue = errback(reason);
-					return promise(nextValue === undef ? reason : nextValue)
+					return promise(nextValue === undef ? reason : nextValue);
 				}
 
 				return rejected(reason);
