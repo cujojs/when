@@ -597,7 +597,7 @@ define(function() {
 		// of size len instead of just 1.  Since all() uses reduce()
 		// anyway, avoid the additional allocation by calling reduce
 		// directly.
-		return _reduce(results, reduceIntoArray, results);
+		return _reduce(results, reduceIntoArray, new Array(len));
 	}
 
 	/**
