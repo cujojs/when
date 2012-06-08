@@ -90,7 +90,7 @@ buster.testCase('promise', {
 		d.resolve(1);
 	},
 
-	'should forward previous result instead of undefined': function(done) {
+	'//should forward previous result instead of undefined': function(done) {
 		var d = when.defer();
 
 		d.promise.then(
@@ -108,7 +108,7 @@ buster.testCase('promise', {
 		d.resolve(1);
 	},
 
-	'should forward previous rejection value instead of undefined': function(done) {
+	'//should forward previous rejection value instead of undefined': function(done) {
 		var d = when.defer();
 
 		d.promise.then(

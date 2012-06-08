@@ -67,10 +67,8 @@ define(function() {
 		var p = new Promise();
 
 		p.then = function(callback) {
-			var nextValue;
 			try {
-				if(callback) nextValue = callback(value);
-				return promise(nextValue === undef ? value : nextValue);
+				return promise(callback ? callback(value) : value);
 			} catch(e) {
 				return rejected(e);
 			}
@@ -92,15 +90,8 @@ define(function() {
 		var p = new Promise();
 
 		p.then = function(callback, errback) {
-			var nextValue;
 			try {
-				if(errback) {
-					nextValue = errback(reason);
-					return promise(nextValue === undef ? reason : nextValue);
-				}
-
-				return rejected(reason);
-
+				return errback ? promise(errback(reason)) : rejected(reason);
 			} catch(e) {
 				return rejected(e);
 			}
@@ -597,7 +588,7 @@ define(function() {
 		// of size len instead of just 1.  Since all() uses reduce()
 		// anyway, avoid the additional allocation by calling reduce
 		// directly.
-		return _reduce(results, reduceIntoArray, new Array(len));
+		return _reduce(results, reduceIntoArray, results);
 	}
 
 	/**
