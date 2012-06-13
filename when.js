@@ -68,7 +68,7 @@ define(function() {
 
 		p.then = function(callback) {
 			try {
-				return promise(callback ? callback(value) : value);
+				return makePromise(callback ? callback(value) : value);
 			} catch(e) {
 				return rejected(e);
 			}
@@ -91,7 +91,7 @@ define(function() {
 
 		p.then = function(callback, errback) {
 			try {
-				return errback ? promise(errback(reason)) : rejected(reason);
+				return errback ? makePromise(errback(reason)) : rejected(reason);
 			} catch(e) {
 				return rejected(e);
 			}
@@ -147,7 +147,7 @@ define(function() {
 		 *
 		 * @throws {Error} if any argument is not null, undefined, or a Function
 		 */
-		_then = function unresolvedThen(callback, errback, progback) {
+		_then = function(callback, errback, progback) {
 			var deferred = defer();
 
 			listeners.push(function(promise) {
@@ -186,7 +186,7 @@ define(function() {
 		 * @param val anything
 		 */
 		function resolve(val) {
-			complete(resolved(val));
+			complete(val);
 		}
 
 		/**
@@ -232,6 +232,8 @@ define(function() {
 		 */
 		complete = function(completed) {
 			var listener, i = 0;
+
+			completed = makePromise(completed);
 
 			// Replace _then with one that directly notifies with the result.
 			_then = completed.then;
@@ -333,7 +335,7 @@ define(function() {
 	function when(promiseOrValue, callback, errback, progressHandler) {
 		// Get a promise for the input promiseOrValue
 		// See promise()
-		var trustedPromise = promise(promiseOrValue);
+		var trustedPromise = makePromise(promiseOrValue);
 
 		// Register promise handlers
 		return trustedPromise.then(callback, errback, progressHandler);
@@ -357,7 +359,7 @@ define(function() {
 	 *   * the resolution value of promiseOrValue if it's a foreign promise, or
 	 *   * promiseOrValue if it's a value
 	 */
-	function promise(promiseOrValue) {
+	function makePromise(promiseOrValue) {
 		var promise, deferred;
 
 		if(promiseOrValue instanceof Promise) {
@@ -368,12 +370,12 @@ define(function() {
 			// It's not a when.js promise.  Check to see if it's a foreign promise
 			// or a value.
 
-			deferred = defer();
 			if(isPromise(promiseOrValue)) {
 				// It's a compliant promise, but we don't know where it came from,
 				// so we don't trust its implementation entirely.  Introduce a trusted
 				// middleman when.js promise
-
+				deferred = defer();
+				
 				// IMPORTANT: This is the only place when.js should ever call .then() on
 				// an untrusted promise.
 				promiseOrValue.then(deferred.resolve, deferred.reject, deferred.progress);
@@ -382,8 +384,7 @@ define(function() {
 			} else {
 				// It's a value, not a promise.  Create an already-resolved promise
 				// for it.
-				deferred.resolve(promiseOrValue);
-				promise = deferred.promise;
+				promise = resolved(promiseOrValue);
 			}
 		}
 
@@ -675,7 +676,7 @@ define(function() {
 			},
 			function(e) {
 				resolver.reject(e);
-				return rejected(e);
+				return reject(e);
 			},
 			resolver.progress
 		);
