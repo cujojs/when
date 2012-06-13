@@ -375,7 +375,7 @@ define(function() {
 				// so we don't trust its implementation entirely.  Introduce a trusted
 				// middleman when.js promise
 				deferred = defer();
-				
+
 				// IMPORTANT: This is the only place when.js should ever call .then() on
 				// an untrusted promise.
 				promiseOrValue.then(deferred.resolve, deferred.reject, deferred.progress);

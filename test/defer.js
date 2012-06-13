@@ -1,6 +1,25 @@
 (function(buster, when) {
 
-var assert = buster.assert;
+var assert, fail;
+
+assert = buster.assert;
+fail = buster.assertions.fail;
+
+function fakeResolved(val) {
+	return {
+		then: function(callback) {
+			return fakeResolved(callback ? callback(val) : val);
+		}
+	};
+}
+
+function fakeRejected(reason) {
+	return {
+		then: function(callback, errback) {
+			return errback ? fakeResolved(errback(reason)) : fakeRejected(reason);
+		}
+	};
+}
 
 buster.testCase('when.defer', {
 
@@ -10,46 +29,59 @@ buster.testCase('when.defer', {
 		d.promise.then(
 			function(val) {
 				assert.equals(val, 1);
-				done();
 			},
-			function() {
-				buster.fail();
-				done();
-			}
-		);
+			fail
+		).always(done());
 
 		d.resolve(1);
+	},
+
+	'should resolve with promised value': function(done) {
+		var d = when.defer();
+
+		d.promise.then(
+			function(val) {
+				assert.equals(val, 1);
+			},
+			fail
+		).always(done);
+
+		d.resolve(fakeResolved(1));
+
 	},
 
 	'should reject': function(done) {
 		var d = when.defer();
 
 		d.promise.then(
-			function() {
-				buster.fail();
-				done();
-			},
+			fail,
 			function(val) {
 				assert.equals(val, 1);
-				done();
 			}
-		);
+		).always(done);
 
 		d.reject(1);
+	},
+
+	'should reject when resolved with rejected promise': function(done) {
+		var d = when.defer();
+
+		d.promise.then(
+			fail,
+			function(val) {
+				assert.equals(val, 1);
+			}
+		).always(done);
+
+		d.resolve(fakeRejected(1));
 	},
 
 	'should progress': function(done) {
 		var d = when.defer();
 
 		d.promise.then(
-			function() {
-				buster.fail();
-				done();
-			},
-			function() {
-				buster.fail();
-				done();
-			},
+			fail,
+			fail,
 			function(val) {
 				assert.equals(val, 1);
 				done();
