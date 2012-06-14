@@ -177,10 +177,14 @@ define(function() {
 		 * Resolves this {@link Deferred}'s {@link Promise} with val as the
 		 * resolution value.
 		 * @memberOf Resolver
-		 * @param val anything
+		 * @param val {*|Promise} If val is anything but a Promise, resolves this
+		 *  Deferred's Promise with val.  If val is a Promise, puts this Deferred's
+		 *  Promise into the same state as val.  For example, if val is a rejected
+		 *  promise, this Deferred will become rejected.
+		 * @return {Promise} a promise for the resolution value
 		 */
 		function resolve(val) {
-			complete(val);
+			return complete(val);
 		}
 
 		/**
@@ -188,9 +192,10 @@ define(function() {
 		 * reason.
 		 * @memberOf Resolver
 		 * @param err anything
+		 * @return {Promise} a promise for the rejection value
 		 */
 		function reject(err) {
-			complete(rejected(err));
+			return complete(rejected(err));
 		}
 
 		/**
@@ -249,6 +254,8 @@ define(function() {
 			}
 
 			listeners = [];
+
+			return completed;
 		};
 
 		/**
