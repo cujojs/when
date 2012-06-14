@@ -68,7 +68,7 @@ define(function() {
 
 		p.then = function(callback) {
 			try {
-				return makePromise(callback ? callback(value) : value);
+				return promiseFor(callback ? callback(value) : value);
 			} catch(e) {
 				return rejected(e);
 			}
@@ -91,7 +91,7 @@ define(function() {
 
 		p.then = function(callback, errback) {
 			try {
-				return errback ? makePromise(errback(reason)) : rejected(reason);
+				return errback ? promiseFor(errback(reason)) : rejected(reason);
 			} catch(e) {
 				return rejected(e);
 			}
@@ -107,7 +107,6 @@ define(function() {
 	 * completion value will be the rejected value of the returned promise
 	 *
 	 * @param promiseOrValue {*} the rejected value of the returned {@link Promise}
-	 *
 	 * @return {Promise} rejected {@link Promise}
 	 */
 	function reject(promiseOrValue) {
@@ -138,13 +137,11 @@ define(function() {
 		/**
 		 * Pre-resolution then() that adds the supplied callback, errback, and progback
 		 * functions to the registered listeners
-		 *
 		 * @private
 		 *
 		 * @param [callback] {Function} resolution handler
 		 * @param [errback] {Function} rejection handler
 		 * @param [progback] {Function} progress handler
-		 *
 		 * @throws {Error} if any argument is not null, undefined, or a Function
 		 */
 		_then = function(callback, errback, progback) {
@@ -170,7 +167,6 @@ define(function() {
 		 * @param [callback] {Function} resolution handler
 		 * @param [errback] {Function} rejection handler
 		 * @param [progback] {Function} progress handler
-		 *
 		 * @throws {Error} if any argument is not null, undefined, or a Function
 		 */
 		function then(callback, errback, progback) {
@@ -180,9 +176,7 @@ define(function() {
 		/**
 		 * Resolves this {@link Deferred}'s {@link Promise} with val as the
 		 * resolution value.
-		 *
 		 * @memberOf Resolver
-		 *
 		 * @param val anything
 		 */
 		function resolve(val) {
@@ -192,9 +186,7 @@ define(function() {
 		/**
 		 * Rejects this {@link Deferred}'s {@link Promise} with err as the
 		 * reason.
-		 *
 		 * @memberOf Resolver
-		 *
 		 * @param err anything
 		 */
 		function reject(err) {
@@ -213,9 +205,7 @@ define(function() {
 		/**
 		 * Emits a progress update to all progress observers registered with
 		 * this {@link Deferred}'s {@link Promise}
-		 *
 		 * @memberOf Resolver
-		 *
 		 * @param update anything
 		 */
 		function progress(update) {
@@ -225,7 +215,6 @@ define(function() {
 		/**
 		 * Transition from pre-resolution state to post-resolution state, notifying
 		 * all listeners of the resolution or rejection
-		 *
 		 * @private
 		 *
 		 * @param completed {Promise} the completed value of this deferred
@@ -233,7 +222,7 @@ define(function() {
 		complete = function(completed) {
 			var listener, i = 0;
 
-			completed = makePromise(completed);
+			completed = promiseFor(completed);
 
 			// Replace _then with one that directly notifies with the result.
 			_then = completed.then;
@@ -305,7 +294,6 @@ define(function() {
 	 * promiseOrValue is a promise.
 	 *
 	 * @param promiseOrValue anything
-	 *
 	 * @returns {Boolean} true if promiseOrValue is a {@link Promise}
 	 */
 	function isPromise(promiseOrValue) {
@@ -327,7 +315,6 @@ define(function() {
 	 *   rejected.
 	 * @param {Function} [progressHandler] callback to be called when progress updates
 	 *   are issued for promiseOrValue.
-	 *
 	 * @returns {Promise} a new {@link Promise} that will complete with the return
 	 *   value of callback or errback or the completion value of promiseOrValue if
 	 *   callback and/or errback is not supplied.
@@ -335,7 +322,7 @@ define(function() {
 	function when(promiseOrValue, callback, errback, progressHandler) {
 		// Get a promise for the input promiseOrValue
 		// See promise()
-		var trustedPromise = makePromise(promiseOrValue);
+		var trustedPromise = promiseFor(promiseOrValue);
 
 		// Register promise handlers
 		return trustedPromise.then(callback, errback, progressHandler);
@@ -352,14 +339,13 @@ define(function() {
 	 * @private
 	 *
 	 * @param promiseOrValue anything
-	 *
 	 * @returns Guaranteed to return a trusted Promise.  If promiseOrValue is a when.js {@link Promise}
 	 *   returns promiseOrValue, otherwise, returns a new, already-resolved, when.js {@link Promise}
 	 *   whose resolution value is:
 	 *   * the resolution value of promiseOrValue if it's a foreign promise, or
 	 *   * promiseOrValue if it's a value
 	 */
-	function makePromise(promiseOrValue) {
+	function promiseFor(promiseOrValue) {
 		var promise, deferred;
 
 		if(promiseOrValue instanceof Promise) {
@@ -367,11 +353,11 @@ define(function() {
 			promise = promiseOrValue;
 
 		} else {
-			// It's not a when.js promise.  Check to see if it's a foreign promise
-			// or a value.
+			// It's not a when.js promise.
+			// Check to see if it's a foreign promise or a value.
 
 			if(isPromise(promiseOrValue)) {
-				// It's a compliant promise, but we don't know where it came from,
+				// It looks like a thenable, but we don't know where it came from,
 				// so we don't trust its implementation entirely.  Introduce a trusted
 				// middleman when.js promise
 				deferred = defer();
@@ -382,8 +368,7 @@ define(function() {
 				promise = deferred.promise;
 
 			} else {
-				// It's a value, not a promise.  Create an already-resolved promise
-				// for it.
+				// It's a value, not a promise.  Create a resolved promise for it.
 				promise = resolved(promiseOrValue);
 			}
 		}
@@ -404,7 +389,6 @@ define(function() {
 	 * @param [callback]
 	 * @param [errback]
 	 * @param [progressHandler]
-	 *
 	 * @returns {Promise}
 	 */
 	function some(promisesOrValues, howMany, callback, errback, progressHandler) {
@@ -498,7 +482,6 @@ define(function() {
 	 * @param [callback] {Function}
 	 * @param [errback] {Function}
 	 * @param [progressHandler] {Function}
-	 *
 	 * @returns {Promise}
 	 */
 	function all(promisesOrValues, callback, errback, progressHandler) {
@@ -527,7 +510,6 @@ define(function() {
 	 * @param [callback] {Function}
 	 * @param [errback] {Function}
 	 * @param [progressHandler] {Function}
-	 *
 	 * @returns {Promise}
 	 */
 	function any(promisesOrValues, callback, errback, progressHandler) {
@@ -550,7 +532,6 @@ define(function() {
 	 *      of {@link Promise}s and values
 	 * @param mapFunc {Function} mapping function mapFunc(value) which may return
 	 *      either a {@link Promise} or value
-	 *
 	 * @returns {Promise} a {@link Promise} that will resolve to an array containing
 	 *      the mapped output values.
 	 */
@@ -607,7 +588,6 @@ define(function() {
 	 *      where total is the total number of items being reduced, and will be the same
 	 *      in each call to reduceFunc.
 	 * @param initialValue starting value, or a {@link Promise} for the starting value
-	 *
 	 * @returns {Promise} that will resolve to the final reduced value
 	 */
 	function reduce(promise, reduceFunc, initialValue) {
@@ -662,7 +642,6 @@ define(function() {
 	 * @param promiseOrValue
 	 * @param resolver {Resolver}
 	 * @param [resolveValue] anything
-	 *
 	 * @returns {Promise}
 	 */
 	function chain(promiseOrValue, resolver, resolveValue) {
