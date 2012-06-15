@@ -1,19 +1,3 @@
-Please Note: this project has moved from briancavalier/when to cujojs/when.
-Any existing forks have been automatically moved to cujojs/when. However,
-you'll need to update your clone and submodule remotes manually.
-
-Update the url in your .git/config, and also .gitmodules for submodules:
-
-```
-git://github.com/cujojs/when.git
-https://cujojs@github.com/cujojs/when.git
-```
-
-Helpful link for updating submodules:
-[Git Submodules: Adding, Using, Removing, Updating](http://chrisjean.com/2009/04/20/git-submodules-adding-using-removing-and-updating/)
-
-----
-
 [![Build Status](https://secure.travis-ci.org/cujojs/when.png)](http://travis-ci.org/cujojs/when)
 
 A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining and chaining, and has a robust unit test suite.
@@ -27,6 +11,7 @@ What's New?
 
 ### 1.3.0
 
+* `npm install when` - Yep, that's a thing.
 * Fixed a deviation from the Promises/A spec where returning undefined from a callback or errback would cause the previous value to be forwarded.  See [#31](https://github.com/cujojs/when/issues/31)
 	* *This could be a breaking change* if you depended on this behavior.  If you encounter problems, the solution is to ensure that your promise callbacks (registered either with `when()` or `.then()`) return what you intend, keeping in mind that not returning something is equivalent to returning `undefined`.
 * This change also restores compatibility with the promises returned by `jQuery.get()`, which seem to reject with themselves as the rejection value.  See [issue #41](https://github.com/cujojs/when/issues/43) for more information and discussion.  Thanks to [@KidkArolis](https://github.com/KidkArolis) for raising the issue.
@@ -76,7 +61,7 @@ Quick Start
 
 ### Node
 
-1. `npm install git://github.com/cujojs/when` (**NOTE:** npm seems to require a url that starts with "git" rather than http or https)
+1. `npm install when`
 1. `var when = require('when');`
 
 ### RingoJS
