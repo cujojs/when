@@ -22,6 +22,7 @@ define(function() {
 
 	when.defer     = defer;
 	when.reject    = reject;
+	when.resolve   = promiseFor;
 	when.isPromise = isPromise;
 
 	when.all       = all;
@@ -242,18 +243,14 @@ define(function() {
 				throw new Error("already completed");
 			};
 
-			// Free progressHandlers array since we'll never issue progress events
-			// for this promise again now that it's completed
-			progressHandlers = undef;
-
 			// Notify listeners
-			// Traverse all listeners registered directly with this Deferred
-
 			while (listener = listeners[i++]) {
 				listener(completed);
 			}
 
-			listeners = [];
+			// Free progressHandlers array since we'll never issue progress events
+			// for this promise again now that it's completed
+			progressHandlers = listeners = undef;
 
 			return completed;
 		};
