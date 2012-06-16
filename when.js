@@ -51,11 +51,9 @@ define(function() { "use strict";
 	 *   callback and/or errback is not supplied.
 	 */
 	function when(promiseOrValue, callback, errback, progressHandler) {
-		// Get a promise for the input promiseOrValue.
-		var trustedPromise = resolve(promiseOrValue);
-
-		// Register promise handlers
-		return trustedPromise.then(callback, errback, progressHandler);
+		// Get a trusted promise for the input promiseOrValue, and then
+		// register promise handlers
+		return resolve(promiseOrValue).then(callback, errback, progressHandler);
 	}
 
 	/**
