@@ -632,14 +632,9 @@ define(function() {
 
 		return when(promiseOrValue,
 			function(val) {
-				if(useResolveValue) val = resolveValue;
-				resolver.resolve(val);
-				return val;
+				return resolver.resolve(useResolveValue ? resolveValue : val);
 			},
-			function(e) {
-				resolver.reject(e);
-				return reject(e);
-			},
+			resolver.reject,
 			resolver.progress
 		);
 	}
