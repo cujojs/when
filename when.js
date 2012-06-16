@@ -3,7 +3,6 @@
 /**
  * when
  * A lightweight CommonJS Promises/A and when() implementation
- *
  * when is part of the cujo.js family of libraries (http://cujojs.com/)
  *
  * Licensed under the MIT License at:
@@ -13,38 +12,33 @@
  */
 
 (function(define) {
-define(function() {
+define(function() { "use strict";
 	var freeze, reduceArray, slice, undef;
 
-	//
 	// Public API
-	//
 
-	when.defer     = defer;
-	when.reject    = reject;
-	when.resolve   = resolve;
-	when.isPromise = isPromise;
+	when.defer     = defer;     // Create a deferred
+	when.resolve   = resolve;   // Create a resolved promise
+	when.reject    = reject;    // Create a rejected promise
 
-	when.all       = all;
-	when.some      = some;
-	when.any       = any;
+	when.all       = all;       // Resolve a list of promises
+	when.some      = some;      // Resolve a sub-set of promises
+	when.any       = any;       // Resolve one promise in a list
 
-	when.map       = map;
-	when.reduce    = reduce;
+	when.map       = map;       // Array.map() for promises
+	when.reduce    = reduce;    // Array.reduce() for promises
 
-	when.chain     = chain;
+	when.chain     = chain;     // Make a promise trigger another resolver
 
-	/** Object.freeze */
-	freeze = Object.freeze || function(o) { return o; };
+	when.isPromise = isPromise; // Determine if a thing is a promise
 
 	/**
 	 * Register an observer for a promise or immediate value.
-	 *
 	 * @function
 	 * @name when
 	 * @namespace
 	 *
-	 * @param promiseOrValue anything
+	 * @param promiseOrValue {*}
 	 * @param {Function} [callback] callback to be called when promiseOrValue is
 	 *   successfully resolved.  If promiseOrValue is an immediate value, callback
 	 *   will be invoked immediately.
@@ -69,13 +63,9 @@ define(function() {
 	 * Returns promiseOrValue if promiseOrValue is a {@link Promise}, a new Promise if
 	 * promiseOrValue is a foreign promise, or a new, already-resolved {@link Promise}
 	 * whose resolution value is promiseOrValue if promiseOrValue is an immediate value.
-	 *
-	 * Note that this function is not safe to export since it will return its
-	 * input when promiseOrValue is a {@link Promise}
-	 *
 	 * @private
 	 *
-	 * @param promiseOrValue anything
+	 * @param promiseOrValue {*}
 	 * @returns Guaranteed to return a trusted Promise.  If promiseOrValue is a when.js {@link Promise}
 	 *   returns promiseOrValue, otherwise, returns a new, already-resolved, when.js {@link Promise}
 	 *   whose resolution value is:
@@ -128,6 +118,9 @@ define(function() {
 		});
 	}
 
+	/** Object.freeze */
+	freeze = Object.freeze || function(o) { return o; };
+
 	/**
 	 * Trusted Promise constructor.  A Promise created from this constructor is
 	 * a trusted when.js promise.  Any other duck-typed promise is considered
@@ -137,10 +130,23 @@ define(function() {
 	function Promise() {}
 
 	Promise.prototype = freeze({
+		/**
+		 * Register a callback that will be called when a promise is
+		 * resolved or rejected.  Optionally also register a progress handler.
+		 * Shortcut for .then(alwaysback, alwaysback, progback)
+		 * @param alwaysback {Function}
+		 * @param progback {Function}
+		 * @return {Promise}
+		 */
 		always: function(alwaysback, progback) {
 			return this.then(alwaysback, alwaysback, progback);
 		},
 
+		/**
+		 * Register a rejection handler.  Shortcut for .then(null, errback)
+		 * @param errback {Function}
+		 * @return {Promise}
+		 */
 		otherwise: function(errback) {
 			return this.then(undef, errback);
 		}
@@ -200,7 +206,7 @@ define(function() {
 	 * @memberOf when
 	 * @function
 	 *
-	 * @returns {Deferred}
+	 * @return {Deferred}
 	 */
 	function defer() {
 		var deferred, promise, resolver, listeners, progressHandlers, _then, _progress, complete;
