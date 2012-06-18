@@ -206,7 +206,7 @@ define(function() { "use strict";
 	 * @return {Deferred}
 	 */
 	function defer() {
-		var deferred, promise, resolver, listeners, progressHandlers, _then, _progress, complete;
+		var deferred, promise, resolver, listeners, progressHandlers, _then, _progress, _resolve;
 
 		listeners = [];
 		progressHandlers = [];
@@ -261,7 +261,7 @@ define(function() { "use strict";
 		 * @return {Promise} a promise for the resolution value
 		 */
 		resolver.resolve = deferred.resolve = function resolve(val) {
-			return complete(val);
+			return _resolve(val);
 		};
 
 		/**
@@ -272,7 +272,7 @@ define(function() { "use strict";
 		 * @return {Promise} a promise for the rejection value
 		 */
 		resolver.reject = deferred.reject = function reject(err) {
-			return complete(rejected(err));
+			return _resolve(rejected(err));
 		};
 
 		/**
@@ -326,7 +326,7 @@ define(function() { "use strict";
 		 * @private
 		 * @param completed {Promise} the completed value of this deferred
 		 */
-		complete = function(completed) {
+		_resolve = function(completed) {
 			var listener, i = 0;
 
 			completed = resolve(completed);
@@ -337,7 +337,7 @@ define(function() { "use strict";
 			// Replace complete so that this Deferred can only be completed
 			// once. Also Replace _progress, so that subsequent attempts to issue
 			// progress throw.
-			complete = _progress = function alreadyCompleted() {
+			_resolve = _progress = function alreadyResolved() {
 				// TODO: Consider silently returning here so that parties who
 				// have a reference to the resolver cannot tell that the promise
 				// has been resolved using try/catch
