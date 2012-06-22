@@ -1,6 +1,6 @@
 (function(buster, when) {
 
-var assert, refute, fail;
+var assert, refute, fail, resolved, rejected;
 
 assert = buster.assert;
 refute = buster.refute;
@@ -16,17 +16,8 @@ function contains(array, item) {
 	return false;
 }
 
-function resolved(val) {
-	var d = when.defer();
-	d.resolve(val);
-	return d.promise;
-}
-
-function rejected(val) {
-	var d = when.defer();
-	d.reject(val);
-	return d.promise;
-}
+resolved = when.resolve;
+rejected = when.reject;
 
 buster.testCase('when.any', {
 
@@ -36,7 +27,7 @@ buster.testCase('when.any', {
 				refute.defined(result);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 	},
 
 	'should resolve with an input value': function(done) {
@@ -46,7 +37,7 @@ buster.testCase('when.any', {
 				assert(contains(input, result));
 			},
 			fail
-		).then(done, done);
+		).always(done);
 	},
 
 	'should resolve with a promised input value': function(done) {
@@ -56,7 +47,7 @@ buster.testCase('when.any', {
 				assert(contains([1, 2, 3], result));
 			},
 			fail
-		).then(done, done);
+		).always(done);
 	},
 
 	'should reject with a rejected input value': function(done) {
@@ -66,7 +57,7 @@ buster.testCase('when.any', {
 			function(result) {
 				assert.equals(result, 1);
 			}
-		).then(done, done);
+		).always(done);
 	},
 
 	'should resolve when first input promise resolves': function(done) {
@@ -76,7 +67,7 @@ buster.testCase('when.any', {
 				assert.equals(result, 1);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 	},
 
 	'should throw if called with something other than a valid input plus callbacks': function() {
@@ -96,7 +87,7 @@ buster.testCase('when.any', {
 				assert.equals(result, 1);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 	},
 
 	'should allow zero handlers': function(done) {
@@ -106,7 +97,7 @@ buster.testCase('when.any', {
 				assert(contains(input, result));
 			},
 			fail
-		).then(done, done);
+		).always(done);
 	},
 
 	'should resolve to undefined when input promise does not resolve to array': function(done) {
@@ -115,7 +106,7 @@ buster.testCase('when.any', {
 				refute.defined(result);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 	}
 
 });

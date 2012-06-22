@@ -1,7 +1,10 @@
 (function(buster, when) {
 
-var assert = buster.assert;
-var refute = buster.refute;
+var assert, refute, fail;
+
+assert = buster.assert;
+refute = buster.refute;
+fail = buster.assertions.fail;
 
 function identity(val) { return val; }
 function constant(val) { return function() { return val; }; }
@@ -41,12 +44,9 @@ buster.testCase('when', {
 		result.then(
 			function(val) {
 				assert.equals(val, 2);
-				done();
 			},
-			function(e) {
-				buster.fail(e);
-			}
-		);
+			fail
+		).always(done);
 	},
 
 	'should support deep nesting in promise chains': function(done) {
@@ -68,33 +68,18 @@ buster.testCase('when', {
 		result.then(
 			function(val) {
 				assert(val);
-				done();
 			},
-			function(e) {
-				buster.fail(e);
-			}
-		);
-
-
+			fail
+		).always(done);
 	},
 
 	'should return a resolved promise for a resolved input promise': function(done) {
-		var d, result;
-
-		d = when.defer();
-		d.resolve(true);
-
-		result = when(d);
-
-		result.then(
+		when(when.resolve(true)).then(
 			function(val) {
 				assert(val);
-				done();
 			},
-			function(e) {
-				buster.fail(e);
-			}
-		);
+			fail
+		).always(done);
 	},
 
 	'should assimilate untrusted promises':function () {
@@ -120,13 +105,9 @@ buster.testCase('when', {
 		).then(
 			function (val) {
 				assert.equals(val, 2);
-				done();
 			},
-			function (err) {
-				buster.fail(err);
-				done();
-			}
-		);
+			fail
+		).always(done);
 
 		refute(result instanceof FakePromise);
 	},
@@ -151,13 +132,9 @@ buster.testCase('when', {
 		).then(
 			function (val) {
 				assert.equals(val, 3);
-				done();
 			},
-			function (err) {
-				buster.fail(err);
-				done();
-			}
-		);
+			fail
+		).always(done);
 	}
 
 });

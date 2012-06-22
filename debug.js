@@ -69,6 +69,8 @@ define(['./when'], function(when) {
 				} else {
 					console.error('[object Promise] REJECTED:', err);
 				}
+
+				return when.reject(err);
 			}
 		);
 
@@ -95,6 +97,20 @@ define(['./when'], function(when) {
 				throw err;
 			}
 		}
+	}
+
+	function wrapCallbacks(arguments) {
+		var cb, args, len, i;
+
+		args = [];
+
+		for(i = 0, len = arguments.length; i < len; i++) {
+			args[i] = typeof (cb = arguments[i]) == 'function'
+				? wrapCallback(cb)
+				: cb;
+		}
+
+		return args;
 	}
 
 	/**
@@ -125,7 +141,7 @@ define(['./when'], function(when) {
 	 * returned promise.
 	 */
 	function whenDebug() {
-		return debugPromise(when.apply(null, arguments));
+		return debugPromise(when.apply(null, wrapCallbacks(arguments)));
 	}
 
 	/**
@@ -166,7 +182,6 @@ define(['./when'], function(when) {
 		d.resolve = d.resolver.resolve = function(val) {
 			value = val;
 			status = 'resolving';
-//			console.log(d.resolver.toString());
 			return origResolve.apply(undef, arguments);
 		};
 
@@ -174,7 +189,6 @@ define(['./when'], function(when) {
 		d.reject = d.resolver.reject = function(err) {
 			value = err;
 			status = 'REJECTING';
-//			console.error(d.resolver.toString());
 			return origReject.apply(undef, arguments);
 		};
 
@@ -185,7 +199,7 @@ define(['./when'], function(when) {
 		// Setup final state change handlers
 		d.then(
 			function(v) { status = 'resolved'; return v; },
-			function(e) { status = 'REJECTED'; throw e; }
+			function(e) { status = 'REJECTED'; return when.reject(e); }
 		);
 
 		// Experimenting with setting up ways to also debug promises returned
@@ -194,17 +208,10 @@ define(['./when'], function(when) {
 		// related to it--it's downstream in the promise chain.
 		origThen = d.promise.then;
 		d.then = d.promise.then = function(cb, eb, pb) {
-			var args, p, id;
 
-			id = d.id + '+';
+			var id = d.id + '>' + (++promiseId);
 
-			args = [];
-
-			if(arguments.length > 0) args[0] = wrapCallback(cb, id);
-			if(arguments.length > 1) args[1] = wrapCallback(eb, id);
-			if(arguments.length > 2) args[2] = wrapCallback(pb, id);
-
-			var p = origThen.apply(null, args);
+			var p = origThen.apply(null, wrapCallbacks(arguments));
 
 			p.id = id;
 			p = beget(p);
@@ -222,7 +229,7 @@ define(['./when'], function(when) {
 
 		// Attach debug handlers after the substitute promise
 		// has been setup, so the id can be logged.
-		debugPromise(d.promise);
+		//debugPromise(d.promise);
 
 		// TODO: Should we still freeze these?
 		// Seems safer for now to err on the side of caution and freeze them,

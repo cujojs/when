@@ -1,28 +1,18 @@
-(function(buster, when) {
+(function(buster, when, delay) {
 
-var assert, fail;
+var assert, fail, resolved;
 
 assert = buster.assert;
 fail = buster.assertions.fail;
+
+resolved = when.resolve;
 
 function mapper(val) {
 	return val * 2;
 }
 
 function deferredMapper(val) {
-	var d = when.defer();
-
-	setTimeout(function() {
-		d.resolve(mapper(val));
-	}, Math.random() * 10);
-
-	return d.promise;
-}
-
-function resolved(val) {
-	var d = when.defer();
-	d.resolve(val);
-	return d.promise;
+	return delay(mapper(val), Math.random()*10);
 }
 
 buster.testCase('when.map', {
@@ -34,7 +24,7 @@ buster.testCase('when.map', {
 				assert.equals(results, [2,4,6]);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 	},
 
 	'should map input promises array': function(done) {
@@ -44,7 +34,7 @@ buster.testCase('when.map', {
 				assert.equals(results, [2,4,6]);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 	},
 
 	'should map mixed input array': function(done) {
@@ -54,7 +44,7 @@ buster.testCase('when.map', {
 				assert.equals(results, [2,4,6]);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 	},
 
 	'should map input when mapper returns a promise': function(done) {
@@ -64,7 +54,7 @@ buster.testCase('when.map', {
 				assert.equals(results, [2,4,6]);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 	},
 
 	'should accept a promise for an array': function(done) {
@@ -73,7 +63,7 @@ buster.testCase('when.map', {
 				assert.equals(result, [2,4,6]);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 	},
 
 	'should resolve to empty array when input promise does not resolve to an array': function(done) {
@@ -82,21 +72,22 @@ buster.testCase('when.map', {
 				assert.equals(result, []);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 	},
 
 	'should map input promises when mapper returns a promise': function(done) {
 		var input = [resolved(1),resolved(2),resolved(3)];
-		when.map(input, deferredMapper).then(
+		when.map(input, mapper).then(
 			function(results) {
 				assert.equals(results, [2,4,6]);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 	}
 
 });
 })(
-	this.buster || require('buster'),
-	this.when   || require('..')
+	this.buster     || require('buster'),
+	this.when       || require('../debug'),
+	this.when_delay || require('../delay')
 );

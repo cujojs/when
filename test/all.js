@@ -1,26 +1,17 @@
 (function(buster, when) {
 
-var assert, fail;
+var assert, fail, resolved, rejected;
 
 assert = buster.assert;
 fail = buster.assertions.fail;
 
-function resolved(val) {
-	var d = when.defer();
-	d.resolve(val);
-	return d.promise;
-}
-
-function rejected(val) {
-	var d = when.defer();
-	d.reject(val);
-	return d.promise;
-}
+resolved = when.resolve;
+rejected = when.reject;
 
 buster.testCase('when.all', {
 
 	'should resolve empty input': function(done) {
-		when.all([],
+		return when.all([],
 			function(result) {
 				assert.equals(result, []);
 			},
