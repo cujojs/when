@@ -1,6 +1,6 @@
 (function(buster, when) {
 
-var assert, fail;
+var assert, refute, fail;
 
 assert = buster.assert;
 refute = buster.refute;

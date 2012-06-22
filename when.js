@@ -206,7 +206,8 @@ define(function() { "use strict";
 	 * @return {Deferred}
 	 */
 	function defer() {
-		var deferred, promise, resolver, listeners, progressHandlers, _then, _progress, _resolve;
+		var deferred, promise, resolver, listeners, progressHandlers,
+			_then, _progress, _resolve;
 
 		listeners = [];
 		progressHandlers = [];
@@ -719,7 +720,7 @@ define(function() { "use strict";
 			return reduced;
 		};
 
-	return when;
+	return freeze(when);
 });
 })(typeof define == 'function'
 	? define
