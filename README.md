@@ -1,3 +1,12 @@
+**NOTE: when.js's unit tests are all currently passing.**
+
+There is a circular dependency between buster.js and when.js that is causing Travis builds to fail.  To run the unit tests yourself and verify:
+
+1. Clone the when.js repo
+1. Install buster globally to avoid circular dep: `npm install -g buster`
+1. `cd when && npm test`
+1. Remove buster globally if you want to clean up: `npm remove -g buster`
+
 [![Build Status](https://secure.travis-ci.org/cujojs/when.png)](http://travis-ci.org/cujojs/when)
 
 A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining and chaining, and has a robust unit test suite.
