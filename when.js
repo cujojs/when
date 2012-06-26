@@ -399,14 +399,13 @@ define(function() { "use strict";
 
 		return when(promisesOrValues, function(promisesOrValues) {
 
-			var toResolve, results, ret, deferred, resolver, rejecter, handleProgress, len, i;
+			var toResolve, results, deferred, resolver, rejecter, handleProgress, len, i;
 
 			len = promisesOrValues.length >>> 0;
 
 			toResolve = Math.max(0, Math.min(howMany, len));
 			results = [];
 			deferred = defer();
-			ret = when(deferred, callback, errback, progressHandler);
 
 			// Wrapper so that resolver can be replaced
 			function resolve(val) {
@@ -423,15 +422,23 @@ define(function() { "use strict";
 				handleProgress(update);
 			}
 
-			function complete() {
-				resolver = rejecter = handleProgress = noop;
-			}
-
 			// No items in the input, resolve immediately
 			if (!toResolve) {
 				deferred.resolve(results);
 
 			} else {
+				deferred.promise.always(function complete() {
+					resolver = rejecter = handleProgress = noop;
+				});
+
+				// Rejecter for promises.  Rejects returned promise
+				// immediately, and overwrites rejecter var with a noop
+				// once promise to cover case where n < promises.length.
+				// TODO: Consider rejecting only when N (or promises.length - N?)
+				// promises have been rejected instead of only one?
+				rejecter = deferred.reject;
+				handleProgress = deferred.progress;
+
 				// Resolver for promises.  Captures the value and resolves
 				// the returned promise when toResolve reaches zero.
 				// Overwrites resolver var with a noop once promise has
@@ -443,22 +450,9 @@ define(function() { "use strict";
 					results.push(val);
 
 					if (!--toResolve) {
-						complete();
 						deferred.resolve(results);
 					}
 				};
-
-				// Rejecter for promises.  Rejects returned promise
-				// immediately, and overwrites rejecter var with a noop
-				// once promise to cover case where n < promises.length.
-				// TODO: Consider rejecting only when N (or promises.length - N?)
-				// promises have been rejected instead of only one?
-				rejecter = function(err) {
-					complete();
-					deferred.reject(err);
-				};
-
-				handleProgress = deferred.progress;
 
 				// TODO: Replace while with forEach
 				for(i = 0; i < len; ++i) {
@@ -468,7 +462,7 @@ define(function() { "use strict";
 				}
 			}
 
-			return ret;
+			return when(deferred, callback, errback, progressHandler);
 		});
 	}
 
