@@ -1,7 +1,6 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
 /**
- * when
  * A lightweight CommonJS Promises/A and when() implementation
  * when is part of the cujo.js family of libraries (http://cujojs.com/)
  *
@@ -60,7 +59,7 @@ define(function() { "use strict";
 	 * Returns promiseOrValue if promiseOrValue is a {@link Promise}, a new Promise if
 	 * promiseOrValue is a foreign promise, or a new, already-resolved {@link Promise}
 	 * whose resolution value is promiseOrValue if promiseOrValue is an immediate value.
-	 * @private
+	 * @memberOf when
 	 *
 	 * @param promiseOrValue {*}
 	 * @returns Guaranteed to return a trusted Promise.  If promiseOrValue is a when.js {@link Promise}
@@ -105,6 +104,7 @@ define(function() { "use strict";
 	 * promiseOrValue is a value, it will be the rejection value of the
 	 * returned promise.  If promiseOrValue is a promise, its
 	 * completion value will be the rejected value of the returned promise
+	 * @memberOf when
 	 *
 	 * @param promiseOrValue {*} the rejected value of the returned {@link Promise}
 	 * @return {Promise} rejected {@link Promise}
@@ -115,7 +115,10 @@ define(function() { "use strict";
 		});
 	}
 
-	/** Object.freeze */
+	/**
+	 * Object.freeze
+	 * @private
+	 */
 	freeze = Object.freeze || function(o) { return o; };
 
 	/**
@@ -123,6 +126,7 @@ define(function() { "use strict";
 	 * a trusted when.js promise.  Any other duck-typed promise is considered
 	 * untrusted.
 	 * @constructor
+	 * @name Promise
 	 */
 	function Promise() {}
 
@@ -131,6 +135,7 @@ define(function() { "use strict";
 		 * Register a callback that will be called when a promise is
 		 * resolved or rejected.  Optionally also register a progress handler.
 		 * Shortcut for .then(alwaysback, alwaysback, progback)
+		 * @memberOf Promise
 		 * @param alwaysback {Function}
 		 * @param progback {Function}
 		 * @return {Promise}
@@ -141,6 +146,7 @@ define(function() { "use strict";
 
 		/**
 		 * Register a rejection handler.  Shortcut for .then(null, errback)
+		 * @memberOf Promise
 		 * @param errback {Function}
 		 * @return {Promise}
 		 */
@@ -240,12 +246,13 @@ define(function() { "use strict";
 		 * are optional, each argument that *is* supplied must be null, undefined, or a Function.
 		 * Any other value will cause an Error to be thrown.
 		 * @memberOf Promise
+		 * @name then
 		 * @param [callback] {Function} resolution handler
 		 * @param [errback] {Function} rejection handler
 		 * @param [progback] {Function} progress handler
-		 * @throws {Error} if any argument is not null, undefined, or a Function
+		 * @throw {Error} if any argument is not null, undefined, or a Function
 		 */
-		promise.then = deferred.then = function(callback, errback, progback) {
+		promise.then = deferred.then = function then(callback, errback, progback) {
 			return _then(callback, errback, progback);
 		};
 

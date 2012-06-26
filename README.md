@@ -90,14 +90,6 @@ when(promiseOrValue, callback, errback, progressback)
 when(promiseOrValue, callback, errback, progressback).then(anotherCallback, anotherErrback, anotherProgressback)
 ```
 
-**Getting an already-resolved Promise**
-
-You can also use `when()` to get an already-resolved promise for a value, similarly to using `when.reject()` to get a rejected promise (see below):
-
-```javascript
-var resolved = when(anything);
-```
-
 when.defer()
 ------------
 
@@ -153,11 +145,19 @@ deferred.reject(reason);
 deferred.progress(update);
 ```
 
+when.resolve()
+--------------
+```js
+var resolved = when.resolve(promiseOrValue);
+```
+
+Return a resolved promise for the supplied promiseOrValue. If promiseOrValue is a value, it will be the resolution value of the returned promise.  Returns promiseOrValue if it's a trusted promise. If promiseOrValue is a foreign promise, returns a promise in the same state (resolved or rejected) and with the same value as promiseOrValue.
+
 when.reject()
 -------------
 
 ```javascript
-var rejected = when.reject(anything);
+var rejected = when.reject(promiseOrValue);
 ```
 
 Return a rejected promise for the supplied promiseOrValue. If promiseOrValue is a value, it will be the rejection value of the returned promise.  If promiseOrValue is a promise, its completion value will be the rejected value of the returned promise.
