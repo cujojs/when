@@ -46,18 +46,18 @@ define(['./when'], function(when) {
             timeout = undef;
         }
 
-        when(promise, deferred.resolve, deferred.reject);
+        when(promise,
+            function(value) {
+                cancelTimeout();
+                return deferred.resolve(value);
+            },
+            function(reason) {
+                cancelTimeout();
+                return deferred.reject(reason);
+            }
+        );
 
-        return deferred.then(
-			function(value) {
-				cancelTimeout();
-				return value;
-			},
-			function(reason) {
-				cancelTimeout();
-				throw reason;
-			}
-		);
+        return deferred.promise;
     };
 
 });
