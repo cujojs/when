@@ -27,7 +27,7 @@
         }
     ],
     "devDependencies": {
-        "buster": "~0.5"
+        "buster": "~0.6"
     },
     "main": "./when",
     "directories": {
