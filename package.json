@@ -29,11 +29,11 @@
     "devDependencies": {
         "buster": "~0.6"
     },
-    "main": "./when",
+    "main": "when",
     "directories": {
         "test": "test"
     },
     "scripts": {
-        "test": "buster test -e node"
+        "test": "./node_modules/buster/bin/buster-test -e node"
     }
 }
