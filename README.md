@@ -1,6 +1,6 @@
 **NOTE: when.js's unit tests are all currently passing.**
 
-There is a circular dependency between buster.js and when.js that is causing Travis builds to fail. To run the unit tests yourself and verify:
+There is a circular dependency between buster.js and when.js that is causing Travis builds to fail. To run the unit tests and verify:
 
 1. Clone the when.js repo
 1. Install buster globally to avoid circular dep: `npm install -g buster`
