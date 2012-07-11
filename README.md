@@ -11,7 +11,7 @@ What's New?
 
 ### when.js.next
 
-* `when.resolve()` - creates a resolved promise. See [API docs](#whenresolve) below.
+* `when.resolve()` - creates a resolved promise. See [API docs](docs/api.md#whenresolve) below.
 * `deferred.resolve` and `deferred.reject` now return a promise.
 * `deferred.resolve(promise)` puts the deferred into the same state with the same value as promise.
 
