@@ -267,6 +267,8 @@ delayed = delay(123, 1000)
 delayed = delay(anotherPromise, 1000);
 ```
 
+More when/delay [examples on the wiki](https://github.com/cujojs/when/wiki/when-delay)
+
 
 when/timeout
 ------------
@@ -284,6 +286,8 @@ timeout = require('when/timeout');
 // timed will reject after 5 seconds unless anotherPromise resolves beforehand.
 timed = timeout(anotherPromise, 5000);
 ```
+
+More when/timeout [examples on the wiki](https://github.com/cujojs/when/wiki/when-timeout)
 
 Helpers
 =======
@@ -309,4 +313,4 @@ Helper that allows using callbacks that take multiple args, instead of an array,
 when.all(arrayOfPromisesOrValues, apply(functionThatAcceptsMultipleArgs));
 ```
 
-[See the wiki](https://github.com/cujojs/when/wiki/when-apply) for more info and examples.
+More when/apply [examples on the wiki](https://github.com/cujojs/when/wiki/when-apply).
