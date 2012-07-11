@@ -2,25 +2,26 @@ API
 ===
 
 1. [when](#when)
-1. [Deferred](#Deferred)
 1. [Promise](#Promise)
+	* [Extended Promise API](#Extendedpromiseapi)
+1. [Deferred](#Deferred)
 1. [Resolver](#Resolver)
 1. [Creating promises](#Creatingpromises)
-	1. [when.defer](#whendefer)
-	1. [when.resolve](#whenresolve)
-	1. [when.reject](#whenreject)
+	* [when.defer](#whendefer)
+	* [when.resolve](#whenresolve)
+	* [when.reject](#whenreject)
 1. [Joining promises](#Joiningpromises)
-	1. [when.all](#whenall)
-	1. [when.any](#whenany)
-	1. [when.some](#whensome)
+	* [when.all](#whenall)
+	* [when.any](#whenany)
+	* [when.some](#whensome)
 1. [Higher order operations](#Higherorderoperations)
-	1. [when.map](#whenmap)
-	1. [when.reduce](#whenreduce)
+	* [when.map](#whenmap)
+	* [when.reduce](#whenreduce)
 
 when()
 ------
 
-Register a handler for a promise or immediate value:
+Observe a promise or immediate value:
 
 ```javascript
 when(promiseOrValue, callback, errback, progressback)
@@ -29,6 +30,10 @@ when(promiseOrValue, callback, errback, progressback)
 
 when(promiseOrValue, callback, errback, progressback).then(anotherCallback, anotherErrback, anotherProgressback)
 ```
+
+when() can observe any promise that provides a Promises/A-like `.then()` method, even promises that aren't fully Promises/A compliant, such as jQuery's Deferred.  It will assimilate such promises and make them behave like Promises/A.
+
+[Read more about when() here](https://github.com/cujojs/when/wiki/when)
 
 Creating promises
 =================
@@ -76,18 +81,6 @@ when(doSomething(),
 );
 ```
 
-Deferred
---------
-
-The deferred has the full `promise` + `resolver` API:
-
-```javascript
-deferred.then(callback, errback, progressback);
-deferred.resolve(value);
-deferred.reject(reason);
-deferred.progress(update);
-```
-
 Promise
 -------
 
@@ -100,7 +93,8 @@ Promise
 promise.then(callback, errback, progressback);
 ```
 
-**Extended Promise API**
+Extended Promise API
+--------------------
 
 Convenience methods that are not part of the Promises/A proposal.
 
@@ -112,6 +106,18 @@ promise.always(alwaysback [, progressback]);
 // otherwise()
 // Convenience method to register only an errback
 promise.otherwise(errback);
+```
+
+Deferred
+--------
+
+The deferred has the full `promise` + `resolver` API:
+
+```javascript
+deferred.then(callback, errback, progressback);
+deferred.resolve(value);
+deferred.reject(reason);
+deferred.progress(update);
 ```
 
 Resolver
