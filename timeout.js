@@ -23,8 +23,8 @@ define(['./when'], function(when) {
      * var d = when.defer();
      * // Setup d however you need
      *
-     * // return a new promise that will timeout if we don't resolve/reject first
-     * return timeout(d, 1000);
+     * // return a new promise that will timeout if d doesn't resolve/reject first
+     * return timeout(d.promise, 1000);
      *
      * @param promise anything - any promise or value that should trigger
      *  the returned promise to resolve or reject before the msec timeout
