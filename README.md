@@ -11,9 +11,9 @@ What's New?
 
 ### 1.4.0
 
-* `when.resolve()` - creates a resolved promise. See [API docs](blob/master/docs/api.md#whenresolve).
-* `deferred.resolve` and `deferred.reject` now return a promise.
-* `deferred.resolve(promise)` puts the deferred into the same state with the same value as promise.
+* Create a resolved promise: `when.resolve(value)` - creates a resolved promise for `value`. See [API docs](blob/master/docs/api.md#whenresolve).
+* Resolve/reject return something useful: `deferred.resolve` and `deferred.reject` now return a promise.
+* Resolve a deferred with another promise: `deferred.resolve(promise)` puts `deferred` into the same state with the same value as `promise`.
 
 [Full Changelog](https://github.com/cujojs/when/wiki/Changelog)
 
