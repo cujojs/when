@@ -11,7 +11,7 @@ What's New?
 
 ### 1.4.0
 
-* `when.resolve()` - creates a resolved promise. See [API docs](docs/api.md#whenresolve).
+* `when.resolve()` - creates a resolved promise. See [API docs](blob/master/docs/api.md#whenresolve).
 * `deferred.resolve` and `deferred.reject` now return a promise.
 * `deferred.resolve(promise)` puts the deferred into the same state with the same value as promise.
 
