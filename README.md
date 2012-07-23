@@ -1,4 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/cujojs/when.png)](http://travis-ci.org/cujojs/when)
+# when.js [![Build Status](https://secure.travis-ci.org/cujojs/when.png)](http://travis-ci.org/cujojs/when)
 
 A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining and chaining, and has a robust unit test suite.
 
@@ -9,9 +9,9 @@ when.js was derived from the async core of [wire.js](https://github.com/cujojs/w
 What's New?
 ===========
 
-### when.js.next
+### 1.4.0
 
-* `when.resolve()` - creates a resolved promise. See [API docs](docs/api.md#whenresolve) below.
+* `when.resolve()` - creates a resolved promise. See [API docs](docs/api.md#whenresolve).
 * `deferred.resolve` and `deferred.reject` now return a promise.
 * `deferred.resolve(promise)` puts the deferred into the same state with the same value as promise.
 
@@ -20,7 +20,7 @@ What's New?
 Docs & Examples
 ===============
 
-[API docs](docs/api.md)
+[API docs](blob/master/docs/api.md)
 
 [More info on the wiki](https://github.com/cujojs/when/wiki)
 

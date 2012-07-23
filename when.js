@@ -7,7 +7,7 @@
  * Licensed under the MIT License at:
  * http://www.opensource.org/licenses/mit-license.php
  *
- * @version 1.3.0
+ * @version 1.4.0
  */
 
 (function(define) {
@@ -721,7 +721,7 @@ define(function() { "use strict";
 			return reduced;
 		};
 
-	return freeze(when);
+	return when;
 });
 })(typeof define == 'function'
 	? define
