@@ -2,9 +2,9 @@ API
 ===
 
 1. [when](#when)
+1. [Deferred](#deferred)
 1. [Promise](#promise)
 	* [Extended Promise API](#extended-promise-api)
-1. [Deferred](#deferred)
 1. [Resolver](#resolver)
 1. [Creating promises](#creating-promises)
 	* [when.defer](#whendefer)
@@ -23,8 +23,10 @@ API
 1. [Helpers](#helpers)
 	* [when/apply](#whenapply)
 
+
 when()
 ------
+
 ```js
 when(promiseOrValue, callback, errback, progressback)
 ```
@@ -48,6 +50,75 @@ when() can observe any promise that provides a Promises/A-like `.then()` method,
 
 [Read more about when() here](https://github.com/cujojs/when/wiki/when)
 
+Deferred
+--------
+
+A deferred has the full `promise` + `resolver` API:
+
+```js
+deferred.then(callback, errback, progressback);
+deferred.resolve(promiseOrValue);
+deferred.reject(reason);
+deferred.progress(update);
+```
+
+And separate `promise` and `resolver` parts that can be *safely* given out to calling code.
+
+```js
+var promise = deferred.promise;
+var resolver = deferred.resolver;
+```
+
+Promise
+-------
+
+```js
+// Get a deferred promise
+var promise = deferred.promise;
+
+// Or a resolved promise
+var promise = when.resolve(value);
+
+// Or a rejected promise
+var promise = when.reject(value);
+
+// then()
+// Main promise API
+// Register callback, errback, and/or progressback
+promise.then(callback, errback, progressback);
+```
+
+Extended Promise API
+--------------------
+
+Convenience methods that are not part of the Promises/A proposal.
+
+### always()
+
+```js
+promise.always(alwaysback [, progressback]);
+```
+
+Register an alwaysback that will be called when the promise resolves or rejects
+
+### otherwise()
+
+```js
+promise.otherwise(errback);
+```
+
+Register only an errback
+
+Resolver
+--------
+
+```js
+var resolver = deferred.resolver;
+resolver.resolve(promiseOrValue);
+resolver.reject(err);
+resolver.progress(update);
+```
+
 Creating promises
 =================
 
@@ -58,12 +129,7 @@ when.defer()
 var deferred = when.defer();
 ```
 
-Create a new Deferred containing separate `promise` and `resolver` parts:
-
-```js
-var promise = deferred.promise;
-var resolver = deferred.resolver;
-```
+Create a new [Deferred](#deferred) that can resolved at a later time.
 
 when.resolve()
 --------------
@@ -94,55 +160,6 @@ when(doSomething(),
 		return when.reject(processError(e));
 	}
 );
-```
-
-Promise
--------
-
-```js
-var promise = deferred.promise;
-
-// then()
-// Main promise API
-// Register callback, errback, and/or progressback
-promise.then(callback, errback, progressback);
-```
-
-Extended Promise API
---------------------
-
-Convenience methods that are not part of the Promises/A proposal.
-
-```js
-// always()
-// Register an alwaysback that will be called when the promise resolves or rejects
-promise.always(alwaysback [, progressback]);
-
-// otherwise()
-// Convenience method to register only an errback
-promise.otherwise(errback);
-```
-
-Deferred
---------
-
-The deferred has the full `promise` + `resolver` API:
-
-```js
-deferred.then(callback, errback, progressback);
-deferred.resolve(value);
-deferred.reject(reason);
-deferred.progress(update);
-```
-
-Resolver
---------
-
-```js
-// var resolver = deferred.resolver;
-resolver.resolve(value);
-resolver.reject(err);
-resolver.progress(update);
 ```
 
 when.isPromise()
