@@ -77,7 +77,7 @@ Promise
 var promise = deferred.promise;
 
 // Or a resolved promise
-var promise = when.resolve(value);
+var promise = when.resolve(promiseOrValue);
 
 // Or a rejected promise
 var promise = when.reject(value);
