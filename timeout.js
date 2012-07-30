@@ -49,11 +49,11 @@ define(['./when'], function(when) {
         when(promise,
             function(value) {
                 cancelTimeout();
-                return deferred.resolve(value);
+                deferred.resolve(value);
             },
             function(reason) {
                 cancelTimeout();
-                return deferred.reject(reason);
+                deferred.reject(reason);
             }
         );
 

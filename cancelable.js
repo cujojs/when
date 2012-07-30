@@ -36,7 +36,7 @@ define(['./when'], function(when) {
         // Add a cancel method to the deferred to reject the delegate
         // with the special canceled indicator.
         deferred.cancel = function() {
-            delegate.reject(canceler(deferred));
+            return delegate.reject(canceler(deferred));
         };
 
         // Ensure that the original resolve, reject, and progress all forward

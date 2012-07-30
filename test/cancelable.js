@@ -1,6 +1,9 @@
 (function(buster, when, cancelable) {
 
-var assert = buster.assert;
+var assert, fail;
+
+assert = buster.assert;
+fail = buster.assertions.fail;
 
 buster.testCase('when/cancelable', {
 	'should decorate deferred with a cancel() method': function() {
@@ -13,15 +16,25 @@ buster.testCase('when/cancelable', {
 		c.cancel();
 
 		c.then(
-			function() {
-				buster.fail();
-				done();
-			},
+			fail,
 			function(v) {
 				assert.equals(v, 1);
-				done();
 			}
-		);
+		).always(done);
+	},
+
+	'should return a promise for canceled value when canceled': function(done) {
+		var c, promise;
+
+		c = cancelable(when.defer(), function() { return 1; });
+		promise = c.cancel();
+
+		promise.then(
+			fail,
+			function(v) {
+				assert.equals(v, 1);
+			}
+		).always(done);
 	},
 
 	'should not invoke canceler when rejected normally': function(done) {
@@ -29,31 +42,18 @@ buster.testCase('when/cancelable', {
 		c.reject(2);
 
 		c.then(
-			function() {
-				buster.fail();
-				done();
-			},
+			fail,
 			function(v) {
 				assert.equals(v, 2);
-				done();
 			}
-		);
+		).always(done);
 	},
 
 	'should propagate the unaltered resolution value': function(done) {
 		var c = cancelable(when.defer(), function() { return false; });
 		c.resolve(true);
 
-		c.then(
-			function(val) {
-				assert(val);
-				done();
-			},
-			function() {
-				buster.fail();
-				done();
-			}
-		);
+		c.then(assert, fail).always(done);
 	},
 
 	'should call progback for cancelable deferred': function(done) {
