@@ -721,7 +721,7 @@ define(function() { "use strict";
 			return reduced;
 		};
 
-	return when;
+	return freeze(when);
 });
 })(typeof define == 'function'
 	? define
