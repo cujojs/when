@@ -20,7 +20,7 @@ What's New?
 Docs & Examples
 ===============
 
-[API docs](blob/master/docs/api.md)
+[API docs](when/blob/master/docs/api.md)
 
 [More info on the wiki](https://github.com/cujojs/when/wiki)
 
