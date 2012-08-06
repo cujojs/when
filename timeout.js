@@ -1,5 +1,7 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
+/*global setTimeout:true, clearTimeout:true*/
+
 /**
  * timeout.js
  *
@@ -33,17 +35,17 @@ define(['./when'], function(when) {
      * @returns {Promise}
      */
     return function timeout(promise, msec) {
-        var deferred, timeout;
+        var deferred, timeoutRef;
 
         deferred = when.defer();
 
-        timeout = setTimeout(function onTimeout() {
-            timeout && deferred.reject(new Error('timed out'));
+        timeoutRef = setTimeout(function onTimeout() {
+            timeoutRef && deferred.reject(new Error('timed out'));
         }, msec);
 
         function cancelTimeout() {
-            clearTimeout(timeout);
-            timeout = undef;
+            clearTimeout(timeoutRef);
+            timeoutRef = undef;
         }
 
         when(promise,

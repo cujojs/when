@@ -1,5 +1,7 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
+/*global setTimeout:true*/
+
 /**
  * delay.js
  *

@@ -325,7 +325,10 @@ define(function() { "use strict";
 		 */
 		_progress = function(update) {
 			var progress, i = 0;
-			while (progress = progressHandlers[i++]) progress(update);
+
+			while (progress = progressHandlers[i++]) {
+				progress(update);
+			}
 		};
 
 		/**
@@ -555,8 +558,9 @@ define(function() { "use strict";
 		// Since mapFunc may be async, get all invocations of it into flight
 		// asap, and then use reduce() to collect all the results
 		for(i = 0; i < len; i++) {
-			if(i in promisesOrValues)
+			if(i in promisesOrValues) {
 				results[i] = when(promisesOrValues[i], mapFunc);
+			}
 		}
 
 		// Could use all() here, but that would result in another array
@@ -617,7 +621,9 @@ define(function() { "use strict";
 			}
 		];
 
-		if (arguments.length > 2) args.push(initialValue);
+		if (arguments.length > 2) {
+			args.push(initialValue);
+		}
 
 		return reduceArray.apply(promisesOrValues, args);
 	}
@@ -659,9 +665,13 @@ define(function() { "use strict";
 	 */
 	function checkCallbacks(start, arrayOfCallbacks) {
 		var arg, i = arrayOfCallbacks.length;
+
 		while(i > start) {
 			arg = arrayOfCallbacks[--i];
-			if (arg != null && typeof arg != 'function') throw new Error('arg '+i+' must be a function');
+
+			if (arg != null && typeof arg != 'function') {
+				throw new Error('arg '+i+' must be a function');
+			}
 		}
 	}
 
@@ -686,7 +696,7 @@ define(function() { "use strict";
 			var arr, args, reduced, len, i;
 
 			i = 0;
-			arr = Object(this);
+			arr = new Object(this);
 			len = arr.length >>> 0;
 			args = arguments;
 
@@ -714,8 +724,9 @@ define(function() { "use strict";
 			// Do the actual reduce
 			for(;i < len; ++i) {
 				// Skip holes
-				if(i in arr)
+				if(i in arr) {
 					reduced = reduceFunc(reduced, arr[i], i, arr);
+				}
 			}
 
 			return reduced;

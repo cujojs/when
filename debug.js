@@ -1,5 +1,8 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
+/*jshint devel: true*/
+/*global console:true, setTimeout:true*/
+
 /**
  * This is a drop-in replacement for the when module that sets up automatic
  * debug output for promises created or consumed by when.js.  Use this
@@ -78,7 +81,9 @@ define(['./when'], function(when) {
 	}
 
 	function wrapCallback(cb) {
-		if(typeof cb != 'function') return cb;
+		if(typeof cb != 'function') {
+			return cb;
+		}
 
 		return function(v) {
 			try {
@@ -96,16 +101,16 @@ define(['./when'], function(when) {
 
 				throw err;
 			}
-		}
+		};
 	}
 
-	function wrapCallbacks(arguments) {
+	function wrapCallbacks(callbacks) {
 		var cb, args, len, i;
 
 		args = [];
 
-		for(i = 0, len = arguments.length; i < len; i++) {
-			args[i] = typeof (cb = arguments[i]) == 'function'
+		for(i = 0, len = callbacks.length; i < len; i++) {
+			args[i] = typeof (cb = callbacks[i]) == 'function'
 				? wrapCallback(cb)
 				: cb;
 		}
@@ -123,7 +128,11 @@ define(['./when'], function(when) {
 	 */
 	function toString(name, id, status, value) {
 		var s = '[object ' + name + ' ' + id + '] ' + status;
-		if(value !== pending) s += ': ' + value;
+
+		if(value !== pending) {
+			s += ': ' + value;
+		}
+
 		return s;
 	}
 
@@ -163,7 +172,9 @@ define(['./when'], function(when) {
 		// if no id provided, generate one.  Not sure if this is
 		// useful or not.
 		id = arguments[arguments.length - 1];
-		if(id === undef) id = ++promiseId;
+		if(id === undef) {
+			id = ++promiseId;
+		}
 
 		// Promise and resolver are frozen, so have to delegate
 		// in order to setup toString() on promise, resolver,
@@ -243,15 +254,17 @@ define(['./when'], function(when) {
 	whenDebug.defer = deferDebug;
 	whenDebug.isPromise = when.isPromise;
 
+	function makeDebug(name, func) {
+		whenDebug[name] = function() {
+			return debugPromise(func.apply(when, arguments));
+		};
+	}
+
 	// For each method we haven't already replaced, replace it with
 	// one that sets up debug logging on the returned promise
 	for(var p in when) {
 		if(when.hasOwnProperty(p) && !(p in whenDebug)) {
-			(function(p, orig) {
-				whenDebug[p] = function() {
-					return debugPromise(orig.apply(when, arguments));
-				};
-			})(p, when[p]);
+			makeDebug(p, when[p]);
 		}
 	}
 
