@@ -68,7 +68,7 @@ buster.testCase('promise', {
 				assert.equals(val, 1);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 
 		d.resolve(1);
 	},
@@ -86,7 +86,7 @@ buster.testCase('promise', {
 				assert.equals(val, 2);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 
 		d.resolve(1);
 	},
@@ -104,7 +104,7 @@ buster.testCase('promise', {
 				refute.defined(val);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 
 		d.resolve(1);
 	},
@@ -125,7 +125,7 @@ buster.testCase('promise', {
 				refute.defined(val);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 
 		d.reject(1);
 	},
@@ -145,7 +145,7 @@ buster.testCase('promise', {
 				assert.equals(val, 2);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 
 		d.resolve(1);
 	},
@@ -165,7 +165,7 @@ buster.testCase('promise', {
 			function(val) {
 				assert.equals(val, 2);
 			}
-		).then(done, done);
+		).always(done);
 
 		d.resolve(1);
 	},
@@ -183,7 +183,7 @@ buster.testCase('promise', {
 			function(val) {
 				assert.equals(val, 2);
 			}
-		).then(done, done);
+		).always(done);
 
 		d.resolve(1);
 	},
@@ -201,7 +201,7 @@ buster.testCase('promise', {
 				assert.equals(val, 2);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 
 		d.reject(1);
 	},
@@ -221,7 +221,7 @@ buster.testCase('promise', {
 				assert.equals(val, 2);
 			},
 			fail
-		).then(done, done);
+		).always(done);
 
 		d.reject(1);
 	},
@@ -239,7 +239,7 @@ buster.testCase('promise', {
 			function(val) {
 				assert.equals(val, 2);
 			}
-		).then(done, done);
+		).always(done);
 
 		d.reject(1);
 	},
@@ -259,7 +259,7 @@ buster.testCase('promise', {
 			function(val) {
 				assert.equals(val, 2);
 			}
-		).then(done, done);
+		).always(done);
 
 		d.reject(1);
 	},

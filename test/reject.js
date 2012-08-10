@@ -16,7 +16,7 @@ buster.testCase('when.reject', {
 			function(value) {
 				assert.equals(value, expected);
 			}
-		).then(done, done);
+		).always(done);
 	},
 
 	'should reject a resolved promise': function(done) {
@@ -31,7 +31,7 @@ buster.testCase('when.reject', {
 			function(value) {
 				assert.equals(value, expected);
 			}
-		).then(done, done);
+		).always(done);
 	},
 
 	'should reject a rejected promise': function(done) {
@@ -46,7 +46,7 @@ buster.testCase('when.reject', {
 			function(value) {
 				assert.equals(value, expected);
 			}
-		).then(done, done);
+		).always(done);
 	}
 
 
