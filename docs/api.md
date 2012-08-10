@@ -19,7 +19,7 @@ API
 	* [when.reduce](#whenreduce)
 1. [Timed Promises](#timed-promises)
 	* [when/delay](#whendelay)
-	* [when/timed](#whentimed)
+	* [when/timeout](#whentimeout)
 1. [Helpers](#helpers)
 	* [when/apply](#whenapply)
 
