@@ -44,7 +44,7 @@
     "eqnull"        : true,   // Tolerate use of `== null`.
     "evil"          : false,  // Tolerate use of `eval`.
     "expr"          : true,   // Tolerate `ExpressionStatement` as Programs.
-    "forin"         : true,   // Tolerate `for in` loops without `hasOwnPrototype`.
+    "forin"         : false,   // Tolerate `for in` loops without `hasOwnPrototype`.
     "immed"         : false,  // Require immediate invocations to be wrapped in parens e.g. `( function(){}() );`
     "latedef"       : false,  // Prohibit variable use before definition.
     "loopfunc"      : false,  // Allow functions to be defined within loops.
