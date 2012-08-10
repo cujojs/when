@@ -20,6 +20,10 @@ function FakePromise(val) {
 }
 
 buster.testCase('when', {
+	'should be frozen': function() {
+		assert(Object.isFrozen(when));
+	},
+
 	'should return a promise for a value': function() {
 		var result = when(1);
 		assert(typeof result.then == 'function');
@@ -112,7 +116,7 @@ buster.testCase('when', {
 		refute(result instanceof FakePromise);
 	},
 
-	'should assimilate intermediate promises and forwards results':function (done) {
+	'should assimilate intermediate promises and forward results':function (done) {
 		var untrusted, result;
 
 		untrusted = new FakePromise(1);

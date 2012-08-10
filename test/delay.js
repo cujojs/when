@@ -1,6 +1,9 @@
 (function(buster, when, delay) {
 
-var assert = buster.assert;
+var assert, fail;
+
+assert = buster.assert;
+fail = buster.assertions.fail;
 
 function now() {
 	return (new Date()).getTime();
@@ -11,13 +14,9 @@ buster.testCase('when/delay', {
 		delay(0).then(
 			function() {
 				assert(true);
-				done();
 			},
-			function() {
-				buster.fail();
-				done();
-			}
-		);
+			fail
+		).always(done);
 	},
 
 	'should resolve with provided value after delay': function(done) {
@@ -26,11 +25,8 @@ buster.testCase('when/delay', {
 				assert.equals(val, 1);
 				done();
 			},
-			function() {
-				buster.fail();
-				done();
-			}
-		);
+			fail
+		).always(done);
 	},
 
 	'should delay by the provided value': function(done) {
@@ -39,13 +35,18 @@ buster.testCase('when/delay', {
 		delay(100).then(
 			function() {
 				assert((now() - start) > 50);
-				done();
 			},
-			function() {
-				buster.fail();
-				done();
-			}
-		);
+			fail
+		).always(done);
+	},
+
+	'should resolve after input promise plus delay': function(done) {
+		delay(when.resolve(1), 10).then(
+			function(val) {
+				assert.equals(val, 1);
+			},
+			fail
+		).always(done);
 	},
 
 	'should not delay if rejected': function(done) {
@@ -53,15 +54,11 @@ buster.testCase('when/delay', {
 		d.reject(1);
 
 		delay(d.promise, 0).then(
-			function() {
-				buster.fail();
-				done();
-			},
+			fail,
 			function(val) {
 				assert.equals(val, 1);
-				done();
 			}
-		);
+		).always(done);
 	}
 });
 })(

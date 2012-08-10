@@ -9,6 +9,10 @@ when.js was derived from the async core of [wire.js](https://github.com/cujojs/w
 What's New?
 ===========
 
+### 1.4.1
+
+* Code and unit test cleanup and streamlining--no functional changes.
+
 ### 1.4.0
 
 * Create a resolved promise: `when.resolve(value)` creates a resolved promise for `value`. See [API docs](when/blob/master/docs/api.md#whenresolve).

@@ -1,5 +1,7 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
+/*global setTimeout:true*/
+
 /**
  * delay.js
  *
@@ -37,13 +39,13 @@ define(['./when'], function(when) {
             promise = undef;
         }
 
-        return when(promise, function(val) {
-            var deferred = when.defer();
-            setTimeout(function() {
-                deferred.resolve(val);
-            }, msec);
-            return deferred.promise;
-        });
+        var deferred = when.defer();
+
+        setTimeout(function() {
+            deferred.resolve(promise);
+        }, msec);
+
+        return deferred.promise;
     };
 
 });

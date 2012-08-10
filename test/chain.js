@@ -40,7 +40,7 @@ buster.testCase('when.chain', {
 		d.promise.then(
 			function(val) { assert.equals(val, 1); },
 			function() { fail('promise should not have rejected'); }
-		).then(done, done);
+		).always(done);
 
 		when.chain(1, d.resolver);
 	},
@@ -53,7 +53,7 @@ buster.testCase('when.chain', {
 		d.promise.then(
 			function(val) { assert.equals(val, 1); },
 			function() { fail('promise should not have rejected'); }
-		).then(done, done);
+		).always(done);
 
 		input = when.defer();
 		input.resolve(1);
@@ -67,7 +67,7 @@ buster.testCase('when.chain', {
 		d.promise.then(
 			function(val) { assert.equals(val, 2); },
 			function() { fail('promise should not have rejected'); }
-		).then(done, done);
+		).always(done);
 
 		when.chain(1, d.resolver, 2);
 	},
@@ -80,7 +80,7 @@ buster.testCase('when.chain', {
 		d.promise.then(
 			function(val) { assert.equals(val, 2); },
 			function() { fail('promise should not have rejected'); }
-		).then(done, done);
+		).always(done);
 
 		input = when.defer();
 		input.resolve(1);
@@ -96,7 +96,7 @@ buster.testCase('when.chain', {
 		d.promise.then(
 			function() { fail('promise should not have resolved'); },
 			function (val) { assert.equals(val, 1); }
-		).then(done, done);
+		).always(done);
 
 		input = when.defer();
 		input.reject(1);
@@ -112,7 +112,7 @@ buster.testCase('when.chain', {
 		d.promise.then(
 			function() { fail('promise should not have resolved'); },
 			function (val) { assert.equals(val, 1); }
-		).then(done, done);
+		).always(done);
 
 		input = when.defer();
 		input.reject(1);
@@ -131,7 +131,7 @@ buster.testCase('when.chain', {
 		when.chain(input, d).then(
 			function(val) { assert.equals(val, 1); },
 			function() { fail('promise should not have rejected'); }
-		).then(done, done);
+		).always(done);
 	},
 
 	'should return a preomise that resolves with the optional resolution value': function(done) {
@@ -145,7 +145,7 @@ buster.testCase('when.chain', {
 		when.chain(input, d, 2).then(
 			function(val) { assert.equals(val, 2); },
 			function() { fail('promise should not have rejected'); }
-		).then(done, done);
+		).always(done);
 	},
 
 	'should return a promise that rejects with the input promise rejection value': function(done) {
@@ -159,7 +159,7 @@ buster.testCase('when.chain', {
 		when.chain(input, d).then(
 			function() { fail('promise should not have resolved'); },
 			function(val) { assert.equals(val, 1); }
-		).then(done, done);
+		).always(done);
 	}
 
 })

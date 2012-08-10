@@ -49,10 +49,12 @@ define(function() {
          */
         return function(array) {
             // It better be an array
-            if(toString.call(array) != '[object Array]') throw new Error('apply called with non-array arg');
+            if(toString.call(array) != '[object Array]') {
+                throw new Error('apply called with non-array arg');
+            }
 
             return f.apply(null, array);
-        }
+        };
     };
 
 });
