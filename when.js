@@ -348,12 +348,8 @@ define(function() { "use strict";
 			// Replace complete so that this Deferred can only be completed
 			// once. Also Replace _progress, so that subsequent attempts to issue
 			// progress throw.
-			_resolve = _progress = function alreadyResolved() {
-				// TODO: Consider silently returning here so that parties who
-				// have a reference to the resolver cannot tell that the promise
-				// has been resolved using try/catch
-				throw new Error("already completed");
-			};
+			_resolve = resolve;
+			_progress = noop;
 
 			// Notify listeners
 			while (listener = listeners[i++]) {
@@ -402,7 +398,7 @@ define(function() { "use strict";
 
 		return when(promisesOrValues, function(promisesOrValues) {
 
-			var toResolve, results, deferred, resolver, rejecter, handleProgress, len, i;
+			var toResolve, results, deferred, resolve, reject, progress, len, i;
 
 			len = promisesOrValues.length >>> 0;
 
@@ -410,49 +406,28 @@ define(function() { "use strict";
 			results = [];
 			deferred = defer();
 
-			// Wrapper so that resolver can be replaced
-			function resolve(val) {
-				resolver(val);
-			}
-
-			// Wrapper so that rejecter can be replaced
-			function reject(err) {
-				rejecter(err);
-			}
-
-			// Wrapper so that progress can be replaced
-			function progress(update) {
-				handleProgress(update);
-			}
-
 			// No items in the input, resolve immediately
 			if (!toResolve) {
 				deferred.resolve(results);
 
 			} else {
-				deferred.promise.always(function complete() {
-					resolver = rejecter = handleProgress = noop;
-				});
-
-				// Rejecter for promises.  Rejects returned promise
-				// immediately, and overwrites rejecter var with a noop
-				// once promise to cover case where n < promises.length.
 				// TODO: Consider rejecting only when N (or promises.length - N?)
 				// promises have been rejected instead of only one?
-				rejecter = deferred.reject;
-				handleProgress = deferred.progress;
+				reject = deferred.reject;
+				progress = deferred.progress;
 
 				// Resolver for promises.  Captures the value and resolves
 				// the returned promise when toResolve reaches zero.
 				// Overwrites resolver var with a noop once promise has
 				// be resolved to cover case where n < promises.length
-				resolver = function(val) {
+				resolve = function(val) {
 					// This orders the values based on promise resolution order
 					// Another strategy would be to use the original position of
 					// the corresponding promise.
 					results.push(val);
 
 					if (!--toResolve) {
+						resolve = noop;
 						deferred.resolve(results);
 					}
 				};

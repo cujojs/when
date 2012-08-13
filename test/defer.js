@@ -1,8 +1,9 @@
 (function(buster, when) {
 
-var assert, fail;
+var assert, refute, fail;
 
 assert = buster.assert;
+refute = buster.refute;
 fail = buster.assertions.fail;
 
 function fakeResolved(val) {
@@ -242,58 +243,60 @@ buster.testCase('when.defer', {
 		}
 	},
 
-	'should throw if resolved when already resolved': function() {
+	'should return a promise for passed-in resolution value when already resolved': function(done) {
 		var d = when.defer();
 		d.resolve(1);
 
-		assert.exception(function() {
-			d.resolve();
-		});
+		d.resolve(2).then(function(val) {
+			assert.equals(val, 2);
+		}).always(done);
 	},
 
-	'should throw if rejected when already resolved': function() {
+	'should return a promise for passed-in rejection value when already resolved': function(done) {
 		var d = when.defer();
 		d.resolve(1);
 
-		assert.exception(function() {
-			d.reject();
-		});
+		d.reject(2).then(
+			fail,
+			function(val) {
+				assert.equals(val, 2);
+			}
+		).always(done);
 	},
 
-	'should throw on progress when already resolved': function() {
+	'should return silently on progress when already resolved': function() {
 		var d = when.defer();
 		d.resolve(1);
 
-		assert.exception(function() {
-			d.progress();
-		});
+		refute.defined(d.progress());
 	},
 
-	'should throw if resolved when already rejected': function() {
+	'should return a promise for passed-in resolution value when already rejected': function(done) {
 		var d = when.defer();
-		d.resolve(1);
+		d.reject(1);
 
-		assert.exception(function() {
-			d.resolve();
-		});
+		d.resolve(2).then(function(val) {
+			assert.equals(val, 2);
+		}).always(done);
 	},
 
-	'should throw if rejected when already rejected': function() {
+	'should return a promise for passed-in rejection value when already rejected': function(done) {
 		var d = when.defer();
-		d.resolve(1);
+		d.reject(1);
 
-		assert.exception(function() {
-			d.reject();
-		});
+		d.reject(2).then(
+			fail,
+			function(val) {
+				assert.equals(val, 2);
+			}
+		).always(done);
 	},
 
-	'should throw on progress when already rejected': function() {
+	'should return silently on progress when already rejected': function() {
 		var d = when.defer();
-		d.resolve(1);
+		d.reject(1);
 
-		assert.exception(function() {
-			d.progress();
-		});
+		refute.defined(d.progress());
 	}
 
 });
