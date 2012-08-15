@@ -268,7 +268,7 @@ define(function() { "use strict";
 		 *  promise, this Deferred will become rejected.
 		 * @return {Promise} a promise for the resolution value
 		 */
-		resolver.resolve = deferred.resolve = function resolve(val) {
+		resolver.resolve = deferred.resolve = function promiseResolve(val) {
 			return _resolve(val);
 		};
 
@@ -279,7 +279,7 @@ define(function() { "use strict";
 		 * @param err anything
 		 * @return {Promise} a promise for the rejection value
 		 */
-		resolver.reject = deferred.reject = function reject(err) {
+		resolver.reject = deferred.reject = function promiseReject(err) {
 			return _resolve(rejected(err));
 		};
 
@@ -289,7 +289,7 @@ define(function() { "use strict";
 		 * @memberOf Resolver
 		 * @param update anything
 		 */
-		resolver.progress = deferred.progress = function progress(update) {
+		resolver.progress = deferred.progress = function promiseProgress(update) {
 			_progress(update);
 		};
 

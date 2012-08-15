@@ -9,6 +9,10 @@ when.js was derived from the async core of [wire.js](https://github.com/cujojs/w
 What's New?
 ===========
 
+### 1.4.2
+
+* Fix for IE8 infinite recursion (See [#49](https://github.com/cujojs/when/issues/49))
+
 ### 1.4.1
 
 * Code and unit test cleanup and streamlining--no functional changes.
