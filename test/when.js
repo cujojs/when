@@ -14,7 +14,9 @@ var fakePromise = new FakePromise();
 // Untrusted, non-Promises/A-compliant promise
 function FakePromise(val) {
 	this.then = function (cb) {
-		if (cb) cb(val);
+		if (cb) {
+			cb(val);
+		}
 		return this;
 	};
 }

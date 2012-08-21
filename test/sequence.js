@@ -9,14 +9,14 @@ fail = buster.assertions.fail;
 function createTask(y) {
 	return function() {
 		return y;
-	}
+	};
 }
 
 function expectArgs(expected) {
 	return function() {
 		var args = Array.prototype.slice.call(arguments);
 		assert.equals(args, expected);
-	}
+	};
 }
 
 buster.testCase('when/sequence', {

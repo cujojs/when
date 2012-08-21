@@ -162,7 +162,7 @@ buster.testCase('when.chain', {
 		).always(done);
 	}
 
-})
+});
 
 })(
 	this.buster || require('buster'),

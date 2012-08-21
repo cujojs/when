@@ -9,17 +9,17 @@ fail = buster.assertions.fail;
 function createTask(y) {
 	return function() {
 		return y;
-	}
+	};
 }
 
 function expectArgs(expected) {
 	return function() {
 		var args = Array.prototype.slice.call(arguments);
 		assert.equals(args, expected);
-	}
+	};
 }
 
-buster.testCase('=>when/parallel', {
+buster.testCase('when/parallel', {
 
 	'should execute all tasks': function() {
 		return parallel([createTask(1), createTask(2), createTask(3)]).then(

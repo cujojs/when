@@ -9,7 +9,7 @@ fail = buster.assertions.fail;
 function createTask(y) {
 	return function(x) {
 		return x + y;
-	}
+	};
 }
 
 buster.testCase('when/pipeline', {

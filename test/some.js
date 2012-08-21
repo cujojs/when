@@ -18,7 +18,7 @@ function contains(array, value) {
 	return false;
 }
 
-function subset(subset, superset) {
+function isSubset(subset, superset) {
 	var i, subsetLen;
 
 	subsetLen = subset.length;
@@ -51,7 +51,7 @@ buster.testCase('when.some', {
 		var input = [1, 2, 3];
 		when.some(input, 2,
 			function(results) {
-				assert(subset(results, input));
+				assert(isSubset(results, input));
 			},
 			fail
 		).always(done);
@@ -61,7 +61,7 @@ buster.testCase('when.some', {
 		var input = [resolved(1), resolved(2), resolved(3)];
 		when.some(input, 2,
 			function(results) {
-				assert(subset(results, [1, 2, 3]));
+				assert(isSubset(results, [1, 2, 3]));
 			},
 			fail
 		).always(done);
@@ -71,7 +71,7 @@ buster.testCase('when.some', {
 		var input = [, 1, , 2, 3 ];
 		when.some(input, 2,
 			function(results) {
-				assert(subset(results, input));
+				assert(isSubset(results, input));
 				done();
 			},
 			fail
