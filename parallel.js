@@ -22,7 +22,7 @@ define(['./when'], function(when) {
 	return function parallel(tasks /*, args... */) {
 		var args = Array.prototype.slice.call(arguments, 1);
 		return when.map(tasks, function(task) {
-			return task.call(null, args);
+			return task.apply(null, args);
 		});
 	};
 

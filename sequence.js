@@ -22,7 +22,7 @@ define(['./when'], function(when) {
 	return function sequence(tasks /*, args... */) {
 		var args = Array.prototype.slice.call(arguments, 1);
 		return when.reduce(tasks, function(results, task) {
-			return when(task.call(null, args), function(result) {
+			return when(task.apply(null, args), function(result) {
 				results.push(result);
 				return results;
 			});
