@@ -710,6 +710,7 @@ define(function() { "use strict";
 			// This generates a jshint warning, despite being valid
 			// "Missing 'new' prefix when invoking a constructor."
 			// See https://github.com/jshint/jshint/issues/392
+			/*jshint newcap: false */
 			arr = Object(this);
 			len = arr.length >>> 0;
 			args = arguments;
