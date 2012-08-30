@@ -59,6 +59,18 @@ buster.testCase('when/delay', {
 				assert.equals(val, 1);
 			}
 		).always(done);
+	},
+
+	'should clear timeout on reject': function(done) {
+		var d = delay(0);
+		d.reject(1);
+
+		d.then(
+			fail,
+			function(val) {
+				assert.equals(val, 1);
+			}
+		).always(done);
 	}
 });
 })(

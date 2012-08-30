@@ -16,7 +16,7 @@ define(['./when'], function(when) {
     var undef;
 
     /**
-     * Creates a new promise that will resolve after a msec delay.  If promise
+     * Creates a new deferred that will resolve after a msec delay.  If promise
      * is supplied, the delay will start *after* the supplied promise is resolved.
      *
      * Usage:
@@ -39,13 +39,19 @@ define(['./when'], function(when) {
             promise = undef;
         }
 
-        var deferred = when.defer();
+        var deferred, timeout;
 
-        setTimeout(function() {
+        deferred = when.defer();
+        timeout = setTimeout(function() {
             deferred.resolve(promise);
         }, msec);
 
-        return deferred.promise;
+        deferred.promise.always(function () {
+            clearTimeout(timeout);
+            timeout = undef;
+        });
+
+        return deferred;
     };
 
 });
