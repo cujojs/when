@@ -7,10 +7,9 @@
 (function(define) {
 define(['./when'], function(when) {
 
-	var slice, nextTick;
+	var slice;
 
 	slice = Array.prototype.slice;
-	nextTick = process.nextTick.bind(process);
 
 	return {
 		apply: apply,
@@ -20,17 +19,9 @@ define(['./when'], function(when) {
 	};
 
 	function apply(func, context, args) {
-		var d = when.defer();
-
-		nextTick(function() {
-			try {
-				d.resolve(func.apply(context, args));
-			} catch(e) {
-				d.reject(e);
-			}
+		return when.all([context].concat(args), function(contextAndArgs) {
+			return func.apply(contextAndArgs[0], contextAndArgs.slice(1));
 		});
-
-		return d.promise;
 	}
 
 	function call(func, context /*, args... */) {
@@ -84,13 +75,7 @@ define(['./when'], function(when) {
 			args = Array.prototype.slice.call(arguments);
 			d = when.defer();
 
-			nextTick(function() {
-				try {
-					orig.apply(null, initArgs(args, d));
-				} catch(e) {
-					d.reject(e);
-				}
-			});
+			apply(orig, this, initArgs(args, d));
 
 			return d.promise;
 		};
@@ -101,7 +86,7 @@ define(['./when'], function(when) {
 	? define
 	: function (deps, factory) { typeof module != 'undefined'
 	? (module.exports = factory(require('./when')))
-	: (this.when_function = factory(this.when));
+	: (this.when_fn = factory(this.when));
 }
 	// Boilerplate for AMD, Node, and browser global
 );
