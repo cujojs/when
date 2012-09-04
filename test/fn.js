@@ -49,7 +49,59 @@ buster.testCase('when/fn', {
 				assert.equals(result, 3);
 			});
 		}
+	},
+
+	'call': {
+		'should return a promise': function() {
+			var result = fn.call(f, null, 1, 2);
+			assert(result && typeof result.then === 'function');
+		},
+
+		'should accept values for arguments': function() {
+			var result = fn.call(f, null, 1, 2);
+			return when(result, function(result) {
+				assert.equals(result, 3);
+			});
+		},
+
+		'should accept promises for arguments': function() {
+			var result = fn.call(f, null, when.resolve(1), when.resolve(2));
+			return when(result, function(result) {
+				assert.equals(result, 3);
+			});
+		},
+
+		'should accept value for context': function() {
+			function f2(y) {
+				return f(this, y);
+			}
+
+			var result = fn.call(f2, 1, 2);
+			return when(result, function(result) {
+				assert.equals(result, 3);
+			});
+		},
+
+		'should accept promise for context': function() {
+			function f2(y) {
+				return f(this, y);
+			}
+
+			var result = fn.call(f2, when.resolve(1), 2);
+			return when(result, function(result) {
+				assert.equals(result, 3);
+			});
+		}
+	},
+
+	'bind': {
+		'should return a function': function() {
+
+		},
+
+
 	}
+
 });
 
 })(
