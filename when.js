@@ -751,7 +751,7 @@ define(function() { "use strict";
 });
 })(typeof define == 'function'
 	? define
-	: function (factory) { typeof module != 'undefined'
+	: function (factory) { typeof exports != 'undefined'
 		? (module.exports = factory())
 		: (this.when      = factory());
 	}
