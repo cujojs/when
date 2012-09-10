@@ -9,6 +9,10 @@ when.js was derived from the async core of [wire.js](https://github.com/cujojs/w
 What's New?
 ===========
 
+### 1.4.4
+
+* Change UMD boilerplate to check for `exports` to avoid a problem with QUnit.  See [#54](https://github.com/cujojs/when/issues/54) for more info.
+
 ### 1.4.3
 
 * Fix for infinite promise coercion between when.js and Q (See [#50](https://github.com/cujojs/when/issues/50)). Thanks [@kriskowal](https://github.com/kriskowal) and [@domenic](https://github.com/domenic)
