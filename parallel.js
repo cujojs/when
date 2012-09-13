@@ -30,8 +30,8 @@ define(['./when'], function(when) {
 })(typeof define == 'function' && define.amd
 	? define
 	: function (deps, factory) { typeof exports == 'object'
-	? (module.exports = factory(require('./when')))
-	: (this.when_parallel = factory(this.when));
+		? (module.exports = factory(require('./when')))
+		: (this.when_parallel = factory(this.when));
 }
 	// Boilerplate for AMD, Node, and browser global
 );

@@ -726,7 +726,7 @@ define(function() { "use strict";
 });
 })(typeof define == 'function' && define.amd
 	? define
-	: function (factory) { typeof exports == 'module'
+	: function (factory) { typeof exports == 'object'
 		? (module.exports = factory())
 		: (this.when      = factory());
 	}
