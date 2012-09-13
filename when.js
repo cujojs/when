@@ -7,7 +7,7 @@
  * Licensed under the MIT License at:
  * http://www.opensource.org/licenses/mit-license.php
  *
- * @version 1.4.2
+ * @version 1.4.4
  */
 
 (function(define) {
@@ -78,6 +78,17 @@ define(function() { "use strict";
 		} else {
 			// It's not a when.js promise.
 			// Check to see if it's a foreign promise or a value.
+
+			// Some promises, particularly Q promises, provide a valueOf method that
+			// attempts to synchronously return the fulfilled value of the promise, or
+			// returns the unresolved promise itself.  Attempting to break a fulfillment
+			// value out of a promise appears to be necessary to break cycles between
+			// Q and When attempting to coerce each-other's promises in an infinite loop.
+			// For promises that do not implement "valueOf", the Object#valueOf is harmless.
+			// See: https://github.com/kriskowal/q/issues/106
+			if (promiseOrValue != null && typeof promiseOrValue.valueOf === "function") {
+				promiseOrValue = promiseOrValue.valueOf();
+			}
 
 			if(isPromise(promiseOrValue)) {
 				// It looks like a thenable, but we don't know where it came from,
@@ -671,7 +682,11 @@ define(function() { "use strict";
 			var arr, args, reduced, len, i;
 
 			i = 0;
-			arr = new Object(this);
+			// This generates a jshint warning, despite being valid
+			// "Missing 'new' prefix when invoking a constructor."
+			// See https://github.com/jshint/jshint/issues/392
+			/*jshint newcap: false */
+			arr = Object(this);
 			len = arr.length >>> 0;
 			args = arguments;
 
@@ -711,7 +726,7 @@ define(function() { "use strict";
 });
 })(typeof define == 'function'
 	? define
-	: function (factory) { typeof module != 'undefined'
+	: function (factory) { typeof exports != 'undefined'
 		? (module.exports = factory())
 		: (this.when      = factory());
 	}

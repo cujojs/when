@@ -81,17 +81,30 @@ var promise = when.resolve(promiseOrValue);
 
 // Or a rejected promise
 var promise = when.reject(value);
+```
 
+Main Promise API
+----------------
+
+```js
 // then()
 // Main promise API
 // Register callback, errback, and/or progressback
-promise.then(callback, errback, progressback);
+var newPromise = promise.then(callback, errback, progressback);
 ```
+
+Registers new success, error, and/or progress handlers with a promise.  All parameters are optional.  As per the [Promises/A spec](http://wiki.commonjs.org/wiki/Promises/A#Proposal), returns a *new promise* that will be resolved with the result of `callback` if `promise` is fulfilled, or with the result of `errback` if `promise` is rejected.
+
+A promise makes the following guarantees about handlers registered in the same call to `.then()`:
+
+1. Only one of `callback` or `errback` will be called, never both.
+1. `callback` and `errback` will never be called more than once.
+1. `progressback` may be called multiple times.
 
 Extended Promise API
 --------------------
 
-Convenience methods that are not part of the Promises/A proposal.
+Convenience methods that are not part of the Promises/A proposal.  These are simply shortcuts for using `.then()`.
 
 ### always()
 

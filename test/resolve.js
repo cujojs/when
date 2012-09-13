@@ -47,7 +47,47 @@ buster.testCase('when.resolve', {
 				assert.equals(value, expected);
 			}
 		).always(done);
+	},
+
+	'should use valueOf immediate values': function(done) {
+		// See https://github.com/kriskowal/q/issues/106
+		var fake, expected;
+
+		expected = 1;
+		fake = {
+			valueOf: this.stub().returns(expected)
+		};
+
+		when.resolve(fake).then(
+			function(value) {
+				assert.equals(value, expected);
+			},
+			fail
+		).always(done);
+	},
+
+	'should use valueOf foreign promises': function(done) {
+		// See https://github.com/kriskowal/q/issues/106
+		var fake, expected;
+
+		expected = 1;
+		fake = {
+			valueOf: function() {
+				return this;
+			},
+			then: function(cb) {
+				return cb(expected);
+			}
+		};
+
+		when.resolve(fake).then(
+			function(value) {
+				assert.equals(value, expected);
+			},
+			fail
+		).always(done);
 	}
+
 
 });
 
