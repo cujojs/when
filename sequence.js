@@ -30,9 +30,9 @@ define(['./when'], function(when) {
 	};
 
 });
-})(typeof define == 'function'
+})(typeof define == 'function' && define.amd
 	? define
-	: function (deps, factory) { typeof module != 'undefined'
+	: function (deps, factory) { typeof exports == 'object'
 	? (module.exports = factory(require('./when')))
 	: (this.when_sequence = factory(this.when));
 }
