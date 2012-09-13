@@ -356,9 +356,9 @@ define(function() { "use strict";
 			// Replace _then with one that directly notifies with the result.
 			_then = completed.then;
 
-			// Replace complete so that this Deferred can only be completed
-			// once. Also Replace _progress, so that subsequent attempts to issue
-			// progress throw.
+			// Replace _resolve so that this Deferred can only be completed
+			// once. Also make _progress a noop, since progress can no longer
+			// be issued for the resolved promise.
 			_resolve = resolve;
 			_progress = noop;
 
@@ -724,9 +724,9 @@ define(function() { "use strict";
 
 	return freeze(when);
 });
-})(typeof define == 'function'
+})(typeof define == 'function' && define.amd
 	? define
-	: function (factory) { typeof exports != 'undefined'
+	: function (factory) { typeof exports == 'module'
 		? (module.exports = factory())
 		: (this.when      = factory());
 	}
