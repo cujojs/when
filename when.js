@@ -27,7 +27,6 @@ define(['module'], function(module) { "use strict";
 	} else {
 		freeze = !(global && global.when_config && global.when_config.paranoid === false);
 	}
-	console.log(freeze, global, global.when_config);
 
 	// If secure and Object.freeze is available, use it.
 	freeze = (freeze && Object.freeze) || function(o) { return o; };
