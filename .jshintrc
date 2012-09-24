@@ -19,7 +19,8 @@
 
     "predef"        : [  // Custom globals.
         "define",
-        "module"
+        "module",
+        "system"
     ],
 
 
