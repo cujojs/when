@@ -7,14 +7,33 @@
  * Licensed under the MIT License at:
  * http://www.opensource.org/licenses/mit-license.php
  *
- * @version 1.4.4
+ * @version 1.5.0
  */
 
-(function(define) {
-define(function() { "use strict";
-	var freeze, reduceArray, slice, undef;
+(function(define, global) {
+define(['module'], function(module) { "use strict";
+	var freeze, reduceArray, slice, envFreeze, falseRx, undef;
 
+	falseRx = /^false$/i;
+	envFreeze = 'WHEN_PARANOID';
+
+	// Do we need to be extra-secure? i.e. freeze promise, etc.
+	if(module && typeof module.config === 'function') {
+		freeze = module.config().paranoid !== false;
+	} else if(typeof process == 'object') {
+		freeze = !falseRx.test(process.env[envFreeze]);
+	} else if(typeof system == 'object') {
+		freeze = !falseRx.test(system.env[envFreeze]);
+	} else {
+		freeze = !(global && global.when_config && global.when_config.paranoid === false);
+	}
+
+	// If secure and Object.freeze is available, use it.
+	freeze = (freeze && Object.freeze) || function(o) { return o; };
+
+	//
 	// Public API
+	//
 
 	when.defer     = defer;     // Create a deferred
 	when.resolve   = resolve;   // Create a resolved promise
@@ -125,12 +144,6 @@ define(function() { "use strict";
 			return rejected(value);
 		});
 	}
-
-	/**
-	 * Object.freeze
-	 * @private
-	 */
-	freeze = Object.freeze || function(o) { return o; };
 
 	/**
 	 * Trusted Promise constructor.  A Promise created from this constructor is
@@ -726,9 +739,10 @@ define(function() { "use strict";
 });
 })(typeof define == 'function' && define.amd
 	? define
-	: function (factory) { typeof exports == 'object'
+	: function (deps, factory) { typeof exports === 'object'
 		? (module.exports = factory())
 		: (this.when      = factory());
-	}
+	},
 	// Boilerplate for AMD, Node, and browser global
+	this
 );

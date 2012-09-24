@@ -17,12 +17,13 @@ API
 1. [Higher order operations](#higher-order-operations)
 	* [when.map](#whenmap)
 	* [when.reduce](#whenreduce)
-1. [Timed Promises](#timed-promises)
+1. [Timed promises](#timed-promises)
 	* [when/delay](#whendelay)
 	* [when/timeout](#whentimeout)
 1. [Helpers](#helpers)
 	* [when/apply](#whenapply)
-
+1. [Configuration](#configuration)
+	* [Paranoid mode](#paranoid-mode)
 
 when()
 ------
@@ -271,7 +272,7 @@ Where:
 * `index` the *basis* of `nextItem` ... practically speaking, this is the array index of the promiseOrValue corresponding to `nextItem`
 * `total` is the total number of items in `promisesOrValues`
 
-Timed Promises
+Timed promises
 ==============
 
 when/delay
@@ -344,3 +345,70 @@ when.all(arrayOfPromisesOrValues, apply(functionThatAcceptsMultipleArgs));
 ```
 
 More when/apply [examples on the wiki](https://github.com/cujojs/when/wiki/when-apply).
+
+# Configuration
+
+## Paranoid mode
+
+By default, the `when` module, and all when.js promises are *frozen* (in enviroments that provide `Object.freeze()`).  This prevents promise consumers from interfering with one another (for example, by replacing a promise's `.then()` method to intercept results), or from modifying `when()`, `when.defer()`, or any other method.  It means that when you write code that depends on when.js, you get what you expect.
+
+However, you may not need that level of paranoia.  For example, you may trust all the code in your application, either because you or your team members wrote it all, or it comes from other trustworthy sources.
+
+## Turning off Paranoid mode
+
+**IMPORTANT:** This is a tradeoff of safety vs. performance.  Please choose carefully for your particular situation!  This setting is checked *once at load time, and never again*.  So, once paranoid mode is enabled (default), or disabled, it cannot be changed at runtime.
+
+Due to a [major performance degredation of frozen objects in v8](http://stackoverflow.com/questions/8435080/any-performance-benefit-to-locking-down-javascript-objects), you can turn off when.js's default paranoid setting, and get a significant speed boost.  In some tests, we've seen as much as a 4x increase *just by not calling Object.freeze*.
+
+Use one of the following to turn off paranoid mode, so that when.js no longer calls `Object.freeze` on any of its internal data structures.
+
+### AMD
+
+Use a module configuration to turn off paranoid mode.  Your AMD loader configuration syntax may vary.  Here are examples for curl.js and RequireJS:
+
+#### curl.js
+
+```js
+{
+	baseUrl: //...
+	packages: [
+		{ name: 'when', location: 'path/to/when', main: 'when',
+			config: {
+				paranoid: false
+			}
+		}
+	]
+}
+```
+
+#### RequireJS
+
+```js
+{
+	baseUrl: //...
+	config: {
+		when: {
+			paranoid: false
+		},
+		// Other module configs ...
+	}
+}
+```
+
+See the [module config section](http://requirejs.org/docs/api.html#config-moduleconfig) of the RequireJS docs for more info and examples.
+
+### Node and RingoJS
+
+Set the `WHEN_PARANOID` environment variable to "false".  For example, depending on your shell:
+
+`export WHEN_PARANOID=false`
+
+**NOTE:** It *must* be the string literal "false".  No other value (0, "no", etc.) will work.
+
+### Script Tag
+
+*Before* loading `when.js` Set `window.when_config.paranoid` to `false`:
+
+```js
+window.when_config = { paranoid: false };
+```

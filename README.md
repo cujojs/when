@@ -1,35 +1,21 @@
 # when.js [![Build Status](https://secure.travis-ci.org/cujojs/when.png)](http://travis-ci.org/cujojs/when)
 
-A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining and chaining, and has a robust unit test suite.
+A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining, mapping and reducing, and has a robust unit test suite.
 
-It's **just over 1k** when compiled with Google Closure (w/advanced optimizations) and gzipped.
+It's **about 1.3k** when compiled with Google Closure (w/advanced optimizations) and gzipped, and has no other dependencies.
 
 when.js was derived from the async core of [wire.js](https://github.com/cujojs/wire).
 
 What's New?
 ===========
 
+### 1.5.0
+
+* Due to this [v8 performance problem with Object.freeze](http://stackoverflow.com/questions/8435080/any-performance-benefit-to-locking-down-javascript-objects), added configuration options for disabling [paranoid mode](when/blob/master/docs/api.md#paranoid-mode).  If you don't need the added safety, this can provide a significant performance gain in v8.
+
 ### 1.4.4
 
 * Change UMD boilerplate to check for `exports` to avoid a problem with QUnit.  See [#54](https://github.com/cujojs/when/issues/54) for more info.
-
-### 1.4.3
-
-* Fix for infinite promise coercion between when.js and Q (See [#50](https://github.com/cujojs/when/issues/50)). Thanks [@kriskowal](https://github.com/kriskowal) and [@domenic](https://github.com/domenic)
-
-### 1.4.2
-
-* Fix for IE8 infinite recursion (See [#49](https://github.com/cujojs/when/issues/49))
-
-### 1.4.1
-
-* Code and unit test cleanup and streamlining--no functional changes.
-
-### 1.4.0
-
-* Create a resolved promise: `when.resolve(value)` creates a resolved promise for `value`. See [API docs](when/blob/master/docs/api.md#whenresolve).
-* Resolve/reject return something useful: `deferred.resolve` and `deferred.reject` now return a promise for the fulfilled or rejected value.
-* Resolve a deferred with another promise: `deferred.resolve(promise)` - when `promise` resolves or rejects, so will `deferred`.
 
 [Full Changelog](https://github.com/cujojs/when/wiki/Changelog)
 
