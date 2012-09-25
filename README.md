@@ -11,9 +11,9 @@ What's New?
 
 ### 1.5.0
 
-* Due to this [v8 performance problem with Object.freeze](http://stackoverflow.com/questions/8435080/any-performance-benefit-to-locking-down-javascript-objects), added configuration options for disabling [paranoid mode](when/blob/master/docs/api.md#paranoid-mode).  If you don't need the added safety, this can provide a significant performance gain in v8.
-* Performance optimizations for `when.map`, up to 2x in some cases.
 * New task execution and concurrency management: `when/pipeline`, `when/sequence`, and `when/parallel`.
+* Performance optimizations for `when.all` and `when.map`, up to 2x in some cases.
+* Options for disabling [paranoid mode](when/blob/master/docs/api.md#paranoid-mode) that provides a significant performance gain in v8 (e.g. Node and Chrome). See this [v8 performance problem with Object.freeze](http://stackoverflow.com/questions/8435080/any-performance-benefit-to-locking-down-javascript-objects) for more info.
 
 ### 1.4.4
 
