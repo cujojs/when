@@ -20,6 +20,10 @@ API
 1. [Timed promises](#timed-promises)
 	* [when/delay](#whendelay)
 	* [when/timeout](#whentimeout)
+1. [Concurrency](#concurrency)
+	* [when/sequence](#whensequence)
+	* [when/pipeline](#whenpipeline)
+	* [when/parallel](#whenparallel)
 1. [Helpers](#helpers)
 	* [when/apply](#whenapply)
 1. [Configuration](#configuration)
@@ -319,6 +323,40 @@ timed = timeout(anotherPromise, 5000);
 ```
 
 More when/timeout [examples on the wiki](https://github.com/cujojs/when/wiki/when-timeout)
+
+# Concurrency
+
+## when/sequence
+
+```js
+var resultsPromise = when.sequence(arrayOfTasks, arg1, arg2 /*, ... */);
+```
+
+Run an array of tasks in sequence, without overlap.  Each task will be called with the arguments passed to `when.sequence()`, and each may return a promise or a value.
+
+When all tasks have completed, the returned promise will resolve to an array containing the result of each task at the corresponding array position.  The returned promise will reject when any task throws or returns a rejection.
+
+## when/pipeline
+
+```js
+var resultsPromise = when.pipeline(arrayOfTasks, arg1, arg2 /*, ... */);
+```
+
+Run an array of tasks in sequence, without overlap, similarly to [when/sequence](#whensequence).  The *first task* (e.g. `arrayOfTasks[0]`) will be called with the arguments passed to `when.pipeline()`, and each subsequence task will be called with the result of the previous task.
+
+Again, each may return a promise or a value.  When a task returns a promise, the fully resolved value will be passed to the next task.
+
+When all tasks have completed, the returned promise will resolve to the result of the last task.  The returned promise will reject when any task throws or returns a rejection.
+
+## when/parallel
+
+```js
+var resultsPromise = when.parallel(arrayOfTasks, arg1, arg2 /*, ... */);
+```
+
+Run an array of tasks in "parallel".  The tasks are allowed to execute in any order, and may interleave if they are asynchronous.Each task will be called with the arguments passed to `when.parallel()`, and each may return a promise or a value.
+
+When all tasks have completed, the returned promise will resolve to an array containing the result of each task at the corresponding array position.  The returned promise will reject when any task throws or returns a rejection.
 
 Helpers
 =======
