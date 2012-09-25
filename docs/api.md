@@ -368,7 +368,7 @@ parallel = require('when/parallel');
 resultsPromise = parallel(arrayOfTasks, arg1, arg2 /*, ... */);
 ```
 
-Run an array of tasks in "parallel".  The tasks are allowed to execute in any order, and may interleave if they are asynchronous.Each task will be called with the arguments passed to `when.parallel()`, and each may return a promise or a value.
+Run an array of tasks in "parallel".  The tasks are allowed to execute in any order, and may interleave if they are asynchronous. Each task will be called with the arguments passed to `when.parallel()`, and each may return a promise or a value.
 
 When all tasks have completed, the returned promise will resolve to an array containing the result of each task at the corresponding array position.  The returned promise will reject when any task throws or returns a rejection.
 
