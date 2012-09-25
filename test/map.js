@@ -1,11 +1,12 @@
 (function(buster, when, delay) {
 
-var assert, fail, resolved;
+var assert, fail, resolved, reject;
 
 assert = buster.assert;
 fail = buster.assertions.fail;
 
 resolved = when.resolve;
+reject = when.reject;
 
 function mapper(val) {
 	return val * 2;
@@ -83,11 +84,22 @@ buster.testCase('when.map', {
 			},
 			fail
 		).always(done);
-	}
+	},
+
+	'should reject when input contains rejection': function(done) {
+		var input = [resolved(1), reject(2), resolved(3)];
+		when.map(input, mapper).then(
+			fail,
+			function(result) {
+				assert.equals(result, 2);
+			}
+		).always(done);
+	},
+
 
 });
 })(
 	this.buster     || require('buster'),
-	this.when       || require('../debug'),
+	this.when       || require('../when'),
 	this.when_delay || require('../delay')
 );

@@ -1,11 +1,12 @@
 (function(buster, when, delay) {
 
-var assert, fail, resolved;
+var assert, fail, resolved, reject;
 
 assert = buster.assert;
 fail = buster.assertions.fail;
 
 resolved = when.resolve;
+reject = when.reject;
 
 function plus(sum, val) {
 	return sum + val;
@@ -90,6 +91,16 @@ buster.testCase('when.reduce', {
 				assert.equals(result, 1);
 			},
 			fail
+		).always(done);
+	},
+
+	'should reject when input contains rejection': function(done) {
+		var input = [resolved(1), reject(2), resolved(3)];
+		when.reduce(input, plus, resolved(1)).then(
+			fail,
+			function(result) {
+				assert.equals(result, 2);
+			}
 		).always(done);
 	},
 
