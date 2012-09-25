@@ -29,7 +29,7 @@ define(['module'], function(module) { "use strict";
 	}
 
 	// If secure and Object.freeze is available, use it.
-	freeze = (freeze && Object.freeze) || function(o) { return o; };
+	freeze = (freeze && Object.freeze) || identity;
 
 	//
 	// Public API
@@ -381,7 +381,6 @@ define(['module'], function(module) { "use strict";
 			}
 
 			// Free progressHandlers array since we'll never issue progress events
-			// for this promise again now that it's completed
 			progressHandlers = listeners = undef;
 
 			return completed;
@@ -456,7 +455,6 @@ define(['module'], function(module) { "use strict";
 					}
 				};
 
-				// TODO: Replace while with forEach
 				for(i = 0; i < len; ++i) {
 					if(i in promisesOrValues) {
 						when(promisesOrValues[i], resolve, reject, progress);
@@ -464,7 +462,7 @@ define(['module'], function(module) { "use strict";
 				}
 			}
 
-			return when(deferred, callback, errback, progressHandler);
+			return deferred.then(callback, errback, progressHandler);
 		});
 	}
 
@@ -482,17 +480,8 @@ define(['module'], function(module) { "use strict";
 	 * @returns {Promise}
 	 */
 	function all(promisesOrValues, callback, errback, progressHandler) {
-
 		checkCallbacks(1, arguments);
-
-		return when(promisesOrValues, function(promisesOrValues) {
-			return _reduce(promisesOrValues, reduceIntoArray, []);
-		}).then(callback, errback, progressHandler);
-	}
-
-	function reduceIntoArray(current, val, i) {
-		current[i] = val;
-		return current;
+		return map(promisesOrValues, identity).then(callback, errback, progressHandler);
 	}
 
 	/**
@@ -533,41 +522,43 @@ define(['module'], function(module) { "use strict";
 	 */
 	function map(promise, mapFunc) {
 		return when(promise, function(array) {
-			return _map(array, mapFunc);
-		});
-	}
+			var results, len, toResolve, resolve, reject, i, d;
 
-	/**
-	 * Private map helper to map an array of promises
-	 * @private
-	 *
-	 * @param promisesOrValues {Array}
-	 * @param mapFunc {Function}
-	 * @return {Promise}
-	 */
-	function _map(promisesOrValues, mapFunc) {
+			// Since we know the resulting length, we can preallocate the results
+			// array to avoid array expansions.
+			toResolve = len = array.length >>> 0;
+			results = [];
+			d = defer();
 
-		var results, len, i;
+			if(!toResolve) {
+				d.resolve(results);
+			} else {
+				
+				reject = d.reject;
+				resolve = function resolveOne(item, i) {
+					when(item, mapFunc).then(function(mapped) {
+						results[i] = mapped;
 
-		// Since we know the resulting length, we can preallocate the results
-		// array to avoid array expansions.
-		len = promisesOrValues.length >>> 0;
-		results = new Array(len);
+						if(!--toResolve) {
+							d.resolve(results);
+						}
+					}, reject);
+				};
 
-		// Since mapFunc may be async, get all invocations of it into flight
-		// asap, and then use reduce() to collect all the results
-		for(i = 0; i < len; i++) {
-			if(i in promisesOrValues) {
-				results[i] = when(promisesOrValues[i], mapFunc);
+				// Since mapFunc may be async, get all invocations of it into flight
+				for(i = 0; i < len; i++) {
+					if(i in array) {
+						resolve(array[i], i);
+					} else {
+						--toResolve;
+					}
+				}
+
 			}
-		}
 
-		// Could use all() here, but that would result in another array
-		// being allocated, i.e. map() would end up allocating 2 arrays
-		// of size len instead of just 1.  Since all() uses reduce()
-		// anyway, avoid the additional allocation by calling reduce
-		// directly.
-		return _reduce(results, reduceIntoArray, results);
+			return d.promise;
+
+		});
 	}
 
 	/**
@@ -583,48 +574,29 @@ define(['module'], function(module) { "use strict";
 	 * @param reduceFunc {Function} reduce function reduce(currentValue, nextValue, index, total),
 	 *      where total is the total number of items being reduced, and will be the same
 	 *      in each call to reduceFunc.
-	 * @param initialValue starting value, or a {@link Promise} for the starting value
+	 * @param [initialValue] {*} starting value, or a {@link Promise} for the starting value
 	 * @returns {Promise} that will resolve to the final reduced value
 	 */
-	function reduce(promise, reduceFunc, initialValue) {
+	function reduce(promise, reduceFunc /*, initialValue */) {
 		var args = slice.call(arguments, 1);
+		
 		return when(promise, function(array) {
-			return _reduce.apply(undef, [array].concat(args));
-		});
-	}
+			var total;
 
-	/**
-	 * Private reduce to reduce an array of promises
-	 * @private
-	 *
-	 * @param promisesOrValues {Array}
-	 * @param reduceFunc {Function}
-	 * @param initialValue {*}
-	 * @return {Promise}
-	 */
-	function _reduce(promisesOrValues, reduceFunc, initialValue) {
+			total = array.length;
 
-		var total, args;
-
-		total = promisesOrValues.length;
-
-		// Wrap the supplied reduceFunc with one that handles promises and then
-		// delegates to the supplied.
-		args = [
-			function (current, val, i) {
+			// Wrap the supplied reduceFunc with one that handles promises and then
+			// delegates to the supplied.
+			args[0] = function (current, val, i) {
 				return when(current, function (c) {
 					return when(val, function (value) {
 						return reduceFunc(c, value, i, total);
 					});
 				});
-			}
-		];
+			};
 
-		if (arguments.length > 2) {
-			args.push(initialValue);
-		}
-
-		return reduceArray.apply(promisesOrValues, args);
+			return reduceArray.apply(array, args);
+		});
 	}
 
 	/**
@@ -734,6 +706,10 @@ define(['module'], function(module) { "use strict";
 
 			return reduced;
 		};
+
+	function identity(x) {
+		return x;
+	}
 
 	return freeze(when);
 });
