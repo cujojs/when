@@ -2,7 +2,7 @@
 
 A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining, mapping and reducing, and has a robust unit test suite.
 
-It's **about 1.3k** when compiled with Google Closure (w/advanced optimizations) and gzipped, and has no other dependencies.
+It's **under 1.3k** when compiled with Google Closure (w/advanced optimizations) and gzipped, and has no dependencies.
 
 when.js was derived from the async core of [wire.js](https://github.com/cujojs/wire).
 
