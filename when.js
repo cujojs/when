@@ -711,7 +711,7 @@ define(['module'], function(module) { "use strict";
 		return x;
 	}
 
-	return freeze(when);
+	return when;
 });
 })(typeof define == 'function' && define.amd
 	? define

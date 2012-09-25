@@ -22,9 +22,10 @@ function FakePromise(val) {
 }
 
 buster.testCase('when', {
-	'should be frozen': function() {
-		assert(Object.isFrozen(when));
-	},
+	// TODO: Reinstate for 2.0
+	// 'should be frozen': function() {
+	// 	assert(Object.isFrozen(when));
+	// },
 
 	'should return a promise for a value': function() {
 		var result = when(1);
