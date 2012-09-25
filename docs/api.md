@@ -326,10 +326,16 @@ More when/timeout [examples on the wiki](https://github.com/cujojs/when/wiki/whe
 
 # Concurrency
 
+These modules allow you to execute tasks in series or parallel.  Each module takes an Array of task functions (or a *promise* for an Array), executes the tasks, and returns a promise that resolves when all the tasks have completed.
+
 ## when/sequence
 
 ```js
-var resultsPromise = when.sequence(arrayOfTasks, arg1, arg2 /*, ... */);
+var sequence, resultsPromise;
+
+sequence = require('when/sequence');
+
+resultsPromise = sequence(arrayOfTasks, arg1, arg2 /*, ... */);
 ```
 
 Run an array of tasks in sequence, without overlap.  Each task will be called with the arguments passed to `when.sequence()`, and each may return a promise or a value.
@@ -339,7 +345,11 @@ When all tasks have completed, the returned promise will resolve to an array con
 ## when/pipeline
 
 ```js
-var resultsPromise = when.pipeline(arrayOfTasks, arg1, arg2 /*, ... */);
+var pipeline, resultsPromise;
+
+pipeline = require('when/pipeline');
+
+resultsPromise = pipeline(arrayOfTasks, arg1, arg2 /*, ... */);
 ```
 
 Run an array of tasks in sequence, without overlap, similarly to [when/sequence](#whensequence).  The *first task* (e.g. `arrayOfTasks[0]`) will be called with the arguments passed to `when.pipeline()`, and each subsequence task will be called with the result of the previous task.
@@ -351,7 +361,11 @@ When all tasks have completed, the returned promise will resolve to the result o
 ## when/parallel
 
 ```js
-var resultsPromise = when.parallel(arrayOfTasks, arg1, arg2 /*, ... */);
+var parallel, resultsPromise;
+
+parallel = require('when/parallel');
+
+resultsPromise = parallel(arrayOfTasks, arg1, arg2 /*, ... */);
 ```
 
 Run an array of tasks in "parallel".  The tasks are allowed to execute in any order, and may interleave if they are asynchronous.Each task will be called with the arguments passed to `when.parallel()`, and each may return a promise or a value.

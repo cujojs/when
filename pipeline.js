@@ -17,20 +17,30 @@ define(['./when'], function(when) {
 	 * Run array of tasks in a pipeline where the next
 	 * tasks receives the result of the previous.  The first task
 	 * will receive the initialArgs as its argument list.
-	 * @param tasks {Array} array of task functions
+	 * @param tasks {Array|Promise} array or promise for array of task functions
 	 * @param [initialArgs...] {*} arguments to be passed to the first task
 	 * @return {Promise} promise for return value of the final task
 	 */
 	return function pipeline(tasks /* initialArgs... */) {
-		var initialArgs = Array.prototype.slice.call(arguments, 1);
+		var initialArgs, runTask;
+
+		initialArgs = Array.prototype.slice.call(arguments, 1);
+
+		// Self-optimizing function to run first task with multiple
+		// args using apply, but subsequence tasks via direct invocation
+		runTask = function(task, args) {
+			runTask = function(task, arg) {
+				return task(arg);
+			};
+			
+			return task.apply(null, args);
+		};
+
 		return when.reduce(tasks,
 			function(args, task) {
-				return [task.apply(null, args)];
-			}, initialArgs)
-		.then(
-			function(result) {
-				return result[0];
-			}
+				return runTask(task, args);
+			},
+			initialArgs
 		);
 	};
 

@@ -14,7 +14,7 @@ define(['./when'], function(when) {
 
 	/**
 	 * Run array of tasks in sequence with no overlap
-	 * @param tasks {Array} array of task functions
+	 * @param tasks {Array|Promise} array or promiseForArray of task functions
 	 * @param [args] {*} arguments to be passed to all tasks
 	 * @return {Promise} promise for an array containing
 	 * the result of each task in the array position corresponding
