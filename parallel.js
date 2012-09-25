@@ -33,7 +33,7 @@ define(['./when'], function(when) {
 	: function (deps, factory) { typeof exports == 'object'
 		? (module.exports = factory(require('./when')))
 		: (this.when_parallel = factory(this.when));
-}
+	}
 	// Boilerplate for AMD, Node, and browser global
 );
 
