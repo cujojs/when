@@ -4,7 +4,8 @@
  * pipeline.js
  *
  * Run a set of task functions in sequence, passing the result
- * of the previous as an argument to the next
+ * of the previous as an argument to the next.  Like a shell
+ * pipeline, e.g. `cat file.txt | grep 'foo' | sed -e 's/foo/bar/g'
  *
  * @author brian@hovercraftstudios.com
  */

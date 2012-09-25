@@ -3,7 +3,8 @@
 /**
  * sequence.js
  *
- * Run a set of task functions in sequence
+ * Run a set of task functions in sequence.  All tasks will
+ * receive the same args.
  *
  * @author brian@hovercraftstudios.com
  */

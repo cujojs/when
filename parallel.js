@@ -3,7 +3,8 @@
 /**
  * parallel.js
  *
- * Run a set of task functions in parallel
+ * Run a set of task functions in parallel.  All tasks will
+ * receive the same args
  *
  * @author brian@hovercraftstudios.com
  */
