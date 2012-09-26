@@ -195,7 +195,7 @@ define(['./when'], function(when) {
 				alreadyResolved();
 			}
 
-			return origProgress.apply(undef, arguments);
+			return origProgress(update);
 		};
 
 		origResolve = d.resolver.resolve;
@@ -239,7 +239,7 @@ define(['./when'], function(when) {
 
 			var id = d.id + '>' + (++promiseId);
 
-			var p = origThen.apply(null, wrapCallbacks(arguments));
+			var p = origThen.apply(null, wrapCallbacks([cb, eb, pb]));
 
 			p.id = id;
 			p = beget(p);

@@ -10,8 +10,8 @@
  * @version 1.5.0
  */
 
-(function(define, global) {
-define(['module'], function(module) { "use strict";
+(function(define, global) { 'use strict';
+define(['module'], function(module) {
 	var freeze, reduceArray, slice, envFreeze, falseRx, undef;
 
 	falseRx = /^false$/i;
@@ -105,7 +105,7 @@ define(['module'], function(module) { "use strict";
 			// Q and When attempting to coerce each-other's promises in an infinite loop.
 			// For promises that do not implement "valueOf", the Object#valueOf is harmless.
 			// See: https://github.com/kriskowal/q/issues/106
-			if (promiseOrValue != null && typeof promiseOrValue.valueOf === "function") {
+			if (promiseOrValue != null && typeof promiseOrValue.valueOf === 'function') {
 				promiseOrValue = promiseOrValue.valueOf();
 			}
 
@@ -659,6 +659,8 @@ define(['module'], function(module) { "use strict";
 	// specifics and edge cases.
 	reduceArray = [].reduce ||
 		function(reduceFunc /*, initialValue */) {
+			/*jshint maxcomplexity: 7*/
+
 			// ES5 dictates that reduce.length === 1
 
 			// This implementation deviates from ES5 spec in the following ways:
@@ -670,7 +672,6 @@ define(['module'], function(module) { "use strict";
 			// This generates a jshint warning, despite being valid
 			// "Missing 'new' prefix when invoking a constructor."
 			// See https://github.com/jshint/jshint/issues/392
-			/*jshint newcap: false */
 			arr = Object(this);
 			len = arr.length >>> 0;
 			args = arguments;
