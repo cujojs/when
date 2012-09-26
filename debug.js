@@ -62,8 +62,15 @@ define(['./when'], function(when) {
 	 * @return p
 	 */
 	function debugPromise(p) {
-		// TODO: Need to find a way for promises returned by .then()
-		// to also be debug promises.
+		var origThen, newPromise;
+
+		origThen = p.then;
+		newPromise = beget(p);
+
+		newPromise.then = function(cb, eb, pb) {
+			return debugPromise(origThen.apply(p, wrapCallbacks([cb, eb, pb])));
+		};
+
 		p.then(
 			undef,
 			function(err) {
@@ -77,7 +84,7 @@ define(['./when'], function(when) {
 			}
 		);
 
-		return p;
+		return newPromise;
 	}
 
 	function wrapCallback(cb) {
@@ -179,7 +186,8 @@ define(['./when'], function(when) {
 		// Promise and resolver are frozen, so have to delegate
 		// in order to setup toString() on promise, resolver,
 		// and deferred
-		d.promise = beget(d.promise);
+		origThen = d.promise.then;
+		d.promise = debugPromise(d.promise);
 		d.promise.toString = function() {
 			return toString('Promise', id, status, value);
 		};
@@ -234,15 +242,13 @@ define(['./when'], function(when) {
 		// by .then().  Also need to find a way to extend the id in a way that
 		// makes it obvious the returned promise is NOT the original, but is
 		// related to it--it's downstream in the promise chain.
-		origThen = d.promise.then;
 		d.then = d.promise.then = function(cb, eb, pb) {
 
 			var id = d.id + '>' + (++promiseId);
 
-			var p = origThen.apply(null, wrapCallbacks([cb, eb, pb]));
+			var p = origThen.apply(d.promise, [cb, eb, pb]);
 
 			p.id = id;
-			p = beget(p);
 			p.toString = function() {
 				return toString('Promise', p.id, status, value);
 			};
