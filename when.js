@@ -152,7 +152,9 @@ define(['module'], function(module) {
 	 * @constructor
 	 * @name Promise
 	 */
-	function Promise() {}
+	function Promise(then) {
+		this.then = then;
+	}
 
 	Promise.prototype = freeze({
 		/**
@@ -187,16 +189,13 @@ define(['module'], function(module) {
 	 * @return {Promise}
 	 */
 	function resolved(value) {
-
-		var p = new Promise();
-
-		p.then = function(callback) {
+		var p = new Promise(function(callback) {
 			try {
 				return resolve(callback ? callback(value) : value);
 			} catch(e) {
 				return rejected(e);
 			}
-		};
+		});
 
 		return freeze(p);
 	}
@@ -210,17 +209,14 @@ define(['module'], function(module) {
 	 * @return {Promise}
 	 */
 	function rejected(reason) {
-
-		var p = new Promise();
-
-		p.then = function(callback, errback) {
+		var p = new Promise(function(callback, errback) {
 			try {
 				return errback ? resolve(errback(reason)) : rejected(reason);
 			} catch(e) {
 				return rejected(e);
 			}
-		};
-
+		});
+		
 		return freeze(p);
 	}
 
@@ -236,88 +232,37 @@ define(['module'], function(module) {
 	 * @return {Deferred}
 	 */
 	function defer() {
-		var deferred, promise, resolver, listeners, progressHandlers,
+		var deferred, promise, listeners, progressHandlers,
 			_then, _progress, _resolve;
 
-		listeners = [];
-		progressHandlers = [];
+		/**
+		 * The promise for the new deferred
+		 * @type {Promise}
+		 */
+		promise = new Promise(then);
 
 		/**
 		 * The full Deferred object, with {@link Promise} and {@link Resolver} parts
 		 * @class Deferred
 		 * @name Deferred
 		 */
-		deferred = {};
+		deferred = {
+			then:     then,
+			resolve:  promiseResolve,
+			reject:   promiseReject,
+			progress: promiseProgress,
+			
+			promise:  freeze(promise),
 
-		/**
-		 * The {@link Resolver} for this {@link Deferred}
-		 * @memberOf Deferred
-		 * @name resolver
-		 * @class Resolver
-		 */
-		resolver = {};
-
-		/**
-		 * The {@link Promise} for this {@link Deferred}
-		 * @memberOf Deferred
-		 * @name promise
-		 * @type {Promise}
-		 */
-		promise = new Promise();
-
-		/**
-		 * Registers a handler for this {@link Deferred}'s {@link Promise}.  Even though all arguments
-		 * are optional, each argument that *is* supplied must be null, undefined, or a Function.
-		 * Any other value will cause an Error to be thrown.
-		 * @memberOf Promise
-		 * @name then
-		 * @param [callback] {Function} resolution handler
-		 * @param [errback] {Function} rejection handler
-		 * @param [progback] {Function} progress handler
-		 * @throw {Error} if any argument is not null, undefined, or a Function
-		 */
-		promise.then = deferred.then = function then(callback, errback, progback) {
-			return _then(callback, errback, progback);
+			resolver: freeze({
+				resolve:  promiseResolve,
+				reject:   promiseReject,
+				progress: promiseProgress
+			})
 		};
 
-		deferred.promise = freeze(promise);
-
-		/**
-		 * Resolves this {@link Deferred}'s {@link Promise} with val as the
-		 * resolution value.
-		 * @memberOf Resolver
-		 * @param val {*|Promise} If val is anything but a Promise, resolves this
-		 *  Deferred's Promise with val.  If val is a Promise, puts this Deferred's
-		 *  Promise into the same state as val.  For example, if val is a rejected
-		 *  promise, this Deferred will become rejected.
-		 * @return {Promise} a promise for the resolution value
-		 */
-		resolver.resolve = deferred.resolve = function promiseResolve(val) {
-			return _resolve(val);
-		};
-
-		/**
-		 * Rejects this {@link Deferred}'s {@link Promise} with err as the
-		 * reason.
-		 * @memberOf Resolver
-		 * @param err anything
-		 * @return {Promise} a promise for the rejection value
-		 */
-		resolver.reject = deferred.reject = function promiseReject(err) {
-			return _resolve(rejected(err));
-		};
-
-		/**
-		 * Emits a progress update to all progress observers registered with
-		 * this {@link Deferred}'s {@link Promise}
-		 * @memberOf Resolver
-		 * @param update anything
-		 */
-		resolver.progress = deferred.progress = function promiseProgress(update) {
-			_progress(update);
-		};
-
-		deferred.resolver = freeze(resolver);
+		listeners = [];
+		progressHandlers = [];
 
 		/**
 		 * Pre-resolution then() that adds the supplied callback, errback, and progback
@@ -387,6 +332,40 @@ define(['module'], function(module) {
 		};
 
 		return deferred;
+
+		/**
+		 * Wrapper to allow _then to be replaced safely
+		 * @param [callback] {Function} resolution handler
+		 * @param [errback] {Function} rejection handler
+		 * @param [progback] {Function} progress handler
+		 * @return {Promise} new Promise
+		 * @throws {Error} if any argument is not null, undefined, or a Function
+		 */
+		function then(callback, errback, progback) {
+			return _then(callback, errback, progback);
+		}
+
+		/**
+		 * Wrapper to allow _resolve to be replaced
+		 */
+		function promiseResolve(val) {
+			return _resolve(val);
+		}
+
+		/**
+		 * Wrapper to allow _resolve to be replaced
+		 */
+		function promiseReject(err) {
+			return _resolve(rejected(err));
+		}
+
+		/**
+		 * Wrapper to allow _progress to be replaced
+		 * @param  {*} update progress update
+		 */
+		function promiseProgress(update) {
+			_progress(update);
+		}
 	}
 
 	/**
