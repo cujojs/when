@@ -7,7 +7,7 @@
  * Licensed under the MIT License at:
  * http://www.opensource.org/licenses/mit-license.php
  *
- * @version 1.5.0
+ * @version 1.5.1
  */
 
 (function(define, global) { 'use strict';

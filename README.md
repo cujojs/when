@@ -9,6 +9,11 @@ when.js was derived from the async core of [wire.js](https://github.com/cujojs/w
 What's New?
 ===========
 
+### 1.5.1
+
+* Performance optimization for [when.defer](when/blob/master/docs/api.md#whendefer), up to 1.5x in some cases.
+* [when/debug](when/blob/master/docs/api.md#whendebug) can now log exceptions and rejections in deeper promise chains, even when the promises involved aren't when.js promises.
+
 ### 1.5.0
 
 * New task execution and concurrency management: [when/sequence](when/blob/master/docs/api.md#whensequence), [when/pipeline](when/blob/master/docs/api.md#whenpipeline), and [when/parallel](when/blob/master/docs/api.md#whenparallel).
