@@ -43,11 +43,12 @@
 (function(define) {
 define(['./when'], function(when) {
 
-	var promiseId, freeze, pending, exceptionsToRethrow, undef;
+	var promiseId, freeze, pending, exceptionsToRethrow, own, undef;
 
 	promiseId = 0;
 	freeze = Object.freeze || function(o) { return o; };
 	pending = {};
+	own = Object.prototype.hasOwnProperty;
 
 	exceptionsToRethrow = {
 		RangeError: 1,
@@ -57,107 +58,65 @@ define(['./when'], function(when) {
 	};
 
 	/**
+	 * Replacement for when() that sets up debug logging on the
+	 * returned promise.
+	 */
+	function whenDebug() {
+		return debugPromise(when.apply(null, wrapCallbacks(arguments)));
+	}
+
+	/**
 	 * Setup debug output handlers for the supplied promise.
 	 * @param p {Promise} A trusted (when.js) promise
 	 * @return p
 	 */
-	function debugPromise(p) {
+	function debugPromise(p, id) {
 		var origThen, newPromise;
+
+		if(arguments.length < 2) {
+			if (own.call(p, 'id')) {
+				id = p.id;
+			} else {
+				id = promiseId++;
+			}
+		}
 
 		origThen = p.then;
 		newPromise = beget(p);
+		newPromise.id = id;
+
+		newPromise.toString = function() {
+			return toString('Promise', id);
+		};
 
 		newPromise.then = function(cb, eb, pb) {
-			return debugPromise(origThen.apply(p, wrapCallbacks([cb, eb, pb])));
+			var nextId, nextPromise;
+
+			nextId = id + '>' + promiseId++;
+			nextPromise = debugPromise(origThen.apply(p, wrapCallbacks([cb, eb, pb])));
+
+			return debugPromise(origThen.apply(p, wrapCallbacks([cb, eb, pb])), { id: nextId });
 		};
 
 		p.then(
-			undef,
+			function(val) {
+				newPromise.toString = function() {
+					return toString('Promise', id, 'resolved', val);
+				};
+				return val;
+			},
 			function(err) {
-				if(p.id) {
-					console.error(p.toString());
-				} else {
-					console.error('[object Promise] REJECTED:', err);
-				}
+				newPromise.toString = function() {
+					return toString('Promise', id, 'REJECTED', err);
+				};
+
+				console.error(newPromise.toString());
 
 				return when.reject(err);
 			}
 		);
 
 		return newPromise;
-	}
-
-	function wrapCallback(cb) {
-		if(typeof cb != 'function') {
-			return cb;
-		}
-
-		return function(v) {
-			try {
-				return cb(v);
-			} catch(err) {
-				if(err) {
-					if (err.name in exceptionsToRethrow) {
-						setTimeout(function() {
-							throw err;
-						}, 0);
-					} else if (err.stack) {
-						console.error(err.stack);
-					}
-				}
-
-				throw err;
-			}
-		};
-	}
-
-	function wrapCallbacks(callbacks) {
-		var cb, args, len, i;
-
-		args = [];
-
-		for(i = 0, len = callbacks.length; i < len; i++) {
-			args[i] = typeof (cb = callbacks[i]) == 'function'
-				? wrapCallback(cb)
-				: cb;
-		}
-
-		return args;
-	}
-
-	/**
-	 * Helper to form debug string for promises depending on their
-	 * current state
-	 * @param name
-	 * @param id
-	 * @param status
-	 * @param value
-	 */
-	function toString(name, id, status, value) {
-		var s = '[object ' + name + ' ' + id + '] ' + status;
-
-		if(value !== pending) {
-			s += ': ' + value;
-		}
-
-		return s;
-	}
-
-	function F() {}
-	function beget(o) {
-		F.prototype = o;
-		o = new F();
-		F.prototype = undef;
-
-		return o;
-	}
-
-	/**
-	 * Replacement for when() that sets up debug logging on the
-	 * returned promise.
-	 */
-	function whenDebug() {
-		return debugPromise(when.apply(null, wrapCallbacks(arguments)));
 	}
 
 	/**
@@ -187,10 +146,7 @@ define(['./when'], function(when) {
 		// in order to setup toString() on promise, resolver,
 		// and deferred
 		origThen = d.promise.then;
-		d.promise = debugPromise(d.promise);
-		d.promise.toString = function() {
-			return toString('Promise', id, status, value);
-		};
+		d.promise = debugPromise(d.promise, id);
 
 		d.resolver = beget(d.resolver);
 		d.resolver.toString = function() {
@@ -238,54 +194,21 @@ define(['./when'], function(when) {
 			function(e) { status = 'REJECTED'; return when.reject(e); }
 		);
 
-		// Experimenting with setting up ways to also debug promises returned
-		// by .then().  Also need to find a way to extend the id in a way that
-		// makes it obvious the returned promise is NOT the original, but is
-		// related to it--it's downstream in the promise chain.
-		d.then = d.promise.then = function(cb, eb, pb) {
-
-			var id = d.id + '>' + (++promiseId);
-
-			var p = origThen.apply(d.promise, [cb, eb, pb]);
-
-			p.id = id;
-			p.toString = function() {
-				return toString('Promise', p.id, status, value);
-			};
-			
-			// See below. Not sure if debug promises should be frozen
-			return freeze(p);
-		};
-
 		// Add an id to all directly created promises.  It'd be great
 		// to find a way to propagate this id to promise created by .then()
-		d.id = d.promise.id = d.resolver.id = id;
-
-		// Attach debug handlers after the substitute promise
-		// has been setup, so the id can be logged.
-		//debugPromise(d.promise);
+		d.id = d.resolver.id = id;
 
 		// TODO: Should we still freeze these?
 		// Seems safer for now to err on the side of caution and freeze them,
 		// but it could be useful to all them to be modified during debugging.
-		freeze(d.promise);
-		freeze(d.resolver);
+		// freeze(d.promise);
+		// freeze(d.resolver);
 
 		return d;
 	}
 
-	function alreadyResolved() {
-		throw new Error('already completed');
-	}
-
 	whenDebug.defer = deferDebug;
 	whenDebug.isPromise = when.isPromise;
-
-	function makeDebug(name, func) {
-		whenDebug[name] = function() {
-			return debugPromise(func.apply(when, arguments));
-		};
-	}
 
 	// For each method we haven't already replaced, replace it with
 	// one that sets up debug logging on the returned promise
@@ -296,6 +219,76 @@ define(['./when'], function(when) {
 	}
 
 	return whenDebug;
+
+	function makeDebug(name, func) {
+		whenDebug[name] = function() {
+			return debugPromise(func.apply(when, arguments));
+		};
+	}
+
+	function wrapCallback(cb) {
+		if(typeof cb != 'function') {
+			return cb;
+		}
+
+		return function(v) {
+			try {
+				return cb(v);
+			} catch(err) {
+				if(err) {
+					if (err.name in exceptionsToRethrow) {
+						setTimeout(function() {
+							throw err;
+						}, 0);
+					} else if (err.stack) {
+						console.error(err.stack);
+					}
+				}
+
+				throw err;
+			}
+		};
+	}
+
+	function wrapCallbacks(callbacks) {
+		var cb, args, len, i;
+
+		args = [];
+
+		for(i = 0, len = callbacks.length; i < len; i++) {
+			args[i] = typeof (cb = callbacks[i]) == 'function'
+				? wrapCallback(cb)
+				: cb;
+		}
+
+		return args;
+	}
+
+	function toString(name, id, status, value) {
+		var s = '[object ' + name + ' ' + id + ']';
+
+		if(arguments.length > 2) {
+			s += ' ' + status;
+			if(value !== pending) {
+				s += ': ' + value;
+			}
+		}
+
+		return s;
+	}
+
+	function alreadyResolved() {
+		throw new Error('already completed');
+	}
+
+	function F() {}
+	function beget(o) {
+		F.prototype = o;
+		o = new F();
+		F.prototype = undef;
+
+		return o;
+	}
 
 });
 })(typeof define == 'function'
