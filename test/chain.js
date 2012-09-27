@@ -15,8 +15,8 @@ buster.testCase('when.chain', {
 		result = when.chain(1, d.resolver);
 
 		assert(typeof result.then == 'function');
-		refute.equals(result, d);
-		refute.equals(result, d.promise);
+		refute.same(result, d);
+		refute.same(result, d.promise);
 	},
 
 	'should return a promise for an input promise': function() {
@@ -28,10 +28,10 @@ buster.testCase('when.chain', {
 		result = when.chain(d1.promise, d2.resolver);
 
 		assert(typeof result.then == 'function');
-		refute.equals(result, d1);
-		refute.equals(result, d1.promise);
-		refute.equals(result, d2);
-		refute.equals(result, d2.promise);
+		refute.same(result, d1);
+		refute.same(result, d1.promise);
+		refute.same(result, d2);
+		refute.same(result, d2.promise);
 	},
 
 	'should resolve resolver with input value': function(done) {
