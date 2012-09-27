@@ -90,10 +90,7 @@ define(['./when'], function(when) {
 		};
 
 		newPromise.then = function(cb, eb, pb) {
-			var nextId, nextPromise;
-
-			nextId = id + '.' + promiseId++;
-			nextPromise = debugPromise(origThen.apply(p, wrapCallbacks([cb, eb, pb])));
+			var nextId = id + '.' + promiseId++;
 
 			return debugPromise(origThen.apply(p, wrapCallbacks([cb, eb, pb])), nextId);
 		};
