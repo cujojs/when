@@ -43,10 +43,9 @@
 (function(define) {
 define(['./when'], function(when) {
 
-	var promiseId, freeze, pending, exceptionsToRethrow, own, undef;
+	var promiseId, pending, exceptionsToRethrow, own, undef;
 
-	promiseId = 0;
-	freeze = Object.freeze || function(o) { return o; };
+	promiseId = 1;
 	pending = {};
 	own = Object.prototype.hasOwnProperty;
 
@@ -68,7 +67,8 @@ define(['./when'], function(when) {
 	/**
 	 * Setup debug output handlers for the supplied promise.
 	 * @param p {Promise} A trusted (when.js) promise
-	 * @return p
+	 * @return {Promise} a new promise that outputs debug info and
+	 * has a useful toString
 	 */
 	function debugPromise(p, id) {
 		var origThen, newPromise;
@@ -92,10 +92,10 @@ define(['./when'], function(when) {
 		newPromise.then = function(cb, eb, pb) {
 			var nextId, nextPromise;
 
-			nextId = id + '>' + promiseId++;
+			nextId = id + '.' + promiseId++;
 			nextPromise = debugPromise(origThen.apply(p, wrapCallbacks([cb, eb, pb])));
 
-			return debugPromise(origThen.apply(p, wrapCallbacks([cb, eb, pb])), { id: nextId });
+			return debugPromise(origThen.apply(p, wrapCallbacks([cb, eb, pb])), nextId);
 		};
 
 		p.then(
@@ -199,8 +199,6 @@ define(['./when'], function(when) {
 		d.id = d.resolver.id = id;
 
 		// TODO: Should we still freeze these?
-		// Seems safer for now to err on the side of caution and freeze them,
-		// but it could be useful to all them to be modified during debugging.
 		// freeze(d.promise);
 		// freeze(d.resolver);
 
@@ -220,12 +218,15 @@ define(['./when'], function(when) {
 
 	return whenDebug;
 
+	// Wrap result of when[name] in a debug promise
 	function makeDebug(name, func) {
 		whenDebug[name] = function() {
 			return debugPromise(func.apply(when, arguments));
 		};
 	}
 
+	// Wrap a promise callback to catch exceptions and log or
+	// rethrow as uncatchable
 	function wrapCallback(cb) {
 		if(typeof cb != 'function') {
 			return cb;
@@ -250,6 +251,7 @@ define(['./when'], function(when) {
 		};
 	}
 
+	// Wrap a callback, errback, progressback tuple
 	function wrapCallbacks(callbacks) {
 		var cb, args, len, i;
 
@@ -264,6 +266,7 @@ define(['./when'], function(when) {
 		return args;
 	}
 
+	// Stringify a promise, deferred, or resolver
 	function toString(name, id, status, value) {
 		var s = '[object ' + name + ' ' + id + ']';
 
@@ -277,10 +280,13 @@ define(['./when'], function(when) {
 		return s;
 	}
 
+	// Helper to invoke when resolve/reject/progress is called on
+	// an already-resolved deferred or resolver
 	function alreadyResolved() {
 		throw new Error('already completed');
 	}
 
+	// The usual Crockford
 	function F() {}
 	function beget(o) {
 		F.prototype = o;
