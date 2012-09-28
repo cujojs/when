@@ -43,11 +43,12 @@
 (function(define) {
 define(['./when'], function(when) {
 
-	var promiseId, pending, exceptionsToRethrow, own, undef;
+	var promiseId, pending, exceptionsToRethrow, own, debugProp, undef;
 
-	promiseId = 1;
+	promiseId = 0;
 	pending = {};
 	own = Object.prototype.hasOwnProperty;
+	debugProp = 'whendebug';
 
 	exceptionsToRethrow = {
 		RangeError: 1,
@@ -70,29 +71,39 @@ define(['./when'], function(when) {
 	 * @return {Promise} a new promise that outputs debug info and
 	 * has a useful toString
 	 */
-	function debugPromise(p, id) {
-		var origThen, newPromise;
+	function debugPromise(p, parent) {
+		var id, origThen, newPromise, logReject;
 
-		if(arguments.length < 2) {
-			if (own.call(p, 'id')) {
-				id = p.id;
-			} else {
-				id = promiseId++;
-			}
+		if(own.call(p, debugProp)) {
+			return p;
 		}
+
+		promiseId++;
+		id = (parent && 'id' in parent) ? (parent.id + '.' + promiseId) : promiseId;
 
 		origThen = p.then;
 		newPromise = beget(p);
 		newPromise.id = id;
+		newPromise.parent = parent;
+		newPromise[debugProp] = true;
 
 		newPromise.toString = function() {
 			return toString('Promise', id);
 		};
 
-		newPromise.then = function(cb, eb, pb) {
-			var nextId = id + '.' + promiseId++;
+		newPromise.then = function(cb, eb) {
+			if(typeof eb === 'function') {
+				var promise = newPromise;
+				do {
+					promise.handled = true;
+				} while((promise = promise.parent) && !promise.handled);
+			}
 
-			return debugPromise(origThen.apply(p, wrapCallbacks([cb, eb, pb])), nextId);
+			return debugPromise(origThen.apply(p, wrapCallbacks(arguments)), newPromise);
+		};
+
+		logReject = function() {
+			console.error(newPromise.toString());
 		};
 
 		p.then(
@@ -102,15 +113,17 @@ define(['./when'], function(when) {
 				};
 				return val;
 			},
-			function(err) {
+			wrapCallback(function(err) {
 				newPromise.toString = function() {
 					return toString('Promise', id, 'REJECTED', err);
 				};
 
-				console.error(newPromise.toString());
+				if(!newPromise.handled) {
+					logReject();
+				}
 
-				return when.reject(err);
-			}
+				throw err;
+			})
 		);
 
 		return newPromise;
@@ -143,7 +156,8 @@ define(['./when'], function(when) {
 		// in order to setup toString() on promise, resolver,
 		// and deferred
 		origThen = d.promise.then;
-		d.promise = debugPromise(d.promise, id);
+		d.id = id;
+		d.promise = debugPromise(d.promise, d);
 
 		d.resolver = beget(d.resolver);
 		d.resolver.toString = function() {
@@ -191,9 +205,11 @@ define(['./when'], function(when) {
 			function(e) { status = 'REJECTED'; return when.reject(e); }
 		);
 
+		d.then = d.promise.then;
+
 		// Add an id to all directly created promises.  It'd be great
 		// to find a way to propagate this id to promise created by .then()
-		d.id = d.resolver.id = id;
+		d.resolver.id = id;
 
 		// TODO: Should we still freeze these?
 		// freeze(d.promise);
@@ -233,16 +249,8 @@ define(['./when'], function(when) {
 			try {
 				return cb(v);
 			} catch(err) {
-				if(err) {
-					if (err.name in exceptionsToRethrow) {
-						setTimeout(function() {
-							throw err;
-						}, 0);
-					} else if (err.stack) {
-						console.error(err.stack);
-					}
-				}
-
+				throwUncatchableIfNecessary(err);
+				
 				throw err;
 			}
 		};
@@ -275,6 +283,15 @@ define(['./when'], function(when) {
 		}
 
 		return s;
+	}
+
+	function throwUncatchableIfNecessary(err) {
+		if (err && err.name in exceptionsToRethrow) {
+			setTimeout(function() {
+				throw err;
+			}, 0);
+		}
+
 	}
 
 	// Helper to invoke when resolve/reject/progress is called on
