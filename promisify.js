@@ -32,7 +32,7 @@ define(['./when'], function(when) {
 		var args = slice.call(arguments, 2);
 		return function() {
 			return apply(func, context, args.concat(slice.call(arguments)));
-		}
+		};
 	}
 
 	function promisify(func, callbackPos, errbackPos, progbackPos) {
@@ -50,7 +50,7 @@ define(['./when'], function(when) {
 				args.push(deferred.reject);
 
 				return args;
-			}
+			};
 		} else {
 			initArgs = function(args, deferred) {
 				if(typeof callbackPos == 'number') {
@@ -66,7 +66,7 @@ define(['./when'], function(when) {
 				}
 
 				return args;
-			}
+			};
 		}
 
 		return function() {
