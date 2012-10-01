@@ -15,7 +15,8 @@ define(['./when'], function(when) {
 	return {
 		apply: apply,
 		call: call,
-		bind: bind
+		bind: bind,
+		createCallback: createCallback
 	};
 
 	function apply(func, context, args) {
@@ -42,7 +43,7 @@ define(['./when'], function(when) {
 		var args = slice.call(arguments, 2);
 		return function() {
 			return apply(func, context, args.concat(slice.call(arguments)));
-		}
+		};
 	}
 
 	function createCallback(resolver) {
@@ -54,18 +55,15 @@ define(['./when'], function(when) {
 			} else {
 				resolver.resolve(value);
 			}
-		}
+		};
 	}
 
 });
 
 })(typeof define == 'function'
 	? define
-	: function (deps, factory) { typeof module != 'undefined'
-	? (module.exports = factory(require('./when')))
-	: (this.when_function = factory(this.when));
-}
-	// Boilerplate for AMD, Node, and browser global
+	: function (deps, factory) { module.exports = factory(require('./when')); }
+	// Boilerplate for AMD and Node
 );
 
 
