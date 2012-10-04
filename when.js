@@ -39,6 +39,8 @@ define(['module'], function(module) {
 	when.resolve   = resolve;   // Create a resolved promise
 	when.reject    = reject;    // Create a rejected promise
 
+	when.join      = join;
+
 	when.all       = all;       // Resolve a list of promises
 	when.some      = some;      // Resolve a sub-set of promises
 	when.any       = any;       // Resolve one promise in a list
@@ -488,6 +490,17 @@ define(['module'], function(module) {
 	function all(promisesOrValues, callback, errback, progressHandler) {
 		checkCallbacks(1, arguments);
 		return map(promisesOrValues, identity).then(callback, errback, progressHandler);
+	}
+
+	/**
+	 * Joins multiple promises into a single returned promise.  Essentially
+	 * a varargs version of when.all()
+	 * @param  {Promise|*} promises... two or more promises to join
+	 * @return {Promise} a promise that will fulfill when all the input promises
+	 * have fulfilled, or will reject when *any one* of the input promises rejects.
+	 */
+	function join(/* promises... */) {
+		return all(arguments);
 	}
 
 	/**
