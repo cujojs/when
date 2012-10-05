@@ -500,7 +500,7 @@ define(['module'], function(module) {
 	 * have fulfilled, or will reject when *any one* of the input promises rejects.
 	 */
 	function join(/* promises... */) {
-		return all(arguments);
+		return map(arguments, identity);
 	}
 
 	/**
