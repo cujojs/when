@@ -12,7 +12,7 @@ What's New?
 ### 1.5.1
 
 * Performance optimization for [when.defer](when/blob/master/docs/api.md#whendefer), up to 1.5x in some cases.
-* [when/debug](when/blob/master/docs/api.md#whendebug) can now log exceptions and rejections in deeper promise chains, even when the promises involved aren't when.js promises.
+* [when/debug](when/blob/master/docs/api.md#whendebug) can now log exceptions and rejections in deeper promise chains, in some cases, even when the promises involved aren't when.js promises.
 
 ### 1.5.0
 
