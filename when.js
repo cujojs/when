@@ -323,6 +323,8 @@ define(['module'], function(module) {
 			while (progress = progressHandlers[i++]) {
 				progress(update);
 			}
+
+			return update;
 		};
 
 		/**
@@ -389,7 +391,7 @@ define(['module'], function(module) {
 		 * @param  {*} update progress update
 		 */
 		function promiseProgress(update) {
-			_progress(update);
+			return _progress(update);
 		}
 	}
 
