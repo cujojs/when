@@ -493,10 +493,11 @@ define(['module'], function(module) {
 	}
 
 	/**
-	 * Joins multiple promises into a single returned promise.  Essentially
-	 * a varargs version of when.all()
+	 * Joins multiple promises into a single returned promise.
+	 * @memberOf when
+	 *
 	 * @param  {Promise|*} promises... two or more promises to join
-	 * @return {Promise} a promise that will fulfill when all the input promises
+	 * @return {Promise} a promise that will fulfill when *all* the input promises
 	 * have fulfilled, or will reject when *any one* of the input promises rejects.
 	 */
 	function join(/* promises... */) {
