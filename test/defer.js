@@ -194,6 +194,49 @@ buster.testCase('when.defer', {
 			d.progress(1);
 		},
 
+		'should propagate progress to downstream promises': function(done) {
+			var d = when.defer();
+
+			d.promise
+			.then(fail, fail,
+				function(update) {
+					return update;
+				}
+			)
+			.then(fail, fail,
+				function(update) {
+					assert.equals(update, 1);
+					done();
+				}
+			);
+
+			d.progress(1);
+		},
+
+		'should forward progress when resolved with another promise': function(done) {
+			var d, d2;
+
+			d = when.defer();
+			d2 = when.defer();
+
+			d.promise
+			.then(fail, fail,
+				function(update) {
+					return update + 1;
+				}
+			)
+			.then(fail, fail,
+				function(update) {
+					assert.equals(update, 2);
+					done();
+				}
+			);
+
+			d.resolve(d2.promise);
+
+			d2.progress(1);
+		},
+
 		'should allow resolve after progress': function(done) {
 			var d = when.defer();
 

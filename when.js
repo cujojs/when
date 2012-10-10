@@ -278,11 +278,15 @@ define(['module'], function(module) {
 			var deferred = defer();
 
 			listeners.push(function(promise) {
-				promise.then(callback, errback)
+				promise.then(callback, errback, propagateProgress)
 					.then(deferred.resolve, deferred.reject);
 			});
 
-			progressHandlers.push(function(update) {
+			progressHandlers.push(propagateProgress);
+
+			return deferred.promise;
+
+			function propagateProgress(update) {
 				try {
 					if(progback) {
 						// Should we allow progress handlers to transform
@@ -305,9 +309,7 @@ define(['module'], function(module) {
 					// out of the try/catch
 				}
 
-			});
-
-			return deferred.promise;
+			}
 		};
 
 		/**
@@ -341,7 +343,7 @@ define(['module'], function(module) {
 			// once. Also make _progress a noop, since progress can no longer
 			// be issued for the resolved promise.
 			_resolve = resolve;
-			_progress = noop;
+			// _progress = noop;
 
 			// Notify listeners
 			while (listener = listeners[i++]) {
@@ -349,7 +351,7 @@ define(['module'], function(module) {
 			}
 
 			// Free progressHandlers array since we'll never issue progress events
-			progressHandlers = listeners = undef;
+			// progressHandlers = listeners = undef;
 
 			return completed;
 		};
