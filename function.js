@@ -5,7 +5,7 @@
  */
 
 (function(define) {
-define(['./when'], function(when) {
+define(['./when', './nextTick'], function(when, nextTick) {
 
 	var slice;
 
@@ -15,13 +15,22 @@ define(['./when'], function(when) {
 		apply: apply,
 		call: call,
 		bind: bind,
+		compose: compose,
 		promisify: promisify
 	};
 
 	function apply(func, context, args) {
-		return when.all([context].concat(args), function(contextAndArgs) {
-			return func.apply(contextAndArgs[0], contextAndArgs.slice(1));
+		var d = when.defer();
+
+		nextTick(function() {
+			try {
+				d.resolve(func.apply(context, args));
+			} catch(e) {
+				d.reject(e);
+			}
 		});
+
+		return d.promise;
 	}
 
 	function call(func, context /*, args... */) {
@@ -32,6 +41,18 @@ define(['./when'], function(when) {
 		var args = slice.call(arguments, 2);
 		return function() {
 			return apply(func, context, args.concat(slice.call(arguments)));
+		};
+	}
+
+	function compose(f /*g, ... */) {
+		var funcs = slice.call(arguments, 1);
+
+		return function() {
+			var args = slice.call(arguments);
+
+			return when.reduce(funcs, function(arg, func) {
+				return func(arg);
+			}, f.apply(null, args));
 		};
 	}
 
@@ -72,7 +93,7 @@ define(['./when'], function(when) {
 		return function() {
 			var args, d;
 
-			args = Array.prototype.slice.call(arguments);
+			args = slice.call(arguments);
 			d = when.defer();
 
 			apply(orig, this, initArgs(args, d));
@@ -85,8 +106,8 @@ define(['./when'], function(when) {
 })(typeof define == 'function'
 	? define
 	: function (deps, factory) { typeof module != 'undefined'
-	? (module.exports = factory(require('./when')))
-	: (this.when_fn = factory(this.when));
+	? (module.exports = factory(require('./when'), require('./nextTick')))
+	: (this.when_fn = factory(this.when, this.when_nextTick));
 }
 	// Boilerplate for AMD, Node, and browser global
 );

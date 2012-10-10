@@ -5,7 +5,7 @@
  */
 
 (function(define) {
-define(['./when'], function(when) {
+define(['../when'], function(when) {
 
 	var slice, nextTick;
 
@@ -62,7 +62,7 @@ define(['./when'], function(when) {
 
 })(typeof define == 'function'
 	? define
-	: function (deps, factory) { module.exports = factory(require('./when')); }
+	: function (deps, factory) { module.exports = factory(require('../when')); }
 	// Boilerplate for AMD and Node
 );
 
