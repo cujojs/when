@@ -216,7 +216,7 @@ define(['module'], function(module) {
 				return rejected(e);
 			}
 		});
-		
+
 		return freeze(p);
 	}
 
@@ -251,7 +251,7 @@ define(['module'], function(module) {
 			resolve:  promiseResolve,
 			reject:   promiseReject,
 			progress: promiseProgress,
-			
+
 			promise:  freeze(promise),
 
 			resolver: freeze({
@@ -279,10 +279,33 @@ define(['module'], function(module) {
 
 			listeners.push(function(promise) {
 				promise.then(callback, errback)
-					.then(deferred.resolve, deferred.reject, deferred.progress);
+					.then(deferred.resolve, deferred.reject);
 			});
 
-			progback && progressHandlers.push(progback);
+			progressHandlers.push(function(update) {
+				try {
+					if(progback) {
+						// Should we allow progress handlers to transform
+						// the update?  This could solve problems with downstream
+						// progress handlers receiving progress updates from
+						// far upstream promises for which they have no context.
+						// Not clear what is best here, since many existing
+						// progress handlers may return undefined.
+						// Maybe returning undefined should also stop propagation?
+						update = progback(update);
+					}
+					// TODO: Consider renaming progress() to notify()
+					deferred.progress(update);
+				} catch(e) {
+					// What to do here? stop propagation?
+					// Propagating e seems wrong:
+					// deferred.progress(e);
+					// One alternative would be to still allow update
+					// to propagate by moving the call to deferred.progress(update)
+					// out of the try/catch
+				}
+
+			});
 
 			return deferred.promise;
 		};
@@ -512,7 +535,7 @@ define(['module'], function(module) {
 			if(!toResolve) {
 				d.resolve(results);
 			} else {
-				
+
 				reject = d.reject;
 				resolve = function resolveOne(item, i) {
 					when(item, mapFunc).then(function(mapped) {
@@ -558,7 +581,7 @@ define(['module'], function(module) {
 	 */
 	function reduce(promise, reduceFunc /*, initialValue */) {
 		var args = slice.call(arguments, 1);
-		
+
 		return when(promise, function(array) {
 			var total;
 
