@@ -343,7 +343,7 @@ define(['module'], function(module) {
 			// once. Also make _progress a noop, since progress can no longer
 			// be issued for the resolved promise.
 			_resolve = resolve;
-			// _progress = noop;
+			_progress = noop;
 
 			// Notify listeners
 			while (listener = listeners[i++]) {
@@ -351,7 +351,7 @@ define(['module'], function(module) {
 			}
 
 			// Free progressHandlers array since we'll never issue progress events
-			// progressHandlers = listeners = undef;
+			progressHandlers = listeners = undef;
 
 			return completed;
 		};
