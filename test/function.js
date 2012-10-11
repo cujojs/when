@@ -21,7 +21,7 @@ buster.testCase('when/fn', {
 			});
 		},
 
-		'should accept promises for arguments': function() {
+		'//should accept promises for arguments': function() {
 			var result = fn.apply(f, null, [when.resolve(1), when.resolve(2)]);
 			return when(result, function(result) {
 				assert.equals(result, 3);
@@ -39,7 +39,7 @@ buster.testCase('when/fn', {
 			});
 		},
 
-		'should accept promise for context': function() {
+		'//should accept promise for context': function() {
 			function f2(y) {
 				return f(this, y);
 			}
@@ -64,7 +64,7 @@ buster.testCase('when/fn', {
 			});
 		},
 
-		'should accept promises for arguments': function() {
+		'//should accept promises for arguments': function() {
 			var result = fn.call(f, null, when.resolve(1), when.resolve(2));
 			return when(result, function(result) {
 				assert.equals(result, 3);
@@ -82,7 +82,7 @@ buster.testCase('when/fn', {
 			});
 		},
 
-		'should accept promise for context': function() {
+		'//should accept promise for context': function() {
 			function f2(y) {
 				return f(this, y);
 			}
@@ -96,9 +96,8 @@ buster.testCase('when/fn', {
 
 	'bind': {
 		'should return a function': function() {
-
-		},
-
+			assert.isFunction(fn.bind(f, null));
+		}
 
 	}
 
@@ -106,6 +105,6 @@ buster.testCase('when/fn', {
 
 })(
 	this.buster  || require('buster'),
-	this.when_fn || require('../fn'),
+	this.when_fn || require('../function'),
 	this.when    || require('../when')
 );
