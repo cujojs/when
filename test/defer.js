@@ -213,15 +213,13 @@ buster.testCase('when.defer', {
 			d.progress(1);
 		},
 
-		'should forward progress events when intermediary callback returns a promise': function(done) {
+		'should forward progress events when intermediary callback (tied to a resolved promise) returns a promise': function(done) {
 			var d, d2;
 
 			d = when.defer();
 			d2 = when.defer();
 
-			// d MUST be resolve here, otherwise the first fulfillment handler
-			// will never execute, and thus there's no way for a progress handler
-			// to be registered with d2.promise.
+			// resolve d BEFORE calling attaching progress handler
 			d.resolve(1);
 
 			d.promise.then(
@@ -235,6 +233,28 @@ buster.testCase('when.defer', {
 				}
 			);
 
+			d2.progress(1);
+		},
+
+		'should forward progress events when intermediary callback (tied to an unresovled promise) returns a promise': function(done) {
+			var d, d2;
+
+			d = when.defer();
+			d2 = when.defer();
+
+			d.promise.then(
+				function() {
+					return d2.promise;
+				}
+			).then(fail, fail,
+				function(update) {
+					assert.equals(update, 1);
+					done();
+				}
+			);
+
+			// resolve d AFTER calling attaching progress handler
+			d.resolve(1);
 			d2.progress(1);
 		},
 

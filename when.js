@@ -278,8 +278,8 @@ define(['module'], function(module) {
 			var deferred = defer();
 
 			listeners.push(function(promise) {
-				promise.then(callback, errback, propagateProgress)
-					.then(deferred.resolve, deferred.reject);
+				promise.then(callback, errback)
+					.then(deferred.resolve, deferred.reject, propagateProgress);
 			});
 
 			progressHandlers.push(propagateProgress);
