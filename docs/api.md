@@ -11,6 +11,9 @@ API
 	* [when.resolve](#whenresolve)
 	* [when.reject](#whenreject)
 1. [Joining promises](#joining-promises)
+	* [when.join](#whenjoin)
+	* [when.chain](#whenchain)
+1. [Arrays of promises](#arrays-of-promises)
 	* [when.all](#whenall)
 	* [when.any](#whenany)
 	* [when.some](#whensome)
@@ -29,8 +32,7 @@ API
 1. [Configuration](#configuration)
 	* [Paranoid mode](#paranoid-mode)
 
-when()
-------
+## when()
 
 ```js
 when(promiseOrValue, callback, errback, progressback)
@@ -53,10 +55,10 @@ when(promiseOrValue, callback);
 
 when() can observe any promise that provides a Promises/A-like `.then()` method, even promises that aren't fully Promises/A compliant, such as jQuery's Deferred.  It will assimilate such promises and make them behave like Promises/A.
 
-[Read more about when() here](https://github.com/cujojs/when/wiki/when)
+### See Also
+* [Read more about when() here](https://github.com/cujojs/when/wiki/when)
 
-Deferred
---------
+## Deferred
 
 A deferred has the full `promise` + `resolver` API:
 
@@ -74,8 +76,7 @@ var promise = deferred.promise;
 var resolver = deferred.resolver;
 ```
 
-Promise
--------
+## Promise
 
 ```js
 // Get a deferred promise
@@ -88,8 +89,7 @@ var promise = when.resolve(promiseOrValue);
 var promise = when.reject(value);
 ```
 
-Main Promise API
-----------------
+## Main Promise API
 
 ```js
 // then()
@@ -106,8 +106,7 @@ A promise makes the following guarantees about handlers registered in the same c
 1. `callback` and `errback` will never be called more than once.
 1. `progressback` may be called multiple times.
 
-Extended Promise API
---------------------
+## Extended Promise API
 
 Convenience methods that are not part of the Promises/A proposal.  These are simply shortcuts for using `.then()`.
 
@@ -127,8 +126,7 @@ promise.otherwise(errback);
 
 Register only an errback
 
-Resolver
---------
+## Resolver
 
 ```js
 var resolver = deferred.resolver;
@@ -137,11 +135,9 @@ resolver.reject(err);
 resolver.progress(update);
 ```
 
-Creating promises
-=================
+# Creating promises
 
-when.defer()
-------------
+## when.defer()
 
 ```js
 var deferred = when.defer();
@@ -149,16 +145,15 @@ var deferred = when.defer();
 
 Create a new [Deferred](#deferred) that can resolved at a later time.
 
-when.resolve()
---------------
+## when.resolve()
+
 ```js
 var resolved = when.resolve(promiseOrValue);
 ```
 
 Create a resolved promise for the supplied promiseOrValue. If promiseOrValue is a value, it will be the resolution value of the returned promise.  Returns promiseOrValue if it's a trusted promise. If promiseOrValue is a foreign promise, returns a promise in the same state (resolved or rejected) and with the same value as promiseOrValue.
 
-when.reject()
--------------
+## when.reject()
 
 ```js
 var rejected = when.reject(promiseOrValue);
@@ -180,8 +175,7 @@ when(doSomething(),
 );
 ```
 
-when.isPromise()
-----------------
+## when.isPromise()
 
 ```js
 var is = when.isPromise(anything);
@@ -189,38 +183,20 @@ var is = when.isPromise(anything);
 
 Return true if `anything` is truthy and implements the then() promise API.  Note that this will return true for both a deferred (i.e. `when.defer()`), and a `deferred.promise` since both implement the promise API.
 
-Joining promises
-================
+# Joining promises
 
-when.all()
-----------
+## when.join()
 
 ```js
-var promise = when.all(promisesOrValues, callback, errback, progressback)
+var joinedPromise = when.join(promise1, promise2, ...);
 ```
 
-Return a promise that will resolve only once *all* the supplied `promisesOrValues` have resolved.  The resolution value of the returned promise will be an array containing the resolution values of each of the `promisesOrValues`.
+Return a promise that will resolve only once *all* the supplied promises have resolved.  The resolution value of the returned promise will be an array containing the resolution values of each of the input promises.
 
-when.any()
-----------
+### See also:
+* [when.all()](#whenall) - resolving an Array of promises
 
-```js
-var promise = when.any(promisesOrValues, callback, errback, progressback)
-```
-
-Return a promise that will resolve when any one of the supplied `promisesOrValues` has resolved.  The resolution value of the returned promise will be the resolution value of the triggering `promiseOrValue`.
-
-when.some()
------------
-
-```js
-var promise = when.some(promisesOrValues, howMany, callback, errback, progressback)
-```
-
-Return a promise that will resolve when `howMany` of the supplied `promisesOrValues` have resolved.  The resolution value of the returned promise will be an array of length `howMany` containing the resolutions values of the triggering `promisesOrValues`.
-
-when.chain()
-------------
+## when.chain()
 
 ```js
 var promise = when.chain(promiseOrValue, resolver, optionalValue)
@@ -232,11 +208,50 @@ Returns a new promise that will complete when `promiseOrValue` is completed, wit
 
 **Note:** If `promiseOrValue` is not an immediate value, it can be anything that supports the promise API (i.e. `then()`), so you can pass a `deferred` as well.  Similarly, `resolver` can be anything that supports the resolver API (i.e. `resolve()`, `reject()`), so a `deferred` will work there, too.
 
-Higher order operations
-=======================
+# Arrays of promises
 
-when.map()
-----------
+## when.all()
+
+```js
+var promise = when.all(array, callback, errback, progressback)
+```
+
+Where:
+
+* array is an Array *or a promise for an array*, which may contain promises and/or values.
+
+Return a promise that will resolve only once *all* the items in `array` have resolved.  The resolution value of the returned promise will be an array containing the resolution values of each of the input `array`.
+
+### See also:
+* [when.join()](#whenjoin) - joining multiple promises
+
+## when.any()
+
+```js
+var promise = when.any(promisesOrValues, callback, errback, progressback)
+```
+
+Where:
+
+* array is an Array *or a promise for an array*, which may contain promises and/or values.
+
+Return a promise that will resolve when any one of the items in `array` has resolved.  The resolution value of the returned promise will be the resolution value of the triggering item.
+
+## when.some()
+
+```js
+var promise = when.some(promisesOrValues, howMany, callback, errback, progressback)
+```
+
+Where:
+
+* array is an Array *or a promise for an array*, which may contain promises and/or values.
+
+Return a promise that will resolve when `howMany` of the supplied items in `array` have resolved.  The resolution value of the returned promise will be an array of length `howMany` containing the resolutions values of the triggering items.
+
+# Higher order operations
+
+## when.map()
 
 ```js
 var promise = when.map(promisesOrValues, mapFunc)
@@ -254,8 +269,7 @@ Where:
 
 * `item` is a fully resolved value of a promise or value in `promisesOrValues`
 
-when.reduce()
--------------
+## when.reduce()
 
 ```js
 var promise = when.reduce(promisesOrValues, reduceFunc, initialValue)
@@ -276,11 +290,10 @@ Where:
 * `index` the *basis* of `nextItem` ... practically speaking, this is the array index of the promiseOrValue corresponding to `nextItem`
 * `total` is the total number of items in `promisesOrValues`
 
-Timed promises
-==============
+# Timed promises
 
-when/delay
-------------
+## when/delay
+
 ```js
 var delayed = delay(promiseOrValue, milliseconds);
 ```
@@ -305,8 +318,8 @@ delayed = delay(anotherPromise, 1000);
 More when/delay [examples on the wiki](https://github.com/cujojs/when/wiki/when-delay)
 
 
-when/timeout
-------------
+## when/timeout
+
 ```js
 var timed = timeout(promiseOrValue, milliseconds);
 ```

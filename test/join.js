@@ -19,7 +19,7 @@ buster.testCase('when.join', {
 		).always(done);
 	},
 
-	'should resolve values array': function(done) {
+	'should join values': function(done) {
 		when.join(1, 2, 3).then(
 			function(results) {
 				assert.equals(results, [1, 2, 3]);
@@ -28,7 +28,7 @@ buster.testCase('when.join', {
 		).always(done);
 	},
 
-	'should resolve promises array': function(done) {
+	'should join promises array': function(done) {
 		when.join(resolved(1), resolved(2), resolved(3)).then(
 			function(results) {
 				assert.equals(results, [1, 2, 3]);
@@ -37,7 +37,7 @@ buster.testCase('when.join', {
 		).always(done);
 	},
 
-	'should resolve mixed array': function(done) {
+	'should join mixed array': function(done) {
 		when.join(resolved(1), 2, resolved(3), 4).then(
 			function(results) {
 				assert.equals(results, [1, 2, 3, 4]);
