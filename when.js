@@ -7,7 +7,7 @@
  * Licensed under the MIT License at:
  * http://www.opensource.org/licenses/mit-license.php
  *
- * @version 1.5.1
+ * @version 1.6.0
  */
 
 (function(define, global) { 'use strict';
@@ -39,7 +39,7 @@ define(['module'], function(module) {
 	when.resolve   = resolve;   // Create a resolved promise
 	when.reject    = reject;    // Create a rejected promise
 
-	when.join      = join;
+	when.join      = join;      // Join 2 or more promises
 
 	when.all       = all;       // Resolve a list of promises
 	when.some      = some;      // Resolve a sub-set of promises

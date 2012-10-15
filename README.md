@@ -9,6 +9,10 @@ when.js was derived from the async core of [wire.js](https://github.com/cujojs/w
 What's New?
 ===========
 
+### 1.6.0
+
+* when.join - Joins 2 or more promises together into a single promise.
+
 ### 1.5.1
 
 * Performance optimization for [when.defer](when/blob/master/docs/api.md#whendefer), up to 1.5x in some cases.
