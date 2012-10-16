@@ -1,10 +1,12 @@
 (function(buster, when) {
 
-var assert, refute, fail;
+var assert, refute, fail, sentinel;
 
 assert = buster.assert;
 refute = buster.refute;
 fail = buster.assertions.fail;
+
+sentinel = {};
 
 function fakeResolved(val) {
 	return {
@@ -186,12 +188,12 @@ buster.testCase('when.defer', {
 				fail,
 				fail,
 				function(val) {
-					assert.equals(val, 1);
+					assert.same(val, sentinel);
 					done();
 				}
 			);
 
-			d.progress(1);
+			d.progress(sentinel);
 		},
 
 		'should propagate progress to downstream promises': function(done) {
@@ -205,7 +207,45 @@ buster.testCase('when.defer', {
 			)
 			.then(fail, fail,
 				function(update) {
-					assert.equals(update, 1);
+					assert.same(update, sentinel);
+					done();
+				}
+			);
+
+			d.progress(sentinel);
+		},
+
+		'should propagate transformed progress to downstream promises': function(done) {
+			var d = when.defer();
+
+			d.promise
+			.then(fail, fail,
+				function() {
+					return sentinel;
+				}
+			)
+			.then(fail, fail,
+				function(update) {
+					assert.same(update, sentinel);
+					done();
+				}
+			);
+
+			d.progress(1);
+		},
+
+		'should propagate caught exception value as progress': function(done) {
+			var d = when.defer();
+
+			d.promise
+			.then(fail, fail,
+				function() {
+					throw sentinel;
+				}
+			)
+			.then(fail, fail,
+				function(update) {
+					assert.same(update, sentinel);
 					done();
 				}
 			);
@@ -220,7 +260,7 @@ buster.testCase('when.defer', {
 			d2 = when.defer();
 
 			// resolve d BEFORE calling attaching progress handler
-			d.resolve(1);
+			d.resolve();
 
 			d.promise.then(
 				function() {
@@ -228,12 +268,12 @@ buster.testCase('when.defer', {
 				}
 			).then(fail, fail,
 				function(update) {
-					assert.equals(update, 1);
+					assert.same(update, sentinel);
 					done();
 				}
 			);
 
-			d2.progress(1);
+			d2.progress(sentinel);
 		},
 
 		'should forward progress events when intermediary callback (tied to an unresovled promise) returns a promise': function(done) {
@@ -248,14 +288,14 @@ buster.testCase('when.defer', {
 				}
 			).then(fail, fail,
 				function(update) {
-					assert.equals(update, 1);
+					assert.same(update, sentinel);
 					done();
 				}
 			);
 
 			// resolve d AFTER calling attaching progress handler
-			d.resolve(1);
-			d2.progress(1);
+			d.resolve();
+			d2.progress(sentinel);
 		},
 
 		'should forward progress when resolved with another promise': function(done) {
@@ -266,20 +306,20 @@ buster.testCase('when.defer', {
 
 			d.promise
 			.then(fail, fail,
-				function(update) {
-					return update + 1;
+				function() {
+					return sentinel;
 				}
 			)
 			.then(fail, fail,
 				function(update) {
-					assert.equals(update, 2);
+					assert.same(update, sentinel);
 					done();
 				}
 			);
 
 			d.resolve(d2.promise);
 
-			d2.progress(1);
+			d2.progress();
 		},
 
 		'should allow resolve after progress': function(done) {

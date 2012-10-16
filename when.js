@@ -252,6 +252,7 @@ define(['module'], function(module) {
 			then:     then,
 			resolve:  promiseResolve,
 			reject:   promiseReject,
+			// TODO: Consider renaming progress() to notify()
 			progress: promiseProgress,
 
 			promise:  freeze(promise),
@@ -289,28 +290,18 @@ define(['module'], function(module) {
 			return deferred.promise;
 
 			function propagateProgress(update) {
-				try {
-					if(progback) {
-						// Should we allow progress handlers to transform
-						// the update?  This could solve problems with downstream
-						// progress handlers receiving progress updates from
-						// far upstream promises for which they have no context.
-						// Not clear what is best here, since many existing
-						// progress handlers may return undefined.
-						// Maybe returning undefined should also stop propagation?
+				if(progback) {
+					try {
+							// Allow progress handler to transform progress event
 						update = progback(update);
+					} catch(e) {
+						// Use caught value as progress
+						update = e;
 					}
-					// TODO: Consider renaming progress() to notify()
-					deferred.progress(update);
-				} catch(e) {
-					// What to do here? stop propagation?
-					// Propagating e seems wrong:
-					// deferred.progress(e);
-					// One alternative would be to still allow update
-					// to propagate by moving the call to deferred.progress(update)
-					// out of the try/catch
 				}
 
+				// Always propagate the new progress value
+				deferred.progress(update);
 			}
 		};
 
