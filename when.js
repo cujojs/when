@@ -234,7 +234,7 @@ define(['module'], function(module) {
 	 * @return {Deferred}
 	 */
 	function defer() {
-		var deferred, promise, listeners, progressHandlers,
+		var deferred, promise, handlers, progressHandlers,
 			_then, _progress, _resolve;
 
 		/**
@@ -264,7 +264,7 @@ define(['module'], function(module) {
 			})
 		};
 
-		listeners = [];
+		handlers = [];
 		progressHandlers = [];
 
 		/**
@@ -278,31 +278,29 @@ define(['module'], function(module) {
 		 * @throws {Error} if any argument is not null, undefined, or a Function
 		 */
 		_then = function(callback, errback, progback) {
-			var deferred = defer();
+			var deferred, progressHandler;
 
-			listeners.push(function(promise) {
-				promise.then(callback, errback)
-					.then(deferred.resolve, deferred.reject, propagateProgress);
-			});
-
-			progressHandlers.push(propagateProgress);
-
-			return deferred.promise;
-
-			function propagateProgress(update) {
-				if(progback) {
+			deferred = defer();
+			progressHandler = progback
+				? function(update) {
 					try {
-							// Allow progress handler to transform progress event
-						update = progback(update);
+						// Allow progress handler to transform progress event
+						deferred.progress(progback(update));
 					} catch(e) {
 						// Use caught value as progress
-						update = e;
+						deferred.progress(e);
 					}
 				}
+				: deferred.progress;
 
-				// Always propagate the new progress value
-				deferred.progress(update);
-			}
+			handlers.push(function(promise) {
+				promise.then(callback, errback)
+					.then(deferred.resolve, deferred.reject, progressHandler);
+			});
+
+			progressHandlers.push(progressHandler);
+
+			return deferred.promise;
 		};
 
 		/**
@@ -327,26 +325,24 @@ define(['module'], function(module) {
 		 * @param completed {Promise} the completed value of this deferred
 		 */
 		_resolve = function(completed) {
-			var listener, i = 0;
+			var handler, i = 0;
 
 			completed = resolve(completed);
 
 			// Replace _then with one that directly notifies with the result.
 			_then = completed.then;
-
-			// Replace _resolve so that this Deferred can only be completed
-			// once. Also make _progress a noop, since progress can no longer
-			// be issued for the resolved promise.
+			// Replace _resolve so that this Deferred can only be completed once
 			_resolve = resolve;
+			// Make _progress a noop, to disallow progress for the resolved promise.
 			_progress = noop;
 
-			// Notify listeners
-			while (listener = listeners[i++]) {
-				listener(completed);
+			// Notify handlers
+			while (handler = handlers[i++]) {
+				handler(completed);
 			}
 
 			// Free progressHandlers array since we'll never issue progress events
-			progressHandlers = listeners = undef;
+			progressHandlers = handlers = undef;
 
 			return completed;
 		};
