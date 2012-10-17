@@ -35,7 +35,7 @@ buster.testCase('when.defer', {
 					assert.equals(val, 1);
 				},
 				fail
-			).always(done());
+			).always(done);
 
 			d.resolve(1);
 		},
