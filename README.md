@@ -7,6 +7,10 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 What's New?
 ===========
 
+### 1.5.2
+
+* Integration @domenic's [Promises/A Test Suite](https://github.com/domenic/promise-tests). Runs via `npm test`.
+
 ### 1.5.1
 
 * Performance optimization for [when.defer](when/blob/master/docs/api.md#whendefer), up to 1.5x in some cases.
@@ -19,10 +23,6 @@ What's New?
 * Options for disabling [paranoid mode](when/blob/master/docs/api.md#paranoid-mode) that provides a significant performance gain in v8 (e.g. Node and Chrome). See this [v8 performance problem with Object.freeze](http://stackoverflow.com/questions/8435080/any-performance-benefit-to-locking-down-javascript-objects) for more info.
 * **Important:** `deferred` and `deferred.resolver` no longer throw when resolved/rejected multiple times.  They will return silently as if the they had succeeded.  This prevents parties to whom *only* the `resolver` has been given from using `try/catch` to determine the state of the associated promise.
 	* For debugging, you can use the [when/debug](https://github.com/cujojs/when/wiki/when-debug) module, which will still throw when a deferred is resolved/rejected multiple times.
-
-### 1.4.4
-
-* Change UMD boilerplate to check for `exports` to avoid a problem with QUnit.  See [#54](https://github.com/cujojs/when/issues/54) for more info.
 
 [Full Changelog](https://github.com/cujojs/when/wiki/Changelog)
 
