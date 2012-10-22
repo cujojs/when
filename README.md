@@ -9,7 +9,8 @@ What's New?
 
 ### 1.5.2
 
-* Integration @domenic's [Promises/A Test Suite](https://github.com/domenic/promise-tests). Runs via `npm test`.
+* Integrate @domenic's [Promises/A Test Suite](https://github.com/domenic/promise-tests). Runs via `npm test`.
+* No functional change
 
 ### 1.5.1
 

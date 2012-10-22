@@ -7,7 +7,7 @@
  * Licensed under the MIT License at:
  * http://www.opensource.org/licenses/mit-license.php
  *
- * @version 1.5.1
+ * @version 1.5.2
  */
 
 (function(define, global) { 'use strict';
@@ -216,7 +216,7 @@ define(['module'], function(module) {
 				return rejected(e);
 			}
 		});
-		
+
 		return freeze(p);
 	}
 
@@ -251,7 +251,7 @@ define(['module'], function(module) {
 			resolve:  promiseResolve,
 			reject:   promiseReject,
 			progress: promiseProgress,
-			
+
 			promise:  freeze(promise),
 
 			resolver: freeze({
@@ -512,7 +512,7 @@ define(['module'], function(module) {
 			if(!toResolve) {
 				d.resolve(results);
 			} else {
-				
+
 				reject = d.reject;
 				resolve = function resolveOne(item, i) {
 					when(item, mapFunc).then(function(mapped) {
@@ -558,7 +558,7 @@ define(['module'], function(module) {
 	 */
 	function reduce(promise, reduceFunc /*, initialValue */) {
 		var args = slice.call(arguments, 1);
-		
+
 		return when(promise, function(array) {
 			var total;
 

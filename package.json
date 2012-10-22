@@ -1,6 +1,6 @@
 {
 	"name": "when",
-	"version": "1.6.0",
+	"version": "1.5.2",
 	"description": "A lightweight Promise and when() implementation, plus other async goodies.",
 	"keywords": ["promise", "promises", "deferred", "deferreds", "when", "async", "asynchronous", "cujo"],
 	"licenses": [
