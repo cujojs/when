@@ -4,8 +4,7 @@ When.js is cujojs's lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promise
 
 It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests), is [frighteningly fast](https://github.com/cujojs/promise-perf-tests#test-results), and is **under 1.3k** when compiled with Google Closure (w/advanced optimizations) and gzipped, and has no dependencies.
 
-What's New?
-===========
+# What's New?
 
 ### 1.5.2
 
