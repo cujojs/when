@@ -1,10 +1,8 @@
 # when.js [![Build Status](https://secure.travis-ci.org/cujojs/when.png)](http://travis-ci.org/cujojs/when)
 
-A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining, mapping and reducing, and has a robust unit test suite.
+When.js is cujojs's lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation, derived from the async core of [wire.js](https://github.com/cujojs/wire), cujojs's IOC Container.  It also provides several other useful Promise-related concepts, such as joining multiple promises, mapping and reducing collections of promises, timed promises, and has a robust [unit test suite](#running-the-unit-tests).
 
-It's **under 1.3k** when compiled with Google Closure (w/advanced optimizations) and gzipped, and has no dependencies.
-
-when.js was derived from the async core of [wire.js](https://github.com/cujojs/wire).
+It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests), is [frighteningly fast](https://github.com/cujojs/promise-perf-tests#test-results), and is **under 1.3k** when compiled with Google Closure (w/advanced optimizations) and gzipped, and has no dependencies.
 
 What's New?
 ===========
@@ -70,22 +68,21 @@ Quick Start
 1. `ringo-admin install cujojs/when`
 1. `var when = require('when');`
 
-Running the Unit Tests
-======================
+# Running the Unit Tests
 
-Install [buster.js](http://busterjs.org/)
+## Node
 
-`npm install -g buster`
+Note that when.js includes @domenic's [Promises/A Test Suite](https://github.com/domenic/promise-tests).  Running unit tests in Node will run both when.js's own test suite, and the Promises/A Test Suite.
 
-Run unit tests in Node:
+1. `npm install`
+1. `npm test`
 
-1. `buster test -e node`
+## Browsers
 
-Run unit tests in Browsers (and Node):
-
-1. `buster server` - this will print a url
-2. Point browsers at <buster server url>/capture, e.g. `localhost:1111/capture`
-3. `buster test` or `buster test -e browser`
+1. `npm install`
+1. `npm start` - starts buster server & prints a url
+1. Point browsers at <buster server url>/capture, e.g. `localhost:1111/capture`
+1. `npm run-script test-browser`
 
 References
 ----------

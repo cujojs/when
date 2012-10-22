@@ -35,7 +35,9 @@
 		"test": "test"
 	},
 	"scripts": {
-		"test": "buster-test -e node -r specification && promise-tests promises-a test/when-adapter.js",
-		"test-all": "buster test -e node && promise-tests all test/when-adapter.js"
+		"test": "buster test -e node && promise-tests promises-a test/when-adapter.js",
+		"test-all": "buster test -e node && promise-tests all test/when-adapter.js",
+		"start": "buster server",
+		"test-browser": "buster test -e browser"
 	}
 }
