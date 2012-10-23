@@ -1,13 +1,15 @@
 # when.js [![Build Status](https://secure.travis-ci.org/cujojs/when.png)](http://travis-ci.org/cujojs/when)
 
-A lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation.  It also provides several other useful Promise-related concepts, such as joining, mapping and reducing, and has a robust unit test suite.
+When.js is cujojs's lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation, derived from the async core of [wire.js](https://github.com/cujojs/wire), cujojs's IOC Container.  It also provides several other useful Promise-related concepts, such as joining multiple promises, mapping and reducing collections of promises, timed promises, and has a robust [unit test suite](#running-the-unit-tests).
 
-It's **under 1.3k** when compiled with Google Closure (w/advanced optimizations) and gzipped, and has no dependencies.
+It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests), is [frighteningly fast](https://github.com/cujojs/promise-perf-tests#test-results), and is **under 1.3k** when compiled with Google Closure (w/advanced optimizations) and gzipped, and has no dependencies.
 
-when.js was derived from the async core of [wire.js](https://github.com/cujojs/wire).
+# What's New?
 
-What's New?
-===========
+### 1.5.2
+
+* Integrate @domenic's [Promises/A Test Suite](https://github.com/domenic/promise-tests). Runs via `npm test`.
+* No functional change
 
 ### 1.6.0
 
@@ -16,7 +18,7 @@ What's New?
 ### 1.5.1
 
 * Performance optimization for [when.defer](when/blob/master/docs/api.md#whendefer), up to 1.5x in some cases.
-* [when/debug](when/blob/master/docs/api.md#whendebug) can now log exceptions and rejections in deeper promise chains, even when the promises involved aren't when.js promises.
+* [when/debug](when/blob/master/docs/api.md#whendebug) can now log exceptions and rejections in deeper promise chains, in some cases, even when the promises involved aren't when.js promises.
 
 ### 1.5.0
 
@@ -26,14 +28,9 @@ What's New?
 * **Important:** `deferred` and `deferred.resolver` no longer throw when resolved/rejected multiple times.  They will return silently as if the they had succeeded.  This prevents parties to whom *only* the `resolver` has been given from using `try/catch` to determine the state of the associated promise.
 	* For debugging, you can use the [when/debug](https://github.com/cujojs/when/wiki/when-debug) module, which will still throw when a deferred is resolved/rejected multiple times.
 
-### 1.4.4
-
-* Change UMD boilerplate to check for `exports` to avoid a problem with QUnit.  See [#54](https://github.com/cujojs/when/issues/54) for more info.
-
 [Full Changelog](https://github.com/cujojs/when/wiki/Changelog)
 
-Docs & Examples
-===============
+# Docs & Examples
 
 [API docs](when/blob/master/docs/api.md#api)
 
@@ -74,22 +71,21 @@ Quick Start
 1. `ringo-admin install cujojs/when`
 1. `var when = require('when');`
 
-Running the Unit Tests
-======================
+# Running the Unit Tests
 
-Install [buster.js](http://busterjs.org/)
+## Node
 
-`npm install -g buster`
+Note that when.js includes @domenic's [Promises/A Test Suite](https://github.com/domenic/promise-tests).  Running unit tests in Node will run both when.js's own test suite, and the Promises/A Test Suite.
 
-Run unit tests in Node:
+1. `npm install`
+1. `npm test`
 
-1. `buster test -e node`
+## Browsers
 
-Run unit tests in Browsers (and Node):
-
-1. `buster server` - this will print a url
-2. Point browsers at <buster server url>/capture, e.g. `localhost:1111/capture`
-3. `buster test` or `buster test -e browser`
+1. `npm install`
+1. `npm start` - starts buster server & prints a url
+1. Point browsers at <buster server url>/capture, e.g. `localhost:1111/capture`
+1. `npm run-script test-browser`
 
 References
 ----------
