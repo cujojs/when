@@ -43,12 +43,11 @@
 (function(define) {
 define(['./when'], function(when) {
 
-	var promiseId, pending, exceptionsToRethrow, own, debugProp, undef;
+	var promiseId, pending, exceptionsToRethrow, own, undef;
 
 	promiseId = 0;
 	pending = {};
 	own = Object.prototype.hasOwnProperty;
-	debugProp = 'whendebug';
 
 	exceptionsToRethrow = {
 		RangeError: 1,
@@ -61,20 +60,22 @@ define(['./when'], function(when) {
 	 * Replacement for when() that sets up debug logging on the
 	 * returned promise.
 	 */
-	function whenDebug() {
-		return debugPromise(when.apply(null, wrapCallbacks(arguments)));
+	function whenDebug(promise, cb, eb, pb) {
+		var args = [promise].concat(wrapCallbacks(promise, [cb, eb, pb]));
+		return debugPromise(when.apply(null, args), promise);
 	}
 
 	/**
 	 * Setup debug output handlers for the supplied promise.
 	 * @param p {Promise} A trusted (when.js) promise
+	 * @param parent {Promise} promise from which p was created (e.g. via then())
 	 * @return {Promise} a new promise that outputs debug info and
 	 * has a useful toString
 	 */
 	function debugPromise(p, parent) {
 		var id, origThen, newPromise, logReject;
 
-		if(own.call(p, debugProp)) {
+		if(own.call(p, 'parent')) {
 			return p;
 		}
 
@@ -85,7 +86,6 @@ define(['./when'], function(when) {
 		newPromise = beget(p);
 		newPromise.id = id;
 		newPromise.parent = parent;
-		newPromise[debugProp] = true;
 
 		newPromise.toString = function() {
 			return toString('Promise', id);
@@ -99,7 +99,7 @@ define(['./when'], function(when) {
 				} while((promise = promise.parent) && !promise.handled);
 			}
 
-			return debugPromise(origThen.apply(p, wrapCallbacks(arguments)), newPromise);
+			return debugPromise(origThen.apply(p, wrapCallbacks(newPromise, arguments)), newPromise);
 		};
 
 		logReject = function() {
@@ -113,10 +113,12 @@ define(['./when'], function(when) {
 				};
 				return val;
 			},
-			wrapCallback(function(err) {
+			wrapCallback(newPromise, function(err) {
 				newPromise.toString = function() {
 					return toString('Promise', id, 'REJECTED', err);
 				};
+
+				callGlobalHandler('reject', newPromise, err);
 
 				if(!newPromise.handled) {
 					logReject();
@@ -166,30 +168,25 @@ define(['./when'], function(when) {
 
 		origProgress = d.resolver.progress;
 		d.progress = d.resolver.progress = function(update) {
-			if(value !== pending) {
-				alreadyResolved();
-			}
+			// Notify global debug handler, if set
+			callGlobalHandler('progress', d, update);
 
 			return origProgress(update);
 		};
 
 		origResolve = d.resolver.resolve;
 		d.resolve = d.resolver.resolve = function(val) {
-			if(value !== pending) {
-				alreadyResolved();
-			}
-
 			value = val;
 			status = 'resolving';
+
+			// Notify global debug handler, if set
+			callGlobalHandler('resolve', d, val);
+
 			return origResolve.apply(undef, arguments);
 		};
 
 		origReject = d.resolver.reject;
 		d.reject = d.resolver.reject = function(err) {
-			if(value !== pending) {
-				alreadyResolved();
-			}
-
 			value = err;
 			status = 'REJECTING';
 			return origReject.apply(undef, arguments);
@@ -210,10 +207,6 @@ define(['./when'], function(when) {
 		// Add an id to all directly created promises.  It'd be great
 		// to find a way to propagate this id to promise created by .then()
 		d.resolver.id = id;
-
-		// TODO: Should we still freeze these?
-		// freeze(d.promise);
-		// freeze(d.resolver);
 
 		return d;
 	}
@@ -240,35 +233,59 @@ define(['./when'], function(when) {
 
 	// Wrap a promise callback to catch exceptions and log or
 	// rethrow as uncatchable
-	function wrapCallback(cb) {
-		if(typeof cb != 'function') {
-			return cb;
-		}
-
+	function wrapCallback(promise, cb) {
 		return function(v) {
 			try {
 				return cb(v);
 			} catch(err) {
-				throwUncatchableIfNecessary(err);
-				
+				if(err) {
+					if (err.name in exceptionsToRethrow) {
+						throwUncatchable(err);
+					}
+
+					callGlobalHandler('reject', promise, err);
+				}
+
 				throw err;
 			}
 		};
 	}
 
 	// Wrap a callback, errback, progressback tuple
-	function wrapCallbacks(callbacks) {
+	function wrapCallbacks(promise, callbacks) {
 		var cb, args, len, i;
 
 		args = [];
 
 		for(i = 0, len = callbacks.length; i < len; i++) {
 			args[i] = typeof (cb = callbacks[i]) == 'function'
-				? wrapCallback(cb)
+				? wrapCallback(promise, cb)
 				: cb;
 		}
 
 		return args;
+	}
+
+	function callGlobalHandler(handler, promise, triggeringValue, auxValue) {
+		var globalHandlers = whenDebug.debug;
+
+		if(!(globalHandlers && typeof globalHandlers[handler] === 'function')) {
+			return;
+		}
+
+		if(arguments.length < 4 && handler == 'reject') {
+			try {
+				throw new Error(promise.toString());
+			} catch(e) {
+				auxValue = e;
+			}
+		}
+
+		try {
+			globalHandlers[handler](promise, triggeringValue, auxValue);
+		} catch(handlerError) {
+			throwUncatchable(new Error('when.js global debug handler threw: ' + String(handlerError)));
+		}
 	}
 
 	// Stringify a promise, deferred, or resolver
@@ -285,19 +302,10 @@ define(['./when'], function(when) {
 		return s;
 	}
 
-	function throwUncatchableIfNecessary(err) {
-		if (err && err.name in exceptionsToRethrow) {
-			setTimeout(function() {
-				throw err;
-			}, 0);
-		}
-
-	}
-
-	// Helper to invoke when resolve/reject/progress is called on
-	// an already-resolved deferred or resolver
-	function alreadyResolved() {
-		throw new Error('already completed');
+	function throwUncatchable(err) {
+		setTimeout(function() {
+			throw err;
+		}, 0);
 	}
 
 	// The usual Crockford

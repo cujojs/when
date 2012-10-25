@@ -17,9 +17,10 @@ isFrozen = Object.isFrozen || function() { return true; };
 
 buster.testCase('promise', {
 
-	'should be frozen': function() {
-		assert(Object.isFrozen(defer().promise));
-	},
+	// TODO: Reinstate when v8 Object.freeze() performance is sane
+//	'should be frozen': function() {
+//		assert(Object.isFrozen(defer().promise));
+//	},
 
 	'should return a promise': function() {
 		assert.isFunction(defer().promise.then().then);

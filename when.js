@@ -10,26 +10,9 @@
  * @version 1.6.0
  */
 
-(function(define, global) { 'use strict';
-define(['module'], function(module) {
-	var freeze, reduceArray, slice, envFreeze, falseRx, undef;
-
-	falseRx = /^false$/i;
-	envFreeze = 'WHEN_PARANOID';
-
-	// Do we need to be extra-secure? i.e. freeze promise, etc.
-	if(module && typeof module.config === 'function') {
-		freeze = module.config().paranoid !== false;
-	} else if(typeof process == 'object') {
-		freeze = !falseRx.test(process.env[envFreeze]);
-	} else if(typeof system == 'object') {
-		freeze = !falseRx.test(system.env[envFreeze]);
-	} else {
-		freeze = !(global && global.when_config && global.when_config.paranoid === false);
-	}
-
-	// If secure and Object.freeze is available, use it.
-	freeze = (freeze && Object.freeze) || identity;
+(function(define) { 'use strict';
+define(['module'], function () {
+	var reduceArray, slice, undef;
 
 	//
 	// Public API
@@ -158,7 +141,7 @@ define(['module'], function(module) {
 		this.then = then;
 	}
 
-	Promise.prototype = freeze({
+	Promise.prototype = {
 		/**
 		 * Register a callback that will be called when a promise is
 		 * resolved or rejected.  Optionally also register a progress handler.
@@ -181,7 +164,7 @@ define(['module'], function(module) {
 		otherwise: function(errback) {
 			return this.then(undef, errback);
 		}
-	});
+	};
 
 	/**
 	 * Create an already-resolved promise for the supplied value
@@ -199,7 +182,7 @@ define(['module'], function(module) {
 			}
 		});
 
-		return freeze(p);
+		return p;
 	}
 
 	/**
@@ -219,7 +202,7 @@ define(['module'], function(module) {
 			}
 		});
 
-		return freeze(p);
+		return p;
 	}
 
 	/**
@@ -255,13 +238,13 @@ define(['module'], function(module) {
 			// TODO: Consider renaming progress() to notify()
 			progress: promiseProgress,
 
-			promise:  freeze(promise),
+			promise:  promise,
 
-			resolver: freeze({
+			resolver: {
 				resolve:  promiseResolve,
 				reject:   promiseReject,
 				progress: promiseProgress
-			})
+			}
 		};
 
 		handlers = [];
@@ -725,7 +708,6 @@ define(['module'], function(module) {
 	: function (deps, factory) { typeof exports === 'object'
 		? (module.exports = factory())
 		: (this.when      = factory());
-	},
+	}
 	// Boilerplate for AMD, Node, and browser global
-	this
 );
