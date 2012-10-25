@@ -7,7 +7,7 @@
  * Licensed under the MIT License at:
  * http://www.opensource.org/licenses/mit-license.php
  *
- * @version 1.6.1
+ * @version 2.x.x
  */
 
 (function(define) { 'use strict';
@@ -34,6 +34,9 @@ define(['module'], function () {
 	when.chain     = chain;     // Make a promise trigger another resolver
 
 	when.isPromise = isPromise; // Determine if a thing is a promise
+
+	// NOTE: For sync testing only:
+	//	nextTick = function(t) { t(); };
 
 	// TODO: Use something lighter like this, and require a setImmediate polyfill?
 //	nextTick = typeof process === 'object' ? process.nextTick
@@ -84,7 +87,7 @@ define(['module'], function () {
 			channel.port2.postMessage(0);
 		};
 	}
-	
+
 	/**
 	 * Register an observer for a promise or immediate value.
 	 * @function
@@ -184,7 +187,7 @@ define(['module'], function () {
 	 * @return {Promise} rejected {@link Promise}
 	 */
 	function reject(promiseOrValue) {
-		return resolve(promiseOrValue).then(function(value) {
+		return when(promiseOrValue, function(value) {
 			return rejected(value);
 		});
 	}
@@ -464,7 +467,7 @@ define(['module'], function () {
 					reasons.push(reason);
 					if(!--toReject) {
 						fulfillOne = rejectOne = noop;
-						deferred.reject(reasons);
+						deferred.reject(reasons.slice());
 					}
 				};
 
@@ -476,7 +479,7 @@ define(['module'], function () {
 
 					if (!--toResolve) {
 						fulfillOne = rejectOne = noop;
-						deferred.resolve(values);
+						deferred.resolve(values.slice());
 					}
 				};
 
