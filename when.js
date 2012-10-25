@@ -12,7 +12,7 @@
 
 (function(define) { 'use strict';
 define(['module'], function () {
-	var reduceArray, slice, undef;
+	var reduceArray, slice, nextTick, undef;
 
 	//
 	// Public API
@@ -35,6 +35,56 @@ define(['module'], function () {
 
 	when.isPromise = isPromise; // Determine if a thing is a promise
 
+	// TODO: Use something lighter like this, and require a setImmediate polyfill?
+//	nextTick = typeof process === 'object' ? process.nextTick
+//		: typeof setImmediate === 'function' ? setImmediate
+//		: function(task) { setTimeout(task, 0); };
+//
+	if (typeof process !== "undefined") {
+		// node
+		nextTick = process.nextTick;
+	} else if (typeof msSetImmediate === "function") {
+		// IE 10. From http://github.com/kriskowal/q
+		// bind is necessary
+		nextTick = msSetImmediate.bind(window);
+	} else if (typeof setImmediate === "function") {
+		nextTick = setImmediate;
+	} else if (typeof MessageChannel !== "undefined") {
+		nextTick = initMessageChannel();
+	} else {
+		// older envs w/only setTimeout
+		nextTick = function (task) {
+			setTimeout(task, 0);
+		};
+	}
+
+	/**
+	 * MessageChannel for browsers that support it
+	 * From http://www.nonblocking.io/2011/06/windownexttick.html
+	 */
+	function initMessageChannel() {
+		var channel, head, tail;
+
+		channel = new MessageChannel();
+		head = {};
+		tail = head;
+
+		channel.port1.onmessage = function () {
+			var task;
+
+			head = head.next;
+			task = head.task;
+			delete head.task;
+
+			task();
+		};
+
+		return function (task) {
+			tail = tail.next = {task: task};
+			channel.port2.postMessage(0);
+		};
+	}
+	
 	/**
 	 * Register an observer for a promise or immediate value.
 	 * @function
@@ -72,7 +122,7 @@ define(['module'], function () {
 	 *   * the resolution value of promiseOrValue if it's a foreign promise, or
 	 *   * promiseOrValue if it's a value
 	 */
-	function resolve(promiseOrValue) {
+	function promiseFor(promiseOrValue) {
 		var promise, deferred;
 
 		if(promiseOrValue instanceof Promise) {
@@ -115,6 +165,14 @@ define(['module'], function () {
 		return promise;
 	}
 
+	function resolve(value) {
+		return new Promise(function(fulfilled, broken, progressed) {
+			var d = defer();
+			d.resolve(value);
+			return d.promise.then(fulfilled, broken, progressed);
+		});
+	}
+
 	/**
 	 * Returns a rejected promise for the supplied promiseOrValue. If
 	 * promiseOrValue is a value, it will be the rejection value of the
@@ -126,7 +184,7 @@ define(['module'], function () {
 	 * @return {Promise} rejected {@link Promise}
 	 */
 	function reject(promiseOrValue) {
-		return when(promiseOrValue, function(value) {
+		return resolve(promiseOrValue).then(function(value) {
 			return rejected(value);
 		});
 	}
@@ -177,7 +235,7 @@ define(['module'], function () {
 	function fulfilled(value) {
 		var p = new Promise(function(callback) {
 			try {
-				return resolve(callback ? callback(value) : value);
+				return promiseFor(callback ? callback(value) : value);
 			} catch(e) {
 				return rejected(e);
 			}
@@ -197,7 +255,7 @@ define(['module'], function () {
 	function rejected(reason) {
 		var p = new Promise(function(callback, errback) {
 			try {
-				return errback ? resolve(errback(reason)) : rejected(reason);
+				return errback ? promiseFor(errback(reason)) : rejected(reason);
 			} catch(e) {
 				return rejected(e);
 			}
@@ -219,8 +277,7 @@ define(['module'], function () {
 	 */
 	function defer() {
 		var deferred, promise, handlers, progressHandlers,
-			_then, _progress, _resolve;
-
+			_bind, _progress, _resolve;
 		/**
 		 * The promise for the new deferred
 		 * @type {Promise}
@@ -251,40 +308,24 @@ define(['module'], function () {
 		handlers = [];
 		progressHandlers = [];
 
-		/**
-		 * Pre-resolution then() that adds the supplied callback, errback, and progback
-		 * functions to the registered listeners
-		 * @private
-		 *
-		 * @param [callback] {Function} resolution handler
-		 * @param [errback] {Function} rejection handler
-		 * @param [progback] {Function} progress handler
-		 * @throws {Error} if any argument is not null, undefined, or a Function
-		 */
-		_then = function(callback, errback, progback) {
-			var deferred, progressHandler;
-
-			deferred = defer();
-			progressHandler = progback
+		_bind = function(fulfilled, broken, progressed, next) {
+			var progressHandler = progressed
 				? function(update) {
 					try {
 						// Allow progress handler to transform progress event
-						deferred.progress(progback(update));
+						next.progress(progressed(update));
 					} catch(e) {
 						// Use caught value as progress
-						deferred.progress(e);
+						next.progress(e);
 					}
 				}
-				: deferred.progress;
+				: next.progress;
 
 			handlers.push(function(promise) {
-				promise.then(callback, errback)
-					.then(deferred.resolve, deferred.reject, progressHandler);
+				promise.then(fulfilled, broken).then(next.resolve, next.reject, progressHandler);
 			});
 
 			progressHandlers.push(progressHandler);
-
-			return deferred.promise;
 		};
 
 		/**
@@ -304,20 +345,22 @@ define(['module'], function () {
 		 * @param completed {Promise} the completed value of this deferred
 		 */
 		_resolve = function(completed) {
-			completed = resolve(completed);
 
-			// Replace _then with one that directly notifies with the result.
-			_then = completed.then;
+			completed = promiseFor(completed);
+
 			// Replace _resolve so that this Deferred can only be completed once
 			_resolve = resolve;
 			// Make _progress a noop, to disallow progress for the resolved promise.
 			_progress = noop;
 
+			_bind = function(fulfilled, broken, _, next) {
+				nextTick(function() {
+					completed.then(fulfilled, broken).then(next.resolve, next.reject, next.progress);
+				});
+			};
+
 			// Notify handlers
 			processQueue(handlers, completed);
-
-			// Free progressHandlers array since we'll never issue progress events
-			progressHandlers = handlers = undef;
 
 			return completed;
 		};
@@ -326,14 +369,18 @@ define(['module'], function () {
 
 		/**
 		 * Wrapper to allow _then to be replaced safely
-		 * @param [callback] {Function} resolution handler
-		 * @param [errback] {Function} rejection handler
-		 * @param [progback] {Function} progress handler
+		 * @param [fulfilled] {Function} resolution handler
+		 * @param [broken] {Function} rejection handler
+		 * @param [progressed] {Function} progress handler
 		 * @return {Promise} new Promise
 		 * @throws {Error} if any argument is not null, undefined, or a Function
 		 */
-		function then(callback, errback, progback) {
-			return _then(callback, errback, progback);
+		function then(fulfilled, broken, progressed) {
+			var deferred = defer();
+
+			_bind(fulfilled, broken, progressed, deferred);
+
+			return deferred.promise;
 		}
 
 		/**
@@ -625,11 +672,12 @@ define(['module'], function () {
 	//
 
 	function processQueue(queue, value) {
-		var handler, i = 0;
-
-		while (handler = queue[i++]) {
-			handler(value);
-		}
+		nextTick(function() {
+			var handler, i = 0;
+			while (handler = queue[i++]) {
+				handler(value);
+			}
+		});
 	}
 
 	/**

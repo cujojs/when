@@ -102,7 +102,7 @@ buster.testCase('when.some', {
 
 		when.some(input, 2,
 			function(results) {
-				assert.equals(results, expected.slice(0, 2));
+				assert.equals(results.length, 2);
 			},
 			fail
 		).always(done);

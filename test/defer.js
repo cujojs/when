@@ -72,9 +72,7 @@ buster.testCase('when.defer', {
 
 			d.resolve(1).then(
 				function(returnedPromiseVal) {
-					d.then(function(val) {
-						assert.equals(returnedPromiseVal, val);
-					});
+					assert.equals(returnedPromiseVal, 1);
 				},
 				fail
 			).always(done);
@@ -83,11 +81,9 @@ buster.testCase('when.defer', {
 		'should return a promise for a promised resolution value': function(done) {
 			var d = when.defer();
 
-			d.resolve(when(1)).then(
+			d.resolve(when.resolve(1)).then(
 				function(returnedPromiseVal) {
-					d.then(function(val) {
-						assert.equals(returnedPromiseVal, val);
-					});
+					assert.equals(returnedPromiseVal, 1);
 				},
 				fail
 			).always(done);
@@ -101,12 +97,7 @@ buster.testCase('when.defer', {
 			d.resolve(when.reject(1)).then(
 				fail,
 				function(returnedPromiseVal) {
-					d.then(
-						fail,
-						function(val) {
-							assert.equals(returnedPromiseVal, val);
-						}
-					);
+					assert.equals(returnedPromiseVal, 1);
 				}
 			).always(done);
 		},
@@ -151,12 +142,7 @@ buster.testCase('when.defer', {
 			d.reject(1).then(
 				fail,
 				function(returnedPromiseVal) {
-					d.then(
-						fail,
-						function(val) {
-							assert.equals(returnedPromiseVal, val);
-						}
-					);
+					assert.equals(returnedPromiseVal, 1);
 				}
 			).always(done);
 		},
