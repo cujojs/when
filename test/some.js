@@ -78,7 +78,7 @@ buster.testCase('when.some', {
 		).always(done);
 	},
 
-	'should reject with a all rejected input values if resolving howMany becomes impossible': function(done) {
+	'should reject with all rejected input values if resolving howMany becomes impossible': function(done) {
 		var input = [resolved(1), rejected(2), rejected(3)];
 		when.some(input, 2,
 			fail,
