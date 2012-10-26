@@ -5,6 +5,7 @@ API
 1. [Deferred](#deferred)
 1. [Promise](#promise)
 	* [Extended Promise API](#extended-promise-api)
+	* [Progress events](#progress-events)
 1. [Resolver](#resolver)
 1. [Creating promises](#creating-promises)
 	* [when.defer](#whendefer)
@@ -125,6 +126,66 @@ promise.otherwise(errback);
 ```
 
 Register only an errback
+
+## Progress events
+
+Progress events in the Promises/A proposal are optional.  They have proven to be useful in practice, but unfortunately, they are also underspecified, and there is no current *de facto* or agreed-upon behavior in the promise implementor community.
+
+The two sections below describe how they behave in when.js.
+
+### 1.5.x and earlier
+
+Prior to 1.6.0, progress events were only delivered to progress handlers registered directly on the promise where the progress events were being issued.  In other words, in the following example, `myProgressHandler` would be called with `update`, but `myOtherProgressHandler` would *not*.
+
+```js
+var d = when.defer();
+d.promise.then(null, null, myProgressHandler);
+
+var chainedPromise = d.promise.then(doStuff);
+chainedPromise.then(null, null, myOtherProgressHandler);
+
+var update = 1;
+d.progress(update);
+```
+
+### 1.6.0 and later
+
+As of 1.6.0, progress events will be propagated through a promise chain:
+
+1. In the same way as resolution and rejection handlers, your progress handler *MUST* return a progress event to be propagated to the next link in the chain.  If you return nothing, *undefined will be propagated*.
+1. Also in the same way as resolutions and rejections, if you don't register a progress handler (e.g. `.then(handleResolve, handleReject /* no progress handler */)`), the update will be propagated through.
+1. **This behavior will likely change in future releases:** If your progress handler throws an exception, the exception will be propagated to the next link in the chain. The best thing to do is to ensure your progress handlers do not throw exceptions.
+	1. **Known Issue:** If you allow an exception to propagate and there are no more progress handlers in the chain, the exception will be silently ignored. We're working on a solution to this.
+
+This gives you the opportunity to *transform* progress events at each step in the chain so that they are meaningful to the next step.  It also allows you to choose *not* to transform them, and simply let them propagate untransformed, by not registering a progress handler.
+
+Here is how the above situation works in >= 1.6.0:
+
+```js
+function myProgressHandler(update) {
+	logProgress(update);
+	// Return a transformed progress update that is
+	// useful for progress handlers of the next promise!
+	return update + 1;
+}
+
+function myOtherProgressHandler(update) {
+	logProgress(update);
+}
+
+var d = when.defer();
+d.promise.then(null, null, myProgressHandler);
+
+var chainedPromise = d.promise.then(doStuff);
+chainedPromise.then(null, null, myOtherProgressHandler);
+
+var update = 1;
+d.progress(update);
+
+// Results in:
+// logProgress(1);
+// logProgress(2);
+```
 
 ## Resolver
 

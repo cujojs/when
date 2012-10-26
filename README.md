@@ -6,19 +6,23 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 # What's New?
 
+### 1.6.0
+
+* New [when.join](when/blob/master/docs/api.md#whenjoin) - Joins 2 or more promises together into a single promise.
+* [when.some](when/blob/master/docs/api.md#whensome) and [when.any](when/blob/master/docs/api.md#whenany) now act like competitive races, and have generally more useful behavior.  [Read the discussion in #60](https://github.com/cujojs/when/issues/60).
+* *Experimental* progress event propagation.  Progress events will propagate through promise chains. [Read the details here](when/blob/master/docs/api.md#progress-events).
+* For now, removed calls to `Object.freeze`. Promises are no longer frozen due to a horrendous v8 performance penalty.  [Read discussion here](https://groups.google.com/d/topic/cujojs/w_olYqorbsY/discussion).
+* [when/debug](https://github.com/cujojs/when/wiki/when-debug) now allows setting global a debugging callback for rejected promises.
+
 ### 1.5.2
 
 * Integrate @domenic's [Promises/A Test Suite](https://github.com/domenic/promise-tests). Runs via `npm test`.
 * No functional change
 
-### 1.6.0
-
-* when.join - Joins 2 or more promises together into a single promise.
-
 ### 1.5.1
 
 * Performance optimization for [when.defer](when/blob/master/docs/api.md#whendefer), up to 1.5x in some cases.
-* [when/debug](when/blob/master/docs/api.md#whendebug) can now log exceptions and rejections in deeper promise chains, in some cases, even when the promises involved aren't when.js promises.
+* [when/debug](https://github.com/cujojs/when/wiki/when-debug) can now log exceptions and rejections in deeper promise chains, in some cases, even when the promises involved aren't when.js promises.
 
 ### 1.5.0
 
