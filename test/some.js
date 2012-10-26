@@ -78,12 +78,12 @@ buster.testCase('when.some', {
 		).always(done);
 	},
 
-	'should reject if any input promise rejects before desired number of inputs are resolved': function(done) {
-		var input = [resolved(1), rejected(2), resolved(3)];
+	'should reject with a all rejected input values if resolving howMany becomes impossible': function(done) {
+		var input = [resolved(1), rejected(2), rejected(3)];
 		when.some(input, 2,
 			fail,
 			function(failed) {
-				assert.equals(failed, 2);
+				assert.equals(failed, [2, 3]);
 			}
 		).always(done);
 	},

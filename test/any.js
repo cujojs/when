@@ -50,12 +50,12 @@ buster.testCase('when.any', {
 		).always(done);
 	},
 
-	'should reject with a rejected input value': function(done) {
-		var input = [rejected(1), resolved(2), resolved(3)];
+	'should reject with all rejected input values if all inputs are rejected': function(done) {
+		var input = [rejected(1), rejected(2), rejected(3)];
 		when.any(input,
 			fail,
 			function(result) {
-				assert.equals(result, 1);
+				assert.equals(result, [1, 2, 3]);
 			}
 		).always(done);
 	},

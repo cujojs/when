@@ -360,7 +360,7 @@ define(['module'], function () {
 
 		/**
 		 * Wrapper to allow _progress to be replaced
-		 * @param  {*} update progress update
+		 * @param {*} update progress update
 		 */
 		function promiseProgress(update) {
 			return _progress(update);
@@ -372,7 +372,7 @@ define(['module'], function () {
 	 * test from http://wiki.commonjs.org/wiki/Promises/A to determine if
 	 * promiseOrValue is a promise.
 	 *
-	 * @param promiseOrValue anything
+	 * @param {*} promiseOrValue anything
 	 * @returns {Boolean} true if promiseOrValue is a {@link Promise}
 	 */
 	function isPromise(promiseOrValue) {
@@ -380,56 +380,64 @@ define(['module'], function () {
 	}
 
 	/**
-	 * Return a promise that will resolve when howMany of the supplied promisesOrValues
-	 * have resolved. The resolution value of the returned promise will be an array of
-	 * length howMany containing the resolutions values of the triggering promisesOrValues.
+	 * Initiates a competitive race, returning a promise that will resolve when
+	 * howMany of the supplied promisesOrValues have resolved, or will reject when
+	 * it becomes impossible for howMany to resolve, for example, when
+	 * (promisesOrValues.length - howMany) + 1 input promises reject.
 	 * @memberOf when
 	 *
 	 * @param promisesOrValues {Array} array of anything, may contain a mix
 	 *      of {@link Promise}s and values
-	 * @param howMany
-	 * @param [callback]
-	 * @param [errback]
-	 * @param [progressHandler]
-	 * @returns {Promise}
+	 * @param howMany {Number} number of promisesOrValues to resolve
+	 * @param [callback] {Function} resolution handler
+	 * @param [errback] {Function} rejection handler
+	 * @param [progback] {Function} progress handler
+	 * @returns {Promise} promise that will resolve to an array of howMany values that
+	 * resolved first, or will reject with an array of (promisesOrValues.length - howMany) + 1
+	 * rejection reasons.
 	 */
-	function some(promisesOrValues, howMany, callback, errback, progressHandler) {
+	function some(promisesOrValues, howMany, callback, errback, progback) {
 
 		checkCallbacks(2, arguments);
 
 		return when(promisesOrValues, function(promisesOrValues) {
 
-			var toResolve, results, deferred, resolve, reject, progress, len, i;
+			var toResolve, toReject, values, reasons, deferred, resolveOne, rejectOne, progress, len, i;
 
 			len = promisesOrValues.length >>> 0;
 
 			toResolve = Math.max(0, Math.min(howMany, len));
-			results = [];
+			values = [];
+
+			toReject = (len - toResolve) + 1;
+			reasons = [];
+
 			deferred = defer();
 
 			// No items in the input, resolve immediately
 			if (!toResolve) {
-				deferred.resolve(results);
+				deferred.resolve(values);
 
 			} else {
-				// TODO: Consider rejecting only when N (or promises.length - N?)
-				// promises have been rejected instead of only one?
-				reject = deferred.reject;
 				progress = deferred.progress;
 
-				// Resolver for promises.  Captures the value and resolves
-				// the returned promise when toResolve reaches zero.
-				// Overwrites resolver var with a noop once promise has
-				// be resolved to cover case where n < promises.length
-				resolve = function(val) {
+				rejectOne = function(reason) {
+					reasons.push(reason);
+					if(!--toReject) {
+						resolveOne = rejectOne = noop;
+						deferred.reject(reasons);
+					}
+				};
+
+				resolveOne = function(val) {
 					// This orders the values based on promise resolution order
 					// Another strategy would be to use the original position of
 					// the corresponding promise.
-					results.push(val);
+					values.push(val);
 
 					if (!--toResolve) {
-						resolve = noop;
-						deferred.resolve(results);
+						resolveOne = rejectOne = noop;
+						deferred.resolve(values);
 					}
 				};
 
@@ -440,8 +448,40 @@ define(['module'], function () {
 				}
 			}
 
-			return deferred.then(callback, errback, progressHandler);
+			return deferred.then(callback, errback, progback);
+
+			function reject(reason) {
+				rejectOne(reason);
+			}
+
+			function resolve(val) {
+				resolveOne(val);
+			}
+
 		});
+	}
+
+	/**
+	 * Initiates a competitive race, returning a promise that will resolve when
+	 * any one of the supplied promisesOrValues has resolved or will reject when
+	 * *all* promisesOrValues have rejected.
+	 * @memberOf when
+	 *
+	 * @param promisesOrValues {Array|Promise} array of anything, may contain a mix
+	 *      of {@link Promise}s and values
+	 * @param [callback] {Function} resolution handler
+	 * @param [errback] {Function} rejection handler
+	 * @param [progback] {Function} progress handler
+	 * @returns {Promise} promise that will resolve to the value that resolved first, or
+	 * will reject with an array of all rejected inputs.
+	 */
+	function any(promisesOrValues, callback, errback, progback) {
+
+		function unwrapSingleResult(val) {
+			return callback ? callback(val[0]) : val[0];
+		}
+
+		return some(promisesOrValues, 1, unwrapSingleResult, errback, progback);
 	}
 
 	/**
@@ -471,28 +511,6 @@ define(['module'], function () {
 	 */
 	function join(/* ...promises */) {
 		return map(arguments, identity);
-	}
-
-	/**
-	 * Return a promise that will resolve when any one of the supplied promisesOrValues
-	 * has resolved. The resolution value of the returned promise will be the resolution
-	 * value of the triggering promiseOrValue.
-	 * @memberOf when
-	 *
-	 * @param promisesOrValues {Array|Promise} array of anything, may contain a mix
-	 *      of {@link Promise}s and values
-	 * @param [callback] {Function}
-	 * @param [errback] {Function}
-	 * @param [progressHandler] {Function}
-	 * @returns {Promise}
-	 */
-	function any(promisesOrValues, callback, errback, progressHandler) {
-
-		function unwrapSingleResult(val) {
-			return callback ? callback(val[0]) : val[0];
-		}
-
-		return some(promisesOrValues, 1, unwrapSingleResult, errback, progressHandler);
 	}
 
 	/**
