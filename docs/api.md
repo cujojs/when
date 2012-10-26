@@ -17,7 +17,7 @@ API
 	* [when.all](#whenall)
 	* [when.map](#whenmap)
 	* [when.reduce](#whenreduce)
-1. [Competitive Races](#competitive-races)
+1. [Competitive races](#competitive-races)
 	* [when.any](#whenany)
 	* [when.some](#whensome)
 1. [Timed promises](#timed-promises)
@@ -272,7 +272,7 @@ Where:
 * `index` the *basis* of `nextItem` ... practically speaking, this is the array index of the promiseOrValue corresponding to `nextItem`
 * `total` is the total number of items in `promisesOrValues`
 
-# Competitive Races
+# Competitive races
 
 ## when.any()
 
