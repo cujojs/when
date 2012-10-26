@@ -296,7 +296,7 @@ Where:
 
 * array is an Array *or a promise for an array*, which may contain promises and/or values.
 
-Initiates a competitive race that allows `howMany` winners, returning a promise that will resolve when `howMany` of the items in `array` resolves.  The returned promise will if it becomes impossible for `howMany` items to resolve--that is, when `(array.length - howMany) + 1` items reject.  The resolution value of the returned promise will be an array of the value of `howMany` winning items.  The rejection value will be an array of `(array.length - howMany) + 1` rejection reasons.
+Initiates a competitive race that allows `howMany` winners, returning a promise that will resolve when `howMany` of the items in `array` resolve.  The returned promise will reject if it becomes impossible for `howMany` items to resolve--that is, when `(array.length - howMany) + 1` items reject.  The resolution value of the returned promise will be an array of the value of `howMany` winning items.  The rejection value will be an array of `(array.length - howMany) + 1` rejection reasons.
 
 # Timed promises
 
