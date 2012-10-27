@@ -16,11 +16,11 @@ API
 	* [when.chain](#whenchain)
 1. [Arrays of promises](#arrays-of-promises)
 	* [when.all](#whenall)
-	* [when.any](#whenany)
-	* [when.some](#whensome)
-1. [Higher order operations](#higher-order-operations)
 	* [when.map](#whenmap)
 	* [when.reduce](#whenreduce)
+1. [Competitive races](#competitive-races)
+	* [when.any](#whenany)
+	* [when.some](#whensome)
 1. [Timed promises](#timed-promises)
 	* [when/delay](#whendelay)
 	* [when/timeout](#whentimeout)
@@ -286,37 +286,15 @@ Return a promise that will resolve only once *all* the items in `array` have res
 ### See also:
 * [when.join()](#whenjoin) - joining multiple promises
 
-## when.any()
-
-```js
-var promise = when.any(promisesOrValues, callback, errback, progressback)
-```
-
-Where:
-
-* array is an Array *or a promise for an array*, which may contain promises and/or values.
-
-Return a promise that will resolve when any one of the items in `array` has resolved.  The resolution value of the returned promise will be the resolution value of the triggering item.
-
-## when.some()
-
-```js
-var promise = when.some(promisesOrValues, howMany, callback, errback, progressback)
-```
-
-Where:
-
-* array is an Array *or a promise for an array*, which may contain promises and/or values.
-
-Return a promise that will resolve when `howMany` of the supplied items in `array` have resolved.  The resolution value of the returned promise will be an array of length `howMany` containing the resolutions values of the triggering items.
-
-# Higher order operations
-
 ## when.map()
 
 ```js
-var promise = when.map(promisesOrValues, mapFunc)
+var promise = when.map(array, mapFunc)
 ```
+
+Where:
+
+* array is an Array *or a promise for an array*, which may contain promises and/or values.
 
 Traditional map function, similar to `Array.prototype.map()`, but allows input to contain promises and/or values, and mapFunc may return either a value or a promise.
 
@@ -333,8 +311,12 @@ Where:
 ## when.reduce()
 
 ```js
-var promise = when.reduce(promisesOrValues, reduceFunc, initialValue)
+var promise = when.reduce(array, reduceFunc, initialValue)
 ```
+
+Where:
+
+* array is an Array *or a promise for an array*, which may contain promises and/or values.
 
 Traditional reduce function, similar to `Array.prototype.reduce()`, but input may contain promises and/or values, and reduceFunc may return either a value or a promise, *and* initialValue may be a promise for the starting value.
 
@@ -350,6 +332,32 @@ Where:
 * `nextItem` is the fully resolved value of the promise or value at `index` in `promisesOrValues`
 * `index` the *basis* of `nextItem` ... practically speaking, this is the array index of the promiseOrValue corresponding to `nextItem`
 * `total` is the total number of items in `promisesOrValues`
+
+# Competitive races
+
+## when.any()
+
+```js
+var promise = when.any(array, callback, errback, progressback)
+```
+
+Where:
+
+* array is an Array *or a promise for an array*, which may contain promises and/or values.
+
+Initiates a competitive race that allows one winner, returning a promise that will resolve when any one of the items in `array` resolves.  The returned promise will only reject if *all* items in `array` are rejected.  The resolution value of the returned promise will be the resolution value of the winning item.  The rejection value will be an array of all rejection reasons.
+
+## when.some()
+
+```js
+var promise = when.some(array, howMany, callback, errback, progressback)
+```
+
+Where:
+
+* array is an Array *or a promise for an array*, which may contain promises and/or values.
+
+Initiates a competitive race that allows `howMany` winners, returning a promise that will resolve when `howMany` of the items in `array` resolve.  The returned promise will reject if it becomes impossible for `howMany` items to resolve--that is, when `(array.length - howMany) + 1` items reject.  The resolution value of the returned promise will be an array of `howMany` winning item resolution values.  The rejection value will be an array of `(array.length - howMany) + 1` rejection reasons.
 
 # Timed promises
 
