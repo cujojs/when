@@ -336,12 +336,7 @@ define(['module'], function () {
 		 * @param update {*} progress event payload to pass to all listeners
 		 */
 		_progress = function(update) {
-			var progress, i = 0;
-
-			while (progress = progressHandlers[i++]) {
-				progress(update);
-			}
-
+			processQueue(progressHandlers, update);
 			return update;
 		};
 
@@ -367,15 +362,8 @@ define(['module'], function () {
 			};
 
 			// Notify handlers
-			var queue = handlers;
+			processQueue(handlers, completed);
 			handlers = progressHandlers = undef;
-
-			nextTick(function() {
-				var handler, i = 0;
-				while (handler = queue[i++]) {
-					handler(completed);
-				}
-			});
 
 			return completed;
 		};
@@ -685,6 +673,15 @@ define(['module'], function () {
 	//
 	// Utility functions
 	//
+
+	function processQueue(queue, value) {
+		nextTick(function() {
+			var handler, i = 0;
+			while (handler = queue[i++]) {
+				handler(value);
+			}
+		});
+	}
 
 	/**
 	 * Helper that checks arrayOfCallbacks to ensure that each element is either
