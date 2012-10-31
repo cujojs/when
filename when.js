@@ -43,7 +43,7 @@ define(['module'], function () {
 	 *
 	 * @param promiseOrValue {*}
 	 * @param {Function} [callback] callback to be called when promiseOrValue is
-	 *   successfully resolved.  If promiseOrValue is an immediate value, callback
+	 *   successfully fulfilled.  If promiseOrValue is an immediate value, callback
 	 *   will be invoked immediately.
 	 * @param {Function} [errback] callback to be called when promiseOrValue is
 	 *   rejected.
@@ -61,8 +61,8 @@ define(['module'], function () {
 
 	/**
 	 * Returns promiseOrValue if promiseOrValue is a {@link Promise}, a new Promise if
-	 * promiseOrValue is a foreign promise, or a new, already-resolved {@link Promise}
-	 * whose resolution value is promiseOrValue if promiseOrValue is an immediate value.
+	 * promiseOrValue is a foreign promise, or a new, already-fulfilled {@link Promise}
+	 * whose value is promiseOrValue if promiseOrValue is an immediate value.
 	 * @memberOf when
 	 *
 	 * @param promiseOrValue {*}
@@ -107,7 +107,7 @@ define(['module'], function () {
 
 			} else {
 				// It's a value, not a promise.  Create a resolved promise for it.
-				promise = resolved(promiseOrValue);
+				promise = fulfilled(promiseOrValue);
 			}
 		}
 
@@ -173,7 +173,7 @@ define(['module'], function () {
 	 * @param value anything
 	 * @return {Promise}
 	 */
-	function resolved(value) {
+	function fulfilled(value) {
 		var p = new Promise(function(callback) {
 			try {
 				return resolve(callback ? callback(value) : value);
@@ -292,12 +292,7 @@ define(['module'], function () {
 		 * @param update {*} progress event payload to pass to all listeners
 		 */
 		_progress = function(update) {
-			var progress, i = 0;
-
-			while (progress = progressHandlers[i++]) {
-				progress(update);
-			}
-
+			processQueue(progressHandlers, update);
 			return update;
 		};
 
@@ -308,8 +303,6 @@ define(['module'], function () {
 		 * @param completed {Promise} the completed value of this deferred
 		 */
 		_resolve = function(completed) {
-			var handler, i = 0;
-
 			completed = resolve(completed);
 
 			// Replace _then with one that directly notifies with the result.
@@ -320,9 +313,7 @@ define(['module'], function () {
 			_progress = noop;
 
 			// Notify handlers
-			while (handler = handlers[i++]) {
-				handler(completed);
-			}
+			processQueue(handlers, completed);
 
 			// Free progressHandlers array since we'll never issue progress events
 			progressHandlers = handlers = undef;
@@ -631,6 +622,14 @@ define(['module'], function () {
 	//
 	// Utility functions
 	//
+
+	function processQueue(queue, value) {
+		var handler, i = 0;
+
+		while (handler = queue[i++]) {
+			handler(value);
+		}
+	}
 
 	/**
 	 * Helper that checks arrayOfCallbacks to ensure that each element is either
