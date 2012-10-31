@@ -402,7 +402,7 @@ define(['module'], function () {
 
 		return when(promisesOrValues, function(promisesOrValues) {
 
-			var toResolve, toReject, values, reasons, deferred, resolveOne, rejectOne, progress, len, i;
+			var toResolve, toReject, values, reasons, deferred, fulfillOne, rejectOne, progress, len, i;
 
 			len = promisesOrValues.length >>> 0;
 
@@ -424,38 +424,38 @@ define(['module'], function () {
 				rejectOne = function(reason) {
 					reasons.push(reason);
 					if(!--toReject) {
-						resolveOne = rejectOne = noop;
+						fulfillOne = rejectOne = noop;
 						deferred.reject(reasons);
 					}
 				};
 
-				resolveOne = function(val) {
+				fulfillOne = function(val) {
 					// This orders the values based on promise resolution order
 					// Another strategy would be to use the original position of
 					// the corresponding promise.
 					values.push(val);
 
 					if (!--toResolve) {
-						resolveOne = rejectOne = noop;
+						fulfillOne = rejectOne = noop;
 						deferred.resolve(values);
 					}
 				};
 
 				for(i = 0; i < len; ++i) {
 					if(i in promisesOrValues) {
-						when(promisesOrValues[i], resolve, reject, progress);
+						when(promisesOrValues[i], fulfiller, rejecter, progress);
 					}
 				}
 			}
 
 			return deferred.then(callback, errback, progback);
 
-			function reject(reason) {
+			function rejecter(reason) {
 				rejectOne(reason);
 			}
 
-			function resolve(val) {
-				resolveOne(val);
+			function fulfiller(val) {
+				fulfillOne(val);
 			}
 
 		});
