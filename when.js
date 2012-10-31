@@ -364,6 +364,7 @@ define(['module'], function () {
 
 			// Notify handlers
 			processQueue(handlers, completed);
+			handlers = progressHandlers = undef;
 
 			return completed;
 		};
