@@ -8,7 +8,7 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 ### 1.6.1
 
-* Fix for accidental coercion of non-promises. See [#62](https://github.com/cujojs/when/issues/60)
+* Fix for accidental coercion of non-promises. See [#62](https://github.com/cujojs/when/issues/60).
 
 ### 1.6.0
 
