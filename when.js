@@ -7,7 +7,7 @@
  * Licensed under the MIT License at:
  * http://www.opensource.org/licenses/mit-license.php
  *
- * @version 1.6.0
+ * @version 1.6.1
  */
 
 (function(define) { 'use strict';
@@ -80,8 +80,7 @@ define(['module'], function () {
 			promise = promiseOrValue;
 
 		} else {
-			// It's not a when.js promise.
-			// Check to see if it's a foreign promise or a value.
+			// It's not a when.js promise. See if it's a foreign promise or a value.
 
 			// Some promises, particularly Q promises, provide a valueOf method that
 			// attempts to synchronously return the fulfilled value of the promise, or
@@ -90,7 +89,9 @@ define(['module'], function () {
 			// Q and When attempting to coerce each-other's promises in an infinite loop.
 			// For promises that do not implement "valueOf", the Object#valueOf is harmless.
 			// See: https://github.com/kriskowal/q/issues/106
-			if (promiseOrValue != null && typeof promiseOrValue.valueOf === 'function') {
+			// IMPORTANT: Must check for a promise here, since valueOf breaks other things
+			// like Date.
+			if (isPromise(promiseOrValue) && typeof promiseOrValue.valueOf === 'function') {
 				promiseOrValue = promiseOrValue.valueOf();
 			}
 

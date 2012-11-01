@@ -58,6 +58,23 @@ buster.testCase('promise', {
 		assert.isFunction(defer().promise.then(null, null, f).then);
 	},
 
+	'should preserve object whose valueOf() differs from original object': function(done) {
+		var d, expected;
+
+		d = when.defer();
+		expected = new Date();
+
+		d.promise.then(
+			function(val) {
+				assert.same(val, expected);
+			},
+			fail
+		).always(done);
+
+		d.resolve(expected);
+
+	},
+
 	'should forward result when callback is null': function(done) {
 		var d = when.defer();
 
