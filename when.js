@@ -42,7 +42,7 @@ define(['module'], function () {
 //	nextTick = typeof process === 'object' ? process.nextTick
 //		: typeof setImmediate === 'function' ? setImmediate
 //		: function(task) { setTimeout(task, 0); };
-//
+
 	if (typeof process !== "undefined") {
 		// node
 		nextTick = process.nextTick;
@@ -352,10 +352,11 @@ define(['module'], function () {
 			completed = promiseFor(completed);
 
 			// Replace _resolve so that this Deferred can only be completed once
-			_resolve = resolve;
 			// Make _progress a noop, to disallow progress for the resolved promise.
+			_resolve = resolve;
 			_progress = noop;
 
+			// Make _bind invoke callbacks "immediately"
 			_bind = function(fulfilled, broken, _, next) {
 				nextTick(function() {
 					completed.then(fulfilled, broken).then(next.resolve, next.reject, next.progress);
