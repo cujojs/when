@@ -118,7 +118,7 @@ buster.testCase('when.chain', {
 		when.chain(input.promise, d.resolver, 2);
 	},
 
-	'should return a preomise that resolves with the input promise resolution value': function(done) {
+	'should return a promise that resolves with the input promise resolution value': function(done) {
 		var d, input;
 
 		input = when.defer();
@@ -132,7 +132,7 @@ buster.testCase('when.chain', {
 		).always(done);
 	},
 
-	'should return a preomise that resolves with the optional resolution value': function(done) {
+	'should return a promise that resolves with the optional resolution value': function(done) {
 		var d, input;
 
 		input = when.defer();
