@@ -511,7 +511,7 @@ define(['module'], function () {
 	 */
 	function map(promise, mapFunc) {
 		return when(promise, function(array) {
-			var results, len, toResolve, resolve, reject, i, d;
+			var results, len, toResolve, resolve, i, d;
 
 			// Since we know the resulting length, we can preallocate the results
 			// array to avoid array expansions.
@@ -523,7 +523,6 @@ define(['module'], function () {
 				d.resolve(results);
 			} else {
 
-				reject = d.reject;
 				resolve = function resolveOne(item, i) {
 					when(item, mapFunc).then(function(mapped) {
 						results[i] = mapped;
@@ -531,7 +530,7 @@ define(['module'], function () {
 						if(!--toResolve) {
 							d.resolve(results);
 						}
-					}, reject);
+					}, d.reject);
 				};
 
 				// Since mapFunc may be async, get all invocations of it into flight
