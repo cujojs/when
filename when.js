@@ -82,28 +82,20 @@ define(['module'], function () {
 		} else {
 			// It's not a when.js promise. See if it's a foreign promise or a value.
 
-			// Some promises, particularly Q promises, provide a valueOf method that
-			// attempts to synchronously return the fulfilled value of the promise, or
-			// returns the unresolved promise itself.  Attempting to break a fulfillment
-			// value out of a promise appears to be necessary to break cycles between
-			// Q and When attempting to coerce each-other's promises in an infinite loop.
-			// For promises that do not implement "valueOf", the Object#valueOf is harmless.
-			// See: https://github.com/kriskowal/q/issues/106
-			// IMPORTANT: Must check for a promise here, since valueOf breaks other things
-			// like Date.
-			if (isPromise(promiseOrValue) && typeof promiseOrValue.valueOf === 'function') {
-				promiseOrValue = promiseOrValue.valueOf();
-			}
-
 			if(isPromise(promiseOrValue)) {
 				// It looks like a thenable, but we don't know where it came from,
 				// so we don't trust its implementation entirely.  Introduce a trusted
 				// middleman when.js promise
 				deferred = defer();
 
-				// IMPORTANT: This is the only place when.js should ever call .then() on
-				// an untrusted promise.
-				promiseOrValue.then(deferred.resolve, deferred.reject, deferred.progress);
+				// IMPORTANT: This is the only place when.js should ever call .then() on an
+				// untrusted promise. Don't expose the return value to the untrusted promise
+				promiseOrValue.then(
+					function(value)  { deferred.resolve(value); },
+					function(reason) { deferred.reject(reason); },
+					deferred.progress
+				);
+
 				promise = deferred.promise;
 
 			} else {
@@ -613,9 +605,14 @@ define(['module'], function () {
 
 		return when(promiseOrValue,
 			function(val) {
-				return resolver.resolve(useResolveValue ? resolveValue : val);
+				val = useResolveValue ? resolveValue : val;
+				resolver.resolve(val);
+				return val;
 			},
-			resolver.reject,
+			function(reason) {
+				resolver.reject(reason);
+				return reject(reason);
+			},
 			resolver.progress
 		);
 	}
