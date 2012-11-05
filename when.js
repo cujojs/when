@@ -12,6 +12,7 @@
 
 (function(define) { 'use strict';
 define(['module'], function () {
+	/*global setImmediate:true msSetImmediate:true MessageChannel:true*/
 	var reduceArray, slice, nextTick, undef;
 
 	//
@@ -39,20 +40,20 @@ define(['module'], function () {
 	//	nextTick = function(t) { t(); };
 
 	// TODO: Use something lighter like this, and require a setImmediate polyfill?
-//	nextTick = typeof process === 'object' ? process.nextTick
-//		: typeof setImmediate === 'function' ? setImmediate
-//		: function(task) { setTimeout(task, 0); };
+	// nextTick = typeof process === 'object' ? process.nextTick
+	// 	: typeof setImmediate === 'function' ? setImmediate
+	// 	: function(task) { setTimeout(task, 0); };
 
-	if (typeof process !== "undefined") {
+	if (typeof process !== 'undefined') {
 		// node
 		nextTick = process.nextTick;
-	} else if (typeof msSetImmediate === "function") {
+	} else if (typeof msSetImmediate === 'function') {
 		// IE 10. From http://github.com/kriskowal/q
 		// bind is necessary
 		nextTick = msSetImmediate.bind(window);
-	} else if (typeof setImmediate === "function") {
+	} else if (typeof setImmediate === 'function') {
 		nextTick = setImmediate;
-	} else if (typeof MessageChannel !== "undefined") {
+	} else if (typeof MessageChannel !== 'undefined') {
 		nextTick = initMessageChannel();
 	} else {
 		// older envs w/only setTimeout
@@ -315,7 +316,11 @@ define(['module'], function () {
 				: next.progress;
 
 			handlers.push(function(promise) {
-				promise.then(fulfilled, broken).then(next.resolve, next.reject, progressHandler);
+				promise.then(fulfilled, broken).then(
+					function(value)  { next.resolve(value); },
+					function(reason) { next.reject(reason); },
+					progressHandler
+				);
 			});
 
 			progressHandlers.push(progressHandler);
@@ -349,7 +354,11 @@ define(['module'], function () {
 			// Make _bind invoke callbacks "immediately"
 			_bind = function(fulfilled, broken, _, next) {
 				nextTick(function() {
-					completed.then(fulfilled, broken).then(next.resolve, next.reject, next.progress);
+					completed.then(fulfilled, broken).then(
+						function(value)  { next.resolve(value); },
+						function(reason) { next.reject(reason); },
+						function(update) { next.progress(update); }
+					);
 				});
 			};
 
@@ -357,7 +366,7 @@ define(['module'], function () {
 			processQueue(handlers, completed);
 			handlers = progressHandlers = undef;
 
-			return completed;
+			return promise;
 		};
 
 		return deferred;
