@@ -81,11 +81,9 @@ define(['module'], function () {
 
 		} else {
 			// It's not a when.js promise. See if it's a foreign promise or a value.
-
 			if(isPromise(promiseOrValue)) {
-				// It looks like a thenable, but we don't know where it came from,
-				// so we don't trust its implementation entirely.  Introduce a trusted
-				// middleman when.js promise
+				// It's a thenable, but we don't know where it came from, so don't trust
+				// its implementation entirely.  Introduce a trusted middleman when.js promise
 				deferred = defer();
 
 				// IMPORTANT: This is the only place when.js should ever call .then() on an
