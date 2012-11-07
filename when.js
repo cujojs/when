@@ -160,10 +160,14 @@ define(['module'], function () {
 	}
 
 	function resolve(value) {
-		return new Promise(function(fulfilled, broken, progressed) {
-			var d = defer();
-			d.resolve(value);
-			return d.promise.then(fulfilled, broken, progressed);
+		value = promiseFor(value);
+
+		return new Promise(function(fulfilled, rejected) {
+			var next = defer();
+			nextTick(function() {
+				value.then(fulfilled, rejected).then(next.resolve, next.reject, next.progress);
+			});
+			return next.promise;
 		});
 	}
 
