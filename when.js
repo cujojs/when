@@ -159,13 +159,20 @@ define(['module'], function () {
 		return promise;
 	}
 
-	function resolve(value) {
-		value = promiseFor(value);
+	/**
+	 * Returns a fulfilled promise. If promiseOrValue is a value, it will be the fulfillment
+	 * value of the returned promise.  If promiseOrValue is a promise, the returned promise will
+	 * parallel the state and value/reason of promiseOrValue.
+	 * @param  {*} promiseOrValue the fulfillment value or a promise with whose state will be paralleled
+	 * @return {Promise} fulfilled promise or pending promise paralleling the state of promiseOrValue.
+	 */
+	function resolve(promiseOrValue) {
+		promiseOrValue = promiseFor(promiseOrValue);
 
 		return new Promise(function(fulfilled, rejected) {
 			var next = defer();
 			nextTick(function() {
-				value.then(fulfilled, rejected).then(next.resolve, next.reject, next.progress);
+				promiseOrValue.then(fulfilled, rejected).then(next.resolve, next.reject, next.progress);
 			});
 			return next.promise;
 		});
