@@ -41,7 +41,7 @@
  * @author brian@hovercraftstudios.com
  */
 (function(define) {
-define(['./when'], function(when) {
+define(['when'], function(when) {
 
 	var promiseId, pending, exceptionsToRethrow, own, undef;
 
