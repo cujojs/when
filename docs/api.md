@@ -3,10 +3,10 @@ API
 
 1. [when](#when)
 1. [Deferred](#deferred)
+1. [Resolver](#resolver)
 1. [Promise](#promise)
 	* [Extended Promise API](#extended-promise-api)
 	* [Progress events](#progress-events)
-1. [Resolver](#resolver)
 1. [Creating promises](#creating-promises)
 	* [when.defer](#whendefer)
 	* [when.resolve](#whenresolve)
@@ -61,7 +61,14 @@ when() can observe any promise that provides a Promises/A-like `.then()` method,
 
 ## Deferred
 
-A deferred has the full `promise` + `resolver` API:
+A deferred represents an operation whose resolution is *pending*.  It has separate `promise` and `resolver` parts that can be *safely* given out to separate groups of consumers and producers, respectively, to allow safe, one-way communication.
+
+```js
+var promise = deferred.promise;
+var resolver = deferred.resolver;
+```
+
+**Note:** Although a deferred has the full `promise` + `resolver` API, this should used *for convenience only, by the creator of the deferred*.  Only the `promise` and `resolver` should be given to consumers and producers.
 
 ```js
 deferred.then(callback, errback, progressback);
@@ -70,14 +77,20 @@ deferred.reject(reason);
 deferred.progress(update);
 ```
 
-And separate `promise` and `resolver` parts that can be *safely* given out to calling code.
+## Resolver
+
+The resolver represents *responsibility*--the responsibility of fulfilling or rejecting the associated promise.  This responsibility may be given out separately from the promise itself.
 
 ```js
-var promise = deferred.promise;
 var resolver = deferred.resolver;
+resolver.resolve(promiseOrValue);
+resolver.reject(err);
+resolver.progress(update);
 ```
 
 ## Promise
+
+The promise represents the *eventual outcome*--either fulfillment (success) and an associated value, or rejection (failure) and an associated *reason*.
 
 ```js
 // Get a deferred promise
@@ -187,15 +200,6 @@ d.progress(update);
 // logProgress(2);
 ```
 
-## Resolver
-
-```js
-var resolver = deferred.resolver;
-resolver.resolve(promiseOrValue);
-resolver.reject(err);
-resolver.progress(update);
-```
-
 # Creating promises
 
 ## when.defer()
@@ -249,10 +253,10 @@ Return true if `anything` is truthy and implements the then() promise API.  Note
 ## when.join()
 
 ```js
-var joinedPromise = when.join(promise1, promise2, ...);
+var joinedPromise = when.join(promiseOrValue1, promiseOrValue2, ...);
 ```
 
-Return a promise that will resolve only once *all* the supplied promises have resolved.  The resolution value of the returned promise will be an array containing the resolution values of each of the input promises.
+Return a promise that will resolve only once *all* the inputs have resolved.  The resolution value of the returned promise will be an array containing the resolution values of each of the inputs.
 
 ### See also:
 * [when.all()](#whenall) - resolving an Array of promises
@@ -263,11 +267,15 @@ Return a promise that will resolve only once *all* the supplied promises have re
 var promise = when.chain(promiseOrValue, resolver, optionalValue)
 ```
 
-Ensure that resolution of `promiseOrValue` will complete `resolver` with the completion value of `promiseOrValue`, or instead with `optionalValue` if it is provided.
+Arrange for `resolver` to be resolved when `promiseOrValue` resolves.  If `optionalValue` is provided, `resolver` will be resolved with `optionalValue`, if provided, or otherwise with the resolution value of `promiseOrValue`.
 
-Returns a new promise that will complete when `promiseOrValue` is completed, with the completion value of `promiseOrValue`, or instead with `optionalValue` if it is provided.
+Returns a new promise that will resolve when `promiseOrValue` resolves, with `optionalValue` as its resolution value, if provided, or otherwise with the resolution value of `promiseOrValue`.
 
-**Note:** If `promiseOrValue` is not an immediate value, it can be anything that supports the promise API (i.e. `then()`), so you can pass a `deferred` as well.  Similarly, `resolver` can be anything that supports the resolver API (i.e. `resolve()`, `reject()`), so a `deferred` will work there, too.
+Where:
+
+* `promiseOrValue` - any promise or value.
+* `resolver` - any object that supports the [Resolver API](#resolver)
+* `optionalValue` - any value.  **Note:** May be a promise if `resolver` supports being resolved with another promise.  When.js resolvers *do* support this, but other implementations may not.
 
 # Arrays of promises
 
@@ -281,7 +289,7 @@ Where:
 
 * array is an Array *or a promise for an array*, which may contain promises and/or values.
 
-Return a promise that will resolve only once *all* the items in `array` have resolved.  The resolution value of the returned promise will be an array containing the resolution values of each of the input `array`.
+Return a promise that will resolve only once *all* the items in `array` have resolved.  The resolution value of the returned promise will be an array containing the resolution values of each of the items in `array`.
 
 ### See also:
 * [when.join()](#whenjoin) - joining multiple promises
