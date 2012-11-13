@@ -86,7 +86,7 @@ The resolver represents *responsibility*--the responsibility of fulfilling or re
 ```js
 var resolver = deferred.resolver;
 resolver.resolve(promiseOrValue);
-resolver.reject(err);
+resolver.reject(reason);
 resolver.progress(update);
 ```
 
@@ -96,13 +96,14 @@ The promise represents the *eventual outcome*, which is either fulfillment (succ
 
 ```js
 // Get a deferred promise
+var deferred = when.defer();
 var promise = deferred.promise;
 
 // Or a resolved promise
 var promise = when.resolve(promiseOrValue);
 
 // Or a rejected promise
-var promise = when.reject(value);
+var promise = when.reject(reason);
 ```
 
 ## Main Promise API
@@ -128,7 +129,7 @@ Convenience methods that are not part of Promises/A+.  These are simply shortcut
 ### always()
 
 ```js
-promise.always(onFulfilledOrRejected [, progressback]);
+promise.always(onFulfilledOrRejected [, onProgress]);
 ```
 
 Arranges to call `onFulfilledOrRejected` on either the promise's value if it is fulfilled, or on it's rejection reason if it is rejected.
