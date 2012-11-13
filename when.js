@@ -91,7 +91,7 @@ define(['module'], function () {
 				promiseOrValue.then(
 					function(value)  { deferred.resolve(value); },
 					function(reason) { deferred.reject(reason); },
-					deferred.progress
+					function(update) { deferred.progress(update); }
 				);
 
 				promise = deferred.promise;
