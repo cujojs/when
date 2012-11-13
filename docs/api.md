@@ -36,21 +36,22 @@ API
 ## when()
 
 ```js
-when(promiseOrValue, callback, errback, progressback)
+when(promiseOrValue, onFulfilled, onRejected, onProgress)
 ```
 
 Observe a promise or immediate value.
 
 ```js
-// Returns a promise for the result of the callback or errback
-var promise = when(promiseOrValue, callback, errback);
+// Returns a promise for the result of onFulfilled or onRejected depending
+// on the promiseOrValue's outcome
+var promise = when(promiseOrValue, onFulfilled, onRejected);
 
 // Always returns a promise, so it is guaranteed to be chainable:
-when(promiseOrValue, callback, errback, progressback).then(anotherCallback, anotherErrback, anotherProgressback);
+when(promiseOrValue, onFulfilled, onRejected, onProgress).then(anotherOnFulfilled, anotherOnRejected, anotherOnProgress);
 
 // All parameters except the first are optional
-// For example, you can register only a callback
-when(promiseOrValue, callback);
+// For example, you can register only an onFulfilled handler
+when(promiseOrValue, onFulfilled);
 
 ```
 
@@ -71,7 +72,7 @@ var resolver = deferred.resolver;
 **Note:** Although a deferred has the full `promise` + `resolver` API, this should used *for convenience only, by the creator of the deferred*.  Only the `promise` and `resolver` should be given to consumers and producers.
 
 ```js
-deferred.then(callback, errback, progressback);
+deferred.then(onFulfilled, onRejected, onProgress);
 deferred.resolve(promiseOrValue);
 deferred.reject(reason);
 deferred.progress(update);
@@ -90,7 +91,7 @@ resolver.progress(update);
 
 ## Promise
 
-The promise represents the *eventual outcome*--either fulfillment (success) and an associated value, or rejection (failure) and an associated *reason*.
+The promise represents the *eventual outcome*, which is either fulfillment (success) and an associated value, or rejection (failure) and an associated *reason*. The promise provides mechanisms for arranging to call a function on its value or reason, and produces a new promise for the result.
 
 ```js
 // Get a deferred promise
@@ -108,41 +109,40 @@ var promise = when.reject(value);
 ```js
 // then()
 // Main promise API
-// Register callback, errback, and/or progressback
-var newPromise = promise.then(callback, errback, progressback);
+var newPromise = promise.then(onFulfilled, onRejected, onProgress);
 ```
 
-Registers new success, error, and/or progress handlers with a promise.  All parameters are optional.  As per the [Promises/A spec](http://wiki.commonjs.org/wiki/Promises/A#Proposal), returns a *new promise* that will be resolved with the result of `callback` if `promise` is fulfilled, or with the result of `errback` if `promise` is rejected.
+Arranges to call `onFulfilled` on the promise's value, when it becomes available, or to call `onRejected` on the promise's rejection reason if the promise is rejected.  Additionally, registers `onProgress` to receive any progress updates for the promise.  All parameters are optional.  As per the [Promises/A+ spec](http://promises-aplus.github.com/promises-spec/), returns a promise that will be resolved with the result of `onFulfilled` if `promise` is fulfilled, or with the result of `onRejected` if `promise` is rejected.
 
 A promise makes the following guarantees about handlers registered in the same call to `.then()`:
 
-1. Only one of `callback` or `errback` will be called, never both.
-1. `callback` and `errback` will never be called more than once.
-1. `progressback` may be called multiple times.
+1. Only one of `onFulfilled` or `onRejected` will be called, never both.
+1. `onFulfilled` and `onRejected` will never be called more than once.
+1. `onProgress` may be called multiple times.
 
 ## Extended Promise API
 
-Convenience methods that are not part of the Promises/A proposal.  These are simply shortcuts for using `.then()`.
+Convenience methods that are not part of Promises/A+.  These are simply shortcuts for using `.then()`.
 
 ### always()
 
 ```js
-promise.always(alwaysback [, progressback]);
+promise.always(onFulfilledOrRejected [, progressback]);
 ```
 
-Register an alwaysback that will be called when the promise resolves or rejects
+Arranges to call `onFulfilledOrRejected` on either the promise's value if it is fulfilled, or on it's rejection reason if it is rejected.
 
 ### otherwise()
 
 ```js
-promise.otherwise(errback);
+promise.otherwise(onRejected);
 ```
 
-Register only an errback
+Arranges to call `onRejected` on the promise's rejection reason if it is rejected.
 
 ## Progress events
 
-Progress events in the Promises/A proposal are optional.  They have proven to be useful in practice, but unfortunately, they are also underspecified, and there is no current *de facto* or agreed-upon behavior in the promise implementor community.
+Progress events are not specified in Promises/A+ and are optional in Promises/A.  They have proven to be useful in practice, but unfortunately, they are also underspecified, and there is no current *de facto* or agreed-upon behavior in the promise implementor community.
 
 The two sections below describe how they behave in when.js.
 
@@ -282,7 +282,7 @@ Where:
 ## when.all()
 
 ```js
-var promise = when.all(array, callback, errback, progressback)
+var promise = when.all(array, onFulfilled, onRejected, onProgress)
 ```
 
 Where:
@@ -346,7 +346,7 @@ Where:
 ## when.any()
 
 ```js
-var promise = when.any(array, callback, errback, progressback)
+var promise = when.any(array, onFulfilled, onRejected, onProgress)
 ```
 
 Where:
@@ -358,7 +358,7 @@ Initiates a competitive race that allows one winner, returning a promise that wi
 ## when.some()
 
 ```js
-var promise = when.some(array, howMany, callback, errback, progressback)
+var promise = when.some(array, howMany, onFulfilled, onRejected, onProgress)
 ```
 
 Where:
