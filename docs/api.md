@@ -47,7 +47,8 @@ Observe a promise or immediate value.
 var promise = when(promiseOrValue, onFulfilled, onRejected);
 
 // Always returns a promise, so it is guaranteed to be chainable:
-when(promiseOrValue, onFulfilled, onRejected, onProgress).then(anotherOnFulfilled, anotherOnRejected, anotherOnProgress);
+when(promiseOrValue, onFulfilled, onRejected, onProgress)
+	.then(anotherOnFulfilled, anotherOnRejected, anotherOnProgress);
 
 // All parameters except the first are optional
 // For example, you can register only an onFulfilled handler
