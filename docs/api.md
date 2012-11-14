@@ -53,10 +53,38 @@ when(promiseOrValue, onFulfilled, onRejected, onProgress)
 // All parameters except the first are optional
 // For example, you can register only an onFulfilled handler
 when(promiseOrValue, onFulfilled);
-
 ```
 
-when() can observe any promise that provides a Promises/A-like `.then()` method, even promises that aren't fully Promises/A compliant, such as jQuery's Deferred.  It will assimilate such promises and make them behave like Promises/A.
+`when()` can observe any promise that provides a *thenable* promise--any object that provides a `.then()` method, even promises that aren't fully Promises/A compliant, such as jQuery's Deferred.  It will assimilate such promises and make them behave like Promises/A.
+
+`when()` will *always* return a trusted when.js promise, which will have the [extended promise API](#extended-promise-api).
+
+Handlers passed to `when()` will behave exactly like those passed to a Promises/A compliant `.then()`, and so chaining from `.then()` will behave exactly like Promises/A.  For example, the following two code snippets are equivalent in their chaining behavior:
+
+```js
+// In this case, thing must be a Promises/A compliant promise.
+thing.then(
+	function(value) {
+		throw new Error('oops');
+	}
+).otherwise(
+	function(reason) {
+		console.log(reason);
+	}
+);
+
+// In this case, thing could be any thenable (Promises/A or non-compliant), or
+// simply a value.
+when(thing,
+	function(value) {
+		throw new Error('oops');
+	}
+).otherwise(
+	function(reason) {
+		console.log(reason);
+	}
+);
+```
 
 ### See Also
 * [Read more about when() here](https://github.com/cujojs/when/wiki/when)
