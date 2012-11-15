@@ -41,12 +41,28 @@ when(promiseOrValue, onFulfilled, onRejected, onProgress)
 
 Observe a promise or immediate value.
 
+If `promiseOrValue` is a value, arranges for `onFulfilled` to be called with that value, and returns a promise for the result.
+
+If `promiseOrValue` is a promise, arranges for
+
+* `onFulfilled` to be called with the value after `promiseOrValue` is fulfilled, or
+* `onRejected` to be called with the rejection reason after `promiseOrValue` is rejected.
+* `onProgress` to be called with any progress updates issued by `promiseOrValue`.
+
+`when()` returns a [trusted promise](#promise) that will fulfill with the return value of either `onFulfilled` or `onRejected`, whichever is called, or will reject with the thrown exception if either throws.
+
+Additionally, it makes the following guarantees about handlers registered in the same call to `when()`:
+
+1. Only one of `onFulfilled` or `onRejected` will be called, never both.
+1. `onFulfilled` and `onRejected` will never be called more than once.
+1. `onProgress` may be called multiple times.
+
 ```js
 // Returns a promise for the result of onFulfilled or onRejected depending
 // on the promiseOrValue's outcome
 var promise = when(promiseOrValue, onFulfilled, onRejected);
 
-// Always returns a promise, so it is guaranteed to be chainable:
+// Always returns a trusted promise, so it is guaranteed to be chainable:
 when(promiseOrValue, onFulfilled, onRejected, onProgress)
 	.then(anotherOnFulfilled, anotherOnRejected, anotherOnProgress);
 
@@ -57,34 +73,7 @@ when(promiseOrValue, onFulfilled);
 
 `when()` can observe any promise that provides a *thenable* promise--any object that provides a `.then()` method, even promises that aren't fully Promises/A compliant, such as jQuery's Deferred.  It will assimilate such promises and make them behave like Promises/A.
 
-`when()` will *always* return a trusted when.js promise, which will have the [extended promise API](#extended-promise-api).
-
-Handlers passed to `when()` will behave exactly like those passed to a Promises/A compliant `.then()`, and so chaining from `.then()` will behave exactly like Promises/A.  For example, the following two code snippets are equivalent in their chaining behavior:
-
-```js
-// In this case, thing must be a Promises/A compliant promise.
-thing.then(
-	function(value) {
-		throw new Error('oops');
-	}
-).otherwise(
-	function(reason) {
-		console.log(reason);
-	}
-);
-
-// In this case, thing could be any thenable (Promises/A or non-compliant), or
-// simply a value.
-when(thing,
-	function(value) {
-		throw new Error('oops');
-	}
-).otherwise(
-	function(reason) {
-		console.log(reason);
-	}
-);
-```
+In either case, `when()` will *always* return a trusted when.js promise, which will be fully Promises/A compliant and also have the [extended promise API](#extended-promise-api).
 
 ### See Also
 * [Read more about when() here](https://github.com/cujojs/when/wiki/when)
@@ -142,7 +131,13 @@ var promise = when.reject(reason);
 var newPromise = promise.then(onFulfilled, onRejected, onProgress);
 ```
 
-Arranges to call `onFulfilled` on the promise's value, when it becomes available, or to call `onRejected` on the promise's rejection reason if the promise is rejected.  Additionally, registers `onProgress` to receive any progress updates for the promise.  All parameters are optional.  As per the [Promises/A+ spec](http://promises-aplus.github.com/promises-spec/), returns a promise that will be resolved with the result of `onFulfilled` if `promise` is fulfilled, or with the result of `onRejected` if `promise` is rejected.
+arranges for
+
+* `onFulfilled` to be called with the value after `promise` is fulfilled, or
+* `onRejected` to be called with the rejection reason after `promise` is rejected.
+* `onProgress` to be called with any progress updates issued by `promise`.
+
+Returns a trusted promise that will fulfill with the return value of either `onFulfilled` or `onRejected`, whichever is called, or will reject with the thrown exception if either throws.
 
 A promise makes the following guarantees about handlers registered in the same call to `.then()`:
 
@@ -160,7 +155,11 @@ Convenience methods that are not part of Promises/A+.  These are simply shortcut
 promise.always(onFulfilledOrRejected [, onProgress]);
 ```
 
-Arranges to call `onFulfilledOrRejected` on either the promise's value if it is fulfilled, or on it's rejection reason if it is rejected.
+Arranges to call `onFulfilledOrRejected` on either the promise's value if it is fulfilled, or on it's rejection reason if it is rejected.  It's a shortcut for:
+
+```js
+promise.then(onFulfilledOrRejected, onFulfilledOrRejected [, onProgress]);
+```
 
 ### otherwise()
 
@@ -168,7 +167,12 @@ Arranges to call `onFulfilledOrRejected` on either the promise's value if it is 
 promise.otherwise(onRejected);
 ```
 
-Arranges to call `onRejected` on the promise's rejection reason if it is rejected.
+Arranges to call `onRejected` on the promise's rejection reason if it is rejected.  It's a shortcut for:
+
+```js
+promise.then(undefined, onRejected);
+```
+
 
 ## Progress events
 
@@ -182,10 +186,10 @@ Prior to 1.6.0, progress events were only delivered to progress handlers registe
 
 ```js
 var d = when.defer();
-d.promise.then(null, null, myProgressHandler);
+d.promise.then(undefined, undefined, myProgressHandler);
 
 var chainedPromise = d.promise.then(doStuff);
-chainedPromise.then(null, null, myOtherProgressHandler);
+chainedPromise.then(undefined, undefined, myOtherProgressHandler);
 
 var update = 1;
 d.progress(update);
@@ -217,10 +221,10 @@ function myOtherProgressHandler(update) {
 }
 
 var d = when.defer();
-d.promise.then(null, null, myProgressHandler);
+d.promise.then(undefined, undefined, myProgressHandler);
 
 var chainedPromise = d.promise.then(doStuff);
-chainedPromise.then(null, null, myOtherProgressHandler);
+chainedPromise.then(undefined, undefined, myOtherProgressHandler);
 
 var update = 1;
 d.progress(update);
