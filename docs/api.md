@@ -183,7 +183,7 @@ Returns a promise:
 
 1. If `promiseOrValue` is a value, the returned promise will be fulfilled with `promiseOrValue`
 2. If `promiseOrValue` is a promise, the returned promise will be:
-	1. fulfilled with the fulfillment of `promiseOrValue`, or
+	1. fulfilled with the fulfillment value of `promiseOrValue`, or
 	1. rejected with the rejection reason of `promiseOrValue`
 
 In other words, it's a shortcut for:
