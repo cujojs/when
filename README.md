@@ -6,6 +6,15 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 # What's New?
 
+### 1.6.2
+
+* `promise.yield(promiseOrValue)` convenience API for substituting a new value into a promise chain.
+* Doc improvements:
+	* when() and promise.then() have more info about callbacks and chaining behavior.
+	* More info and clarifications about the roles of Deferred and Resolver
+	* Several minor clarifications for various APIs
+* Internal improvements to assimilation and interoperability with other promise implementations.
+
 ### 1.6.1
 
 * Fix for accidental coercion of non-promises. See [#62](https://github.com/cujojs/when/issues/60).
