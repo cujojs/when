@@ -11,7 +11,7 @@
  */
 
 (function(define) { 'use strict';
-define(['module'], function () {
+define(function () {
 	var reduceArray, slice, undef;
 
 	//
@@ -137,7 +137,6 @@ define(['module'], function () {
 		 * Register a callback that will be called when a promise is
 		 * resolved or rejected.  Optionally also register a progress handler.
 		 * Shortcut for .then(alwaysback, alwaysback, progback)
-		 * @memberOf Promise
 		 * @param alwaysback {Function}
 		 * @param progback {Function}
 		 * @return {Promise}
@@ -148,12 +147,25 @@ define(['module'], function () {
 
 		/**
 		 * Register a rejection handler.  Shortcut for .then(null, errback)
-		 * @memberOf Promise
 		 * @param errback {Function}
 		 * @return {Promise}
 		 */
 		otherwise: function(errback) {
 			return this.then(undef, errback);
+		},
+
+		/**
+		 * Shortcut for .then(function() { return value; })
+		 * @param  {*} value
+		 * @return {Promise} a promise that:
+		 *  - is fulfilled if value is not a promise, or
+		 *  - if value is a promise, will fulfill with its value, or reject
+		 *    with its reason.
+		 */
+		yield: function(value) {
+			return this.then(function() {
+				return value;
+			});
 		}
 	};
 
@@ -717,7 +729,7 @@ define(['module'], function () {
 });
 })(typeof define == 'function' && define.amd
 	? define
-	: function (deps, factory) { typeof exports === 'object'
+	: function (factory) { typeof exports === 'object'
 		? (module.exports = factory())
 		: (this.when      = factory());
 	}
