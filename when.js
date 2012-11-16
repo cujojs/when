@@ -39,12 +39,12 @@ define(function () {
 	 * Register an observer for a promise or immediate value.
 	 *
 	 * @param {*} promiseOrValue
-	 * @param {Function|undefined|null} [onFulfilled] callback to be called when promiseOrValue is
+	 * @param {function?} [onFulfilled] callback to be called when promiseOrValue is
 	 *   successfully fulfilled.  If promiseOrValue is an immediate value, callback
 	 *   will be invoked immediately.
-	 * @param {Function|undefined|null} [onRejected] callback to be called when promiseOrValue is
+	 * @param {function?} [onRejected] callback to be called when promiseOrValue is
 	 *   rejected.
-	 * @param {Function|undefined|null} [onProgress] callback to be called when progress updates
+	 * @param {function?} [onProgress] callback to be called when progress updates
 	 *   are issued for promiseOrValue.
 	 * @returns {Promise} a new {@link Promise} that will complete with the return
 	 *   value of callback or errback or the completion value of promiseOrValue if
@@ -133,8 +133,8 @@ define(function () {
 		 * Register a callback that will be called when a promise is
 		 * resolved or rejected.  Optionally also register a progress handler.
 		 * Shortcut for .then(onFulfilledOrRejected, onFulfilledOrRejected, onProgress)
-		 * @param {Function|undefined|null} onFulfilledOrRejected
-		 * @param {Function|undefined|null} onProgress
+		 * @param {function?} [onFulfilledOrRejected]
+		 * @param {function?} [onProgress]
 		 * @return {Promise}
 		 */
 		always: function(onFulfilledOrRejected, onProgress) {
@@ -143,7 +143,7 @@ define(function () {
 
 		/**
 		 * Register a rejection handler.  Shortcut for .then(undefined, onRejected)
-		 * @param onRejected {Function|undefined|null}
+		 * @param {function?} onRejected
 		 * @return {Promise}
 		 */
 		otherwise: function(onRejected) {
@@ -254,9 +254,9 @@ define(function () {
 		 * functions to the registered listeners
 		 * @private
 		 *
-		 * @param {Function|undefined|null} [onFulfilled] resolution handler
-		 * @param {Function|undefined|null} [onRejected] rejection handler
-		 * @param {Function|undefined|null} [onProgress] progress handler
+		 * @param {function?} [onFulfilled] resolution handler
+		 * @param {function?} [onRejected] rejection handler
+		 * @param {function?} [onProgress] progress handler
 		 */
 		_then = function(onFulfilled, onRejected, onProgress) {
 			// TODO: Promises/A+ check typeof onFulfilled, onRejected, onProgress
@@ -325,10 +325,10 @@ define(function () {
 
 		/**
 		 * Wrapper to allow _then to be replaced safely
-		 * @param [onFulfilled] {Function|undefined|null} resolution handler
-		 * @param [onRejected] {Function|undefined|null} rejection handler
-		 * @param [onProgress] {Function|undefined|null} progress handler
-		 * @return {Promise} new Promise
+		 * @param {function?} [onFulfilled] resolution handler
+		 * @param {function?} [onRejected] rejection handler
+		 * @param {function?} [onProgress] progress handler
+		 * @return {Promise} new promise
 		 */
 		function then(onFulfilled, onRejected, onProgress) {
 			// TODO: Promises/A+ check typeof onFulfilled, onRejected, onProgress
@@ -363,7 +363,7 @@ define(function () {
 	 * promiseOrValue is a promise.
 	 *
 	 * @param {*} promiseOrValue anything
-	 * @returns {Boolean} true if promiseOrValue is a {@link Promise}
+	 * @returns {boolean} true if promiseOrValue is a {@link Promise}
 	 */
 	function isPromise(promiseOrValue) {
 		return promiseOrValue && typeof promiseOrValue.then === 'function';
@@ -376,11 +376,11 @@ define(function () {
 	 * (promisesOrValues.length - howMany) + 1 input promises reject.
 	 *
 	 * @param {Array} promisesOrValues array of anything, may contain a mix
-	 *      of {@link Promise}s and values
-	 * @param howMany {Number} number of promisesOrValues to resolve
-	 * @param {Function|undefined|null} [onFulfilled] resolution handler
-	 * @param {Function|undefined|null} [onRejected] rejection handler
-	 * @param {Function|undefined|null} [onProgress] progress handler
+	 *      of promises and values
+	 * @param howMany {number} number of promisesOrValues to resolve
+	 * @param {function?} [onFulfilled] resolution handler
+	 * @param {function?} [onRejected] rejection handler
+	 * @param {function?} [onProgress] progress handler
 	 * @returns {Promise} promise that will resolve to an array of howMany values that
 	 * resolved first, or will reject with an array of (promisesOrValues.length - howMany) + 1
 	 * rejection reasons.
@@ -457,9 +457,9 @@ define(function () {
 	 *
 	 * @param {Array|Promise} promisesOrValues array of anything, may contain a mix
 	 *      of {@link Promise}s and values
-	 * @param {Function|undefined|null} [onFulfilled] resolution handler
-	 * @param {Function|undefined|null} [onRejected] rejection handler
-	 * @param {Function|undefined|null} [onProgress] progress handler
+	 * @param {function?} [onFulfilled] resolution handler
+	 * @param {function?} [onRejected] rejection handler
+	 * @param {function?} [onProgress] progress handler
 	 * @returns {Promise} promise that will resolve to the value that resolved first, or
 	 * will reject with an array of all rejected inputs.
 	 */
@@ -480,9 +480,9 @@ define(function () {
 	 *
 	 * @param {Array|Promise} promisesOrValues array of anything, may contain a mix
 	 *      of {@link Promise}s and values
-	 * @param {Function|undefined|null} [onFulfilled] resolution handler
-	 * @param {Function|undefined|null} [onRejected] rejection handler
-	 * @param {Function|undefined|null} [onProgress] progress handler
+	 * @param {function?} [onFulfilled] resolution handler
+	 * @param {function?} [onRejected] rejection handler
+	 * @param {function?} [onProgress] progress handler
 	 * @returns {Promise}
 	 */
 	function all(promisesOrValues, onFulfilled, onRejected, onProgress) {
@@ -492,7 +492,6 @@ define(function () {
 
 	/**
 	 * Joins multiple promises into a single returned promise.
-	 * @param  {Promise|*} [...promises] two or more promises to join
 	 * @return {Promise} a promise that will fulfill when *all* the input promises
 	 * have fulfilled, or will reject when *any one* of the input promises rejects.
 	 */
@@ -507,7 +506,7 @@ define(function () {
 	 *
 	 * @param {Array|Promise} promise array of anything, may contain a mix
 	 *      of {@link Promise}s and values
-	 * @param {Function} mapFunc mapping function mapFunc(value) which may return
+	 * @param {function} mapFunc mapping function mapFunc(value) which may return
 	 *      either a {@link Promise} or value
 	 * @returns {Promise} a {@link Promise} that will resolve to an array containing
 	 *      the mapped output values.
@@ -554,17 +553,15 @@ define(function () {
 
 	/**
 	 * Traditional reduce function, similar to `Array.prototype.reduce()`, but
-	 * input may contain {@link Promise}s and/or values, and reduceFunc
-	 * may return either a value or a {@link Promise}, *and* initialValue may
-	 * be a {@link Promise} for the starting value.
+	 * input may contain promises and/or values, and reduceFunc
+	 * may return either a value or a promise, *and* initialValue may
+	 * be a promise for the starting value.
 	 *
-	 * @param {Array|Promise} promise array of anything, may contain a mix
-	 *      of {@link Promise}s and values.  May also be a {@link Promise} for
-	 *      an array.
-	 * @param {Function} reduceFunc reduce function reduce(currentValue, nextValue, index, total),
+	 * @param {Array|Promise} promise array or promise for an array of anything,
+	 * 		may contain a mix of promises and values.
+	 * @param {function} reduceFunc reduce function reduce(currentValue, nextValue, index, total),
 	 *      where total is the total number of items being reduced, and will be the same
 	 *      in each call to reduceFunc.
-	 * @param {*} starting value, or a {@link Promise} [initialValue] for the starting value
 	 * @returns {Promise} that will resolve to the final reduced value
 	 */
 	function reduce(promise, reduceFunc /*, initialValue */) {
@@ -594,8 +591,10 @@ define(function () {
 	 * value or reason of promiseOrValue, or instead with resolveValue if it is provided.
 	 *
 	 * @param promiseOrValue
-	 * @param {Resolver} resolver
-	 * @param [resolveValue] anything
+	 * @param {Object} resolver
+	 * @param {function} resolver.resolve
+	 * @param {function} resolver.reject
+	 * @param {*} [resolveValue]
 	 * @returns {Promise}
 	 */
 	function chain(promiseOrValue, resolver, resolveValue) {
@@ -636,10 +635,10 @@ define(function () {
 	 * Helper that checks arrayOfCallbacks to ensure that each element is either
 	 * a function, or null or undefined.
 	 * @private
-	 * @param {Number} start index at which to start checking items in arrayOfCallbacks
+	 * @param {number} start index at which to start checking items in arrayOfCallbacks
 	 * @param {Array} arrayOfCallbacks array to check
 	 * @throws {Error} if any element of arrayOfCallbacks is something other than
-	 * a Functions, null, or undefined.
+	 * a functions, null, or undefined.
 	 */
 	function checkCallbacks(start, arrayOfCallbacks) {
 		// TODO: Promises/A+ update type checking and docs
