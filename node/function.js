@@ -7,10 +7,9 @@
 (function(define) {
 define(['../when'], function(when) {
 
-	var slice, nextTick;
+	var slice;
 
 	slice = Array.prototype.slice;
-	nextTick = process.nextTick.bind(process);
 
 	return {
 		apply: apply,
@@ -24,23 +23,21 @@ define(['../when'], function(when) {
 
 		args.push(createCallback(d));
 
-		nextTick(function() {
-			try {
-				func.apply(context, args);
-			} catch(e) {
-				d.reject(e);
-			}
-		});
+		try {
+			func.apply(context, args);
+		} catch(e) {
+			d.reject(e);
+		}
 
 		return d.promise;
 	}
 
 	function call(func, context /*, args... */) {
-		return apply(func, context, slice.call(arguments, 2));
+		return apply(func, context, slice.call(arguments, 1));
 	}
 
 	function bind(func, context /*, args... */) {
-		var args = slice.call(arguments, 2);
+		var args = slice.call(arguments, 1);
 		return function() {
 			return apply(func, context, args.concat(slice.call(arguments)));
 		};

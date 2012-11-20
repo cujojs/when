@@ -5,7 +5,7 @@
  */
 
 (function(define) {
-define(['./when', './nextTick'], function(when, nextTick) {
+define(['./when'], function(when) {
 
 	var slice;
 
@@ -19,28 +19,26 @@ define(['./when', './nextTick'], function(when, nextTick) {
 		promisify: promisify
 	};
 
-	function apply(func, context, args) {
+	function apply(func, args) {
 		var d = when.defer();
 
-		nextTick(function() {
-			try {
-				d.resolve(func.apply(context, args));
-			} catch(e) {
-				d.reject(e);
-			}
-		});
+		try {
+			d.resolve(func.apply(null, args));
+		} catch(e) {
+			d.reject(e);
+		}
 
 		return d.promise;
 	}
 
-	function call(func, context /*, args... */) {
-		return apply(func, context, slice.call(arguments, 2));
+	function call(func /*, args... */) {
+		return apply(func, slice.call(arguments, 1));
 	}
 
-	function bind(func, context /*, args... */) {
-		var args = slice.call(arguments, 2);
+	function bind(func /*, args... */) {
+		var args = slice.call(arguments, 1);
 		return function() {
-			return apply(func, context, args.concat(slice.call(arguments)));
+			return apply(func, args.concat(slice.call(arguments)));
 		};
 	}
 
