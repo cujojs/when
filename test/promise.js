@@ -363,6 +363,10 @@ buster.testCase('promise', {
 	},
 
 	'yield': {
+		'should return a promise': function() {
+			assert.isFunction(defer().promise.yield().then);
+		},
+
 		'should fulfill with the supplied value': function(done) {
 			when.resolve(other).yield(sentinel).then(
 				assert.same.bind(assert, sentinel)
@@ -380,6 +384,66 @@ buster.testCase('promise', {
 				fail,
 				assert.same.bind(assert, sentinel)
 			).always(done);
+		}
+	},
+
+	'apply': {
+		'should return a promise': function() {
+			assert.isFunction(defer().promise.apply().then);
+		},
+
+		'should apply onFulfilled with array as argument list': function(done) {
+			var expected = [1, 2, 3];
+			when.resolve(expected).apply(function(a, b, c) {
+				assert.equals(Array.prototype.slice.call(arguments), expected);
+			}).always(done);
+		},
+
+		'should resolve array contents': function(done) {
+			var expected = [when.resolve(1), 2, when.resolve(3)];
+			when.resolve(expected).apply(function(a, b, c) {
+				assert.equals(Array.prototype.slice.call(arguments), [1, 2, 3]);
+			}).always(done);
+		},
+
+		'should reject if any item in array rejects': function(done) {
+			var expected = [when.resolve(1), 2, when.reject(3)];
+			when.resolve(expected)
+				.apply(fail)
+				.then(
+					fail,
+					function() {
+						assert(true);
+					}
+				).always(done);
+		},
+
+		'when input is a promise': {
+			'should apply onFulfilled with array as argument list': function(done) {
+				var expected = [1, 2, 3];
+				when.resolve(when.resolve(expected)).apply(function(a, b, c) {
+					assert.equals(Array.prototype.slice.call(arguments), expected);
+				}).always(done);
+			},
+
+			'should resolve array contents': function(done) {
+				var expected = [when.resolve(1), 2, when.resolve(3)];
+				when.resolve(when.resolve(expected)).apply(function(a, b, c) {
+					assert.equals(Array.prototype.slice.call(arguments), [1, 2, 3]);
+				}).always(done);
+			},
+
+			'should reject if input is a rejected promise': function(done) {
+				var expected = when.reject([1, 2, 3]);
+				when.resolve(expected)
+					.apply(fail)
+					.then(
+					fail,
+					function() {
+						assert(true);
+					}
+				).always(done);
+			}
 		}
 	}
 

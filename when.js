@@ -129,7 +129,7 @@ define(function () {
 	Promise.prototype = {
 		/**
 		 * Register a callback that will be called when a promise is
-		 * resolved or rejected.  Optionally also register a progress handler.
+		 * fulfilled or rejected.  Optionally also register a progress handler.
 		 * Shortcut for .then(onFulfilledOrRejected, onFulfilledOrRejected, onProgress)
 		 * @param {function?} [onFulfilledOrRejected]
 		 * @param {function?} [onProgress]
@@ -159,6 +159,22 @@ define(function () {
 		yield: function(value) {
 			return this.then(function() {
 				return value;
+			});
+		},
+
+		/**
+		 * Assumes that this promise will fulfill with an array, and arranges
+		 * for the onFulfilled to be called with the array as its argument list
+		 * i.e. onFulfilled.apply(undefined, array).
+		 * @param {function} onFulfilled function to apply
+		 * @return {Promise}
+		 */
+		apply: function(onFulfilled) {
+			return this.then(function(array) {
+				// array may contain promises, so resolve its contents.
+				return all(array, function(array) {
+					return onFulfilled.apply(undef, array);
+				});
 			});
 		}
 	};
