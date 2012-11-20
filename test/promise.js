@@ -6,7 +6,10 @@ assert = buster.assert;
 refute = buster.refute;
 fail = buster.assertions.fail;
 
-var defer, isFrozen, undef;
+var defer, isFrozen, undef, sentinel, other;
+
+sentinel = {};
+other = {};
 
 defer = when.defer;
 
@@ -356,6 +359,27 @@ buster.testCase('promise', {
 			);
 
 			d.reject(1);
+		}
+	},
+
+	'yield': {
+		'should fulfill with the supplied value': function(done) {
+			when.resolve(other).yield(sentinel).then(
+				assert.same.bind(assert, sentinel)
+			).always(done);
+		},
+
+		'should fulfill with the value of a fulfilled promise': function(done) {
+			when.resolve(other).yield(when.resolve(sentinel)).then(
+				assert.same.bind(assert, sentinel)
+			).always(done);
+		},
+
+		'should reject with the reason of a rejected promise': function(done) {
+			when.resolve(other).yield(when.reject(sentinel)).then(
+				fail,
+				assert.same.bind(assert, sentinel)
+			).always(done);
 		}
 	}
 
