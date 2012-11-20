@@ -185,9 +185,7 @@ define(function () {
 	 * @return {Promise} rejected {@link Promise}
 	 */
 	function reject(promiseOrValue) {
-		return when(promiseOrValue, function(value) {
-			return rejected(value);
-		});
+		return promiseFor(promiseOrValue).then(rejected);
 	}
 
 	/**
