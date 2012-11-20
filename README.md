@@ -9,6 +9,7 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 ### 1.7.0
 
 * `promise.yield(promiseOrValue)` convenience API for substituting a new value into a promise chain.
+* `promise.apply(variadicFunction)` convenience API for registering a fulfill handler that accepts variadic arguments.
 * Doc improvements:
 	* when() and promise.then() have more info about callbacks and chaining behavior.
 	* More info and clarifications about the roles of Deferred and Resolver
