@@ -6,7 +6,7 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 # What's New?
 
-### 1.6.2
+### 1.7.0
 
 * `promise.yield(promiseOrValue)` convenience API for substituting a new value into a promise chain.
 * Doc improvements:
