@@ -112,9 +112,7 @@ define(function () {
 	 * @return {Promise} rejected {@link Promise}
 	 */
 	function reject(promiseOrValue) {
-		return when(promiseOrValue, function(value) {
-			return rejected(value);
-		});
+		return when(promiseOrValue, rejected);
 	}
 
 	/**
