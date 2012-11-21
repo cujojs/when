@@ -2,6 +2,11 @@
 
 var assert = buster.assert;
 
+function assertIsPromise(something) {
+  var message = 'Object is not a promise';
+  buster.assert(when.isPromise(something), message);
+}
+
 function f(x, y) {
 	return x + y;
 }
@@ -11,7 +16,7 @@ buster.testCase('when/function', {
 	'apply': {
 		'should return a promise': function() {
 			var result = fn.apply(f, [1, 2]);
-			assert(result && typeof result.then === 'function');
+			assertIsPromise(result);
 		},
 
 		'should accept values for arguments': function() {
@@ -26,7 +31,7 @@ buster.testCase('when/function', {
 	'call': {
 		'should return a promise': function() {
 			var result = fn.call(f, 1, 2);
-			assert(result && typeof result.then === 'function');
+			assertIsPromise(result);
 		},
 
 		'should accept values for arguments': function() {
