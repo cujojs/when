@@ -6,7 +6,7 @@ function f(x, y) {
 	return x + y;
 }
 
-buster.testCase('when/fn', {
+buster.testCase('when/function', {
 
 	'apply': {
 		'should return a promise': function() {
