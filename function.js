@@ -94,7 +94,7 @@ define(['./when'], function(when) {
 			args = slice.call(arguments);
 			d = when.defer();
 
-			apply(orig, this, initArgs(args, d));
+			apply(orig, initArgs(args, d));
 
 			return d.promise;
 		};
