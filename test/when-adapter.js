@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-var when = require("../when");
+var when = require('../when');
 
 exports.fulfilled = when.resolve;
 exports.rejected = when.reject;
