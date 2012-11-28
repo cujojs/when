@@ -194,6 +194,24 @@ promise.then(function() {
 });
 ```
 
+### spread()
+
+```js
+promise.spread(variadicOnFulfilled);
+```
+
+Arranges to call `variadicOnFulfilled` with promise's values, which is assumed to be an array, as its argument list, e.g. `variadicOnFulfilled.spread(undefined, array)`.  It's a shortcut for either of the following:
+
+```js
+// Wrapping variadicOnFulfilled
+promise.then(function(array) {
+	return variadicOnFulfilled.apply(undefined, array);
+});
+
+// Or using when/apply
+promise.then(apply(variadicOnFulfilled));
+```
+
 ## Progress events
 
 Progress events are not specified in Promises/A+ and are optional in Promises/A.  They have proven to be useful in practice, but unfortunately, they are also underspecified, and there is no current *de facto* or agreed-upon behavior in the promise implementor community.
