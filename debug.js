@@ -43,11 +43,15 @@
 (function(define) {
 define(['./when'], function(when) {
 
-	var promiseId, pending, exceptionsToRethrow, own, undef;
+	var promiseId, pending, exceptionsToRethrow, own, warn, undef;
 
 	promiseId = 0;
 	pending = {};
 	own = Object.prototype.hasOwnProperty;
+
+	warn = (typeof console !== 'undefined' && typeof console.warn === 'function')
+		? function(x) { console.warn(x); }
+		: function() {};
 
 	exceptionsToRethrow = {
 		RangeError: 1,
@@ -91,7 +95,9 @@ define(['./when'], function(when) {
 			return toString('Promise', id);
 		};
 
-		newPromise.then = function(cb, eb) {
+		newPromise.then = function(cb, eb, pb) {
+			checkCallbacks(cb, eb, pb);
+
 			if(typeof eb === 'function') {
 				var promise = newPromise;
 				do {
@@ -310,13 +316,24 @@ define(['./when'], function(when) {
 
 	function deprecated(name, preferred, f, context) {
 		return function() {
-			var msg;
-			if (typeof console !== 'undefined' && typeof console.warn === 'function') {
-				msg = name + ' is deprecated, use ' + preferred;
-				console.warn(new Error(msg).stack);
-			}
+			warn(new Error(name + ' is deprecated, use ' + preferred).stack);
+
 			return f.apply(context, arguments);
 		};
+	}
+
+	function checkCallbacks() {
+		var i, len, a;
+		for(i = 0, len = arguments.length; i < len; i++) {
+			a = arguments[i];
+			if(!checkFunction(a)) {
+				warn(new Error('arg ' + i + ' must be a function, null, or undefined, but was a ' + typeof a).stack);
+			}
+		}
+	}
+
+	function checkFunction(f) {
+		return typeof f === 'function' || f == null;
 	}
 
 	// The usual Crockford
