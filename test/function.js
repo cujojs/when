@@ -80,6 +80,37 @@ buster.testCase('when/function', {
 			});
 		},
 
+		'should consider the arguments optional': function() {
+			function countArgs() {
+				return arguments.length;
+			}
+
+			fn.call(countArgs).then(function(argCount) {
+				assert.equals(argCount, 0);
+			}, fail);
+		},
+
+		'should reject the promise when the function throws': function() {
+			function throwingFn() {
+				throw error;
+			}
+
+			var error = new Error();
+
+			fn.call(throwingFn).then(fail, function(reason) {
+				assert.same(reason, error);
+			});
+		},
+
+		'should maintain promise flattening semantics': function() {
+			function returnsPromise(val) {
+				return when.resolve(10 + val);
+			}
+
+			fn.call(returnsPromise, 5).then(function(value) {
+				assert.equals(value, 15);
+			}, fail);
+		},
 	},
 
 	'bind': {

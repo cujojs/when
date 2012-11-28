@@ -56,6 +56,32 @@ define(['./when'], function(when) {
 		return d.promise;
 	}
 
+	/**
+	* Has the same behavior that {@link apply} has, with the difference that the
+	* arguments to the function are provided individually, while {@link apply} accepts
+	* a single array.
+	*
+	* @example
+	*	function sumSmallNumbers(x, y) {
+	*		var result = x + y;
+	*		if(result < 10) {
+	*			return result;
+	*		} else {
+	*			throw new Error("Calculation failed");
+	*		}
+	*	}
+	*
+	* // Logs '5'
+	* func.apply(sumSmallNumbers, 2, 3).then(console.log, console.error);
+	*
+	* // Logs 'Calculation failed'
+	* func.apply(sumSmallNumbers, 5, 10).then(console.log, console.error);
+	*
+	* @param {function} func function to be called
+	* @param {...*} [args] arguments that will be forwarded to the function
+	* @returns {Promise} promise for the return value of func
+	*/
+
 	function call(func /*, args... */) {
 		return apply(func, slice.call(arguments, 1));
 	}
