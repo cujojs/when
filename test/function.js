@@ -1,6 +1,7 @@
 (function(buster, fn, when) {
 
 var assert = buster.assert;
+var fail   = buster.fail;
 
 function assertIsPromise(something) {
   var message = 'Object is not a promise';
@@ -33,6 +34,37 @@ buster.testCase('when/function', {
 			});
 		},
 
+		'should consider the arguments optional': function() {
+			function countArgs() {
+				return arguments.length;
+			}
+
+			fn.apply(countArgs).then(function(argCount) {
+				assert.equals(argCount, 0);
+			}, fail);
+		},
+
+		'should reject the promise when the function throws': function() {
+			function throwingFn() {
+				throw error;
+			}
+
+			var error = new Error();
+
+			fn.apply(throwingFn).then(fail, function(reason) {
+				assert.same(reason, error);
+			});
+		},
+
+		'should maintain promise flattening semantics': function() {
+			function returnsPromise(val) {
+				return when.resolve(10 + val);
+			}
+
+			fn.apply(returnsPromise, [5]).then(function(value) {
+				assert.equals(value, 15);
+			}, fail);
+		},
 	},
 
 	'call': {
