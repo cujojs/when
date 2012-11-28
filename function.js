@@ -19,6 +19,31 @@ define(['./when'], function(when) {
 		promisify: promisify
 	};
 
+	/**
+	* Takes a function and an optional array of arguments, and calls the function
+	* immediately. The return value is a promise whose resolution depends on the
+	* value returned by the function.
+	*
+	* @example
+	*	function onlySmallNumbers(n) {
+	*		if(n < 10) {
+	*			return n + 10;
+	*		} else {
+	*			throw new Error("Calculation failed");
+	*		}
+	*	}
+	*
+	* // Logs '15'
+	* func.apply(onlySmallNumbers, [5]).then(console.log, console.error);
+	*
+	* // Logs 'Calculation failed'
+	* func.apply(onlySmallNumbers, [15]).then(console.log, console.error);
+	*
+	* @param {function} func function to be called
+	* @param {Array} [args] array of arguments to func
+	* @returns {Promise} promise for the return value of func
+	*/
+
 	function apply(func, args) {
 		var d = when.defer();
 
