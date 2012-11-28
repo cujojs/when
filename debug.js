@@ -197,12 +197,12 @@ define(['./when'], function(when) {
 		};
 
 		// Setup final state change handlers
-		d.then(
+		origThen(
 			function(v) { status = 'resolved'; return v; },
 			function(e) { status = 'REJECTED'; return when.reject(e); }
 		);
 
-		d.then = d.promise.then;
+		d.then = deprecated('deferred.then', 'deferred.promise.then', d.promise.then, d);
 
 		// Add an id to all directly created promises.  It'd be great
 		// to find a way to propagate this id to promise created by .then()
@@ -306,6 +306,17 @@ define(['./when'], function(when) {
 		setTimeout(function() {
 			throw err;
 		}, 0);
+	}
+
+	function deprecated(name, preferred, f, context) {
+		return function() {
+			var msg;
+			if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+				msg = name + ' is deprecated, use ' + preferred;
+				console.warn(new Error(msg).stack);
+			}
+			return f.apply(context, arguments);
+		};
 	}
 
 	// The usual Crockford
