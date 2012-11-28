@@ -116,8 +116,42 @@ buster.testCase('when/function', {
 	'bind': {
 		'should return a function': function() {
 			assert.isFunction(fn.bind(f, null));
-		}
+		},
 
+		'the returned function': {
+			'should return a promise': function() {
+				var result = fn.bind(f);
+				assertIsPromise(result(1, 2));
+			},
+
+			'should resolve the promise to its return value': function() {
+				var result = fn.bind(f);
+				result(1, 2).then(function(value) {
+					assert.equals(value, 3);
+				}, fail);
+			},
+
+			'should reject the promise upon error': function() {
+				function throwingFn() {
+					throw error;
+				}
+
+				var error = new Error();
+
+				var result = fn.bind(throwingFn);
+				result().then(fail, function(reason) {
+					assert.same(reason, error);
+				});
+			}
+		},
+
+		'should accept leading arguments': function() {
+			var curried = fn.bind(f, 5);
+
+			curried(10).then(function(value) {
+				assert.equals(value, 15);
+			}, fail);
+		},
 	},
 
 	'promisify': {

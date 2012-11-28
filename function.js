@@ -86,6 +86,44 @@ define(['./when'], function(when) {
 		return apply(func, slice.call(arguments, 1));
 	}
 
+	/**
+	* Takes a 'regular' function and returns a version of that function that
+	* returns a promise instead of a plain value, and handles thrown errors by
+	* returning a rejected promise. Also accepts a list of arguments to be
+	* prepended to the new function, as does Function.prototype.bind.
+	*
+	* @example
+	*	function mayThrowError(n) {
+	*		if(n % 2 === 1) { // Normally this wouldn't be so deterministic :)
+	*			throw new Error("I don't like odd numbers");
+	*		} else {
+	*			return n;
+	*		}
+	*	}
+	*
+	*	var bound = fn.bind(mayThrowError);
+	*
+	*	// Logs "I don't like odd numbers"
+	*	bound(1).then(console.log, console.error);
+	*
+	*	// Logs '6'
+	*	bound(6).then(console.log, console.error);
+	*
+	* @example
+	*	function sumTwoNumbers(x, y) {
+	*		return x + y;
+	*	}
+	*
+	*	var sumWithFive = fn.bind(sumTwoNumbers, 5);
+	*
+	*	// Logs '15'
+	*	sumWithFive(10).then(console.log, console.error);
+	*
+	*	@param {Function} func function to be bound
+	*	@param {...*} [args] arguments to be prepended for the new function
+	*	@returns {Function} a promise-returning function
+	*/
+
 	function bind(func /*, args... */) {
 		var args = slice.call(arguments, 1);
 		return function() {
