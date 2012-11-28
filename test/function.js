@@ -15,6 +15,12 @@ function makeAsyncFunction() {
 	};
 }
 
+function functionThatThrows(error) {
+	return function throwing() {
+		throw error;
+	};
+}
+
 function f(x, y) {
 	return x + y;
 }
@@ -45,11 +51,8 @@ buster.testCase('when/function', {
 		},
 
 		'should reject the promise when the function throws': function() {
-			function throwingFn() {
-				throw error;
-			}
-
 			var error = new Error();
+			var throwingFn = functionThatThrows(error);
 
 			fn.apply(throwingFn).then(fail, function(reason) {
 				assert.same(reason, error);
@@ -91,11 +94,8 @@ buster.testCase('when/function', {
 		},
 
 		'should reject the promise when the function throws': function() {
-			function throwingFn() {
-				throw error;
-			}
-
 			var error = new Error();
+			var throwingFn = functionThatThrows(error);
 
 			fn.call(throwingFn).then(fail, function(reason) {
 				assert.same(reason, error);
@@ -132,11 +132,8 @@ buster.testCase('when/function', {
 			},
 
 			'should reject the promise upon error': function() {
-				function throwingFn() {
-					throw error;
-				}
-
 				var error = new Error();
+				var throwingFn = functionThatThrows(error);
 
 				var result = fn.bind(throwingFn);
 				result().then(fail, function(reason) {
