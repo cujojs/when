@@ -165,11 +165,11 @@ define(function () {
 		/**
 		 * Assumes that this promise will fulfill with an array, and arranges
 		 * for the onFulfilled to be called with the array as its argument list
-		 * i.e. onFulfilled.apply(undefined, array).
-		 * @param {function} onFulfilled function to apply
+		 * i.e. onFulfilled.spread(undefined, array).
+		 * @param {function} onFulfilled function to receive spread arguments
 		 * @return {Promise}
 		 */
-		apply: function(onFulfilled) {
+		spread: function(onFulfilled) {
 			return this.then(function(array) {
 				// array may contain promises, so resolve its contents.
 				return all(array, function(array) {

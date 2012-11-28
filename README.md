@@ -9,7 +9,7 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 ### 1.7.0
 
 * `promise.yield(promiseOrValue)` convenience API for substituting a new value into a promise chain.
-* `promise.apply(variadicFunction)` convenience API for registering a fulfill handler that accepts variadic arguments.
+* `promise.spread(variadicFunction)` convenience API for registering a fulfill handler that accepts variadic arguments.
 * Doc improvements:
 	* when() and promise.then() have more info about callbacks and chaining behavior.
 	* More info and clarifications about the roles of Deferred and Resolver
@@ -26,7 +26,7 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 * [when.some](when/blob/master/docs/api.md#whensome) and [when.any](when/blob/master/docs/api.md#whenany) now act like competitive races, and have generally more useful behavior.  [Read the discussion in #60](https://github.com/cujojs/when/issues/60).
 * *Experimental* progress event propagation.  Progress events will propagate through promise chains. [Read the details here](when/blob/master/docs/api.md#progress-events).
 * *Temporarily* removed calls to `Object.freeze`. Promises are no longer frozen due to a horrendous v8 performance penalty.  [Read discussion here](https://groups.google.com/d/topic/cujojs/w_olYqorbsY/discussion).
-	* **IMPORTANT:** Continue to treat promises as if they are frozen, since `freeze()` will be reintroduced once v8 performance improves. 
+	* **IMPORTANT:** Continue to treat promises as if they are frozen, since `freeze()` will be reintroduced once v8 performance improves.
 * [when/debug](https://github.com/cujojs/when/wiki/when-debug) now allows setting global a debugging callback for rejected promises.
 
 ### 1.5.2

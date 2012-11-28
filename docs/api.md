@@ -194,13 +194,13 @@ promise.then(function() {
 });
 ```
 
-### apply()
+### spread()
 
 ```js
-promise.apply(variadicOnFulfilled);
+promise.spread(variadicOnFulfilled);
 ```
 
-Arranges to call `variadicOnFulfilled` with promise's values, which is assumed to be an array, as its argument list, e.g. `variadicOnFulfilled.apply(undefined, array)`.  It's a shortcut for either of the following:
+Arranges to call `variadicOnFulfilled` with promise's values, which is assumed to be an array, as its argument list, e.g. `variadicOnFulfilled.spread(undefined, array)`.  It's a shortcut for either of the following:
 
 ```js
 // Wrapping variadicOnFulfilled

@@ -6,12 +6,14 @@ assert = buster.assert;
 refute = buster.refute;
 fail = buster.assertions.fail;
 
-var defer, isFrozen, undef, sentinel, other;
+var defer, isFrozen, undef, sentinel, other, slice;
 
 sentinel = {};
 other = {};
 
 defer = when.defer;
+
+slice = Array.prototype.slice;
 
 function f() {}
 
@@ -387,29 +389,29 @@ buster.testCase('promise', {
 		}
 	},
 
-	'apply': {
+	'spread': {
 		'should return a promise': function() {
-			assert.isFunction(defer().promise.apply().then);
+			assert.isFunction(defer().promise.spread().then);
 		},
 
 		'should apply onFulfilled with array as argument list': function(done) {
 			var expected = [1, 2, 3];
-			when.resolve(expected).apply(function(a, b, c) {
-				assert.equals(Array.prototype.slice.call(arguments), expected);
+			when.resolve(expected).spread(function() {
+				assert.equals(slice.call(arguments), expected);
 			}).always(done);
 		},
 
 		'should resolve array contents': function(done) {
 			var expected = [when.resolve(1), 2, when.resolve(3)];
-			when.resolve(expected).apply(function(a, b, c) {
-				assert.equals(Array.prototype.slice.call(arguments), [1, 2, 3]);
+			when.resolve(expected).spread(function() {
+				assert.equals(slice.call(arguments), [1, 2, 3]);
 			}).always(done);
 		},
 
 		'should reject if any item in array rejects': function(done) {
 			var expected = [when.resolve(1), 2, when.reject(3)];
 			when.resolve(expected)
-				.apply(fail)
+				.spread(fail)
 				.then(
 					fail,
 					function() {
@@ -421,22 +423,22 @@ buster.testCase('promise', {
 		'when input is a promise': {
 			'should apply onFulfilled with array as argument list': function(done) {
 				var expected = [1, 2, 3];
-				when.resolve(when.resolve(expected)).apply(function(a, b, c) {
-					assert.equals(Array.prototype.slice.call(arguments), expected);
+				when.resolve(when.resolve(expected)).spread(function() {
+					assert.equals(slice.call(arguments), expected);
 				}).always(done);
 			},
 
 			'should resolve array contents': function(done) {
 				var expected = [when.resolve(1), 2, when.resolve(3)];
-				when.resolve(when.resolve(expected)).apply(function(a, b, c) {
-					assert.equals(Array.prototype.slice.call(arguments), [1, 2, 3]);
+				when.resolve(when.resolve(expected)).spread(function() {
+					assert.equals(slice.call(arguments), [1, 2, 3]);
 				}).always(done);
 			},
 
 			'should reject if input is a rejected promise': function(done) {
 				var expected = when.reject([1, 2, 3]);
 				when.resolve(expected)
-					.apply(fail)
+					.spread(fail)
 					.then(
 					fail,
 					function() {
