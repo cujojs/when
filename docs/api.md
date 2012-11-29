@@ -87,7 +87,9 @@ var promise = deferred.promise;
 var resolver = deferred.resolver;
 ```
 
-**Note:** Although a deferred has the full `promise` + `resolver` API, this should used *for convenience only, by the creator of the deferred*.  Only the `promise` and `resolver` should be given to consumers and producers.
+**DEPRECATED:** Note that `deferred.then` [is deprecated](https://github.com/cujojs/when/issues/76) and [will be removed](https://github.com/cujojs/when/issues/44) in an upcoming release.
+
+**Note:** Although a deferred has the full `resolver` API, this should used *for convenience only, by the creator of the deferred*.  Only the `resolver` should be given to consumers and producers.
 
 ```js
 deferred.resolve(promiseOrValue);
@@ -96,7 +98,6 @@ deferred.progress(update);
 
 // NOTE: deferred.then is DEPRECATED, use deferred.promise.then
 deferred.then(onFulfilled, onRejected, onProgress);
-
 ```
 
 ## Resolver

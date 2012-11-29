@@ -245,7 +245,7 @@ define(function () {
 		 * @name Deferred
 		 */
 		deferred = {
-			then:     then,
+			then:     then, // DEPRECATED: use deferred.promise.then
 			resolve:  promiseResolve,
 			reject:   promiseReject,
 			// TODO: Consider renaming progress() to notify()

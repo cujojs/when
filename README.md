@@ -8,11 +8,12 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 ### 1.7.0
 
-* `promise.yield(promiseOrValue)` convenience API for substituting a new value into a promise chain.
-* `promise.spread(variadicFunction)` convenience API for registering a fulfill handler that accepts variadic arguments.
+* **DEPRECATED:** `deferred.then` [is deprecated](when/blob/master/docs/api.md#deferred) and will be removed in an upcoming release.  Use `deferred.promise.then` instead.
+* [promise.yield](when/blob/master/docs/api.md#yield)(promiseOrValue) convenience API for substituting a new value into a promise chain.
+* [promise.spread](when/blob/master/docs/api.md#spread)(variadicFunction) convenience API for registering a fulfill handler that accepts variadic arguments.
 * Doc improvements:
-	* when() and promise.then() have more info about callbacks and chaining behavior.
-	* More info and clarifications about the roles of Deferred and Resolver
+	* [when()](when/blob/master/docs/api.md#when) and [promise.then()](when/blob/master/docs/api.md#main-promise-api) have more info about callbacks and chaining behavior.
+	* More info and clarifications about the roles of [Deferred](when/blob/master/docs/api.md#deferred) and [Resolver](when/blob/master/docs/api.md#resolver)
 	* Several minor clarifications for various APIs
 * Internal improvements to assimilation and interoperability with other promise implementations.
 
@@ -28,24 +29,6 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 * *Temporarily* removed calls to `Object.freeze`. Promises are no longer frozen due to a horrendous v8 performance penalty.  [Read discussion here](https://groups.google.com/d/topic/cujojs/w_olYqorbsY/discussion).
 	* **IMPORTANT:** Continue to treat promises as if they are frozen, since `freeze()` will be reintroduced once v8 performance improves.
 * [when/debug](https://github.com/cujojs/when/wiki/when-debug) now allows setting global a debugging callback for rejected promises.
-
-### 1.5.2
-
-* Integrate @domenic's [Promises/A Test Suite](https://github.com/domenic/promise-tests). Runs via `npm test`.
-* No functional change
-
-### 1.5.1
-
-* Performance optimization for [when.defer](when/blob/master/docs/api.md#whendefer), up to 1.5x in some cases.
-* [when/debug](https://github.com/cujojs/when/wiki/when-debug) can now log exceptions and rejections in deeper promise chains, in some cases, even when the promises involved aren't when.js promises.
-
-### 1.5.0
-
-* New task execution and concurrency management: [when/sequence](when/blob/master/docs/api.md#whensequence), [when/pipeline](when/blob/master/docs/api.md#whenpipeline), and [when/parallel](when/blob/master/docs/api.md#whenparallel).
-* Performance optimizations for [when.all](when/blob/master/docs/api.md#whenall) and [when.map](when/blob/master/docs/api.md#whenmap), up to 2x in some cases.
-* Options for disabling [paranoid mode](when/blob/master/docs/api.md#paranoid-mode) that provides a significant performance gain in v8 (e.g. Node and Chrome). See this [v8 performance problem with Object.freeze](http://stackoverflow.com/questions/8435080/any-performance-benefit-to-locking-down-javascript-objects) for more info.
-* **Important:** `deferred` and `deferred.resolver` no longer throw when resolved/rejected multiple times.  They will return silently as if the they had succeeded.  This prevents parties to whom *only* the `resolver` has been given from using `try/catch` to determine the state of the associated promise.
-	* For debugging, you can use the [when/debug](https://github.com/cujojs/when/wiki/when-debug) module, which will still throw when a deferred is resolved/rejected multiple times.
 
 [Full Changelog](https://github.com/cujojs/when/wiki/Changelog)
 
