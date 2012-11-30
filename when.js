@@ -21,6 +21,7 @@ define(['module'], function () {
 	when.defer     = defer;     // Create a deferred
 	when.resolve   = resolve;   // Create a resolved promise
 	when.reject    = reject;    // Create a rejected promise
+	when.fulfilled = fulfilled;
 
 	when.join      = join;      // Join 2 or more promises
 
@@ -34,6 +35,44 @@ define(['module'], function () {
 	when.chain     = chain;     // Make a promise trigger another resolver
 
 	when.isPromise = isPromise; // Determine if a thing is a promise
+
+	when.f = f;
+	when.partial = partial;
+	
+	/** wrap given function (node) into a promise and call it with arguments */
+	function f(node) {
+		var args = [];
+		for(var i = 1; i < arguments.length; i++) {
+			args.push(arguments[i]);
+		}
+		var dfd = when.defer();
+		args.push(function(err) {
+			var args = [];
+			if(err) {
+				return dfd.reject.apply(null, arguments);
+			}
+			for(var i = 1; i < arguments.length; i++) {
+				args.push(arguments[i]);
+			}
+			return dfd.resolve.apply(null, args);
+		});
+		node.apply(null, args);
+		return dfd;
+	}
+
+	/** partially apply function to arguments */
+	function partial(fn) {
+		var args = [];
+		for(var i = 1; i < arguments.length; i++) {
+			args.push(arguments[i]);
+		}
+		return function() {
+			for (var i = 0; i < arguments.length; i++) {
+				args.push(arguments[i]);
+			}
+			return fn.apply(null, args);
+		};
+	}
 
 	/**
 	 * Register an observer for a promise or immediate value.
@@ -169,7 +208,6 @@ define(['module'], function () {
 
 	/**
 	 * Create an already-resolved promise for the supplied value
-	 * @private
 	 *
 	 * @param value anything
 	 * @return {Promise}
