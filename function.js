@@ -131,7 +131,56 @@ define(['./when'], function(when) {
 		};
 	}
 
-	function compose(f /*g, ... */) {
+	/**
+	* Composes multiple functions by piping their return values. It is
+	* transparent to whether the functions return 'regular' values or promises:
+	* the piped argument is always a resolved value. If one of the functions
+	* throws or returns a rejected promise, the composed promise will be also
+	* rejected.
+	*
+	* The arguments given to the returned function (if any), are passed directly
+	* to the first function on the 'pipeline'.
+	*
+	* @example
+	*	function getHowMuchWeWillDestroy(parameter) {
+	*		// Makes some calculations to find out which items the modification the user
+	*		// wants will destroy. Returns a number
+	*	}
+	*
+	*	function getUserConfirmation(itemsCount) {
+	*		// Return a resolved promise if the user confirms the destruction,
+	*		// and rejects it otherwise
+	*	}
+	*
+	*	function saveModifications() {
+	*		// Makes ajax to save modifications on the server, returning a
+	*		// promise.
+	*	}
+	*
+	*	function showNotification() {
+	*		// Notifies that the modification was successful
+	*	}
+	*
+	*	// Composes the whole process into one function that returns a promise
+	*	var wholeProcess = func.compose(getHowMuchWeWillDestroy,
+	*                                   getUserConfirmation,
+	*                                   saveModifications,
+	*                                   showNotification);
+	*
+	*	// Which is equivalent to
+	*	var wholeProcess = function(parameter) {
+	*		return fn.call(getHowMuchWeWillDestroy, parameter)
+	*			.then(getUserConfirmation)
+	*			.then(saveModifications)
+	*			.then(showNotification);
+	*	}
+	*
+	*
+	* @param {Function} f the function to which the arguments will be passed
+	* @param {...Function} [funcs] functions that will be composed, in order
+	* @returns {Function} a promise-returning composition of the functions
+	*/
+	function compose(f /*, funcs... */) {
 		var funcs = slice.call(arguments, 1);
 
 		return function() {
