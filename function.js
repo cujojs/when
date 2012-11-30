@@ -136,10 +136,11 @@ define(['./when'], function(when) {
 
 		return function() {
 			var args = slice.call(arguments);
+			var firstPromise = apply(f, args);
 
 			return when.reduce(funcs, function(arg, func) {
 				return func(arg);
-			}, f.apply(null, args));
+			}, firstPromise);
 		};
 	}
 

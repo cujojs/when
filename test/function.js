@@ -182,6 +182,26 @@ buster.testCase('when/function', {
 				composed(10, 15).then(function(value) {
 					assert.equals(value, 30);
 				}, fail);
+			},
+
+			'should reject when the first function throws': function() {
+				var error = new Error('Exception should be handled');
+				var throwing = functionThatThrows(error);
+
+				var composed = fn.compose(throwing, f);
+				composed(5, 10).then(fail, function(reason) {
+					assert.same(reason, error);
+				});
+			},
+
+			'should reject when a composed function throws': function() {
+				var error = new Error('Exception should be handled');
+				var throwing = functionThatThrows(error);
+
+				var composed = fn.compose(f, throwing);
+				composed(5, 10).then(fail, function(reason) {
+					assert.same(reason, error);
+				});
 			}
 		}
 	},
