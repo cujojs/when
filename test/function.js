@@ -184,6 +184,19 @@ buster.testCase('when/function', {
 				}, fail);
 			},
 
+			'should be transparent to returned promises': function() {
+				var sumWithTen = f.bind(null, 10);
+
+				var promisingSumWithTen = function(arg) {
+					return when.resolve(sumWithTen(arg));
+				};
+
+				var composed = fn.compose(sumWithTen, promisingSumWithTen);
+				composed(10).then(function(value) {
+					assert.equals(value, 30);
+				}, fail);
+			},
+
 			'should reject when the first function throws': function() {
 				var error = new Error('Exception should be handled');
 				var throwing = functionThatThrows(error);
@@ -202,7 +215,28 @@ buster.testCase('when/function', {
 				composed(5, 10).then(fail, function(reason) {
 					assert.same(reason, error);
 				});
+			},
+
+			'should reject if a composed function rejects': function() {
+				var rejecting = function() { return when.reject('rejected'); };
+
+				var composed = fn.compose(f, rejecting);
+				composed(5, 10).then(fail, function(reason) {
+					assert.equals(reason, 'rejected');
+				});
 			}
+		},
+
+		'should compose the functions on the given order': function() {
+			function a(str) { return str + ' is';       }
+			function b(str) { return str + ' really';   }
+			function c(str) { return str + ' awesome!'; }
+
+			var composed = fn.compose(a, b, c);
+
+			composed('when.js').then(function(value) {
+				assert.equals(value, 'when.js is really awesome!');
+			}, fail);
 		}
 	},
 
