@@ -151,6 +151,41 @@ buster.testCase('when/function', {
 		},
 	},
 
+	'compose': {
+		'should return a function': function() {
+			var result = fn.compose(f);
+			assert.isFunction(result);
+		},
+
+		'the returned function': {
+			'should return a promise': function() {
+				var returnedFunction = fn.compose(f);
+				var result = returnedFunction();
+
+				assertIsPromise(result);
+			},
+
+			'should be composed from the passed functions': function() {
+				var sumWithFive = f.bind(null, 5);
+				var sumWithTen  = f.bind(null, 10);
+
+				var composed = fn.compose(sumWithFive, sumWithTen);
+				composed(15).then(function(value) {
+					assert.equals(value, 30);
+				}, fail);
+			},
+
+			'should pass all its arguments to the first function': function() {
+				var sumWithFive = f.bind(null, 5);
+
+				var composed = fn.compose(f, sumWithFive);
+				composed(10, 15).then(function(value) {
+					assert.equals(value, 30);
+				}, fail);
+			}
+		}
+	},
+
 	'promisify': {
 		'should return a function': function() {
 			var result = fn.promisify(makeAsyncFunction());
