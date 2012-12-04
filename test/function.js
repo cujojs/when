@@ -8,13 +8,6 @@ function assertIsPromise(something) {
   buster.assert(when.isPromise(something), message);
 }
 
-function makeAsyncFunction() {
-	return function async(cb, eb) {
-		async.runCallback = cb;
-		async.runErrback  = eb;
-	};
-}
-
 function functionThatThrows(error) {
 	return function throwing() {
 		throw error;
@@ -242,58 +235,54 @@ buster.testCase('when/function', {
 
 	'promisify': {
 		'should return a function': function() {
-			var result = fn.promisify(makeAsyncFunction());
+			var result = fn.promisify(f);
 			assert.isFunction(result);
 		},
 
 		'the promise from the returned function': {
 			'should resolve for the callback': function(done) {
-				var async = makeAsyncFunction();
-				var promisified = fn.promisify(async);
+				var promisified = fn.promisify(function(callback) {
+					callback(10);
+				});
 
 				promisified()
 					.then(function(value) { assert.equals(value, 10); })
 					.always(done);
-
-				async.runCallback(10);
 			},
 
 			'should reject for the errback': function(done) {
-				var async = makeAsyncFunction();
-				var promisified = fn.promisify(async);
+				var promisified = fn.promisify(function(callbac, errback) {
+					errback(10);
+				});
 
 				promisified()
 					.then(null, function(value) { assert.equals(value, 10); })
 					.always(done);
-
-				async.runErrback(10);
 			},
 		},
 
 		'should accept functions with non-standard callback': function(done) {
-			var async = makeAsyncFunction();
+			function nonstandard(errback, callback) {
+				callback(10);
+			}
 
-			function nonstandard(_, callback) { async(callback); }
 			var promisified = fn.promisify(nonstandard, 1, 0);
 
 			promisified()
 				.then(function(value) { assert.equals(value, 10); })
 				.always(done);
-
-			async.runCallback(10);
 		},
 
 		'should accept functions with non-standard errback': function(done) {
-			var async = makeAsyncFunction();
+			function nonstandard(errback/*, callback */) {
+				errback(10);
+			}
 
-			function nonstandard(errback) { async(null, errback); }
 			var promisified = fn.promisify(nonstandard, 1, 0);
 
 			promisified()
-				.then(null, function(value) { assert.equals(value, 10); })
+				.then(fail, function(value) { assert.equals(value, 10); })
 				.always(done);
-
-			async.runErrback(10);
 		}
 	}
 });
