@@ -233,9 +233,9 @@ define(['./when'], function(when) {
 			args = slice.call(arguments);
 			d = when.defer();
 
-			apply(orig, initArgs(args, d));
-
-			return d.promise;
+			return apply(orig, initArgs(args, d)).then(function() {
+				return d.promise;
+			});
 		};
 	}
 });

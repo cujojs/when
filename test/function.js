@@ -283,6 +283,15 @@ buster.testCase('when/function', {
 			promisified()
 				.then(fail, function(value) { assert.equals(value, 10); })
 				.always(done);
+		},
+
+		'should translated exceptions into rejections': function(done) {
+			var error = new Error();
+			var promisified = fn.promisify(functionThatThrows(error));
+
+			promisified()
+				.then(fail, function(reason) { assert.same(reason, error); })
+				.always(done);
 		}
 	}
 });
