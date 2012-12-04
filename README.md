@@ -10,7 +10,7 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 * **DEPRECATED:** `deferred.then` [is deprecated](when/blob/master/docs/api.md#deferred) and will be removed in an upcoming release.  Use `deferred.promise.then` instead.
 * [promise.yield](when/blob/master/docs/api.md#yield)(promiseOrValue) convenience API for substituting a new value into a promise chain.
-* [promise.spread](when/blob/master/docs/api.md#spread)(variadicFunction) convenience API for registering a fulfill handler that accepts variadic arguments. [Mmmm, promise.spread](http://s.shld.net/is/image/Sears/033W048977110001_20100422100331516?hei=1600&wid=1600&op_sharpen=1&resMode=sharp&op_usm=0.9,0.5,0,0)
+* [promise.spread](when/blob/master/docs/api.md#spread)(variadicFunction) convenience API for spreading an array onto a fulfill handler that accepts variadic arguments. [Mmmm, buttery](http://s.shld.net/is/image/Sears/033W048977110001_20100422100331516?hei=1600&wid=1600&op_sharpen=1&resMode=sharp&op_usm=0.9,0.5,0,0)
 * Doc improvements:
 	* [when()](when/blob/master/docs/api.md#when) and [promise.then()](when/blob/master/docs/api.md#main-promise-api) have more info about callbacks and chaining behavior.
 	* More info and clarifications about the roles of [Deferred](when/blob/master/docs/api.md#deferred) and [Resolver](when/blob/master/docs/api.md#resolver)
