@@ -203,24 +203,24 @@ define(['./when'], function(when) {
 		// If you supply positions, use them to inject callback/errback/progback
 		// into the args.
 		if(arguments.length === 1) {
-			initArgs = function(args, deferred) {
-				args.push(deferred.resolve);
-				args.push(deferred.reject);
+			initArgs = function(args, callbacks) {
+				args.push(callbacks.resolve);
+				args.push(callbacks.reject);
 
 				return args;
 			};
 		} else {
-			initArgs = function(args, deferred) {
+			initArgs = function(args, callbacks) {
 				if(typeof callbackPos == 'number') {
-					args.splice(callbackPos, 0, deferred.resolve);
+					args.splice(callbackPos, 0, callbacks.resolve);
 				}
 
 				if(typeof errbackPos == 'number') {
-					args.splice(errbackPos, 0, deferred.reject);
+					args.splice(errbackPos, 0, callbacks.reject);
 				}
 
 				if(typeof progbackPos == 'number') {
-					args.splice(progbackPos, 0, deferred.progress);
+					args.splice(progbackPos, 0, callbacks.progress);
 				}
 
 				return args;
@@ -228,15 +228,34 @@ define(['./when'], function(when) {
 		}
 
 		return function() {
-			var args, d;
+			var args, d, callbacks;
 
 			args = slice.call(arguments);
 			d = when.defer();
+			callbacks = callbacksFromResolver(d.resolver);
 
-			return apply(orig, initArgs(args, d)).then(function() {
+			return apply(orig, initArgs(args, callbacks)).then(function() {
 				return d.promise;
 			});
 		};
+	}
+
+	function callbacksFromResolver(resolver) {
+		return {
+			resolve:  createCallback(resolver.resolve),
+			reject:   createCallback(resolver.reject),
+			progress: createCallback(resolver.progress)
+		};
+
+		function createCallback(f) {
+			return function(value) {
+				if(arguments.length > 1) {
+					f(slice.call(arguments));
+				} else {
+					f(value);
+				}
+			};
+		}
 	}
 });
 

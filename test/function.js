@@ -259,6 +259,26 @@ buster.testCase('when/function', {
 					.then(null, function(value) { assert.equals(value, 10); })
 					.always(done);
 			},
+
+			'should resolve to an array for multi-arg callbacks': function(done) {
+				var promisified = fn.promisify(function(callback/*, errback */) {
+					callback(10, 20);
+				});
+
+				promisified()
+					.then(function(values) { assert.equals(values, [10, 20]); })
+					.always(done);
+			},
+
+			'should reject to an array for multi-arg errbacks': function(done) {
+				var promisified = fn.promisify(function(callback, errback) {
+					errback(10, 20);
+				});
+
+				promisified()
+					.then(fail, function(values) { assert.equals(values, [10, 20]); })
+					.always(done);
+			}
 		},
 
 		'should accept functions with non-standard callback': function(done) {
