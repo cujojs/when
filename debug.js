@@ -66,13 +66,13 @@ define(['./when'], function(when) {
 	 */
 	function whenDebug(promise, cb, eb, pb) {
 		var args = [promise].concat(wrapCallbacks(promise, [cb, eb, pb]));
-		return debugPromise(when.apply(null, args), promise);
+		return debugPromise(when.apply(null, args), when.resolve(promise));
 	}
 
 	/**
 	 * Setup debug output handlers for the supplied promise.
-	 * @param p {Promise} A trusted (when.js) promise
-	 * @param parent {Promise} promise from which p was created (e.g. via then())
+	 * @param {Promise} p A trusted (when.js) promise
+	 * @param {Promise?} parent promise from which p was created (e.g. via then())
 	 * @return {Promise} a new promise that outputs debug info and
 	 * has a useful toString
 	 */
@@ -140,11 +140,9 @@ define(['./when'], function(when) {
 	/**
 	 * Replacement for when.defer() that sets up debug logging
 	 * on the created Deferred, its resolver, and its promise.
-	 * @param [id] anything optional identifier for this Deferred that will show
-	 * up in debug output
 	 * @return {Deferred} a Deferred with debug logging
 	 */
-	function deferDebug() {
+	function deferDebug(/* id */) {
 		var d, status, value, origResolve, origReject, origProgress, origThen, id;
 
 		// Delegate to create a Deferred;
@@ -245,7 +243,9 @@ define(['./when'], function(when) {
 				return cb(v);
 			} catch(err) {
 				if(err) {
-					if (err.name in exceptionsToRethrow) {
+					var toRethrow = (whenDebug.debug && whenDebug.debug.exceptionsToRethrow) || exceptionsToRethrow;
+
+					if (err.name in toRethrow) {
 						throwUncatchable(err);
 					}
 
