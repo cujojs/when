@@ -285,7 +285,7 @@ buster.testCase('when/function', {
 				.always(done);
 		},
 
-		'should translated exceptions into rejections': function(done) {
+		'should translate exceptions into rejections': function(done) {
 			var error = new Error();
 			var promisified = fn.promisify(functionThatThrows(error));
 
