@@ -105,14 +105,23 @@ buster.testCase('when.reduce', {
 	},
 
 	'should reject with TypeError when input is empty and no initial value or promise provided': function(done) {
+		// This test intentionally causes a TypeError to be thrown, and when/debug's
+		// default behavior is to rethrow it in nextTick.  So, we temporarily clobber
+		// the list of exception types to rethrow to allow this test to run
+		// with when/debug enabled.
+		// This has no effect in non-debug mode.
+		var debugSave = when.debug;
+		when.debug = { exceptionsToRethrow: {} };
+
 		when.reduce([], plus).then(
-			function() {
-				fail();
-			},
+			fail,
 			function(e) {
 				assert(e instanceof TypeError);
 			}
-		).then(done);
+		).always(function() {
+			when.debug = debugSave;
+			done();
+		});
 	},
 
 	'should allow sparse array input without initial': function(done) {

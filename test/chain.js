@@ -128,7 +128,7 @@ buster.testCase('when.chain', {
 
 		input.resolve(1);
 
-		when.chain(input, d).then(
+		when.chain(input.promise, d.resolver).then(
 			function(val) { assert.equals(val, 1); },
 			function() { fail('promise should not have rejected'); }
 		).always(done);
@@ -142,7 +142,7 @@ buster.testCase('when.chain', {
 
 		input.resolve(1);
 
-		when.chain(input, d, 2).then(
+		when.chain(input.promise, d.resolver, 2).then(
 			function(val) { assert.equals(val, 2); },
 			function() { fail('promise should not have rejected'); }
 		).always(done);
@@ -156,7 +156,7 @@ buster.testCase('when.chain', {
 
 		input.reject(1);
 
-		when.chain(input, d).then(
+		when.chain(input.promise, d.resolver).then(
 			function() { fail('promise should not have resolved'); },
 			function(val) { assert.equals(val, 1); }
 		).always(done);
