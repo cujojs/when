@@ -6,6 +6,11 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 # What's New?
 
+### 1.7.1
+
+* Removed a couple leftover internal usages of `deferred.then`.
+* [when/debug](https://github.com/cujojs/when/wiki/when-debug) allows configuring the set of "fatal" error types that will be rethrown to the host env.
+
 ### 1.7.0
 
 * **DEPRECATED:** `deferred.then` [is deprecated](when/blob/master/docs/api.md#deferred) and will be removed in an upcoming release.  Use `deferred.promise.then` instead.

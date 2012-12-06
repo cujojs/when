@@ -7,7 +7,7 @@
  * Licensed under the MIT License at:
  * http://www.opensource.org/licenses/mit-license.php
  *
- * @version 1.7.0
+ * @version 1.7.1
  */
 
 (function(define) { 'use strict';
@@ -25,11 +25,11 @@ define(function () {
 	when.join      = join;      // Join 2 or more promises
 
 	when.all       = all;       // Resolve a list of promises
-	when.some      = some;      // Resolve a sub-set of promises
-	when.any       = any;       // Resolve one promise in a list
-
 	when.map       = map;       // Array.map() for promises
 	when.reduce    = reduce;    // Array.reduce() for promises
+
+	when.any       = any;       // One-winner race
+	when.some      = some;      // Multi-winner race
 
 	when.chain     = chain;     // Make a promise trigger another resolver
 
