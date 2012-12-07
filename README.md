@@ -8,7 +8,7 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 ### 1.7.1
 
-* Removed a couple leftover internal usages of `deferred.then`.
+* Removed leftover internal usages of `deferred.then`.
 * [when/debug](https://github.com/cujojs/when/wiki/when-debug) allows configuring the set of "fatal" error types that will be rethrown to the host env.
 
 ### 1.7.0
