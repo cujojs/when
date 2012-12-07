@@ -572,7 +572,7 @@ define(function () {
 	 * be a promise for the starting value.
 	 *
 	 * @param {Array|Promise} promise array or promise for an array of anything,
-	 * 		may contain a mix of promises and values.
+	 *      may contain a mix of promises and values.
 	 * @param {function} reduceFunc reduce function reduce(currentValue, nextValue, index, total),
 	 *      where total is the total number of items being reduced, and will be the same
 	 *      in each call to reduceFunc.

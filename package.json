@@ -28,6 +28,7 @@
 	],
 	"devDependencies": {
 		"buster": "~0.6",
+		"jshint": "",
 		"promise-tests": "*"
 	},
 	"main": "when",
@@ -35,9 +36,9 @@
 		"test": "test"
 	},
 	"scripts": {
-		"test": "buster test -e node && promise-tests promises-a test/when-adapter.js",
-		"test-all": "buster test -e node && promise-tests all test/when-adapter.js",
+		"test": "jshint *.js && buster test -e node && promise-tests promises-a test/when-adapter.js",
+		"test-all": "jshint *.js && buster test -e node && promise-tests all test/when-adapter.js",
 		"start": "buster server",
-		"test-browser": "buster test -e browser"
+		"test-browser": "jshint *.js && buster test -e browser"
 	}
 }

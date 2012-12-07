@@ -11,14 +11,7 @@
  * WARNING: This module **should never** be use this in a production environment.
  * It exposes details of the promise
  *
- * In an AMD environment, you can simply change your path or package mappings:
- *
- * paths: {
- *   // 'when': 'path/to/when/when'
- *   'when': 'path/to/when/debug'
- * }
- *
- * or
+ * In an AMD environment, you can simply change your package mappings:
  *
  * packages: [
  *   // { name: 'when', location: 'path/to/when', main: 'when' }
@@ -273,6 +266,7 @@ define(['./when'], function(when) {
 	}
 
 	function callGlobalHandler(handler, promise, triggeringValue, auxValue) {
+		/*jshint maxcomplexity:5*/
 		var globalHandlers = whenDebug.debug;
 
 		if(!(globalHandlers && typeof globalHandlers[handler] === 'function')) {

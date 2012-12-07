@@ -18,13 +18,6 @@ config['browser'] = {
 	sources: [ 'when.js', 'apply.js', 'delay.js', 'timeout.js', 'cancelable.js', 'sequence.js', 'pipeline.js', 'parallel.js' ]
 };
 
-config['browser-debug'] = {
-	environment: 'browser',
-	rootPath: '../',
-	tests: tests,
-	sources: [ 'when.js', 'debug.js' ]
-};
-
 if(typeof module != 'undefined') {
 	module.exports = config;
 }
