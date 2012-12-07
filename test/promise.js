@@ -371,20 +371,20 @@ buster.testCase('promise', {
 
 		'should fulfill with the supplied value': function(done) {
 			when.resolve(other).yield(sentinel).then(
-				assert.same.bind(assert, sentinel)
+				function(value) { assert.same(value, sentinel); }
 			).always(done);
 		},
 
 		'should fulfill with the value of a fulfilled promise': function(done) {
 			when.resolve(other).yield(when.resolve(sentinel)).then(
-				assert.same.bind(assert, sentinel)
+				function(value) { assert.same(value, sentinel); }
 			).always(done);
 		},
 
 		'should reject with the reason of a rejected promise': function(done) {
 			when.resolve(other).yield(when.reject(sentinel)).then(
 				fail,
-				assert.same.bind(assert, sentinel)
+				function(reason) { assert.same(reason, sentinel); }
 			).always(done);
 		}
 	},
