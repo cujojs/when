@@ -2,7 +2,7 @@
 
 var tests, config;
 
-tests = ['test/*.js'];
+tests = ['test/**/*.js'];
 config = {};
 
 config['node'] = {
