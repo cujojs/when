@@ -18,14 +18,14 @@ define(['../when'], function(when) {
 		createCallback: createCallback
 	};
 
-	function apply(func, context, args) {
+	function apply(func, args) {
 		var d = when.defer();
 
 		args = args || [];
 		args.push(createCallback(d));
 
 		try {
-			func.apply(context, args);
+			func.apply(null, args);
 		} catch(e) {
 			d.reject(e);
 		}
@@ -33,14 +33,14 @@ define(['../when'], function(when) {
 		return d.promise;
 	}
 
-	function call(func, context /*, args... */) {
-		return apply(func, context, slice.call(arguments, 1));
+	function call(func /*, args... */) {
+		return apply(func, slice.call(arguments, 1));
 	}
 
-	function bind(func, context /*, args... */) {
+	function bind(func /*, args... */) {
 		var args = slice.call(arguments, 1);
 		return function() {
-			return apply(func, context, args.concat(slice.call(arguments)));
+			return apply(func, args.concat(slice.call(arguments)));
 		};
 	}
 
