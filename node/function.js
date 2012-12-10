@@ -21,6 +21,7 @@ define(['../when'], function(when) {
 	function apply(func, context, args) {
 		var d = when.defer();
 
+		args = args || [];
 		args.push(createCallback(d));
 
 		try {
