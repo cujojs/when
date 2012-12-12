@@ -27,115 +27,118 @@ buster.testCase('promise', {
 //		assert(Object.isFrozen(defer().promise));
 //	},
 
-	'should return a promise': function() {
-		assert.isFunction(defer().promise.then().then);
-	},
+	'then': {
 
-	'should allow a single callback function': function() {
-		assert.isFunction(defer().promise.then(f).then);
-	},
-
-	'should allow a callback and errback function': function() {
-		assert.isFunction(defer().promise.then(f, f).then);
-	},
-
-	'should allow a callback, errback, and progback function': function() {
-		assert.isFunction(defer().promise.then(f, f, f).then);
-	},
-
-	'should allow null and undefined': function() {
-		assert.isFunction(defer().promise.then().then);
-
-		assert.isFunction(defer().promise.then(null).then);
-		assert.isFunction(defer().promise.then(null, null).then);
-		assert.isFunction(defer().promise.then(null, null, null).then);
-
-		assert.isFunction(defer().promise.then(undef).then);
-		assert.isFunction(defer().promise.then(undef, undef).then);
-		assert.isFunction(defer().promise.then(undef, undef, undef).then);
-	},
-
-	'should allow functions and null or undefined to be mixed': function() {
-		assert.isFunction(defer().promise.then(f, null).then);
-		assert.isFunction(defer().promise.then(f, null, null).then);
-		assert.isFunction(defer().promise.then(null, f).then);
-		assert.isFunction(defer().promise.then(null, f, null).then);
-		assert.isFunction(defer().promise.then(null, null, f).then);
-	},
-
-	'should ignore non-functions': {
-		'when fulfillment handler': {
-			'is empty string': function(done) {
-				when.resolve(true).then('').then(assert, fail).always(done);
-			},
-			'is false': function(done) {
-				when.resolve(true).then(false).then(assert, fail).always(done);
-			},
-			'is true': function(done) {
-				when.resolve(true).then(true).then(assert, fail).always(done);
-			},
-			'is object': function(done) {
-				when.resolve(true).then({}).then(assert, fail).always(done);
-			},
-			'is falsey': function(done) {
-				when.resolve(true).then(0).then(assert, fail).always(done);
-			},
-			'is truthy': function(done) {
-				when.resolve(true).then(1).then(assert, fail).always(done);
-			}
+		'should return a promise': function() {
+			assert.isFunction(defer().promise.then().then);
 		},
 
-		'when rejection handler': {
-			'is empty string': function(done) {
-				when.reject(true).then(null, '').then(fail, assert).always(done);
-			},
-			'is false': function(done) {
-				when.reject(true).then(null, false).then(fail, assert).always(done);
-			},
-			'is true': function(done) {
-				when.reject(true).then(null, true).then(fail, assert).always(done);
-			},
-			'is object': function(done) {
-				when.reject(true).then(null, {}).then(fail, assert).always(done);
-			},
-			'is falsey': function(done) {
-				when.reject(true).then(null, 0).then(fail, assert).always(done);
-			},
-			'is truthy': function(done) {
-				when.reject(true).then(null, 1).then(fail, assert).always(done);
-			}
+		'should allow a single callback function': function() {
+			assert.isFunction(defer().promise.then(f).then);
 		},
 
-		'when progress handler': {
-			'is empty string': function(done) {
-				var d = when.defer();
-				d.promise.then(null, null, '').then(fail, fail, assert).then(null, null, done);
-				d.progress(true);
+		'should allow a callback and errback function': function() {
+			assert.isFunction(defer().promise.then(f, f).then);
+		},
+
+		'should allow a callback, errback, and progback function': function() {
+			assert.isFunction(defer().promise.then(f, f, f).then);
+		},
+
+		'should allow null and undefined': function() {
+			assert.isFunction(defer().promise.then().then);
+
+			assert.isFunction(defer().promise.then(null).then);
+			assert.isFunction(defer().promise.then(null, null).then);
+			assert.isFunction(defer().promise.then(null, null, null).then);
+
+			assert.isFunction(defer().promise.then(undef).then);
+			assert.isFunction(defer().promise.then(undef, undef).then);
+			assert.isFunction(defer().promise.then(undef, undef, undef).then);
+		},
+
+		'should allow functions and null or undefined to be mixed': function() {
+			assert.isFunction(defer().promise.then(f, null).then);
+			assert.isFunction(defer().promise.then(f, null, null).then);
+			assert.isFunction(defer().promise.then(null, f).then);
+			assert.isFunction(defer().promise.then(null, f, null).then);
+			assert.isFunction(defer().promise.then(null, null, f).then);
+		},
+
+		'should ignore non-functions': {
+			'when fulfillment handler': {
+				'is empty string': function(done) {
+					when.resolve(true).then('').then(assert, fail).always(done);
+				},
+				'is false': function(done) {
+					when.resolve(true).then(false).then(assert, fail).always(done);
+				},
+				'is true': function(done) {
+					when.resolve(true).then(true).then(assert, fail).always(done);
+				},
+				'is object': function(done) {
+					when.resolve(true).then({}).then(assert, fail).always(done);
+				},
+				'is falsey': function(done) {
+					when.resolve(true).then(0).then(assert, fail).always(done);
+				},
+				'is truthy': function(done) {
+					when.resolve(true).then(1).then(assert, fail).always(done);
+				}
 			},
-			'is false': function(done) {
-				var d = when.defer();
-				d.promise.then(null, null, false).then(fail, fail, assert).then(null, null, done);
-				d.progress(true);
+
+			'when rejection handler': {
+				'is empty string': function(done) {
+					when.reject(true).then(null, '').then(fail, assert).always(done);
+				},
+				'is false': function(done) {
+					when.reject(true).then(null, false).then(fail, assert).always(done);
+				},
+				'is true': function(done) {
+					when.reject(true).then(null, true).then(fail, assert).always(done);
+				},
+				'is object': function(done) {
+					when.reject(true).then(null, {}).then(fail, assert).always(done);
+				},
+				'is falsey': function(done) {
+					when.reject(true).then(null, 0).then(fail, assert).always(done);
+				},
+				'is truthy': function(done) {
+					when.reject(true).then(null, 1).then(fail, assert).always(done);
+				}
 			},
-			'is true': function(done) {
-				var d = when.defer();
-				d.promise.then(null, null, true).then(fail, fail, assert).then(null, null, done);
-				d.progress(true);
-			},
-			'is object': function(done) {
-				var d = when.defer();
-				d.promise.then(null, null, {}).then(fail, fail, assert).then(null, null, done);
-				d.progress(true);
-			},
-			'is falsey': function(done) {
-				var d = when.defer();
-				d.promise.then(null, null, 0).then(fail, fail, assert).then(null, null, done);
-				d.progress(true);
-			},
-			'is truthy': function(done) {
-				var d = when.defer();
-				d.promise.then(null, null, 1).then(fail, fail, assert).then(null, null, done);
-				d.progress(true);
+
+			'when progress handler': {
+				'is empty string': function(done) {
+					var d = when.defer();
+					d.promise.then(null, null, '').then(fail, fail, assert).then(null, null, done);
+					d.progress(true);
+				},
+				'is false': function(done) {
+					var d = when.defer();
+					d.promise.then(null, null, false).then(fail, fail, assert).then(null, null, done);
+					d.progress(true);
+				},
+				'is true': function(done) {
+					var d = when.defer();
+					d.promise.then(null, null, true).then(fail, fail, assert).then(null, null, done);
+					d.progress(true);
+				},
+				'is object': function(done) {
+					var d = when.defer();
+					d.promise.then(null, null, {}).then(fail, fail, assert).then(null, null, done);
+					d.progress(true);
+				},
+				'is falsey': function(done) {
+					var d = when.defer();
+					d.promise.then(null, null, 0).then(fail, fail, assert).then(null, null, done);
+					d.progress(true);
+				},
+				'is truthy': function(done) {
+					var d = when.defer();
+					d.promise.then(null, null, 1).then(fail, fail, assert).then(null, null, done);
+					d.progress(true);
+				}
 			}
 		}
 	},
