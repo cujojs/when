@@ -15,15 +15,15 @@ define(['./when', './cancelable', './delay'], function(when, cancelable, delay) 
 	var undef;
 
 	/**
-	 * Periodically exexcute the work function on the msec delay. The result of
-	 * the work may be verrified by watching for a condition to become true. The
+	 * Periodically execute the work function on the msec delay. The result of
+	 * the work may be verified by watching for a condition to become true. The
 	 * returned deferred is cancellable if the polling needs to be cancelled
-	 * externally before reatching a resolved state.
+	 * externally before reaching a resolved state.
 	 *
 	 * The next vote is scheduled after the results of the current vote are
 	 * verified and rejected.
 	 *
-	 * Polling may be terminated by the verrifier returning a truthy value,
+	 * Polling may be terminated by the verifier returning a truthy value,
 	 * invoking cancel() on the returned promise, or the work function returning
 	 * a rejected promise.
 	 *

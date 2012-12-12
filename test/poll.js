@@ -1,22 +1,13 @@
 (function(buster, poll, when, delay) {
 
-var assert, refute, fail;
+var assert, refute, fail, resolved, rejected;
 
 assert = buster.assert;
 refute = buster.refute;
 fail = buster.assertions.fail;
 
-function rejected(value) {
-	var d = when.defer();
-	d.reject(value);
-	return d;
-}
-
-function resolved(value) {
-	var d = when.defer();
-	d.resolve(value);
-	return d;
-}
+resolved = when.resolve;
+rejected = when.reject;
 
 function failIfCalled(done, message) {
 	return function () {
@@ -36,7 +27,7 @@ buster.testCase('when/poll', {
 
 		p.then(
 			failIfCalled(done, 'should never be resolved'),
-			function (result) {
+			function () {
 				assert(progback.called);
 				done();
 			},
@@ -51,7 +42,7 @@ buster.testCase('when/poll', {
 		abort = false;
 		interval = this.spy(function (prevInterval) { abort = !!prevInterval; return 10; });
 		poll(function () { return abort; }, interval, function (result) { return !!result; }).then(
-			function (result) {
+			function () {
 				assert(interval.withArgs(undef).calledOnce);
 				assert(interval.withArgs(10).calledOnce);
 				assert(interval.calledTwice);
@@ -66,7 +57,7 @@ buster.testCase('when/poll', {
 
 		p.then(
 			failIfCalled(done, 'should never be resolved'),
-			function (result) {
+			function () {
 				assert(true);
 				done();
 			},
@@ -96,7 +87,7 @@ buster.testCase('when/poll', {
 		var i, p, progback;
 
 		i = 0;
-		p = poll(function () { i += 1; return i; }, 10, function (result) { return i < 3 ? rejected() : resolved(true); });
+		p = poll(function () { i += 1; return i; }, 10, function () { return i < 3 ? rejected() : resolved(true); });
 		progback = this.spy(function (result) { assert.equals(result, 2); });
 
 		p.then(
