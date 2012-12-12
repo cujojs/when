@@ -188,9 +188,8 @@ define(function () {
 	 */
 	function fulfilled(value) {
 		var p = new Promise(function(onFulfilled) {
-			// TODO: Promises/A+ check typeof onFulfilled
 			try {
-				return resolve(onFulfilled ? onFulfilled(value) : value);
+				return resolve(typeof onFulfilled == 'function' ? onFulfilled(value) : value);
 			} catch(e) {
 				return rejected(e);
 			}
@@ -209,9 +208,8 @@ define(function () {
 	 */
 	function rejected(reason) {
 		var p = new Promise(function(_, onRejected) {
-			// TODO: Promises/A+ check typeof onRejected
 			try {
-				return onRejected ? resolve(onRejected(reason)) : rejected(reason);
+				return resolve(typeof onRejected == 'function' ? onRejected(reason) : rejected(reason));
 			} catch(e) {
 				return rejected(e);
 			}

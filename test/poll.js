@@ -101,7 +101,7 @@ buster.testCase('when/poll', {
 		);
 	},
 
-	'should keep polling from falsey resolved verification, stop for truethy resolved verification': function (done) {
+	'should keep polling from falsey resolved verification, stop for truthy resolved verification': function (done) {
 		var i, p, progback;
 
 		i = 0;
