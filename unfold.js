@@ -5,7 +5,7 @@
  * @author: brian@hovercraftstudios.com
  */
 (function(define) {
-define(function(require) {
+define(['when'], function(when) {
 
 	var when = require('./when');
 
@@ -83,4 +83,12 @@ define(function(require) {
 	}
 
 });
-}(typeof define === 'function' ? define : function(factory) { module.exports = factory(require); }));
+})(typeof define == 'function' && define.amd
+		? define
+		: function (deps, factory) { typeof exports == 'object'
+		? (module.exports = factory(require('./when')))
+		: (this.when_unfold = factory(this.when));
+	}
+	// Boilerplate for AMD, Node, and browser global
+);
+
