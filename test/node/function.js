@@ -114,6 +114,64 @@ buster.testCase('when/node/function', {
 				assert.equals(value, 30);
 			}).always(done);
 		}
+	},
+
+	'bind': {
+		'should return a function': function() {
+			assert.isFunction(node_fn.bind(function() {}));
+		},
+
+		'the returned function': {
+			'should return a promise': function() {
+				var result = node_fn.bind(function() {});
+				assertIsPromise(result());
+			},
+
+			'should resolve the promise with the callback value': function(done) {
+				var result = node_fn.bind(function(callback) {
+					callback(null, 10);
+				});
+
+
+				result().then(function(value) {
+					assert.equals(value, 10);
+				}, fail).always(done);
+			},
+
+			'should reject the promise with the error argument': function(done) {
+				var error = new Error();
+				var result = node_fn.bind(function(callback) {
+					callback(error);
+				});
+
+
+				result().then(fail, function(reason) {
+					assert.same(reason, error);
+				}).always(done);
+			},
+
+			'should resolve the promise to an array for mult-args': function(done) {
+				var result = node_fn.bind(function(callback) {
+					callback(null, 10, 20, 30);
+				});
+
+				result().then(function(values) {
+					assert.equals(values, [10, 20, 30]);
+				}).always(done);
+			}
+		},
+
+		'should accept leading arguments': function(done) {
+			function fancySum(x, y, callback) {
+				callback(null, x + y);
+			}
+
+			var curried = node_fn.bind(fancySum, 5);
+
+			curried(10).then(function(value) {
+				assert.equals(value, 15);
+			}, fail).always(done);
+		},
 	}
 });
 })(require('buster'), require('../../node/function'), require('../../when'));
