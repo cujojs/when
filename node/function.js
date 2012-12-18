@@ -18,6 +18,54 @@ define(['../when'], function(when) {
 		createCallback: createCallback
 	};
 
+	/**
+	* Takes a node-style async function and calls it immediately (with an optional
+	* array of arguments). It returns a promise whose resolution depends on whether
+	* the async functions calls its callback with the conventional error argument
+	* or not.
+	*
+	* With this it becomes possible to leverage existing APIs while still reaping
+	* the benefits of promises.
+	*
+	* @example
+	*	function onlySmallNumbers(n, callback) {
+	*		if(n < 10) {
+	*			callback(null, n + 10);
+	*		} else {
+	*			callback(new Error("Calculation failed"));
+	*		}
+	*	}
+	*
+	*	var node_fn = require("when/node/function");
+	*
+	*	// Logs '15'
+	*	node_fn.apply(onlySmallNumbers, [5]).then(console.log, console.error);
+	*
+	*	// Logs 'Calculation failed'
+	*	node_fn.apply(onlySmallNumbers, [15]).then(console.log, console.error);
+	*
+	* @example
+	*	var fs = require("fs"), node_fn = require("when/node/function");
+	*
+	*	// Uses node's native fs.readFile to read file with the given name,
+	*	// and returns a promise for the result.
+	*	function promiseRead(filename) {
+	*		return node_fn.apply(fs.readFile, [filename, "utf-8"]);
+	*	}
+	*
+	*	// The promise is resolved with the contents of the file if everything
+	*	// goes ok
+	*	promiseRead('exists.txt').then(console.log, console.error);
+	*
+	*	// And will be rejected if something doesn't work out (the file not
+	*	// existing, for instance)
+	*	promiseRead('doesnt_exist.txt').then(console.log, console.error);
+	*
+	* @param {function} func node-style function that will be called
+	* @param {Array} [args] array of arguments to func
+	* @returns {Promise} promise for the value func passes to its callback
+	*
+	*/
 	function apply(func, args) {
 		var d = when.defer();
 
