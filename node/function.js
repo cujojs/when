@@ -44,23 +44,6 @@ define(['../when'], function(when) {
 	*	// Logs 'Calculation failed'
 	*	node_fn.apply(onlySmallNumbers, [15]).then(console.log, console.error);
 	*
-	* @example
-	*	var fs = require("fs"), node_fn = require("when/node/function");
-	*
-	*	// Uses node's native fs.readFile to read file with the given name,
-	*	// and returns a promise for the result.
-	*	function promiseRead(filename) {
-	*		return node_fn.apply(fs.readFile, [filename, "utf-8"]);
-	*	}
-	*
-	*	// The promise is resolved with the contents of the file if everything
-	*	// goes ok
-	*	promiseRead('exists.txt').then(console.log, console.error);
-	*
-	*	// And will be rejected if something doesn't work out (the file not
-	*	// existing, for instance)
-	*	promiseRead('doesnt_exist.txt').then(console.log, console.error);
-	*
 	* @param {function} func node-style function that will be called
 	* @param {Array} [args] array of arguments to func
 	* @returns {Promise} promise for the value func passes to its callback
@@ -119,6 +102,20 @@ define(['../when'], function(when) {
 	* interpreted as an error condition, and the promise will be rejected
 	* with it. Otherwise, the call is considered a resolution, and the promise
 	* is resolved with the callback's second argument.
+	*
+	* @example
+	*	var fs = require("fs"), node_fn = require("when/node/function");
+	*
+	*	var promiseRead = node_fn.bind(fs.readFile);
+	*
+	*	// The promise is resolved with the contents of the file if everything
+	*	// goes ok
+	*	promiseRead('exists.txt').then(console.log, console.error);
+	*
+	*	// And will be rejected if something doesn't work out
+	*	// (e.g. the files does not exist)
+	*	promiseRead('doesnt_exist.txt').then(console.log, console.error);
+	*
 	*
 	* @param {Function} func node-style function to be bound
 	* @param {...*} [args] arguments to be prepended for the new function
