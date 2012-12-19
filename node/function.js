@@ -110,6 +110,20 @@ define(['../when'], function(when) {
 		return apply(func, slice.call(arguments, 1));
 	}
 
+	/**
+	* Takes a node-style function and returns new function that wraps the
+	* original and, instead of taking a callback, returns a promise.
+	*
+	* Upon execution, the orginal function is executed as well. If it passes
+	* a truthy value as the first argument to the callback, it will be
+	* interpreted as an error condition, and the promise will be rejected
+	* with it. Otherwise, the call is considered a resolution, and the promise
+	* is resolved with the callback's second argument.
+	*
+	* @param {Function} func node-style function to be bound
+	* @param {...*} [args] arguments to be prepended for the new function
+	* @returns {Function} a promise-returning function
+	*/
 	function bind(func /*, args... */) {
 		var args = slice.call(arguments, 1);
 		return function() {
@@ -128,7 +142,6 @@ define(['../when'], function(when) {
 			}
 		};
 	}
-
 });
 
 })(typeof define == 'function'
