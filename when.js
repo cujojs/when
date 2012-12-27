@@ -163,15 +163,7 @@ define(function () {
 	 * @return {Promise} fulfilled promise or pending promise paralleling the state of promiseOrValue.
 	 */
 	function resolve(promiseOrValue) {
-		promiseOrValue = promiseFor(promiseOrValue);
-
-		return new Promise(function(fulfilled, rejected) {
-			var next = defer();
-			nextTick(function() {
-				promiseOrValue.then(fulfilled, rejected).then(next.resolve, next.reject, next.progress);
-			});
-			return next.promise;
-		});
+		return defer().resolve(promiseOrValue);
 	}
 
 	/**
@@ -185,7 +177,7 @@ define(function () {
 	 * @return {Promise} rejected {@link Promise}
 	 */
 	function reject(promiseOrValue) {
-		return promiseFor(promiseOrValue).then(rejected);
+		return when(promiseOrValue, rejected);
 	}
 
 	/**
