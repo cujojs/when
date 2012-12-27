@@ -11,14 +11,7 @@
  * WARNING: This module **should never** be use this in a production environment.
  * It exposes details of the promise
  *
- * In an AMD environment, you can simply change your path or package mappings:
- *
- * paths: {
- *   // 'when': 'path/to/when/when'
- *   'when': 'path/to/when/debug'
- * }
- *
- * or
+ * In an AMD environment, you can simply change your package mappings:
  *
  * packages: [
  *   // { name: 'when', location: 'path/to/when', main: 'when' }
@@ -43,11 +36,15 @@
 (function(define) {
 define(['./when'], function(when) {
 
-	var promiseId, pending, exceptionsToRethrow, own, undef;
+	var promiseId, pending, exceptionsToRethrow, own, warn, undef;
 
 	promiseId = 0;
 	pending = {};
 	own = Object.prototype.hasOwnProperty;
+
+	warn = (typeof console !== 'undefined' && typeof console.warn === 'function')
+		? function(x) { console.warn(x); }
+		: function() {};
 
 	exceptionsToRethrow = {
 		RangeError: 1,
@@ -62,13 +59,13 @@ define(['./when'], function(when) {
 	 */
 	function whenDebug(promise, cb, eb, pb) {
 		var args = [promise].concat(wrapCallbacks(promise, [cb, eb, pb]));
-		return debugPromise(when.apply(null, args), promise);
+		return debugPromise(when.apply(null, args), when.resolve(promise));
 	}
 
 	/**
 	 * Setup debug output handlers for the supplied promise.
-	 * @param p {Promise} A trusted (when.js) promise
-	 * @param parent {Promise} promise from which p was created (e.g. via then())
+	 * @param {Promise} p A trusted (when.js) promise
+	 * @param {Promise?} parent promise from which p was created (e.g. via then())
 	 * @return {Promise} a new promise that outputs debug info and
 	 * has a useful toString
 	 */
@@ -91,7 +88,9 @@ define(['./when'], function(when) {
 			return toString('Promise', id);
 		};
 
-		newPromise.then = function(cb, eb) {
+		newPromise.then = function(cb, eb, pb) {
+			checkCallbacks(cb, eb, pb);
+
 			if(typeof eb === 'function') {
 				var promise = newPromise;
 				do {
@@ -134,11 +133,9 @@ define(['./when'], function(when) {
 	/**
 	 * Replacement for when.defer() that sets up debug logging
 	 * on the created Deferred, its resolver, and its promise.
-	 * @param [id] anything optional identifier for this Deferred that will show
-	 * up in debug output
 	 * @return {Deferred} a Deferred with debug logging
 	 */
-	function deferDebug() {
+	function deferDebug(/* id */) {
 		var d, status, value, origResolve, origReject, origProgress, origThen, id;
 
 		// Delegate to create a Deferred;
@@ -197,12 +194,12 @@ define(['./when'], function(when) {
 		};
 
 		// Setup final state change handlers
-		d.then(
+		origThen(
 			function(v) { status = 'resolved'; return v; },
 			function(e) { status = 'REJECTED'; return when.reject(e); }
 		);
 
-		d.then = d.promise.then;
+		d.then = deprecated('deferred.then', 'deferred.promise.then', d.promise.then, d);
 
 		// Add an id to all directly created promises.  It'd be great
 		// to find a way to propagate this id to promise created by .then()
@@ -239,7 +236,9 @@ define(['./when'], function(when) {
 				return cb(v);
 			} catch(err) {
 				if(err) {
-					if (err.name in exceptionsToRethrow) {
+					var toRethrow = (whenDebug.debug && whenDebug.debug.exceptionsToRethrow) || exceptionsToRethrow;
+
+					if (err.name in toRethrow) {
 						throwUncatchable(err);
 					}
 
@@ -267,6 +266,7 @@ define(['./when'], function(when) {
 	}
 
 	function callGlobalHandler(handler, promise, triggeringValue, auxValue) {
+		/*jshint maxcomplexity:5*/
 		var globalHandlers = whenDebug.debug;
 
 		if(!(globalHandlers && typeof globalHandlers[handler] === 'function')) {
@@ -306,6 +306,28 @@ define(['./when'], function(when) {
 		setTimeout(function() {
 			throw err;
 		}, 0);
+	}
+
+	function deprecated(name, preferred, f, context) {
+		return function() {
+			warn(new Error(name + ' is deprecated, use ' + preferred).stack);
+
+			return f.apply(context, arguments);
+		};
+	}
+
+	function checkCallbacks() {
+		var i, len, a;
+		for(i = 0, len = arguments.length; i < len; i++) {
+			a = arguments[i];
+			if(!checkFunction(a)) {
+				warn(new Error('arg ' + i + ' must be a function, null, or undefined, but was a ' + typeof a).stack);
+			}
+		}
+	}
+
+	function checkFunction(f) {
+		return typeof f === 'function' || f == null;
 	}
 
 	// The usual Crockford

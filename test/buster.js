@@ -15,7 +15,7 @@ config['browser'] = {
 	environment: 'browser',
 	rootPath: '../',
 	tests: tests,
-	sources: [ 'when.js', 'apply.js', 'delay.js', 'timeout.js', 'cancelable.js' ]
+	sources: [ 'when.js', 'apply.js', 'delay.js', 'timeout.js', 'cancelable.js', 'sequence.js', 'pipeline.js', 'parallel.js' ]
 };
 
 if(typeof module != 'undefined') {

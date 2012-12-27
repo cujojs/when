@@ -26,11 +26,11 @@ define(function () {
 	when.join      = join;      // Join 2 or more promises
 
 	when.all       = all;       // Resolve a list of promises
-	when.some      = some;      // Resolve a sub-set of promises
-	when.any       = any;       // Resolve one promise in a list
-
 	when.map       = map;       // Array.map() for promises
 	when.reduce    = reduce;    // Array.reduce() for promises
+
+	when.any       = any;       // One-winner race
+	when.some      = some;      // Multi-winner race
 
 	when.chain     = chain;     // Make a promise trigger another resolver
 
@@ -41,8 +41,8 @@ define(function () {
 
 	// TODO: Use something lighter like this, and require a setImmediate polyfill?
 	// nextTick = typeof process === 'object' ? process.nextTick
-	// 	: typeof setImmediate === 'function' ? setImmediate
-	// 	: function(task) { setTimeout(task, 0); };
+	// : typeof setImmediate === 'function' ? setImmediate
+	// : function(task) { setTimeout(task, 0); };
 
 	if (typeof process !== 'undefined') {
 		// node
@@ -202,7 +202,7 @@ define(function () {
 	Promise.prototype = {
 		/**
 		 * Register a callback that will be called when a promise is
-		 * resolved or rejected.  Optionally also register a progress handler.
+		 * fulfilled or rejected.  Optionally also register a progress handler.
 		 * Shortcut for .then(onFulfilledOrRejected, onFulfilledOrRejected, onProgress)
 		 * @param {function?} [onFulfilledOrRejected]
 		 * @param {function?} [onProgress]
@@ -233,6 +233,22 @@ define(function () {
 			return this.then(function() {
 				return value;
 			});
+		},
+
+		/**
+		 * Assumes that this promise will fulfill with an array, and arranges
+		 * for the onFulfilled to be called with the array as its argument list
+		 * i.e. onFulfilled.spread(undefined, array).
+		 * @param {function} onFulfilled function to receive spread arguments
+		 * @return {Promise}
+		 */
+		spread: function(onFulfilled) {
+			return this.then(function(array) {
+				// array may contain promises, so resolve its contents.
+				return all(array, function(array) {
+					return onFulfilled.apply(undef, array);
+				});
+			});
 		}
 	};
 
@@ -245,9 +261,8 @@ define(function () {
 	 */
 	function fulfilled(value) {
 		var p = new Promise(function(onFulfilled) {
-			// TODO: Promises/A+ check typeof onFulfilled
 			try {
-				return promiseFor(onFulfilled ? onFulfilled(value) : value);
+				return promiseFor(typeof onFulfilled == 'function' ? onFulfilled(value) : value);
 			} catch(e) {
 				return rejected(e);
 			}
@@ -266,9 +281,8 @@ define(function () {
 	 */
 	function rejected(reason) {
 		var p = new Promise(function(_, onRejected) {
-			// TODO: Promises/A+ check typeof onRejected
 			try {
-				return onRejected ? promiseFor(onRejected(reason)) : rejected(reason);
+				return promiseFor(typeof onRejected == 'function' ? onRejected(reason) : rejected(reason));
 			} catch(e) {
 				return rejected(e);
 			}
@@ -301,7 +315,7 @@ define(function () {
 		 * @name Deferred
 		 */
 		deferred = {
-			then:     then,
+			then:     then, // DEPRECATED: use deferred.promise.then
 			resolve:  promiseResolve,
 			reject:   promiseReject,
 			// TODO: Consider renaming progress() to notify()
@@ -627,7 +641,7 @@ define(function () {
 	 * be a promise for the starting value.
 	 *
 	 * @param {Array|Promise} promise array or promise for an array of anything,
-	 * 		may contain a mix of promises and values.
+	 *      may contain a mix of promises and values.
 	 * @param {function} reduceFunc reduce function reduce(currentValue, nextValue, index, total),
 	 *      where total is the total number of items being reduced, and will be the same
 	 *      in each call to reduceFunc.

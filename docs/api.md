@@ -31,7 +31,7 @@ API
 1. [Helpers](#helpers)
 	* [when/apply](#whenapply)
 1. [Configuration](#configuration)
-	* [Paranoid mode](#paranoid-mode)
+	* [Paranoid mode](#paranoid-mode) (NO LONGER APPLICABLE)
 
 ## when()
 
@@ -87,13 +87,17 @@ var promise = deferred.promise;
 var resolver = deferred.resolver;
 ```
 
-**Note:** Although a deferred has the full `promise` + `resolver` API, this should used *for convenience only, by the creator of the deferred*.  Only the `promise` and `resolver` should be given to consumers and producers.
+**DEPRECATED:** Note that `deferred.then` [is deprecated](https://github.com/cujojs/when/issues/76) and [will be removed](https://github.com/cujojs/when/issues/44) in an upcoming release.
+
+**Note:** Although a deferred has the full `resolver` API, this should used *for convenience only, by the creator of the deferred*.  Only the `resolver` should be given to consumers and producers.
 
 ```js
-deferred.then(onFulfilled, onRejected, onProgress);
 deferred.resolve(promiseOrValue);
 deferred.reject(reason);
 deferred.progress(update);
+
+// NOTE: deferred.then is DEPRECATED, use deferred.promise.then
+deferred.then(onFulfilled, onRejected, onProgress);
 ```
 
 ## Resolver
@@ -192,6 +196,24 @@ In other words, it's a shortcut for:
 promise.then(function() {
 	return promiseOrValue;
 });
+```
+
+### spread()
+
+```js
+promise.spread(variadicOnFulfilled);
+```
+
+Arranges to call `variadicOnFulfilled` with promise's values, which is assumed to be an array, as its argument list, e.g. `variadicOnFulfilled.spread(undefined, array)`.  It's a shortcut for either of the following:
+
+```js
+// Wrapping variadicOnFulfilled
+promise.then(function(array) {
+	return variadicOnFulfilled.apply(undefined, array);
+});
+
+// Or using when/apply
+promise.then(apply(variadicOnFulfilled));
 ```
 
 ## Progress events
@@ -545,6 +567,12 @@ More when/apply [examples on the wiki](https://github.com/cujojs/when/wiki/when-
 # Configuration
 
 ## Paranoid mode
+
+### PARANOID MODE NO LONGER APPLICABLE
+
+As of 1.6.0, when.js never calls `Object.freeze` due to the v8 performance penalty, so there is no paranoid vs. non-paranoid mode.  If you had disabled paranoid mode using the instructions below, that setting is currently harmless and can be safely removed.
+
+----
 
 By default, the `when` module, and all when.js promises are *frozen* (in enviroments that provide `Object.freeze()`).  This prevents promise consumers from interfering with one another (for example, by replacing a promise's `.then()` method to intercept results), or from modifying `when()`, `when.defer()`, or any other method.  It means that when you write code that depends on when.js, you get what you expect.
 

@@ -62,10 +62,10 @@ buster.testCase('when', {
 		d = when.defer();
 		d.resolve(false);
 
-		result = when(when(d.then(function(val) {
+		result = when(when(d.promise.then(function(val) {
 			var d = when.defer();
 			d.resolve(val);
-			return when(d.then(identity), identity).then(
+			return when(d.promise.then(identity), identity).then(
 				function(val) {
 					return !val;
 				}

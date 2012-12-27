@@ -1,16 +1,21 @@
-"use strict";
+(function() {
+	'use strict';
 
-var when = require("../when");
+	if(typeof exports === 'object') {
 
-exports.fulfilled = when.resolve;
-exports.rejected = when.reject;
+		var when = require('../when');
 
-exports.pending = function () {
-    var deferred = when.defer();
+		exports.fulfilled = when.resolve;
+		exports.rejected = when.reject;
 
-    return {
-        promise: deferred.promise,
-        fulfill: deferred.resolve,
-        reject: deferred.reject
-    };
-};
+		exports.pending = function () {
+			var deferred = when.defer();
+
+			return {
+				promise: deferred.promise,
+				fulfill: deferred.resolve,
+				reject: deferred.reject
+			};
+		};
+	}
+})();
