@@ -326,7 +326,7 @@ define(function () {
 		progressHandlers = [];
 
 		_bind = function(onFulfilled, onRejected, onProgress, next) {
-			var progressHandler = onProgress
+			var progressHandler = typeof onProgress === 'function'
 				? function(update) {
 					try {
 						// Allow progress handler to transform progress event
