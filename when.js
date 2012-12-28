@@ -375,9 +375,9 @@ define(function () {
 			_progress = noop;
 
 			// Make _bind invoke callbacks "immediately"
-			_bind = function(fulfilled, broken, _, next) {
+			_bind = function(fulfilled, rejected, _, next) {
 				nextTick(function() {
-					value.then(fulfilled, broken).then(
+					value.then(fulfilled, rejected).then(
 						function(value)  { next.resolve(value); },
 						function(reason) { next.reject(reason); },
 						function(update) { next.progress(update); }
@@ -400,7 +400,6 @@ define(function () {
 		 * @param [onRejected] {Function} rejection handler
 		 * @param [onProgress] {Function} progress handler
 		 * @return {Promise} new Promise
-		 * @throws {Error} if any argument is not null, undefined, or a Function
 		 */
 		function then(onFulfilled, onRejected, onProgress) {
 			var deferred = defer();
