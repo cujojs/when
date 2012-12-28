@@ -271,7 +271,6 @@ define(function () {
 		 * @param {function?} [onProgress] progress handler
 		 */
 		_then = function(onFulfilled, onRejected, onProgress) {
-			// TODO: Promises/A+ check typeof onFulfilled, onRejected, onProgress
 			var deferred, progressHandler;
 
 			deferred = defer();
