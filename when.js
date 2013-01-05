@@ -188,11 +188,15 @@ define(function () {
 	 */
 	function fulfilled(value) {
 		var p = new Promise(function(onFulfilled) {
-			try {
-				return resolve(typeof onFulfilled == 'function' ? onFulfilled(value) : value);
-			} catch(e) {
-				return rejected(e);
-			}
+			var deferred = defer();
+			setTimeout(function() {
+				try {
+					deferred.resolve(typeof onFulfilled == 'function' ? onFulfilled(value) : value);
+				} catch(e) {
+					deferred.reject(e);
+				}
+			}, 0);
+			return deferred.promise;
 		});
 
 		return p;
@@ -208,11 +212,15 @@ define(function () {
 	 */
 	function rejected(reason) {
 		var p = new Promise(function(_, onRejected) {
-			try {
-				return resolve(typeof onRejected == 'function' ? onRejected(reason) : rejected(reason));
-			} catch(e) {
-				return rejected(e);
-			}
+			var deferred = defer();
+			setTimeout(function() {
+				try {
+					deferred.resolve(typeof onRejected == 'function' ? onRejected(reason) : rejected(reason));
+				} catch(e) {
+					deferred.reject(e);
+				}
+			}, 0);
+			return deferred.promise;
 		});
 
 		return p;
@@ -277,13 +285,15 @@ define(function () {
 
 			progressHandler = typeof onProgress === 'function'
 				? function(update) {
-					try {
-						// Allow progress handler to transform progress event
-						deferred.progress(onProgress(update));
-					} catch(e) {
-						// Use caught value as progress
-						deferred.progress(e);
-					}
+					setTimeout(function() {
+						try {
+							// Allow progress handler to transform progress event
+							deferred.progress(onProgress(update));
+						} catch(e) {
+							// Use caught value as progress
+							deferred.progress(e);
+						}
+					}, 0);
 				}
 				: function(update) { deferred.progress(update); };
 
@@ -638,7 +648,13 @@ define(function () {
 		var handler, i = 0;
 
 		while (handler = queue[i++]) {
-			handler(value);
+			setTimeout(handle(handler), 0);
+		}
+
+		function handle(handler) {
+			return function() {
+				return handler(value);
+			};
 		}
 	}
 
