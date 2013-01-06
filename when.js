@@ -12,7 +12,6 @@
 
 (function(define) { 'use strict';
 define(function () {
-	/*global setImmediate:true msSetImmediate:true MessageChannel:true*/
 	var reduceArray, slice, nextTick, undef;
 
 	//
@@ -39,55 +38,10 @@ define(function () {
 	// NOTE: For sync testing only:
 	//	nextTick = function(t) { t(); };
 
-	// TODO: Use something lighter like this, and require a setImmediate polyfill?
-	// nextTick = typeof process === 'object' ? process.nextTick
-	// : typeof setImmediate === 'function' ? setImmediate
-	// : function(task) { setTimeout(task, 0); };
-
-	if (typeof process !== 'undefined') {
-		// node
-		nextTick = process.nextTick;
-	} else if (typeof msSetImmediate === 'function') {
-		// IE 10. From http://github.com/kriskowal/q
-		// bind is necessary
-		nextTick = msSetImmediate.bind(window);
-	} else if (typeof setImmediate === 'function') {
-		nextTick = setImmediate;
-	} else if (typeof MessageChannel !== 'undefined') {
-		nextTick = initMessageChannel();
-	} else {
-		// older envs w/only setTimeout
-		nextTick = function (task) {
-			setTimeout(task, 0);
-		};
-	}
-
-	/**
-	 * MessageChannel for browsers that support it
-	 * From http://www.nonblocking.io/2011/06/windownexttick.html
-	 */
-	function initMessageChannel() {
-		var channel, head, tail;
-
-		channel = new MessageChannel();
-		head = {};
-		tail = head;
-
-		channel.port1.onmessage = function () {
-			var task;
-
-			head = head.next;
-			task = head.task;
-			delete head.task;
-
-			task();
-		};
-
-		return function (task) {
-			tail = tail.next = {task: task};
-			channel.port2.postMessage(0);
-		};
-	}
+	/*global setImmediate:true */
+	nextTick = typeof process === 'object' ? process.nextTick
+	: typeof setImmediate === 'function' ? setImmediate
+	: function(task) { setTimeout(task, 0); };
 
 	/**
 	 * Register an observer for a promise or immediate value.
