@@ -33,9 +33,27 @@ buster.testCase('=>when/unfold', {
 
 		spy = this.spy();
 
-		unfold(spy, proceed, noop).then(
+		unfold(spy, proceed, noop, sentinel).then(
 			function() {
+				assert.calledWith(spy, sentinel);
 				assert.equals(spy.callCount, 3);
+			}
+		).always(done);
+	},
+
+	'should call transform with generator result': function(done) {
+		var i, spy;
+
+		i = 1;
+		function proceed() {
+			return i--;
+		}
+
+		spy = this.spy();
+
+		unfold(this.stub().returns(sentinel), proceed, spy).then(
+			function() {
+				assert.calledOnceWith(spy, sentinel);
 			}
 		).always(done);
 	}
