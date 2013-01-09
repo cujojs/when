@@ -448,7 +448,7 @@ define(function () {
 				}
 			}
 
-			return deferred.then(onFulfilled, onRejected, onProgress);
+			return deferred.promise.then(onFulfilled, onRejected, onProgress);
 
 			function rejecter(reason) {
 				rejectOne(reason);
