@@ -22,10 +22,7 @@ buster.testCase('when/timeout', {
 	},
 
 	'should not timeout when rejected before timeout': function(done) {
-		var d = when.defer();
-		d.reject(1);
-
-		timeout(d, 10).then(
+		timeout(when.reject(1), 0).then(
 			fail,
 			function(val) {
 				assert.equals(val, 1);
@@ -34,10 +31,7 @@ buster.testCase('when/timeout', {
 	},
 
 	'should not timeout when forcibly resolved before timeout': function(done) {
-		var d = when.defer();
-		d.resolve(1);
-
-		timeout(d, 10).then(
+		timeout(when.resolve(1), 0).then(
 			function(val) {
 				assert.equals(val, 1);
 			},
