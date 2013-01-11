@@ -284,13 +284,11 @@ define(function () {
 
 			// Make _bind invoke callbacks "immediately"
 			_bind = function(fulfilled, rejected, _, next) {
-				nextTick(function() {
-					value.then(fulfilled, rejected).then(
-						function(value)  { next.resolve(value); },
-						function(reason) { next.reject(reason); },
-						function(update) { next.progress(update); }
-					);
-				});
+				value.then(fulfilled, rejected).then(
+					function(value)  { next.resolve(value); },
+					function(reason) { next.reject(reason); },
+					function(update) { next.progress(update); }
+				);
 			};
 
 			// Notify handlers
@@ -665,12 +663,10 @@ define(function () {
 	 * @param {*} value argument passed to each function
 	 */
 	function processQueue(queue, value) {
-		nextTick(function() {
-			var handler, i = 0;
-			while (handler = queue[i++]) {
-				handler(value);
-			}
-		});
+		var handler, i = 0;
+		while (handler = queue[i++]) {
+			handler(value);
+		}
 	}
 
 	/**
