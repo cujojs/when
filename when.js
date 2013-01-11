@@ -12,7 +12,7 @@
 
 (function(define) { 'use strict';
 define(function () {
-	var reduceArray, slice, nextTick, undef;
+	var reduceArray, slice, nextTick, handlerQueue, undef;
 
 	//
 	// Public API
@@ -34,14 +34,6 @@ define(function () {
 	when.chain     = chain;     // Make a promise trigger another resolver
 
 	when.isPromise = isPromise; // Determine if a thing is a promise
-
-	// NOTE: For sync testing only:
-	//	nextTick = function(t) { t(); };
-
-	/*global setImmediate:true */
-	nextTick = typeof process === 'object' ? process.nextTick
-	: typeof setImmediate === 'function' ? setImmediate
-	: function(task) { setTimeout(task, 0); };
 
 	/**
 	 * Register an observer for a promise or immediate value.
@@ -309,7 +301,7 @@ define(function () {
 		 * @param {*} update progress event payload to pass to all listeners
 		 */
 		_progress = function(update) {
-			processQueue(progressHandlers, update);
+			scheduleHandlers(progressHandlers, update);
 			return update;
 		};
 
@@ -330,7 +322,7 @@ define(function () {
 
 			// Make _bind invoke callbacks "immediately"
 			_bind = function(fulfilled, rejected, _, next) {
-				nextTick(function() {
+				enqueue(function() {
 					value.then(fulfilled, rejected).then(
 						function(value)  { next.resolve(value); },
 						function(reason) { next.reject(reason); },
@@ -340,7 +332,7 @@ define(function () {
 			};
 
 			// Notify handlers
-			processQueue(handlers, value);
+			scheduleHandlers(handlers, value);
 			handlers = progressHandlers = undef;
 
 			return promise;
@@ -643,22 +635,85 @@ define(function () {
 	}
 
 	//
-	// Utility functions
+	// Handler queue processing
 	//
 
+	//
+	// Experiment
+	// Can we process pending handlers for all resolved promises
+	// the the *very next tick* without introducing subsequent ticks
+	//
+	// Example:
+	// p.then(f).then(g).then(h)
+	//
+	// It should be possible to process f, g, and h in the tick
+	// immediately after the one where the above statement executes.
+	// However, when.js (and afaik, all other async promise impls) will
+	// process them in separate ticks.
+
+	// NOTE: For sync testing only:
+	//	nextTick = function(t) { t(); };
+
+	/*global setImmediate:true */
+	nextTick = typeof process === 'object' ? process.nextTick
+		: typeof setImmediate === 'function' ? setImmediate
+			: function(task) { setTimeout(task, 0); };
+
+	handlerQueue = [];
+
 	/**
-	 * Apply all functions in queue to value
-	 * @param {Array} queue array of functions to execute
-	 * @param {*} value argument passed to each function
+	 * Enqueue a task. If the queue is not currently scheduled to be
+	 * drained, schedule it.
+	 * @param {function} task
 	 */
-	function processQueue(queue, value) {
-		nextTick(function() {
+	function enqueue(task) {
+		if(handlerQueue.length === 0) {
+			scheduleDrainQueue();
+		}
+
+		handlerQueue.push(task);
+	}
+
+	/**
+	 * Schedule the queue to be drained in the next tick.
+	 */
+	function scheduleDrainQueue() {
+		nextTick(drainQueue);
+	}
+
+	/**
+	 * Drain the handler queue, being careful to allow the queue
+	 * to be extended while it is being processed, and to continue
+	 * processing until it is truly empty.
+	 */
+	function drainQueue() {
+		var task, i = 0;
+
+		while(task = handlerQueue[i++]) {
+			task();
+		}
+
+		handlerQueue = [];
+	}
+
+	/**
+	 * Schedule a task that will process a list of handlers
+	 * in the next queue drain run.
+	 * @param {Array} handlerQueue queue of handlers to execute
+	 * @param {*} value passed as the only arg to each handler
+	 */
+	function scheduleHandlers(handlerQueue, value) {
+		enqueue(function() {
 			var handler, i = 0;
-			while (handler = queue[i++]) {
+			while (handler = handlerQueue[i++]) {
 				handler(value);
 			}
 		});
 	}
+
+	//
+	// Utility functions
+	//
 
 	/**
 	 * Helper that checks arrayOfCallbacks to ensure that each element is either
