@@ -12,7 +12,9 @@
 
 (function(define) { 'use strict';
 define(function () {
-	var reduceArray, slice, nextTick, handlerQueue, undef;
+	var reduceArray, slice,
+		nextTick, handlerQueue, queueProcessLimit, maxQueueProcessLimit,
+		undef;
 
 	//
 	// Public API
@@ -651,15 +653,32 @@ define(function () {
 	// However, when.js (and afaik, all other async promise impls) will
 	// process them in separate ticks.
 
-	// NOTE: For sync testing only:
-	//	nextTick = function(t) { t(); };
-
 	/*global setImmediate:true */
-	nextTick = typeof process === 'object' ? process.nextTick
-		: typeof setImmediate === 'function' ? setImmediate
+	nextTick = typeof setImmediate === 'function' ? setImmediate
+		: typeof process === 'object' ? process.nextTick
 			: function(task) { setTimeout(task, 0); };
 
+	// NOTE: For sync testing only:
+//		nextTick = function(t) { t(); };
+
 	handlerQueue = [];
+	queueProcessLimit = 1000;
+	maxQueueProcessLimit = 10000;
+
+	/**
+	 * Schedule a task that will process a list of handlers
+	 * in the next queue drain run.
+	 * @param {Array} handlers queue of handlers to execute
+	 * @param {*} value passed as the only arg to each handler
+	 */
+	function scheduleHandlers(handlers, value) {
+		enqueue(function() {
+			var handler, i = 0;
+			while (handler = handlers[i++]) {
+				handler(value);
+			}
+		});
+	}
 
 	/**
 	 * Enqueue a task. If the queue is not currently scheduled to be
@@ -682,33 +701,26 @@ define(function () {
 	}
 
 	/**
-	 * Drain the handler queue, being careful to allow the queue
-	 * to be extended while it is being processed, and to continue
+	 * Drain the handler queue entirely or partially, being careful to allow
+	 * the queue to be extended while it is being processed, and to continue
 	 * processing until it is truly empty.
 	 */
 	function drainQueue() {
 		var task, i = 0;
 
-		while(task = handlerQueue[i++]) {
+		// Drain up to queueProcessLimit items to avoid starving the tick/timer queue
+		while(i < queueProcessLimit && (task = handlerQueue[i++])) {
 			task();
 		}
 
-		handlerQueue = [];
-	}
-
-	/**
-	 * Schedule a task that will process a list of handlers
-	 * in the next queue drain run.
-	 * @param {Array} handlerQueue queue of handlers to execute
-	 * @param {*} value passed as the only arg to each handler
-	 */
-	function scheduleHandlers(handlerQueue, value) {
-		enqueue(function() {
-			var handler, i = 0;
-			while (handler = handlerQueue[i++]) {
-				handler(value);
-			}
-		});
+		if (handlerQueue.length > i) {
+			queueProcessLimit = Math.max(queueProcessLimit * 2, maxQueueProcessLimit);
+			// If there are handlers remaining, schedule another drain
+			handlerQueue = handlerQueue.slice(i, handlerQueue.length);
+			scheduleDrainQueue();
+		} else {
+			handlerQueue = [];
+		}
 	}
 
 	//
