@@ -44,97 +44,6 @@ define(function () {
 	: function(task) { setTimeout(task, 0); };
 
 	/**
-	 * Register an observer for a promise or immediate value.
-	 *
-	 * @param {*} promiseOrValue
-	 * @param {function?} [onFulfilled] callback to be called when promiseOrValue is
-	 *   successfully fulfilled.  If promiseOrValue is an immediate value, callback
-	 *   will be invoked immediately.
-	 * @param {function?} [onRejected] callback to be called when promiseOrValue is
-	 *   rejected.
-	 * @param {function?} [onProgress] callback to be called when progress updates
-	 *   are issued for promiseOrValue.
-	 * @returns {Promise} a new {@link Promise} that will complete with the return
-	 *   value of callback or errback or the completion value of promiseOrValue if
-	 *   callback and/or errback is not supplied.
-	 */
-	function when(promiseOrValue, onFulfilled, onRejected, onProgress) {
-		// Get a trusted promise for the input promiseOrValue, and then
-		// register promise handlers
-		return resolve(promiseOrValue).then(onFulfilled, onRejected, onProgress);
-	}
-
-	/**
-	 * Returns promiseOrValue if promiseOrValue is a {@link Promise}, a new Promise if
-	 * promiseOrValue is a foreign promise, or a new, already-fulfilled {@link Promise}
-	 * whose value is promiseOrValue if promiseOrValue is an immediate value.
-	 *
-	 * @param {*} promiseOrValue
-	 * @returns Guaranteed to return a trusted Promise.  If promiseOrValue is a when.js {@link Promise}
-	 *   returns promiseOrValue, otherwise, returns a new, already-resolved, when.js {@link Promise}
-	 *   whose resolution value is:
-	 *   * the resolution value of promiseOrValue if it's a foreign promise, or
-	 *   * promiseOrValue if it's a value
-	 */
-	function promiseFor(promiseOrValue) {
-		var promise, deferred;
-
-		if(promiseOrValue instanceof Promise) {
-			// It's a when.js promise, so we trust it
-			promise = promiseOrValue;
-
-		} else {
-			// It's not a when.js promise. See if it's a foreign promise or a value.
-			if(isPromise(promiseOrValue)) {
-				// It's a thenable, but we don't know where it came from, so don't trust
-				// its implementation entirely.  Introduce a trusted middleman when.js promise
-				deferred = defer();
-
-				// IMPORTANT: This is the only place when.js should ever call .then() on an
-				// untrusted promise. Don't expose the return value to the untrusted promise
-				promiseOrValue.then(
-					function(value)  { deferred.resolve(value); },
-					function(reason) { deferred.reject(reason); },
-					function(update) { deferred.progress(update); }
-				);
-
-				promise = deferred.promise;
-
-			} else {
-				// It's a value, not a promise.  Create a resolved promise for it.
-				promise = fulfilled(promiseOrValue);
-			}
-		}
-
-		return promise;
-	}
-
-	/**
-	 * Returns a fulfilled promise. If promiseOrValue is a value, it will be the fulfillment
-	 * value of the returned promise.  If promiseOrValue is a promise, the returned promise will
-	 * parallel the state and value/reason of promiseOrValue.
-	 * @param  {*} promiseOrValue the fulfillment value or a promise with whose state will be paralleled
-	 * @return {Promise} fulfilled promise or pending promise paralleling the state of promiseOrValue.
-	 */
-	function resolve(promiseOrValue) {
-		return defer().resolve(promiseOrValue);
-	}
-
-	/**
-	 * Returns a rejected promise for the supplied promiseOrValue.  The returned
-	 * promise will be rejected with:
-	 * - promiseOrValue, if it is a value, or
-	 * - if promiseOrValue is a promise
-	 *   - promiseOrValue's value after it is fulfilled
-	 *   - promiseOrValue's reason after it is rejected
-	 * @param {*} promiseOrValue the rejected value of the returned {@link Promise}
-	 * @return {Promise} rejected {@link Promise}
-	 */
-	function reject(promiseOrValue) {
-		return when(promiseOrValue, rejected);
-	}
-
-	/**
 	 * Trusted Promise constructor.  A Promise created from this constructor is
 	 * a trusted when.js promise.  Any other duck-typed promise is considered
 	 * untrusted.
@@ -143,6 +52,45 @@ define(function () {
 	 */
 	function Promise(then) {
 		this.then = then;
+	}
+
+	/**
+	 * Create an already-resolved promise for the supplied value
+	 * @private
+	 *
+	 * @param {*} value
+	 * @return {Promise} fulfilled promise
+	 */
+	function fulfilled(value) {
+		var p = new Promise(function(onFulfilled) {
+			try {
+				return (typeof onFulfilled == 'function') ? promiseFor(onFulfilled(value)) : fulfilled(value);
+			} catch(e) {
+				return rejected(e);
+			}
+		});
+
+		return p;
+	}
+
+	/**
+	 * Create an already-rejected {@link Promise} with the supplied
+	 * rejection reason.
+	 * @private
+	 *
+	 * @param {*} reason
+	 * @return {Promise} rejected promise
+	 */
+	function rejected(reason) {
+		var p = new Promise(function(_, onRejected) {
+			try {
+				return (typeof onRejected == 'function') ? promiseFor(onRejected(reason)) : rejected(reason);
+			} catch(e) {
+				return rejected(e);
+			}
+		});
+
+		return p;
 	}
 
 	Promise.prototype = {
@@ -199,42 +147,48 @@ define(function () {
 	};
 
 	/**
-	 * Create an already-resolved promise for the supplied value
-	 * @private
+	 * Returns promiseOrValue if promiseOrValue is a {@link Promise}, a new Promise if
+	 * promiseOrValue is a foreign promise, or a new, already-fulfilled {@link Promise}
+	 * whose value is promiseOrValue if promiseOrValue is an immediate value.
 	 *
-	 * @param {*} value
-	 * @return {Promise} fulfilled promise
+	 * @param {*} promiseOrValue
+	 * @returns Guaranteed to return a trusted Promise.  If promiseOrValue is a when.js {@link Promise}
+	 *   returns promiseOrValue, otherwise, returns a new, already-resolved, when.js {@link Promise}
+	 *   whose resolution value is:
+	 *   * the resolution value of promiseOrValue if it's a foreign promise, or
+	 *   * promiseOrValue if it's a value
 	 */
-	function fulfilled(value) {
-		var p = new Promise(function(onFulfilled) {
-			try {
-				return promiseFor(typeof onFulfilled == 'function' ? onFulfilled(value) : value);
-			} catch(e) {
-				return rejected(e);
+	function promiseFor(promiseOrValue) {
+		var promise, deferred;
+
+		if(promiseOrValue instanceof Promise) {
+			// It's a when.js promise, so we trust it
+			promise = promiseOrValue;
+
+		} else {
+			// It's not a when.js promise. See if it's a foreign promise or a value.
+			if(isPromise(promiseOrValue)) {
+				// It's a thenable, but we don't know where it came from, so don't trust
+				// its implementation entirely.  Introduce a trusted middleman when.js promise
+				deferred = defer();
+
+				// IMPORTANT: This is the only place when.js should ever call .then() on an
+				// untrusted promise. Don't expose the return value to the untrusted promise
+				promiseOrValue.then(
+					function(value)  { deferred.resolve(value); },
+					function(reason) { deferred.reject(reason); },
+					function(update) { deferred.progress(update); }
+				);
+
+				promise = deferred.promise;
+
+			} else {
+				// It's a value, not a promise.  Create a resolved promise for it.
+				promise = fulfilled(promiseOrValue);
 			}
-		});
+		}
 
-		return p;
-	}
-
-	/**
-	 * Create an already-rejected {@link Promise} with the supplied
-	 * rejection reason.
-	 * @private
-	 *
-	 * @param {*} reason
-	 * @return {Promise} rejected promise
-	 */
-	function rejected(reason) {
-		var p = new Promise(function(_, onRejected) {
-			try {
-				return promiseFor(typeof onRejected == 'function' ? onRejected(reason) : rejected(reason));
-			} catch(e) {
-				return rejected(e);
-			}
-		});
-
-		return p;
+		return promise;
 	}
 
 	/**
@@ -384,6 +338,65 @@ define(function () {
 			return _progress(update);
 		}
 	}
+
+	var shunt = function(type) {
+		return function(value) {
+			var deferred = defer();
+			nextTick(function() {
+				deferred[type](value);
+			});
+			return deferred.promise;
+		};
+	};
+
+	/**
+	 * Register an observer for a promise or immediate value.
+	 *
+	 * @param {*} promiseOrValue
+	 * @param {function?} [onFulfilled] callback to be called when promiseOrValue is
+	 *   successfully fulfilled.  If promiseOrValue is an immediate value, callback
+	 *   will be invoked immediately.
+	 * @param {function?} [onRejected] callback to be called when promiseOrValue is
+	 *   rejected.
+	 * @param {function?} [onProgress] callback to be called when progress updates
+	 *   are issued for promiseOrValue.
+	 * @returns {Promise} a new {@link Promise} that will complete with the return
+	 *   value of callback or errback or the completion value of promiseOrValue if
+	 *   callback and/or errback is not supplied.
+	 */
+	function when(promiseOrValue, onFulfilled, onRejected, onProgress) {
+		// Get a trusted promise for the input promiseOrValue, and then
+		// register promise handlers
+		return promiseFor(promiseOrValue)
+			.then(shunt('resolve'), shunt('reject'), shunt('progress'))
+			.then(onFulfilled, onRejected, onProgress);
+	}
+
+	/**
+	 * Returns a fulfilled promise. If promiseOrValue is a value, it will be the fulfillment
+	 * value of the returned promise.  If promiseOrValue is a promise, the returned promise will
+	 * parallel the state and value/reason of promiseOrValue.
+	 * @param  {*} promiseOrValue the fulfillment value or a promise with whose state will be paralleled
+	 * @return {Promise} fulfilled promise or pending promise paralleling the state of promiseOrValue.
+	 */
+	function resolve(promiseOrValue) {
+		return when(promiseOrValue, fulfilled);
+	}
+
+	/**
+	 * Returns a rejected promise for the supplied promiseOrValue.  The returned
+	 * promise will be rejected with:
+	 * - promiseOrValue, if it is a value, or
+	 * - if promiseOrValue is a promise
+	 *   - promiseOrValue's value after it is fulfilled
+	 *   - promiseOrValue's reason after it is rejected
+	 * @param {*} promiseOrValue the rejected value of the returned {@link Promise}
+	 * @return {Promise} rejected {@link Promise}
+	 */
+	function reject(promiseOrValue) {
+		return when(promiseOrValue, rejected);
+	}
+
 
 	/**
 	 * Determines if promiseOrValue is a promise or not.  Uses the feature
