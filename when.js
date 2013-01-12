@@ -287,20 +287,20 @@ define(function () {
 		 */
 		deferred = {
 			// DEPRECATED: use deferred.promise.then
-			then: function then(onFulfilled, onRejected, onProgress) {
+			then: function(onFulfilled, onRejected, onProgress) {
 				return _then(onFulfilled, onRejected, onProgress);
 			},
 
-			resolve: function resolve(val) {
+			resolve: function(val) {
 				return _resolve(promiseFor(val));
 			},
 
-			reject: function reject(reason) {
+			reject: function(reason) {
 				return _resolve(rejected(reason));
 			},
 
 			// TODO: Consider renaming progress() to notify()
-			progress: function progress(update) {
+			progress: function(update) {
 				return _progress(progressing(update));
 			},
 
@@ -394,20 +394,20 @@ define(function () {
 		 */
 		deferred = {
 			// DEPRECATED: use deferred.promise.then
-			then: function then(onFulfilled, onRejected, onProgress) {
+			then: function(onFulfilled, onRejected, onProgress) {
 				return _then(onFulfilled, onRejected, onProgress);
 			},
 
-			resolve: function resolve(val) {
+			resolve: function(val) {
 				return _resolve(promiseFor(val));
 			},
 
-			reject: function reject(reason) {
+			reject: function(reason) {
 				return _resolve(rejected(reason));
 			},
 
 			// TODO: Consider renaming progress() to notify()
-			progress: function progress(update) {
+			progress: function(update) {
 				return _progress(progressing(update));
 			},
 
