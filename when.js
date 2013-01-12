@@ -458,18 +458,16 @@ define(function () {
 			_resolve = resolve;
 			_progress = noop;
 
-			// Notify handlers
-			nextTick(function() {
-				// Make _then invoke callbacks "immediately"
-				_then = function(onFulfilled, onRejected, onProgress) {
-					return value
-						.then(shunt('resolve'), shunt('reject'))
-						.then(onFulfilled, onRejected, onProgress);
-				};
+			// Make _then invoke callbacks "immediately"
+			_then = function(onFulfilled, onRejected, onProgress) {
+				return value
+					.then(shunt('resolve'), shunt('reject'))
+					.then(onFulfilled, onRejected, onProgress);
+			};
 
-				processQueue(handlers, value);
-				handlers = undef;
-			});
+			// Notify handlers
+			processQueue(handlers, value);
+			handlers = undef;
 
 			return promise;
 		};
