@@ -292,7 +292,7 @@ define(function () {
 			},
 
 			resolve: function resolve(val) {
-				return _resolve(val);
+				return _resolve(promiseFor(val));
 			},
 
 			reject: function reject(reason) {
@@ -342,8 +342,6 @@ define(function () {
 		 * @param {*} value the value of this deferred
 		 */
 		_resolve = function(value) {
-			value = promiseFor(value);
-
 			// Replace _resolve so that this Deferred can only be completed once
 			// Make _progress a noop, to disallow progress for the resolved promise.
 			// Make _then invoke callbacks "immediately"
@@ -398,7 +396,7 @@ define(function () {
 			},
 
 			resolve: function resolve(val) {
-				return _resolve(val);
+				return _resolve(promiseFor(val));
 			},
 
 			reject: function reject(reason) {
@@ -449,8 +447,6 @@ define(function () {
 		 * @param {*} value the value of this deferred
 		 */
 		_resolve = function(value) {
-			value = promiseFor(value);
-
 			// Replace _resolve so that this Deferred can only be completed once
 			// Make _progress a noop, to disallow progress for the resolved promise.
 			// Make _then invoke callbacks "immediately"
