@@ -652,6 +652,16 @@ define(function () {
 	// immediately after the one where the above statement executes.
 	// However, when.js (and afaik, all other async promise impls) will
 	// process them in separate ticks.
+	//
+	// It may be important to be friendly to the platform's tick/timer
+	// queue.  Allowing when.js' queue to extend while it is also
+	// being processed, could potentially starve the platform tick
+	// queue.  A strategy where we drain up to N handlers from
+	// the queue, then schedule another drain, and so on, will yield
+	// some time back to the platform and be more friendly.
+	//
+	// Finding N may be tricky. Allowing N to vary adaptively may
+	// be a good solution.
 
 	/*global setImmediate:true */
 	nextTick = typeof setImmediate === 'function' ? setImmediate
@@ -686,11 +696,9 @@ define(function () {
 	 * @param {function} task
 	 */
 	function enqueue(task) {
-		if(handlerQueue.length === 0) {
+		if(handlerQueue.push(task) === 1) {
 			scheduleDrainQueue();
 		}
-
-		handlerQueue.push(task);
 	}
 
 	/**
@@ -714,8 +722,10 @@ define(function () {
 		}
 
 		if (handlerQueue.length > i) {
+			// If there are handlers remaining, schedule another drain, but
+			// also increase the max number of handlers (to a point) that'll be drained
+			// from now on.
 			queueProcessLimit = Math.max(queueProcessLimit * 2, maxQueueProcessLimit);
-			// If there are handlers remaining, schedule another drain
 			handlerQueue = handlerQueue.slice(i, handlerQueue.length);
 			scheduleDrainQueue();
 		} else {
