@@ -54,45 +54,6 @@ define(function () {
 		this.then = then;
 	}
 
-	/**
-	 * Create an already-resolved promise for the supplied value
-	 * @private
-	 *
-	 * @param {*} value
-	 * @return {Promise} fulfilled promise
-	 */
-	function fulfilled(value) {
-		var p = new Promise(function(onFulfilled) {
-			try {
-				return (typeof onFulfilled == 'function') ? promiseFor(onFulfilled(value)) : fulfilled(value);
-			} catch(e) {
-				return rejected(e);
-			}
-		});
-
-		return p;
-	}
-
-	/**
-	 * Create an already-rejected {@link Promise} with the supplied
-	 * rejection reason.
-	 * @private
-	 *
-	 * @param {*} reason
-	 * @return {Promise} rejected promise
-	 */
-	function rejected(reason) {
-		var p = new Promise(function(_, onRejected) {
-			try {
-				return (typeof onRejected == 'function') ? promiseFor(onRejected(reason)) : rejected(reason);
-			} catch(e) {
-				return rejected(e);
-			}
-		});
-
-		return p;
-	}
-
 	Promise.prototype = {
 		/**
 		 * Register a callback that will be called when a promise is
@@ -147,6 +108,57 @@ define(function () {
 	};
 
 	/**
+	 * Create an already-resolved promise for the supplied value
+	 * @private
+	 *
+	 * @param {*} value
+	 * @return {Promise} fulfilled promise
+	 */
+	function fulfilled(value) {
+		var p = new Promise(function(onFulfilled) {
+			try {
+				return (typeof onFulfilled == 'function') ? promiseFor(onFulfilled(value)) : fulfilled(value);
+			} catch(e) {
+				return rejected(e);
+			}
+		});
+
+		return p;
+	}
+
+	/**
+	 * Create an already-rejected {@link Promise} with the supplied
+	 * rejection reason.
+	 * @private
+	 *
+	 * @param {*} reason
+	 * @return {Promise} rejected promise
+	 */
+	function rejected(reason) {
+		var p = new Promise(function(_, onRejected) {
+			try {
+				return (typeof onRejected == 'function') ? promiseFor(onRejected(reason)) : rejected(reason);
+			} catch(e) {
+				return rejected(e);
+			}
+		});
+
+		return p;
+	}
+
+	/**
+	 * Determines if promiseOrValue is a promise or not.  Uses the feature
+	 * test from http://wiki.commonjs.org/wiki/Promises/A to determine if
+	 * promiseOrValue is a promise.
+	 *
+	 * @param {*} promiseOrValue anything
+	 * @returns {boolean} true if promiseOrValue is a {@link Promise}
+	 */
+	function isPromise(promiseOrValue) {
+		return promiseOrValue && typeof promiseOrValue.then === 'function';
+	}
+
+	/**
 	 * Returns promiseOrValue if promiseOrValue is a {@link Promise}, a new Promise if
 	 * promiseOrValue is a foreign promise, or a new, already-fulfilled {@link Promise}
 	 * whose value is promiseOrValue if promiseOrValue is an immediate value.
@@ -159,37 +171,31 @@ define(function () {
 	 *   * promiseOrValue if it's a value
 	 */
 	function promiseFor(promiseOrValue) {
-		var promise, deferred;
+		var deferred;
 
-		if(promiseOrValue instanceof Promise) {
+		if (!isPromise(promiseOrValue)) {
+			// It's a value, not a promise.  Create a resolved promise for it.
+			return fulfilled(promiseOrValue);
+		} else if (promiseOrValue instanceof Promise) {
 			// It's a when.js promise, so we trust it
-			promise = promiseOrValue;
-
+			return promiseOrValue;
 		} else {
-			// It's not a when.js promise. See if it's a foreign promise or a value.
-			if(isPromise(promiseOrValue)) {
-				// It's a thenable, but we don't know where it came from, so don't trust
-				// its implementation entirely.  Introduce a trusted middleman when.js promise
-				deferred = asap();
+			// It's a thenable, but we don't know where it came from, so don't trust
+			// its implementation entirely.  Introduce a trusted middleman when.js promise
+			deferred = asap();
 
-				// IMPORTANT: This is the only place when.js should ever call .then() on an
-				// untrusted promise. Don't expose the return value to the untrusted promise
-				promiseOrValue.then(
-					function(value)  { deferred.resolve(value); },
-					function(reason) { deferred.reject(reason); },
-					function(update) { deferred.progress(update); }
-				);
+			// IMPORTANT: This is the only place when.js should ever call .then() on an
+			// untrusted promise. Don't expose the return value to the untrusted promise
+			promiseOrValue.then(
+				function(value)  { deferred.resolve(value); },
+				function(reason) { deferred.reject(reason); },
+				function(update) { deferred.progress(update); }
+			);
 
-				promise = deferred.promise;
-
-			} else {
-				// It's a value, not a promise.  Create a resolved promise for it.
-				promise = fulfilled(promiseOrValue);
-			}
+			return deferred.promise;
 		}
-
-		return promise;
 	}
+
 
 	// Shunt a promise into the next turn of the event loop
 	function shunt(type) {
@@ -200,285 +206,6 @@ define(function () {
 			});
 			return deferred.promise;
 		};
-	}
-
-	function asap() {
-		var deferred, promise, handlers, progressHandlers,
-			_bind, _progress, _resolve;
-		/**
-		 * The promise for the new deferred
-		 * @type {Promise}
-		 */
-		promise = new Promise(bind);
-
-		/**
-		 * The full Deferred object, with {@link Promise} and {@link Resolver} parts
-		 * @class Deferred
-		 * @name Deferred
-		 */
-		deferred = {
-			then:     bind, // DEPRECATED: use deferred.promise.then
-			resolve:  promiseResolve,
-			reject:   promiseReject,
-			// TODO: Consider renaming progress() to notify()
-			progress: promiseProgress,
-
-			promise:  promise,
-
-			resolver: {
-				resolve:  promiseResolve,
-				reject:   promiseReject,
-				progress: promiseProgress
-			}
-		};
-
-		handlers = [];
-		progressHandlers = [];
-
-		_bind = function(onFulfilled, onRejected, onProgress) {
-			var next = asap();
-
-			var progressHandler = typeof onProgress === 'function'
-				? function(update) {
-					try {
-						// Allow progress handler to transform progress event
-						next.progress(onProgress(update));
-					} catch(e) {
-						// Use caught value as progress
-						next.progress(e);
-					}
-				}
-				: next.progress;
-
-			handlers.push(function(promise) {
-				promise
-					.then(onFulfilled, onRejected)
-					.then(
-						function(value)  { next.resolve(value); },
-						function(reason) { next.reject(reason); },
-						progressHandler
-					);
-			});
-
-			progressHandlers.push(progressHandler);
-
-			return next.promise;
-		};
-
-		/**
-		 * Issue a progress event, notifying all progress listeners
-		 * @private
-		 * @param {*} update progress event payload to pass to all listeners
-		 */
-		_progress = function(update) {
-			processQueue(progressHandlers, update);
-			return update;
-		};
-
-		/**
-		 * Transition from pre-resolution state to post-resolution state, notifying
-		 * all listeners of the resolution or rejection
-		 * @private
-		 * @param {*} value the value of this deferred
-		 */
-		_resolve = function(value) {
-			value = promiseFor(value);
-
-			// Replace _resolve so that this Deferred can only be completed once
-			// Make _progress a noop, to disallow progress for the resolved promise.
-			// Make _bind invoke callbacks "immediately"
-			_resolve = resolve;
-			_progress = noop;
-			_bind = function(onFulfilled, onRejected, onProgress) {
-				return resolve(value)
-					.then(onFulfilled, onRejected, onProgress);
-			};
-
-			// Notify handlers
-			processQueue(handlers, value);
-			handlers = progressHandlers = undef;
-
-			return promise;
-		};
-
-		return deferred;
-
-		/**
-		 * Wrapper to allow _bind to be replaced safely
-		 * @param [onFulfilled] {Function} resolution handler
-		 * @param [onRejected] {Function} rejection handler
-		 * @param [onProgress] {Function} progress handler
-		 * @return {Promise} new Promise
-		 */
-		function bind(onFulfilled, onRejected, onProgress) {
-			return _bind(onFulfilled, onRejected, onProgress);
-		}
-
-		/**
-		 * Wrapper to allow _resolve to be replaced
-		 */
-		function promiseResolve(val) {
-			return _resolve(val);
-		}
-
-		/**
-		 * Wrapper to allow _reject to be replaced
-		 */
-		function promiseReject(reason) {
-			return _resolve(rejected(reason));
-		}
-
-		/**
-		 * Wrapper to allow _progress to be replaced
-		 */
-		function promiseProgress(update) {
-			return _progress(update);
-		}
-	}
-
-	/**
-	 * Creates a new, Deferred with fully isolated resolver and promise parts,
-	 * either or both of which may be given out safely to consumers.
-	 * The Deferred itself has the full API: resolve, reject, progress, and
-	 * then. The resolver has resolve, reject, and progress.  The promise
-	 * only has then.
-	 *
-	 * @return {Deferred}
-	 */
-	function defer() {
-		var deferred, promise, handlers, progressHandlers,
-			_bind, _progress, _resolve;
-		/**
-		 * The promise for the new deferred
-		 * @type {Promise}
-		 */
-		promise = new Promise(bind);
-
-		/**
-		 * The full Deferred object, with {@link Promise} and {@link Resolver} parts
-		 * @class Deferred
-		 * @name Deferred
-		 */
-		deferred = {
-			then:     bind, // DEPRECATED: use deferred.promise.then
-			resolve:  promiseResolve,
-			reject:   promiseReject,
-			// TODO: Consider renaming progress() to notify()
-			progress: promiseProgress,
-
-			promise:  promise,
-
-			resolver: {
-				resolve:  promiseResolve,
-				reject:   promiseReject,
-				progress: promiseProgress
-			}
-		};
-
-		handlers = [];
-		progressHandlers = [];
-
-		_bind = function(onFulfilled, onRejected, onProgress) {
-			var next = asap();
-
-			var progressHandler = typeof onProgress === 'function'
-				? function(update) {
-					try {
-						// Allow progress handler to transform progress event
-						next.progress(onProgress(update));
-					} catch(e) {
-						// Use caught value as progress
-						next.progress(e);
-					}
-				}
-				: next.progress;
-
-			handlers.push(function(promise) {
-				promise
-					.then(shunt('resolve'), shunt('reject'))
-					.then(onFulfilled, onRejected)
-					.then(
-						function(value)  { next.resolve(value); },
-						function(reason) { next.reject(reason); },
-						progressHandler
-					);
-			});
-
-			progressHandlers.push(progressHandler);
-
-			return next.promise;
-		};
-
-		/**
-		 * Issue a progress event, notifying all progress listeners
-		 * @private
-		 * @param {*} update progress event payload to pass to all listeners
-		 */
-		_progress = function(update) {
-			processQueue(progressHandlers, update);
-			return update;
-		};
-
-		/**
-		 * Transition from pre-resolution state to post-resolution state, notifying
-		 * all listeners of the resolution or rejection
-		 * @private
-		 * @param {*} value the value of this deferred
-		 */
-		_resolve = function(value) {
-			value = promiseFor(value);
-
-			// Replace _resolve so that this Deferred can only be completed once
-			// Make _progress a noop, to disallow progress for the resolved promise.
-			// Make _bind invoke callbacks "immediately"
-			_resolve = resolve;
-			_progress = noop;
-			_bind = function(onFulfilled, onRejected, onProgress) {
-				return resolve(value)
-					.then(shunt('resolve'), shunt('reject'))
-					.then(onFulfilled, onRejected, onProgress);
-			};
-
-			// Notify handlers
-			processQueue(handlers, value);
-			handlers = progressHandlers = undef;
-
-			return promise;
-		};
-
-		return deferred;
-
-		/**
-		 * Wrapper to allow _bind to be replaced safely
-		 * @param [onFulfilled] {Function} resolution handler
-		 * @param [onRejected] {Function} rejection handler
-		 * @param [onProgress] {Function} progress handler
-		 * @return {Promise} new Promise
-		 */
-		function bind(onFulfilled, onRejected, onProgress) {
-			return _bind(onFulfilled, onRejected, onProgress);
-		}
-
-		/**
-		 * Wrapper to allow _resolve to be replaced
-		 */
-		function promiseResolve(val) {
-			return _resolve(val);
-		}
-
-		/**
-		 * Wrapper to allow _reject to be replaced
-		 */
-		function promiseReject(reason) {
-			return _resolve(rejected(reason));
-		}
-
-		/**
-		 * Wrapper to allow _progress to be replaced
-		 */
-		function promiseProgress(update) {
-			return _progress(update);
-		}
 	}
 
 	/**
@@ -499,9 +226,13 @@ define(function () {
 	function when(promiseOrValue, onFulfilled, onRejected, onProgress) {
 		// Get a trusted promise for the input promiseOrValue, and then
 		// register promise handlers
-		return promiseFor(promiseOrValue)
-			.then(shunt('resolve'), shunt('reject'), shunt('progress'))
-			.then(onFulfilled, onRejected, onProgress);
+		var promise = promiseFor(promiseOrValue);
+
+		if (!isPromise(promiseOrValue)) {
+			promise = promise.then(shunt('resolve'), shunt('reject'), shunt('progress'));
+		}
+
+		return promise.then(onFulfilled, onRejected, onProgress);
 	}
 
 	/**
@@ -530,17 +261,248 @@ define(function () {
 	}
 
 
-	/**
-	 * Determines if promiseOrValue is a promise or not.  Uses the feature
-	 * test from http://wiki.commonjs.org/wiki/Promises/A to determine if
-	 * promiseOrValue is a promise.
-	 *
-	 * @param {*} promiseOrValue anything
-	 * @returns {boolean} true if promiseOrValue is a {@link Promise}
-	 */
-	function isPromise(promiseOrValue) {
-		return promiseOrValue && typeof promiseOrValue.then === 'function';
+	function asap() {
+		var deferred, promise, handlers, progressHandlers,
+			_then, _progress, _resolve;
+
+		/**
+		 * The full Deferred object, with {@link Promise} and {@link Resolver} parts
+		 * @class Deferred
+		 * @name Deferred
+		 */
+		deferred = {
+			// DEPRECATED: use deferred.promise.then
+			then: function then(onFulfilled, onRejected, onProgress) {
+				return _then(onFulfilled, onRejected, onProgress);
+			},
+
+			resolve: function resolve(val) {
+				return _resolve(val);
+			},
+
+			reject: function reject(reason) {
+				return _resolve(rejected(reason));
+			},
+
+			// TODO: Consider renaming progress() to notify()
+			progress: function progress(update) {
+				return _progress(update);
+			}
+		};
+
+		/**
+		 * The promise for the new deferred
+		 * @type {Promise}
+		 */
+		promise = new Promise(deferred.then);
+
+		handlers = [];
+		progressHandlers = [];
+
+		_then = function(onFulfilled, onRejected, onProgress) {
+			var next = asap();
+
+			var progressHandler = typeof onProgress === 'function'
+				? function(update) {
+					try {
+						// Allow progress handler to transform progress event
+						next.progress(onProgress(update));
+					} catch(e) {
+						// Use caught value as progress
+						next.progress(e);
+					}
+				}
+				: next.progress;
+
+			handlers.push(function(promise) {
+				promise
+					.then(onFulfilled, onRejected)
+					.then(
+						function(value)  { next.resolve(value); },
+						function(reason) { next.reject(reason); },
+						progressHandler
+					);
+			});
+
+			progressHandlers.push(progressHandler);
+
+			return next.promise;
+		};
+
+		/**
+		 * Issue a progress event, notifying all progress listeners
+		 * @private
+		 * @param {*} update progress event payload to pass to all listeners
+		 */
+		_progress = function(update) {
+			processQueue(progressHandlers, update);
+			return update;
+		};
+
+		/**
+		 * Transition from pre-resolution state to post-resolution state, notifying
+		 * all listeners of the resolution or rejection
+		 * @private
+		 * @param {*} value the value of this deferred
+		 */
+		_resolve = function(value) {
+			value = promiseFor(value);
+
+			// Replace _resolve so that this Deferred can only be completed once
+			// Make _progress a noop, to disallow progress for the resolved promise.
+			// Make _then invoke callbacks "immediately"
+			_resolve = resolve;
+			_progress = noop;
+			_then = function(onFulfilled, onRejected, onProgress) {
+				return value
+					.then(shunt('resolve'), shunt('reject'))
+					.then(onFulfilled, onRejected, onProgress);
+			};
+
+			// Notify handlers
+			processQueue(handlers, value);
+			handlers = progressHandlers = undef;
+
+			return promise;
+		};
+
+		deferred.promise = promise;
+
+		deferred.resolver = {
+			resolve:  deferred.resolve,
+			reject:   deferred.reject,
+			progress: deferred.progress
+		};
+
+		return deferred;
 	}
+
+	/**
+	 * Creates a new, Deferred with fully isolated resolver and promise parts,
+	 * either or both of which may be given out safely to consumers.
+	 * The Deferred itself has the full API: resolve, reject, progress, and
+	 * then. The resolver has resolve, reject, and progress.  The promise
+	 * only has then.
+	 *
+	 * @return {Deferred}
+	 */
+	function defer() {
+		var deferred, promise, handlers, progressHandlers,
+			_then, _progress, _resolve;
+
+		/**
+		 * The full Deferred object, with {@link Promise} and {@link Resolver} parts
+		 * @class Deferred
+		 * @name Deferred
+		 */
+		deferred = {
+			// DEPRECATED: use deferred.promise.then
+			then: function then(onFulfilled, onRejected, onProgress) {
+				return _then(onFulfilled, onRejected, onProgress);
+			},
+
+			resolve: function resolve(val) {
+				return _resolve(val);
+			},
+
+			reject: function reject(reason) {
+				return _resolve(rejected(reason));
+			},
+
+			// TODO: Consider renaming progress() to notify()
+			progress: function progress(update) {
+				return _progress(update);
+			}
+		};
+
+		/**
+		 * The promise for the new deferred
+		 * @type {Promise}
+		 */
+		promise = new Promise(deferred.then);
+
+		handlers = [];
+		progressHandlers = [];
+
+		_then = function(onFulfilled, onRejected, onProgress) {
+			var next = asap();
+
+			var progressHandler = typeof onProgress === 'function'
+				? function(update) {
+					try {
+						// Allow progress handler to transform progress event
+						next.progress(onProgress(update));
+					} catch(e) {
+						// Use caught value as progress
+						next.progress(e);
+					}
+				}
+				: next.progress;
+
+			handlers.push(function(promise) {
+				promise
+					.then(shunt('resolve'), shunt('reject'))
+					.then(onFulfilled, onRejected)
+					.then(
+						function(value)  { next.resolve(value); },
+						function(reason) { next.reject(reason); },
+						progressHandler
+					);
+			});
+
+			progressHandlers.push(progressHandler);
+
+			return next.promise;
+		};
+
+		/**
+		 * Issue a progress event, notifying all progress listeners
+		 * @private
+		 * @param {*} update progress event payload to pass to all listeners
+		 */
+		_progress = function(update) {
+			processQueue(progressHandlers, update);
+			return update;
+		};
+
+		/**
+		 * Transition from pre-resolution state to post-resolution state, notifying
+		 * all listeners of the resolution or rejection
+		 * @private
+		 * @param {*} value the value of this deferred
+		 */
+		_resolve = function(value) {
+			value = promiseFor(value);
+
+			// Replace _resolve so that this Deferred can only be completed once
+			// Make _progress a noop, to disallow progress for the resolved promise.
+			// Make _then invoke callbacks "immediately"
+			_resolve = resolve;
+			_progress = noop;
+			_then = function(onFulfilled, onRejected, onProgress) {
+				return value
+					.then(shunt('resolve'), shunt('reject'))
+					.then(onFulfilled, onRejected, onProgress);
+			};
+
+			// Notify handlers
+			processQueue(handlers, value);
+			handlers = progressHandlers = undef;
+
+			return promise;
+		};
+
+		deferred.promise = promise;
+
+		deferred.resolver = {
+			resolve:  deferred.resolve,
+			reject:   deferred.reject,
+			progress: deferred.progress
+		};
+
+		return deferred;
+	}
+
 
 	/**
 	 * Initiates a competitive race, returning a promise that will resolve when
