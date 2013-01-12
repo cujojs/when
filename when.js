@@ -117,7 +117,7 @@ define(function () {
 	function fulfilled(value) {
 		var p = new Promise(function(onFulfilled) {
 			try {
-				return (typeof onFulfilled == 'function') ? promiseFor(onFulfilled(value)) : fulfilled(value);
+				return (typeof onFulfilled === 'function') ? promiseFor(onFulfilled(value)) : p;
 			} catch(e) {
 				return rejected(e);
 			}
@@ -137,9 +137,21 @@ define(function () {
 	function rejected(reason) {
 		var p = new Promise(function(_, onRejected) {
 			try {
-				return (typeof onRejected == 'function') ? promiseFor(onRejected(reason)) : rejected(reason);
+				return (typeof onRejected === 'function') ? promiseFor(onRejected(reason)) : p;
 			} catch(e) {
 				return rejected(e);
+			}
+		});
+
+		return p;
+	}
+
+	function progressing(update) {
+		var p = new Promise(function(_, __, onProgress) {
+			try {
+				return (typeof onProgress === 'function') ? progressing(onProgress(update)) : p;
+			} catch(e) {
+				return progressing(e);
 			}
 		});
 
@@ -229,7 +241,7 @@ define(function () {
 		var promise = promiseFor(promiseOrValue);
 
 		if (!isPromise(promiseOrValue)) {
-			promise = promise.then(shunt('resolve'), shunt('reject'), shunt('progress'));
+			promise = promise.then(shunt('resolve'), shunt('reject'));
 		}
 
 		return promise.then(onFulfilled, onRejected, onProgress);
@@ -262,7 +274,7 @@ define(function () {
 
 
 	function asap() {
-		var deferred, promise, handlers, progressHandlers,
+		var deferred, promise, handlers,
 			_then, _progress, _resolve;
 
 		/**
@@ -286,7 +298,7 @@ define(function () {
 
 			// TODO: Consider renaming progress() to notify()
 			progress: function progress(update) {
-				return _progress(update);
+				return _progress(progressing(update));
 			}
 		};
 
@@ -297,34 +309,15 @@ define(function () {
 		promise = new Promise(deferred.then);
 
 		handlers = [];
-		progressHandlers = [];
 
 		_then = function(onFulfilled, onRejected, onProgress) {
 			var next = asap();
 
-			var progressHandler = typeof onProgress === 'function'
-				? function(update) {
-					try {
-						// Allow progress handler to transform progress event
-						next.progress(onProgress(update));
-					} catch(e) {
-						// Use caught value as progress
-						next.progress(e);
-					}
-				}
-				: next.progress;
-
 			handlers.push(function(promise) {
 				promise
-					.then(onFulfilled, onRejected)
-					.then(
-						function(value)  { next.resolve(value); },
-						function(reason) { next.reject(reason); },
-						progressHandler
-					);
+					.then(onFulfilled, onRejected, onProgress)
+					.then(next.resolve, next.reject, next.progress);
 			});
-
-			progressHandlers.push(progressHandler);
 
 			return next.promise;
 		};
@@ -335,7 +328,7 @@ define(function () {
 		 * @param {*} update progress event payload to pass to all listeners
 		 */
 		_progress = function(update) {
-			processQueue(progressHandlers, update);
+			processQueue(handlers, update);
 			return update;
 		};
 
@@ -361,7 +354,7 @@ define(function () {
 
 			// Notify handlers
 			processQueue(handlers, value);
-			handlers = progressHandlers = undef;
+			handlers = undef;
 
 			return promise;
 		};
@@ -387,7 +380,7 @@ define(function () {
 	 * @return {Deferred}
 	 */
 	function defer() {
-		var deferred, promise, handlers, progressHandlers,
+		var deferred, promise, handlers,
 			_then, _progress, _resolve;
 
 		/**
@@ -411,7 +404,7 @@ define(function () {
 
 			// TODO: Consider renaming progress() to notify()
 			progress: function progress(update) {
-				return _progress(update);
+				return _progress(progressing(update));
 			}
 		};
 
@@ -422,35 +415,16 @@ define(function () {
 		promise = new Promise(deferred.then);
 
 		handlers = [];
-		progressHandlers = [];
 
 		_then = function(onFulfilled, onRejected, onProgress) {
 			var next = asap();
 
-			var progressHandler = typeof onProgress === 'function'
-				? function(update) {
-					try {
-						// Allow progress handler to transform progress event
-						next.progress(onProgress(update));
-					} catch(e) {
-						// Use caught value as progress
-						next.progress(e);
-					}
-				}
-				: next.progress;
-
 			handlers.push(function(promise) {
 				promise
 					.then(shunt('resolve'), shunt('reject'))
-					.then(onFulfilled, onRejected)
-					.then(
-						function(value)  { next.resolve(value); },
-						function(reason) { next.reject(reason); },
-						progressHandler
-					);
+					.then(onFulfilled, onRejected, onProgress)
+					.then(next.resolve, next.reject, next.progress);
 			});
-
-			progressHandlers.push(progressHandler);
 
 			return next.promise;
 		};
@@ -461,7 +435,7 @@ define(function () {
 		 * @param {*} update progress event payload to pass to all listeners
 		 */
 		_progress = function(update) {
-			processQueue(progressHandlers, update);
+			processQueue(handlers, update);
 			return update;
 		};
 
@@ -487,7 +461,7 @@ define(function () {
 
 			// Notify handlers
 			processQueue(handlers, value);
-			handlers = progressHandlers = undef;
+			handlers = undef;
 
 			return promise;
 		};
