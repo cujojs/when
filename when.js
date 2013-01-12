@@ -210,6 +210,8 @@ define(function () {
 
 
 	// Shunt a promise into the next turn of the event loop
+	// Could be made more efficient by pre-caching the results of
+	// shunt() for "resolve", "reject", and "progress".
 	function shunt(type) {
 		return function(value) {
 			var deferred = asap();
@@ -240,6 +242,7 @@ define(function () {
 		// register promise handlers
 		var promise = promiseFor(promiseOrValue);
 
+		// If we're not continuing an existing future computation, start one now.
 		if (!isPromise(promiseOrValue)) {
 			promise = promise.then(shunt('resolve'), shunt('reject'));
 		}
