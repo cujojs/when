@@ -449,18 +449,21 @@ define(function () {
 		_resolve = function(value) {
 			// Replace _resolve so that this Deferred can only be completed once
 			// Make _progress a noop, to disallow progress for the resolved promise.
-			// Make _then invoke callbacks "immediately"
 			_resolve = resolve;
 			_progress = noop;
-			_then = function(onFulfilled, onRejected, onProgress) {
-				return value
-					.then(shunt('resolve'), shunt('reject'))
-					.then(onFulfilled, onRejected, onProgress);
-			};
 
 			// Notify handlers
-			processQueue(handlers, value);
-			handlers = undef;
+			nextTick(function() {
+				// Make _then invoke callbacks "immediately"
+				_then = function(onFulfilled, onRejected, onProgress) {
+					return value
+						.then(shunt('resolve'), shunt('reject'))
+						.then(onFulfilled, onRejected, onProgress);
+				};
+
+				processQueue(handlers, value);
+				handlers = undef;
+			});
 
 			return promise;
 		};
