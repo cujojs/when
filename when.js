@@ -243,8 +243,8 @@ define(function () {
 		var promise = promiseFor(promiseOrValue);
 
 		// If we're not continuing an existing future computation, start one now.
-		if (!isPromise(promiseOrValue)) {
-			promise = promise.then(shunt('resolve'), shunt('reject'));
+		if (!(promiseOrValue instanceof Promise)) {
+			promise = promise.then(shunt('resolve'), shunt('reject'), shunt('progress'));
 		}
 
 		return promise.then(onFulfilled, onRejected, onProgress);
