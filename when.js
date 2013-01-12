@@ -302,7 +302,10 @@ define(function () {
 			// TODO: Consider renaming progress() to notify()
 			progress: function progress(update) {
 				return _progress(progressing(update));
-			}
+			},
+
+			promise: null,
+			resolver: null
 		};
 
 		/**
@@ -406,7 +409,10 @@ define(function () {
 			// TODO: Consider renaming progress() to notify()
 			progress: function progress(update) {
 				return _progress(progressing(update));
-			}
+			},
+
+			promise: null,
+			resolver: null
 		};
 
 		/**
