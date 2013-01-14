@@ -657,16 +657,24 @@ define(function () {
 	 * @returns {Promise}
 	 */
 	function chain(promiseOrValue, resolver, resolveValue) {
-		var resolved = resolve(promiseOrValue);
+		var useResolveValue = arguments.length > 2;
 
-		if(arguments.length > 2) {
-			resolved = resolved.yield(resolveValue);
-		}
-
-		return resolved.then(
-			function(value)  { resolver.resolve(value); return value; },
-			function(reason) { resolver.reject(reason); return reject(reason); },
-			function(update) { typeof resolver.progress === 'function' && resolver.progress(update); }
+		return when(promiseOrValue,
+			function(value)  {
+				if(useResolveValue) {
+					value = resolveValue;
+				}
+				resolver.resolve(value);
+				return value;
+			},
+			function(reason) {
+				resolver.reject(reason);
+				return reject(reason);
+			},
+			function(update) {
+				typeof resolver.progress === 'function' && resolver.progress(update);
+				return update;
+			}
 		);
 	}
 
