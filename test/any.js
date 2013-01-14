@@ -60,16 +60,6 @@ buster.testCase('when.any', {
 		).always(done);
 	},
 
-	'should resolve when first input promise resolves': function(done) {
-		var input = [resolved(1), rejected(2), rejected(3)];
-		when.any(input,
-			function(result) {
-				assert.equals(result, 1);
-			},
-			fail
-		).always(done);
-	},
-
 	'should throw if called with something other than a valid input plus callbacks': function() {
 		assert.exception(function() {
 			when.any(1, 2, 3);
@@ -84,7 +74,7 @@ buster.testCase('when.any', {
 
 		when.any(input,
 			function(result) {
-				assert.equals(result, 1);
+				refute.equals(expected.indexOf(result), -1);
 			},
 			fail
 		).always(done);

@@ -13,7 +13,7 @@ function FakePromise() {
 
 buster.testCase('when/timeout', {
 	'should reject after timeout': function(done) {
-		timeout(new FakePromise(), 0).then(
+		timeout(new FakePromise(), 10).then(
 			fail,
 			function(e) {
 				assert(e instanceof Error);
@@ -22,7 +22,7 @@ buster.testCase('when/timeout', {
 	},
 
 	'should not timeout when rejected before timeout': function(done) {
-		timeout(when.reject(1), 0).then(
+		timeout(when.reject(1), 10).then(
 			fail,
 			function(val) {
 				assert.equals(val, 1);
@@ -31,7 +31,7 @@ buster.testCase('when/timeout', {
 	},
 
 	'should not timeout when forcibly resolved before timeout': function(done) {
-		timeout(when.resolve(1), 0).then(
+		timeout(when.resolve(1), 10).then(
 			function(val) {
 				assert.equals(val, 1);
 			},

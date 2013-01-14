@@ -1,6 +1,6 @@
 (function(buster, when) {
 
-var assert, refute, fail;
+var assert, refute, fail, fakePromise, sentinel, other;
 
 assert = buster.assert;
 refute = buster.refute;
@@ -9,7 +9,10 @@ fail = buster.assertions.fail;
 function identity(val) { return val; }
 function constant(val) { return function() { return val; }; }
 
-var fakePromise = new FakePromise();
+sentinel = {};
+other = {};
+
+fakePromise = new FakePromise();
 
 // Untrusted, non-Promises/A-compliant promise
 function FakePromise(val) {
@@ -54,6 +57,49 @@ buster.testCase('when', {
 			},
 			fail
 		).always(done);
+	},
+
+	'should invoke fulfilled handler asynchronously for value': function(done) {
+		var val = other;
+
+		when({}, function() {
+			assert.same(val, sentinel);
+		}).always(done);
+
+		val = sentinel;
+	},
+
+	'should invoke fulfilled handler asynchronously for fake promise': function(done) {
+		var val = other;
+
+		when(fakePromise, function() {
+			assert.same(val, sentinel);
+		}).always(done);
+
+		val = sentinel;
+	},
+
+	'should invoke fulfilled handler asynchronously for resolved promise': function(done) {
+		var val = other;
+
+		when(when.resolve(), function() {
+			assert.same(val, sentinel);
+		}).always(done);
+
+		val = sentinel;
+	},
+
+	'should invoke fulfilled handler asynchronously for rejected promise': function(done) {
+		var val = other;
+
+		when(when.reject(),
+			fail,
+			function() {
+				assert.same(val, sentinel);
+			}
+		).always(done);
+
+		val = sentinel;
 	},
 
 	'should support deep nesting in promise chains': function(done) {

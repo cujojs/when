@@ -72,9 +72,7 @@ buster.testCase('when.defer', {
 
 			d.resolve(sentinel).then(
 				function(returnedPromiseVal) {
-					d.promise.then(function(val) {
-						assert.same(returnedPromiseVal, val);
-					});
+					assert.equals(returnedPromiseVal, sentinel);
 				},
 				fail
 			).always(done);
@@ -85,9 +83,7 @@ buster.testCase('when.defer', {
 
 			d.resolve(when.resolve(sentinel)).then(
 				function(returnedPromiseVal) {
-					d.promise.then(function(val) {
-						assert.same(returnedPromiseVal, val);
-					});
+					assert.equals(returnedPromiseVal, sentinel);
 				},
 				fail
 			).always(done);
@@ -101,12 +97,7 @@ buster.testCase('when.defer', {
 			d.resolve(when.reject(sentinel)).then(
 				fail,
 				function(returnedPromiseVal) {
-					d.promise.then(
-						fail,
-						function(val) {
-							assert.same(returnedPromiseVal, val);
-						}
-					);
+					assert.equals(returnedPromiseVal, sentinel);
 				}
 			).always(done);
 		},
@@ -148,12 +139,7 @@ buster.testCase('when.defer', {
 			d.reject(sentinel).then(
 				fail,
 				function(returnedPromiseVal) {
-					d.promise.then(
-						fail,
-						function(val) {
-							assert.same(returnedPromiseVal, val);
-						}
-					);
+					assert.equals(returnedPromiseVal, sentinel);
 				}
 			).always(done);
 		},

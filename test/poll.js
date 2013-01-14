@@ -87,13 +87,19 @@ buster.testCase('when/poll', {
 		var i, p, progback;
 
 		i = 0;
-		p = poll(function () { i += 1; return i; }, 10, function () { return i < 3 ? rejected() : resolved(true); });
-		progback = this.spy(function (result) { assert.equals(result, 2); });
+		p = poll(function () {
+			i += 1; return i;
+		}, 10, function () {
+			return i < 3 ? rejected() : resolved(true);
+		});
+		progback = this.spy(function (result) {
+			assert.equals(result, i);
+		});
 
 		p.then(
 			function (result) {
 				assert.equals(result, 3);
-				assert(progback.called);
+				assert(progback.calledTwice);
 				done();
 			},
 			failIfCalled(done, 'should never be rejected'),
@@ -106,12 +112,12 @@ buster.testCase('when/poll', {
 
 		i = 0;
 		p = poll(function () { i += 1; return i; }, 10, function (result) { return result < 3 ? resolved(false) : resolved(true); });
-		progback = this.spy(function (result) { assert.equals(result, 2); });
+		progback = this.spy(function (result) { assert.equals(result, i); });
 
 		p.then(
 			function (result) {
 				assert.equals(result, 3);
-				assert(progback.called);
+				assert(progback.calledTwice);
 				done();
 			},
 			failIfCalled(done, 'should never be rejected'),

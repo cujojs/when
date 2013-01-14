@@ -7,12 +7,14 @@
  * Licensed under the MIT License at:
  * http://www.opensource.org/licenses/mit-license.php
  *
- * @version 1.7.1
+ * @version 2.x.x
  */
 
 (function(define) { 'use strict';
 define(function () {
-	var reduceArray, slice, undef;
+	var reduceArray, slice,
+		nextTick, handlerQueue, queueProcessLimit, maxQueueProcessLimit,
+		undef;
 
 	//
 	// Public API
@@ -68,7 +70,7 @@ define(function () {
 	 *   * the resolution value of promiseOrValue if it's a foreign promise, or
 	 *   * promiseOrValue if it's a value
 	 */
-	function resolve(promiseOrValue) {
+	function promiseFor(promiseOrValue) {
 		var promise, deferred;
 
 		if(promiseOrValue instanceof Promise) {
@@ -99,6 +101,17 @@ define(function () {
 		}
 
 		return promise;
+	}
+
+	/**
+	 * Returns a fulfilled promise. If promiseOrValue is a value, it will be the fulfillment
+	 * value of the returned promise.  If promiseOrValue is a promise, the returned promise will
+	 * parallel the state and value/reason of promiseOrValue.
+	 * @param  {*} promiseOrValue the fulfillment value or a promise with whose state will be paralleled
+	 * @return {Promise} fulfilled promise or pending promise paralleling the state of promiseOrValue.
+	 */
+	function resolve(promiseOrValue) {
+		return defer().resolve(promiseOrValue);
 	}
 
 	/**
@@ -189,7 +202,7 @@ define(function () {
 	function fulfilled(value) {
 		var p = new Promise(function(onFulfilled) {
 			try {
-				return resolve(typeof onFulfilled == 'function' ? onFulfilled(value) : value);
+				return promiseFor(typeof onFulfilled == 'function' ? onFulfilled(value) : value);
 			} catch(e) {
 				return rejected(e);
 			}
@@ -209,7 +222,7 @@ define(function () {
 	function rejected(reason) {
 		var p = new Promise(function(_, onRejected) {
 			try {
-				return resolve(typeof onRejected == 'function' ? onRejected(reason) : rejected(reason));
+				return promiseFor(typeof onRejected == 'function' ? onRejected(reason) : rejected(reason));
 			} catch(e) {
 				return rejected(e);
 			}
@@ -229,8 +242,7 @@ define(function () {
 	 */
 	function defer() {
 		var deferred, promise, handlers, progressHandlers,
-			_then, _progress, _resolve;
-
+			_bind, _progress, _resolve;
 		/**
 		 * The promise for the new deferred
 		 * @type {Promise}
@@ -261,40 +273,28 @@ define(function () {
 		handlers = [];
 		progressHandlers = [];
 
-		/**
-		 * Pre-resolution then() that adds the supplied callback, errback, and progback
-		 * functions to the registered listeners
-		 * @private
-		 *
-		 * @param {function?} [onFulfilled] resolution handler
-		 * @param {function?} [onRejected] rejection handler
-		 * @param {function?} [onProgress] progress handler
-		 */
-		_then = function(onFulfilled, onRejected, onProgress) {
-			var deferred, progressHandler;
-
-			deferred = defer();
-
-			progressHandler = typeof onProgress === 'function'
+		_bind = function(onFulfilled, onRejected, onProgress, next) {
+			var progressHandler = typeof onProgress === 'function'
 				? function(update) {
 					try {
 						// Allow progress handler to transform progress event
-						deferred.progress(onProgress(update));
+						next.progress(onProgress(update));
 					} catch(e) {
 						// Use caught value as progress
-						deferred.progress(e);
+						next.progress(e);
 					}
 				}
-				: function(update) { deferred.progress(update); };
+				: next.progress;
 
 			handlers.push(function(promise) {
-				promise.then(onFulfilled, onRejected)
-					.then(deferred.resolve, deferred.reject, progressHandler);
+				promise.then(onFulfilled, onRejected).then(
+					function(value)  { next.resolve(value); },
+					function(reason) { next.reject(reason); },
+					progressHandler
+				);
 			});
 
 			progressHandlers.push(progressHandler);
-
-			return deferred.promise;
 		};
 
 		/**
@@ -303,7 +303,7 @@ define(function () {
 		 * @param {*} update progress event payload to pass to all listeners
 		 */
 		_progress = function(update) {
-			processQueue(progressHandlers, update);
+			scheduleHandlers(progressHandlers, update);
 			return update;
 		};
 
@@ -314,36 +314,47 @@ define(function () {
 		 * @param {*} value the value of this deferred
 		 */
 		_resolve = function(value) {
-			value = resolve(value);
 
-			// Replace _then with one that directly notifies with the result.
-			_then = value.then;
-			// Replace _resolve so that this Deferred can only be resolved once
-			_resolve = resolve;
+			value = promiseFor(value);
+
+			// Replace _resolve so that this Deferred can only be completed once
 			// Make _progress a noop, to disallow progress for the resolved promise.
+			_resolve = resolve;
 			_progress = noop;
 
+			// Make _bind invoke callbacks "immediately"
+			_bind = function(fulfilled, rejected, _, next) {
+				enqueue(function() {
+					value.then(fulfilled, rejected).then(
+						function(value)  { next.resolve(value); },
+						function(reason) { next.reject(reason); },
+						function(update) { next.progress(update); }
+					);
+				});
+			};
+
 			// Notify handlers
-			processQueue(handlers, value);
+			scheduleHandlers(handlers, value);
+			handlers = progressHandlers = undef;
 
-			// Free progressHandlers array since we'll never issue progress events
-			progressHandlers = handlers = undef;
-
-			return value;
+			return promise;
 		};
 
 		return deferred;
 
 		/**
 		 * Wrapper to allow _then to be replaced safely
-		 * @param {function?} [onFulfilled] resolution handler
-		 * @param {function?} [onRejected] rejection handler
-		 * @param {function?} [onProgress] progress handler
-		 * @return {Promise} new promise
+		 * @param [onFulfilled] {Function} resolution handler
+		 * @param [onRejected] {Function} rejection handler
+		 * @param [onProgress] {Function} progress handler
+		 * @return {Promise} new Promise
 		 */
 		function then(onFulfilled, onRejected, onProgress) {
-			// TODO: Promises/A+ check typeof onFulfilled, onRejected, onProgress
-			return _then(onFulfilled, onRejected, onProgress);
+			var deferred = defer();
+
+			_bind(onFulfilled, onRejected, onProgress, deferred);
+
+			return deferred.promise;
 		}
 
 		/**
@@ -356,8 +367,8 @@ define(function () {
 		/**
 		 * Wrapper to allow _reject to be replaced
 		 */
-		function promiseReject(err) {
-			return _resolve(rejected(err));
+		function promiseReject(reason) {
+			return _resolve(rejected(reason));
 		}
 
 		/**
@@ -425,7 +436,7 @@ define(function () {
 					reasons.push(reason);
 					if(!--toReject) {
 						fulfillOne = rejectOne = noop;
-						deferred.reject(reasons);
+						deferred.reject(reasons.slice());
 					}
 				};
 
@@ -437,7 +448,7 @@ define(function () {
 
 					if (!--toResolve) {
 						fulfillOne = rejectOne = noop;
-						deferred.resolve(values);
+						deferred.resolve(values.slice());
 					}
 				};
 
@@ -626,21 +637,105 @@ define(function () {
 	}
 
 	//
-	// Utility functions
+	// Handler queue processing
 	//
 
-	/**
-	 * Apply all functions in queue to value
-	 * @param {Array} queue array of functions to execute
-	 * @param {*} value argument passed to each function
-	 */
-	function processQueue(queue, value) {
-		var handler, i = 0;
+	//
+	// Experiment
+	// Can we process pending handlers for all resolved promises
+	// the the *very next tick* without introducing subsequent ticks
+	//
+	// Example:
+	// p.then(f).then(g).then(h)
+	//
+	// It should be possible to process f, g, and h in the tick
+	// immediately after the one where the above statement executes.
+	// However, when.js (and afaik, all other async promise impls) will
+	// process them in separate ticks.
+	//
+	// It may be important to be friendly to the platform's tick/timer
+	// queue.  Allowing when.js' queue to extend while it is also
+	// being processed, could potentially starve the platform tick
+	// queue.  A strategy where we drain up to N handlers from
+	// the queue, then schedule another drain, and so on, will yield
+	// some time back to the platform and be more friendly.
+	//
+	// Finding N may be tricky. Allowing N to vary adaptively may
+	// be a good solution.
 
-		while (handler = queue[i++]) {
-			handler(value);
+	/*global setImmediate:true */
+	nextTick = typeof setImmediate === 'function' ? setImmediate
+		: typeof process === 'object' ? process.nextTick
+			: function(task) { setTimeout(task, 0); };
+
+	// NOTE: For sync testing only:
+//		nextTick = function(t) { t(); };
+
+	handlerQueue = [];
+	queueProcessLimit = 1000;
+	maxQueueProcessLimit = 10000;
+
+	/**
+	 * Schedule a task that will process a list of handlers
+	 * in the next queue drain run.
+	 * @param {Array} handlers queue of handlers to execute
+	 * @param {*} value passed as the only arg to each handler
+	 */
+	function scheduleHandlers(handlers, value) {
+		enqueue(function() {
+			var handler, i = 0;
+			while (handler = handlers[i++]) {
+				handler(value);
+			}
+		});
+	}
+
+	/**
+	 * Enqueue a task. If the queue is not currently scheduled to be
+	 * drained, schedule it.
+	 * @param {function} task
+	 */
+	function enqueue(task) {
+		if(handlerQueue.push(task) === 1) {
+			scheduleDrainQueue();
 		}
 	}
+
+	/**
+	 * Schedule the queue to be drained in the next tick.
+	 */
+	function scheduleDrainQueue() {
+		nextTick(drainQueue);
+	}
+
+	/**
+	 * Drain the handler queue entirely or partially, being careful to allow
+	 * the queue to be extended while it is being processed, and to continue
+	 * processing until it is truly empty.
+	 */
+	function drainQueue() {
+		var task, i = 0;
+
+		// Drain up to queueProcessLimit items to avoid starving the tick/timer queue
+		while(i < queueProcessLimit && (task = handlerQueue[i++])) {
+			task();
+		}
+
+		if (handlerQueue.length > i) {
+			// If there are handlers remaining, schedule another drain, but
+			// also increase the max number of handlers (to a point) that'll be drained
+			// from now on.
+			queueProcessLimit = Math.max(queueProcessLimit * 2, maxQueueProcessLimit);
+			handlerQueue = handlerQueue.slice(i, handlerQueue.length);
+			scheduleDrainQueue();
+		} else {
+			handlerQueue = [];
+		}
+	}
+
+	//
+	// Utility functions
+	//
 
 	/**
 	 * Helper that checks arrayOfCallbacks to ensure that each element is either
