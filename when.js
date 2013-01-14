@@ -666,7 +666,7 @@ define(function () {
 		return resolved.then(
 			function(value)  { resolver.resolve(value); return value; },
 			function(reason) { resolver.reject(reason); return reject(reason); },
-			function(update) { resolver.progress(update); }
+			function(update) { typeof resolver.progress === 'function' && resolver.progress(update); }
 		);
 	}
 
