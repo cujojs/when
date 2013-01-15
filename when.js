@@ -351,8 +351,7 @@ define(function () {
 		return new Promise(function (onFulfilled) {
 			try {
 				return promiseFor(typeof onFulfilled == 'function'
-					? onFulfilled(value)
-					: value);
+					? onFulfilled(value) : value);
 			} catch (e) {
 				return rejected(e);
 			}
@@ -371,8 +370,7 @@ define(function () {
 		return new Promise(function (_, onRejected) {
 			try {
 				return promiseFor(typeof onRejected == 'function'
-					? onRejected(reason)
-					: rejected(reason));
+					? onRejected(reason) : rejected(reason));
 			} catch (e) {
 				return rejected(e);
 			}
