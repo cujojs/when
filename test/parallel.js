@@ -51,5 +51,5 @@ buster.testCase('when/parallel', {
 
 })(
 	this.buster || require('buster'),
-	this.when_pipeline || require('../parallel')
+	this.when_parallel || require('../parallel')
 );

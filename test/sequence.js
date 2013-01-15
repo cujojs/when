@@ -49,5 +49,5 @@ buster.testCase('when/sequence', {
 
 })(
 	this.buster || require('buster'),
-	this.when_pipeline || require('../sequence')
+	this.when_sequence || require('../sequence')
 );
