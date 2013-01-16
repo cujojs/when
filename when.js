@@ -236,7 +236,7 @@ define(function () {
 			// Replace _resolve so that this Deferred can only be completed once
 			// Make _progress a noop, to disallow progress for the resolved promise.
 			_resolve = resolve;
-			_progress = noop;
+			_progress = identity;
 
 			// Make _bind invoke callbacks "immediately"
 			_bind = function(fulfilled, rejected, _, next) {

@@ -337,6 +337,18 @@ buster.testCase('when.defer', {
 
 			d.progress();
 			d.reject();
+		},
+
+		'should be indistinguishable after resolution': function() {
+			var d, before, after;
+
+			d = when.defer();
+
+			before = d.progress(sentinel);
+			d.resolve();
+			after = d.progress(sentinel);
+
+			assert.same(before, after);
 		}
 	},
 
