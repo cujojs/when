@@ -321,7 +321,7 @@ define(function () {
 			// Replace _resolve so that this Deferred can only be resolved once
 			_resolve = resolve;
 			// Make _progress a noop, to disallow progress for the resolved promise.
-			_progress = noop;
+			_progress = identity;
 
 			// Notify handlers
 			processQueue(handlers, value);
