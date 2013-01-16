@@ -99,7 +99,7 @@ define(function () {
 		 *  - if value is a promise, will fulfill with its value, or reject
 		 *    with its reason.
 		 */
-		yield: function(value) {
+		'yield': function(value) {
 			return this.then(function() {
 				return value;
 			});
