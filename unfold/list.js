@@ -5,7 +5,7 @@
  * @author: brian@hovercraftstudios.com
  */
 (function(define) {
-define(['when'], function(when, unfold) {
+define(['when', 'unfold'], function(when, unfold) {
 
 	/**
 	 * Given a seed and generator, produces an Array.  Effectively the

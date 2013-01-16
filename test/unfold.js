@@ -1,15 +1,17 @@
 (function(buster, unfold) {
 
-var assert, fail, sentinel;
+var assert, refute, fail, sentinel, other;
 
 assert = buster.assert;
+refute = buster.refute;
 fail = buster.assertions.fail;
 
 sentinel = {};
+other = {};
 
 function noop() {}
 
-buster.testCase('=>when/unfold', {
+buster.testCase('when/unfold', {
 
 	'should invoke proceed first': function(done) {
 		var spy;
@@ -54,6 +56,55 @@ buster.testCase('=>when/unfold', {
 		unfold(this.stub().returns(sentinel), proceed, spy).then(
 			function() {
 				assert.calledOnceWith(spy, sentinel);
+			}
+		).always(done);
+	},
+
+	'should reject when proceed throws': function(done) {
+		var proceed, transform, generator;
+
+		generator = this.stub().returns(other);
+		transform = this.spy();
+		proceed = this.stub().throws(sentinel);
+
+		unfold(generator, proceed, transform, other).then(
+			fail,
+			function(e) {
+				refute.called(generator);
+				refute.called(transform);
+				assert.same(e, sentinel);
+			}
+		).always(done);
+
+	},
+
+	'should reject when generator throws': function(done) {
+		var proceed, transform, generator;
+
+		proceed = this.stub().returns(true);
+		transform = this.spy();
+		generator = this.stub().throws(sentinel);
+
+		unfold(generator, proceed, transform, other).then(
+			fail,
+			function(e) {
+				refute.called(transform);
+				assert.same(e, sentinel);
+			}
+		).always(done);
+	},
+
+	'should reject when transform throws': function(done) {
+		var proceed, transform, generator;
+
+		proceed = this.stub().returns(true);
+		transform = this.stub().throws(sentinel);
+		generator = this.stub().returns(other);
+
+		unfold(generator, proceed, transform, other).then(
+			fail,
+			function(e) {
+				assert.same(e, sentinel);
 			}
 		).always(done);
 	}

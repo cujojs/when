@@ -23,16 +23,14 @@ define(['when'], function(when) {
 	return function unfold(generator, proceed, transform, seed) {
 		return when(seed, function(seed) {
 
-			return proceed(seed) ? when(generator(seed), unfoldNext) : seed;
+			return proceed(seed)
+				? when.join(generator(seed), seed).spread(unfoldNext)
+				: seed;
 
-			function unfoldNext(next) {
-				try {
-					return when(transform(next, seed), function(newSeed) {
-						return unfold(generator, proceed, transform, newSeed);
-					});
-				} catch(e) {
-					return when.reject(e);
-				}
+			function unfoldNext(next, seed) {
+				return when(transform(next, seed), function(newSeed) {
+					return unfold(generator, proceed, transform, newSeed);
+				});
 			}
 		});
 	};
