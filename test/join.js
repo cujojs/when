@@ -53,7 +53,7 @@ buster.testCase('when.join', {
 				assert.equals(failed, 2);
 			}
 		).always(done);
-	},
+	}
 
 });
 
