@@ -273,22 +273,123 @@ buster.testCase('promise', {
 		d.resolve(1);
 	},
 
-	'should switch from callbacks to errbacks when callback throws': function(done) {
-		var d = when.defer();
+	'when an exception is thrown': {
 
-		d.promise.then(
-			function(val) {
-				throw val + 1;
+		'a resolved promise': {
+
+			'should reject if the exception is a value': function(done) {
+				var d = when.defer();
+
+				d.promise.then(
+					function() {
+						throw sentinel;
+					},
+					fail
+				).then(
+					fail,
+					function(val) {
+						assert.same(val, sentinel);
+					}
+				).always(done);
+
+				d.resolve();
 			},
-			fail
-		).then(
-			fail,
-			function(val) {
-				assert.equals(val, 2);
-			}
-		).always(done);
 
-		d.resolve(1);
+			'should reject if the exception is a resolved promise': function(done) {
+				var d = when.defer();
+
+				d.promise.then(
+					function() {
+						throw when.resolve(sentinel);
+					},
+					fail
+				).then(
+					fail,
+					function(val) {
+						assert.same(val, sentinel);
+					}
+				).always(done);
+
+				d.resolve();
+			},
+
+			'should reject if the exception is a rejected promise': function(done) {
+				var d = when.defer();
+
+				d.promise.then(
+					function() {
+						throw when.reject(sentinel);
+					},
+					fail
+				).then(
+					fail,
+					function(val) {
+						assert.same(val, sentinel);
+					}
+				).always(done);
+
+				d.resolve();
+			}
+
+		},
+
+		'a rejected promise': {
+
+			'should reject if the exception is a value': function(done) {
+				var d = when.defer();
+
+				d.promise.then(
+					null,
+					function() {
+						throw sentinel;
+					}
+				).then(
+					fail,
+					function(val) {
+						assert.same(val, sentinel);
+					}
+				).always(done);
+
+				d.reject();
+			},
+
+			'should reject if the exception is a resolved promise': function(done) {
+				var d = when.defer();
+
+				d.promise.then(
+					null,
+					function() {
+						throw when.resolve(sentinel);
+					}
+				).then(
+					fail,
+					function(val) {
+						assert.same(val, sentinel);
+					}
+				).always(done);
+
+				d.reject();
+			},
+
+			'should reject if the exception is a rejected promise': function(done) {
+				var d = when.defer();
+
+				d.promise.then(
+					null,
+					function() {
+						throw when.reject(sentinel);
+					}
+				).then(
+					fail,
+					function(val) {
+						assert.same(val, sentinel);
+					}
+				).always(done);
+
+				d.reject();
+			}
+
+		}
 	},
 
 	'should switch from errbacks to callbacks when errback does not explicitly propagate': function(done) {
