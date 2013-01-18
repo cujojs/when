@@ -128,6 +128,31 @@ define(['../when'], function(when) {
 		};
 	}
 
+	/**
+	 * Takes an object that responds to the resolver interface, and returns
+	 * a function that will resolve or reject it depending on how it is called.
+	 *
+	 * @example
+	 *	function callbackTakingFunction(callback) {
+	 *		if(somethingWrongHappened) {
+	 *			callback(error);
+	 *		} else {
+	 *			callback(null, interestingValue);
+	 *		}
+	 *	}
+	 *
+	 *	var when = require('when'), node_fn = require('when/node/function');
+	 *
+	 *	var deferred = when.defer();
+	 *	callbackTakingFunction(node_fn.createCallback(deferred.resolver));
+	 *
+	 *	deferred.then(function(interestingValue) {
+	 *		// Use interestingValue
+	 *	});
+	 *
+	 * @param {Resolver} resolver that will be 'attached' to the callback
+	 * @returns {Function} a node-style callback function
+	 **/
 	function createCallback(resolver) {
 		return function(err, value) {
 			if(err) {

@@ -172,6 +172,50 @@ buster.testCase('when/node/function', {
 				assert.equals(value, 15);
 			}, fail).always(done);
 		},
+	},
+
+	'createCallback': {
+		'should return a function': function() {
+			var result = node_fn.createCallback();
+			assert.isFunction(result);
+		},
+
+		'the returned function': {
+			'should resolve the resolver when called without errors': function(done) {
+				var deferred = when.defer();
+				var callback = node_fn.createCallback(deferred.resolver);
+
+				callback(null, 10);
+
+				deferred.promise.then(function(value) {
+					assert.equals(value, 10);
+				}, fail).always(done);
+			},
+
+			'should reject the resolver when called with errors': function(done) {
+				var deferred = when.defer();
+				var callback = node_fn.createCallback(deferred.resolver);
+
+				var error = new Error();
+
+				callback(error);
+
+				deferred.promise.then(fail, function(reason) {
+					assert.same(reason, error);
+				}).always(done);
+			},
+
+			'should pass multiple arguments as an array': function(done) {
+				var deferred = when.defer();
+				var callback = node_fn.createCallback(deferred.resolver);
+
+				callback(null, 10, 20, 30);
+
+				deferred.promise.then(function(value) {
+					assert.equals(value, [10, 20, 30]);
+				}, fail).always(done);
+			}
+		}
 	}
 });
 })(require('buster'), require('../../node/function'), require('../../when'));
