@@ -1,4 +1,4 @@
-(function(buster, node_fn, when) {
+(function(buster, nodefn, when) {
 var assert = buster.assert;
 var fail   = buster.fail;
 
@@ -10,7 +10,7 @@ function assertIsPromise(something) {
 buster.testCase('when/node/function', {
 	'apply': {
 		'should return promise': function() {
-			var result = node_fn.apply(function() {});
+			var result = nodefn.apply(function() {});
 			assertIsPromise(result);
 		},
 
@@ -20,7 +20,7 @@ buster.testCase('when/node/function', {
 					cb(null, 10);
 				}
 
-				var promise = node_fn.apply(async);
+				var promise = nodefn.apply(async);
 				promise.then(function(value) {
 					assert.equals(value, 10);
 				}, fail).always(done);
@@ -32,7 +32,7 @@ buster.testCase('when/node/function', {
 					cb(error);
 				}
 
-				var promise = node_fn.apply(async);
+				var promise = nodefn.apply(async);
 				promise.then(fail, function(reason) {
 					assert.same(reason, error);
 				}).always(done);
@@ -43,7 +43,7 @@ buster.testCase('when/node/function', {
 					cb(null, 10, 20, 30);
 				}
 
-				var promise = node_fn.apply(async);
+				var promise = nodefn.apply(async);
 				promise.then(function(values) {
 					assert.equals(values, [10, 20, 30]);
 				}).always(done);
@@ -55,7 +55,7 @@ buster.testCase('when/node/function', {
 				cb(null, x + y);
 			}
 
-			var promise = node_fn.apply(async, [10, 20]);
+			var promise = nodefn.apply(async, [10, 20]);
 			promise.then(function(value) {
 				assert.equals(value, 30);
 			}).always(done);
@@ -64,7 +64,7 @@ buster.testCase('when/node/function', {
 
 	'call': {
 		'should return promise': function() {
-			var result = node_fn.call(function() {});
+			var result = nodefn.call(function() {});
 			assertIsPromise(result);
 		},
 
@@ -74,7 +74,7 @@ buster.testCase('when/node/function', {
 					cb(null, 10);
 				}
 
-				var promise = node_fn.call(async);
+				var promise = nodefn.call(async);
 				promise.then(function(value) {
 					assert.equals(value, 10);
 				}, fail).always(done);
@@ -86,7 +86,7 @@ buster.testCase('when/node/function', {
 					cb(error);
 				}
 
-				var promise = node_fn.call(async);
+				var promise = nodefn.call(async);
 				promise.then(fail, function(reason) {
 					assert.same(reason, error);
 				}).always(done);
@@ -97,7 +97,7 @@ buster.testCase('when/node/function', {
 					cb(null, 10, 20, 30);
 				}
 
-				var promise = node_fn.call(async);
+				var promise = nodefn.call(async);
 				promise.then(function(values) {
 					assert.equals(values, [10, 20, 30]);
 				}).always(done);
@@ -109,7 +109,7 @@ buster.testCase('when/node/function', {
 				cb(null, x + y);
 			}
 
-			var promise = node_fn.call(async, 10, 20);
+			var promise = nodefn.call(async, 10, 20);
 			promise.then(function(value) {
 				assert.equals(value, 30);
 			}).always(done);
@@ -118,17 +118,17 @@ buster.testCase('when/node/function', {
 
 	'bind': {
 		'should return a function': function() {
-			assert.isFunction(node_fn.bind(function() {}));
+			assert.isFunction(nodefn.bind(function() {}));
 		},
 
 		'the returned function': {
 			'should return a promise': function() {
-				var result = node_fn.bind(function() {});
+				var result = nodefn.bind(function() {});
 				assertIsPromise(result());
 			},
 
 			'should resolve the promise with the callback value': function(done) {
-				var result = node_fn.bind(function(callback) {
+				var result = nodefn.bind(function(callback) {
 					callback(null, 10);
 				});
 
@@ -140,7 +140,7 @@ buster.testCase('when/node/function', {
 
 			'should reject the promise with the error argument': function(done) {
 				var error = new Error();
-				var result = node_fn.bind(function(callback) {
+				var result = nodefn.bind(function(callback) {
 					callback(error);
 				});
 
@@ -151,7 +151,7 @@ buster.testCase('when/node/function', {
 			},
 
 			'should resolve the promise to an array for mult-args': function(done) {
-				var result = node_fn.bind(function(callback) {
+				var result = nodefn.bind(function(callback) {
 					callback(null, 10, 20, 30);
 				});
 
@@ -166,7 +166,7 @@ buster.testCase('when/node/function', {
 				callback(null, x + y);
 			}
 
-			var curried = node_fn.bind(fancySum, 5);
+			var curried = nodefn.bind(fancySum, 5);
 
 			curried(10).then(function(value) {
 				assert.equals(value, 15);
@@ -176,14 +176,14 @@ buster.testCase('when/node/function', {
 
 	'createCallback': {
 		'should return a function': function() {
-			var result = node_fn.createCallback();
+			var result = nodefn.createCallback();
 			assert.isFunction(result);
 		},
 
 		'the returned function': {
 			'should resolve the resolver when called without errors': function(done) {
 				var deferred = when.defer();
-				var callback = node_fn.createCallback(deferred.resolver);
+				var callback = nodefn.createCallback(deferred.resolver);
 
 				callback(null, 10);
 
@@ -194,7 +194,7 @@ buster.testCase('when/node/function', {
 
 			'should reject the resolver when called with errors': function(done) {
 				var deferred = when.defer();
-				var callback = node_fn.createCallback(deferred.resolver);
+				var callback = nodefn.createCallback(deferred.resolver);
 
 				var error = new Error();
 
@@ -207,7 +207,7 @@ buster.testCase('when/node/function', {
 
 			'should pass multiple arguments as an array': function(done) {
 				var deferred = when.defer();
-				var callback = node_fn.createCallback(deferred.resolver);
+				var callback = nodefn.createCallback(deferred.resolver);
 
 				callback(null, 10, 20, 30);
 

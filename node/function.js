@@ -36,13 +36,13 @@ define(['../when'], function(when) {
 	*		}
 	*	}
 	*
-	*	var node_fn = require("when/node/function");
+	*	var nodefn = require("when/node/function");
 	*
 	*	// Logs '15'
-	*	node_fn.apply(onlySmallNumbers, [5]).then(console.log, console.error);
+	*	nodefn.apply(onlySmallNumbers, [5]).then(console.log, console.error);
 	*
 	*	// Logs 'Calculation failed'
-	*	node_fn.apply(onlySmallNumbers, [15]).then(console.log, console.error);
+	*	nodefn.apply(onlySmallNumbers, [15]).then(console.log, console.error);
 	*
 	* @param {function} func node-style function that will be called
 	* @param {Array} [args] array of arguments to func
@@ -80,10 +80,10 @@ define(['../when'], function(when) {
 	*	}
 	*
 	*	// Logs '5'
-	*	node_fn.call(sumSmallNumbers, 2, 3).then(console.log, console.error);
+	*	nodefn.call(sumSmallNumbers, 2, 3).then(console.log, console.error);
 	*
 	*	// Logs 'Calculation failed'
-	*	node_fn.call(sumSmallNumbers, 5, 10).then(console.log, console.error);
+	*	nodefn.call(sumSmallNumbers, 5, 10).then(console.log, console.error);
 	*
 	* @param {function} func node-style function that will be called
 	* @param {...*} [args] arguments that will be forwarded to the function
@@ -104,9 +104,9 @@ define(['../when'], function(when) {
 	* is resolved with the callback's second argument.
 	*
 	* @example
-	*	var fs = require("fs"), node_fn = require("when/node/function");
+	*	var fs = require("fs"), nodefn = require("when/node/function");
 	*
-	*	var promiseRead = node_fn.bind(fs.readFile);
+	*	var promiseRead = nodefn.bind(fs.readFile);
 	*
 	*	// The promise is resolved with the contents of the file if everything
 	*	// goes ok
@@ -141,10 +141,10 @@ define(['../when'], function(when) {
 	 *		}
 	 *	}
 	 *
-	 *	var when = require('when'), node_fn = require('when/node/function');
+	 *	var when = require('when'), nodefn = require('when/node/function');
 	 *
 	 *	var deferred = when.defer();
-	 *	callbackTakingFunction(node_fn.createCallback(deferred.resolver));
+	 *	callbackTakingFunction(nodefn.createCallback(deferred.resolver));
 	 *
 	 *	deferred.then(function(interestingValue) {
 	 *		// Use interestingValue
