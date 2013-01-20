@@ -314,8 +314,6 @@ define(function () {
 		 * @param {*} value the value of this deferred
 		 */
 		_resolve = function(value) {
-			value = resolve(value);
-
 			// Replace _then with one that directly notifies with the result.
 			_then = value.then;
 			// Replace _resolve so that this Deferred can only be resolved once
@@ -350,14 +348,14 @@ define(function () {
 		 * Wrapper to allow _resolve to be replaced
 		 */
 		function promiseResolve(val) {
-			return _resolve(val);
+			return _resolve(resolve(val));
 		}
 
 		/**
 		 * Wrapper to allow _reject to be replaced
 		 */
 		function promiseReject(err) {
-			return _resolve(rejected(err));
+			return _resolve(reject(err));
 		}
 
 		/**
