@@ -430,24 +430,6 @@ buster.testCase('promise', {
 		d.reject(1);
 	},
 
-	'should propagate rejections when errback throws': function(done) {
-		var d = when.defer();
-
-		d.promise.then(
-			fail,
-			function(val) {
-				throw val + 1;
-			}
-		).then(
-			fail,
-			function(val) {
-				assert.equals(val, 2);
-			}
-		).always(done);
-
-		d.reject(1);
-	},
-
 	'should propagate rejections when errback returns a rejection': function(done) {
 		var d = when.defer();
 
