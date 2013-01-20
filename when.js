@@ -123,11 +123,13 @@ define(function () {
 	};
 
 	/**
-	 * Returns a fulfilled promise. If promiseOrValue is a value, it will be the fulfillment
-	 * value of the returned promise.  If promiseOrValue is a promise, the returned promise will
-	 * parallel the state and value/reason of promiseOrValue.
-	 * @param  {*} promiseOrValue the fulfillment value or a promise with whose state will be paralleled
-	 * @return {Promise} fulfilled promise or pending promise paralleling the state of promiseOrValue.
+	 * Returns a resolved promise. The returned promise will be
+	 *  - fulfilled with promiseOrValue if it is a value, or
+	 *  - if promiseOrValue is a promise
+	 *    - fulfilled with promiseOrValue's value after it is fulfilled
+	 *    - rejected with promiseOrValue's reason after it is rejected
+	 * @param  {*} promiseOrValue
+	 * @return {Promise}
 	 */
 	function resolve(promiseOrValue) {
 		return defer().resolve(promiseOrValue);
@@ -144,7 +146,7 @@ define(function () {
 	 * @return {Promise} rejected {@link Promise}
 	 */
 	function reject(promiseOrValue) {
-		return resolve(promiseOrValue).then(rejected);
+		return defer().reject(promiseOrValue);
 	}
 
 	/**
@@ -231,10 +233,8 @@ define(function () {
 		 */
 		_resolve = function(value) {
 
-			value = promiseFor(value);
-
-			// Replace _resolve so that this Deferred can only be completed once
 			// Make _progress a noop, to disallow progress for the resolved promise.
+			// Replace _resolve so that this Deferred can only be resolved once
 			_resolve = resolve;
 			_progress = identity;
 
@@ -277,14 +277,14 @@ define(function () {
 		 * Wrapper to allow _resolve to be replaced
 		 */
 		function promiseResolve(val) {
-			return _resolve(val);
+			return _resolve(coerce(val));
 		}
 
 		/**
 		 * Wrapper to allow _reject to be replaced
 		 */
-		function promiseReject(reason) {
-			return _resolve(rejected(reason));
+		function promiseReject(err) {
+			return _resolve(coerce(err).then(rejected));
 		}
 
 		/**
@@ -296,18 +296,19 @@ define(function () {
 	}
 
 	/**
+	 * Coerces the supplied promiseOrValue to a trusted promise.
 	 * Returns promiseOrValue if promiseOrValue is a {@link Promise}, a new Promise if
 	 * promiseOrValue is a foreign promise, or a new, already-fulfilled {@link Promise}
 	 * whose value is promiseOrValue if promiseOrValue is an immediate value.
 	 *
 	 * @param {*} promiseOrValue
-	 * @returns Guaranteed to return a trusted Promise.  If promiseOrValue is a when.js {@link Promise}
-	 *   returns promiseOrValue, otherwise, returns a new, already-resolved, when.js {@link Promise}
-	 *   whose resolution value is:
+	 * @returns Guaranteed to return a trusted Promise.  If promiseOrValue is a trusted
+	 * promise, returns promiseOrValue, otherwise, returns a new, already-resolved,
+	 * trusted promise whose resolution value is:
 	 *   * the resolution value of promiseOrValue if it's a foreign promise, or
 	 *   * promiseOrValue if it's a value
 	 */
-	function promiseFor(promiseOrValue) {
+	function coerce(promiseOrValue) {
 		var promise, deferred;
 
 		if(promiseOrValue instanceof Promise) {
@@ -318,7 +319,7 @@ define(function () {
 			// It's not a when.js promise. See if it's a foreign promise or a value.
 			if(isPromise(promiseOrValue)) {
 				// It's a thenable, but we don't know where it came from, so don't trust
-				// its implementation entirely.  Introduce a trusted middleman when.js promise
+				// its implementation entirely.  Introduce a trusted middleman promise
 				deferred = defer();
 
 				// IMPORTANT: This is the only place when.js should ever call .then() on an
@@ -341,7 +342,7 @@ define(function () {
 	}
 
 	/**
-	 * Create an already-resolved promise for the supplied value
+	 * Create an already-fulfilled promise for the supplied value
 	 * @private
 	 *
 	 * @param {*} value
@@ -350,16 +351,16 @@ define(function () {
 	function fulfilled(value) {
 		return new Promise(function (onFulfilled) {
 			try {
-				return promiseFor(typeof onFulfilled == 'function'
+				return coerce(typeof onFulfilled == 'function'
 					? onFulfilled(value) : value);
 			} catch (e) {
-				return rejected(e);
+				return reject(e);
 			}
 		});
 	}
 
 	/**
-	 * Create an already-rejected {@link Promise} with the supplied
+	 * Create an already-rejected promise with the supplied
 	 * rejection reason.
 	 * @private
 	 *
@@ -369,10 +370,10 @@ define(function () {
 	function rejected(reason) {
 		return new Promise(function (_, onRejected) {
 			try {
-				return promiseFor(typeof onRejected == 'function'
+				return coerce(typeof onRejected == 'function'
 					? onRejected(reason) : rejected(reason));
 			} catch (e) {
-				return rejected(e);
+				return reject(e);
 			}
 		});
 	}
