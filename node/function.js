@@ -146,7 +146,7 @@ define(['../when'], function(when) {
 	 *	var deferred = when.defer();
 	 *	callbackTakingFunction(nodefn.createCallback(deferred.resolver));
 	 *
-	 *	deferred.then(function(interestingValue) {
+	 *	deferred.promise.then(function(interestingValue) {
 	 *		// Use interestingValue
 	 *	});
 	 *
@@ -168,8 +168,12 @@ define(['../when'], function(when) {
 
 })(typeof define == 'function'
 	? define
-	: function (deps, factory) { module.exports = factory(require('../when')); }
-	// Boilerplate for AMD and Node
+	: function (deps, factory) { typeof exports != 'undefined'
+		? (module.exports = factory(require('../when')))
+		: (this.when_node_function = factory(this.when));
+	}
+	// Boilerplate for AMD, Node, and browser global
 );
+
 
 

@@ -261,10 +261,10 @@ define(['./when'], function(when) {
 
 })(typeof define == 'function'
 	? define
-	: function (deps, factory) { typeof module != 'undefined'
-	? (module.exports = factory(require('./when'), require('./nextTick')))
-	: (this.when_fn = factory(this.when, this.when_nextTick));
-}
+	: function (deps, factory) { typeof exports != 'undefined'
+		? (module.exports = factory(require('./when')))
+		: (this.when_function = factory(this.when));
+	}
 	// Boilerplate for AMD, Node, and browser global
 );
 
