@@ -343,9 +343,9 @@ define(['./when'], function(when) {
 });
 })(typeof define == 'function'
 	? define
-	: function (deps, factory) { typeof module != 'undefined'
+	: function (deps, factory) { typeof exports != 'undefined'
 		? (module.exports = factory(require('./when')))
-		: (this.when      = factory(this.when));
+		: (this.when = factory(this.when));
 	}
 	// Boilerplate for AMD, Node, and browser global
 );

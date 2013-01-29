@@ -146,7 +146,7 @@ define(function () {
 	 * @return {Promise} rejected {@link Promise}
 	 */
 	function reject(promiseOrValue) {
-		return defer().reject(promiseOrValue);
+		return when(promiseOrValue).then(rejected);
 	}
 
 	/**
@@ -284,7 +284,7 @@ define(function () {
 		 * Wrapper to allow _reject to be replaced
 		 */
 		function promiseReject(err) {
-			return _resolve(coerce(err).then(rejected));
+			return _resolve(rejected(err));
 		}
 
 		/**

@@ -132,29 +132,35 @@ buster.testCase('when.defer', {
 		},
 
 		'should reject with fulfilled promised': function(done) {
-			var d = when.defer();
+			var d, expected;
+			
+			d = when.defer();
+			expected = fakeResolved(sentinel);
 
 			d.promise.then(
 				fail,
 				function(val) {
-					assert.same(val, sentinel);
+					assert.same(val, expected);
 				}
 			).always(done);
 
-			d.reject(fakeResolved(sentinel));
+			d.reject(expected);
 		},
 
 		'should reject with rejected promise': function(done) {
-			var d = when.defer();
+			var d, expected;
+			
+			d = when.defer();
+			expected = fakeRejected(sentinel);
 
 			d.promise.then(
 				fail,
 				function(val) {
-					assert.same(val, sentinel);
+					assert.same(val, expected);
 				}
 			).always(done);
 
-			d.reject(fakeRejected(sentinel));
+			d.reject(expected);
 		},
 
 
