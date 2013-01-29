@@ -355,7 +355,7 @@ define(function () {
 		 * Wrapper to allow _reject to be replaced
 		 */
 		function promiseReject(err) {
-			return _resolve(reject(err));
+			return _resolve(rejected(err));
 		}
 
 		/**
