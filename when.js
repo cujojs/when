@@ -660,8 +660,12 @@ define(function () {
 	//
 
 	/*global setImmediate:true */
-	nextTick = typeof setImmediate === 'function' ? setImmediate
-		: typeof process === 'object' ? process.nextTick
+	nextTick = typeof setImmediate === 'function'
+		? typeof window === 'undefined'
+			? setImmediate
+			: setImmediate.bind(window)
+		: typeof process === 'object'
+			? process.nextTick
 			: function(task) { setTimeout(task, 0); };
 
 	handlerQueue = [];
