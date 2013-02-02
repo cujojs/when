@@ -1,4 +1,4 @@
-(function(buster, when, when_callback) {
+(function(buster, when, callbacks) {
 
 var assert = buster.assertions.assert;
 
@@ -27,15 +27,15 @@ var makeAsyncFunction = function() {
 	return that;
 };
 
-buster.testCase('when/callback', {
+buster.testCase('when/callbacks', {
 	'should return a promise': function() {
 		var fn = makeAsyncFunction();
-		assertIsPromise(when_callback(fn));
+		assertIsPromise(callbacks(fn));
 	},
 
 	'should resolve when callback is called': function() {
 		var fn = makeAsyncFunction();
-		var promise = when_callback(fn);
+		var promise = callbacks(fn);
 
 		var resolved = false;
 		promise.
@@ -47,7 +47,7 @@ buster.testCase('when/callback', {
 
 	'should not resolve when callback is not called': function() {
 		var fn = makeAsyncFunction();
-		var promise = when_callback(fn);
+		var promise = callbacks(fn);
 
 		var remainsUnresolved = true;
 		promise.then(function() { remainsUnresolved = false; });
@@ -57,7 +57,7 @@ buster.testCase('when/callback', {
 
 	'should resolve with the callback arguments': function() {
 		var fn = makeAsyncFunction();
-		var promise = when_callback(fn);
+		var promise = callbacks(fn);
 
 		var resolveValue;
 		promise.then(function(args) { resolveValue = args; });
@@ -69,13 +69,13 @@ buster.testCase('when/callback', {
 	'should forward its second argument to the function': function() {
 		var fn = makeAsyncFunction();
 
-		when_callback(fn, [1, 2, 3]);
+		callbacks(fn, [1, 2, 3]);
 		assert.equals(fn.passedArguments, [1, 2, 3]);
 	}
 });
 
 })(
-	this.buster || require('buster'),
-	this.when || require('..'),
-	this.when_callback || require('../callback')
+	this.buster    || require('buster'),
+	this.when      || require('..'),
+	this.callbacks || require('../callbacks')
 );
