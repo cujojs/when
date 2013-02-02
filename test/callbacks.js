@@ -28,49 +28,51 @@ var makeAsyncFunction = function() {
 };
 
 buster.testCase('when/callbacks', {
-	'should return a promise': function() {
-		var fn = makeAsyncFunction();
-		assertIsPromise(callbacks(fn));
-	},
+	'apply': {
+		'should return a promise': function() {
+			var fn = makeAsyncFunction();
+			assertIsPromise(callbacks.apply(fn));
+		},
 
-	'should resolve when callback is called': function() {
-		var fn = makeAsyncFunction();
-		var promise = callbacks(fn);
+		'should resolve when callback is called': function() {
+			var fn = makeAsyncFunction();
+			var promise = callbacks.apply(fn);
 
-		var resolved = false;
-		promise.
-		then(function()   { resolved = true; }).
-		always(function() { assert(resolved); });
+			var resolved = false;
+			promise.
+			then(function()   { resolved = true; }).
+			always(function() { assert(resolved); });
 
-		fn.finish();
-	},
+			fn.finish();
+		},
 
-	'should not resolve when callback is not called': function() {
-		var fn = makeAsyncFunction();
-		var promise = callbacks(fn);
+		'should not resolve when callback is not called': function() {
+			var fn = makeAsyncFunction();
+			var promise = callbacks.apply(fn);
 
-		var remainsUnresolved = true;
-		promise.then(function() { remainsUnresolved = false; });
+			var remainsUnresolved = true;
+			promise.then(function() { remainsUnresolved = false; });
 
-		assert(remainsUnresolved);
-	},
+			assert(remainsUnresolved);
+		},
 
-	'should resolve with the callback arguments': function() {
-		var fn = makeAsyncFunction();
-		var promise = callbacks(fn);
+		'should resolve with the callback arguments': function() {
+			var fn = makeAsyncFunction();
+			var promise = callbacks.apply(fn);
 
-		var resolveValue;
-		promise.then(function(args) { resolveValue = args; });
+			var resolveValue;
+			promise.then(function(args) { resolveValue = args; });
 
-		fn.finish(1, 2, 3);
-		assert.equals(resolveValue, [1, 2, 3]);
-	},
+			fn.finish(1, 2, 3);
+			assert.equals(resolveValue, [1, 2, 3]);
+		},
 
-	'should forward its second argument to the function': function() {
-		var fn = makeAsyncFunction();
+		'should forward its second argument to the function': function() {
+			var fn = makeAsyncFunction();
 
-		callbacks(fn, [1, 2, 3]);
-		assert.equals(fn.passedArguments, [1, 2, 3]);
+			callbacks.apply(fn, [1, 2, 3]);
+			assert.equals(fn.passedArguments, [1, 2, 3]);
+		}
 	}
 });
 

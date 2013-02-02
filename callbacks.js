@@ -1,6 +1,10 @@
 (function(define) {
 define(['./when'], function(when) {
-	return function callback(asyncFunction, extraAsyncArgs) {
+	return {
+		apply: apply
+	};
+
+	function apply(asyncFunction, extraAsyncArgs) {
 		if(typeof extraAsyncArgs === 'undefined') {
 			extraAsyncArgs = [];
 		}
@@ -15,7 +19,7 @@ define(['./when'], function(when) {
 		asyncFunction.apply(null, asyncArgs);
 
 		return deferred.promise;
-	};
+	}
 });
 })(typeof define == 'function'
 	? define
