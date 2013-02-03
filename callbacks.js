@@ -61,21 +61,7 @@ define(['./when'], function(when) {
 
 	function call(asyncFunction/*, arg1, arg2...*/) {
 		var extraAsyncArgs = slice.call(arguments, 1);
-
-		var deferred = when.defer();
-
-		var resolve = function(value) {
-			deferred.resolve(value);
-		};
-
-		var reject = function(reason) {
-			deferred.reject(reason);
-		};
-
-		var asyncArgs = extraAsyncArgs.concat([resolve, reject]);
-		asyncFunction.apply(null, asyncArgs);
-
-		return deferred.promise;
+		return apply(asyncFunction, extraAsyncArgs);
 	}
 });
 })(typeof define == 'function'
