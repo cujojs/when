@@ -94,7 +94,63 @@ buster.testCase('when/callbacks', {
 				assert.equals(result, 25);
 			}, fail).always(done);
 		}
-	}
+	},
+
+	'bind': {
+		'should return a function': function() {
+			assert.isFunction(callbacks.bind(function() {}));
+		},
+
+		'the returned function': {
+			'should return a promise': function() {
+				var result = callbacks.bind(function() {});
+				assertIsPromise(result());
+			},
+
+			'should resolve the promise with the callback value': function(done) {
+				var result = callbacks.bind(function(cb) {
+					cb(10);
+				});
+
+				result().then(function(value) {
+					assert.equals(value, 10);
+				}, fail).always(done);
+			},
+
+			'should forward arguments to the original function': function(done) {
+				var result = callbacks.bind(function(a, b, cb) {
+					cb(a + b);
+				});
+
+				result(10, 15).then(function(value) {
+					assert.equals(value, 25);
+				}, fail).always(done);
+			},
+
+			'should reject the promise with the errback value': function(done) {
+				var error = new Error();
+				var result = callbacks.bind(function(cb, eb) {
+					eb(error);
+				});
+
+				result().then(fail, function(reason) {
+					assert.same(reason, error);
+				}).always(done);
+			}
+		},
+
+		'should accept leading arguments': function(done) {
+			function fancySum(x, y, callback) {
+				callback(x + y);
+			}
+
+			var partiallyApplied = callbacks.bind(fancySum, 5);
+
+			partiallyApplied(10).then(function(value) {
+				assert.equals(value, 15);
+			}, fail).always(done);
+		},
+	},
 });
 
 })(

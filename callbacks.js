@@ -4,7 +4,8 @@ define(['./when'], function(when) {
 
 	return {
 		apply: apply,
-		call:  call
+		call:  call,
+		bind:  bind
 	};
 
 	/**
@@ -83,6 +84,15 @@ define(['./when'], function(when) {
 	function call(asyncFunction/*, arg1, arg2...*/) {
 		var extraAsyncArgs = slice.call(arguments, 1);
 		return apply(asyncFunction, extraAsyncArgs);
+	}
+
+	function bind(asyncFunction) {
+		var leadingArgs = slice.call(arguments, 1);
+
+		return function() {
+			var trailingArgs = slice.call(arguments, 0);
+			return apply(asyncFunction, leadingArgs.concat(trailingArgs));
+		};
 	}
 });
 })(typeof define == 'function'
