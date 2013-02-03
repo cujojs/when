@@ -59,6 +59,27 @@ define(['./when'], function(when) {
 		return deferred.promise;
 	}
 
+	/**
+	* Works as `callbacks.apply` does, with the difference that the arguments to
+	* the function are passed individually, instead of as an array.
+	*
+	* @example
+	*	function sumInFiveSeconds(a, b, callback) {
+	*		setTimeout(function() {
+	*			callback(a + b);
+	*		}, 5000);
+	*	}
+	*
+	*	var sumPromise = callbacks.call(sumInFiveSeconds, 5, 10);
+	*
+	* // Logs '15' 5 seconds later
+	*	sumPromise.then(console.log);
+	*
+	* @param {function} asyncFunction function to be called
+	* @param {...*} [args] arguments that will be forwarded to the function
+	* @returns {Promise} promise for the callback value of asyncFunction
+	*/
+
 	function call(asyncFunction/*, arg1, arg2...*/) {
 		var extraAsyncArgs = slice.call(arguments, 1);
 		return apply(asyncFunction, extraAsyncArgs);
