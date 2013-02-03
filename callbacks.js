@@ -1,6 +1,7 @@
 (function(define) {
 define(['./when'], function(when) {
-	var slice = [].slice;
+	var slice  = [].slice,
+			concat = [].concat;
 
 	return {
 		apply: apply,
@@ -40,13 +41,11 @@ define(['./when'], function(when) {
 	*/
 
 	function apply(asyncFunction, extraAsyncArgs) {
-		if(typeof extraAsyncArgs === 'undefined') {
-			extraAsyncArgs = [];
-		}
-
 		var deferred = when.defer();
 
-		var asyncArgs = extraAsyncArgs.concat([deferred.resolve, deferred.reject]);
+		var asyncArgs = concat.call(extraAsyncArgs || [],
+																deferred.resolve,
+																deferred.reject);
 
 		asyncFunction.apply(null, asyncArgs);
 
