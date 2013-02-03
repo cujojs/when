@@ -46,15 +46,8 @@ define(['./when'], function(when) {
 
 		var deferred = when.defer();
 
-		var resolve = function(value) {
-			deferred.resolve(value);
-		};
+		var asyncArgs = extraAsyncArgs.concat([deferred.resolve, deferred.reject]);
 
-		var reject = function(reason) {
-			deferred.reject(reason);
-		};
-
-		var asyncArgs = extraAsyncArgs.concat([resolve, reject]);
 		asyncFunction.apply(null, asyncArgs);
 
 		return deferred.promise;
