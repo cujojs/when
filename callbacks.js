@@ -1,7 +1,10 @@
 (function(define) {
 define(['./when'], function(when) {
+	var slice = [].slice;
+
 	return {
-		apply: apply
+		apply: apply,
+		call:  call
 	};
 
 	/**
@@ -39,6 +42,25 @@ define(['./when'], function(when) {
 		if(typeof extraAsyncArgs === 'undefined') {
 			extraAsyncArgs = [];
 		}
+
+		var deferred = when.defer();
+
+		var resolve = function(value) {
+			deferred.resolve(value);
+		};
+
+		var reject = function(reason) {
+			deferred.reject(reason);
+		};
+
+		var asyncArgs = extraAsyncArgs.concat([resolve, reject]);
+		asyncFunction.apply(null, asyncArgs);
+
+		return deferred.promise;
+	}
+
+	function call(asyncFunction/*, arg1, arg2...*/) {
+		var extraAsyncArgs = slice.call(arguments, 1);
 
 		var deferred = when.defer();
 
