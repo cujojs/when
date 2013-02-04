@@ -44,8 +44,8 @@ define(['./when'], function(when) {
 		var deferred = when.defer();
 
 		var asyncArgs = concat.call(extraAsyncArgs || [],
-																deferred.resolve,
-																deferred.reject);
+																alwaysUnary(deferred.resolve),
+																alwaysUnary(deferred.reject));
 
 		asyncFunction.apply(null, asyncArgs);
 
@@ -114,6 +114,16 @@ define(['./when'], function(when) {
 		return function() {
 			var trailingArgs = slice.call(arguments, 0);
 			return apply(asyncFunction, leadingArgs.concat(trailingArgs));
+		};
+	}
+
+	function alwaysUnary(fn) {
+		return function() {
+			if(arguments.length <= 1) {
+				fn.apply(null, arguments);
+			} else {
+				fn.call(null, slice.call(arguments, 0));
+			}
 		};
 	}
 });

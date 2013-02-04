@@ -40,7 +40,7 @@ buster.testCase('when/callbacks', {
 		},
 
 		'should forward its second argument to the function': function(done) {
-      var async = function(a, b, cb/*, eb*/) {
+			var async = function(a, b, cb/*, eb*/) {
 				cb(a + b);
 			};
 
@@ -48,6 +48,17 @@ buster.testCase('when/callbacks', {
 
 			promise.then(function(result) {
 				assert.equals(result, 25);
+			}, fail).always(done);
+		},
+
+		'should turn multiple callback values into an array': function(done) {
+			var async = function(a, b, cb/*, eb*/) {
+				cb(a * 10, b * 20);
+			};
+
+			var promise = callbacks.apply(async, [10, 20]);
+			promise.then(function(results) {
+				assert.equals(results, [100, 400]);
 			}, fail).always(done);
 		}
 	},
@@ -84,7 +95,7 @@ buster.testCase('when/callbacks', {
 		},
 
 		'should forward its extra arguments to the function': function(done) {
-      var async = function(a, b, cb/*, eb*/) {
+			var async = function(a, b, cb/*, eb*/) {
 				cb(a + b);
 			};
 
@@ -92,6 +103,17 @@ buster.testCase('when/callbacks', {
 
 			promise.then(function(result) {
 				assert.equals(result, 25);
+			}, fail).always(done);
+		},
+
+		'should turn multiple callback values into an array': function(done) {
+			var async = function(a, b, cb/*, eb*/) {
+				cb(a * 10, b * 20);
+			};
+
+			var promise = callbacks.call(async, 10, 20);
+			promise.then(function(results) {
+				assert.equals(results, [100, 400]);
 			}, fail).always(done);
 		}
 	},
@@ -136,6 +158,16 @@ buster.testCase('when/callbacks', {
 				result().then(fail, function(reason) {
 					assert.same(reason, error);
 				}).always(done);
+			},
+
+			'should turn multiple callback values into an array': function(done) {
+				var result = callbacks.bind(function(a, b, cb/*, eb*/) {
+					cb(a * 10, b * 20);
+				});
+
+				result(10, 20).then(function(results) {
+					assert.equals(results, [100, 400]);
+				}, fail).always(done);
 			}
 		},
 
