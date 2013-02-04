@@ -1,7 +1,7 @@
 (function(define) {
 define(['./when'], function(when) {
 	var slice  = [].slice,
-			concat = [].concat;
+		concat = [].concat;
 
 	return {
 		apply:     apply,
@@ -30,11 +30,11 @@ define(['./when'], function(when) {
 	*
 	*	var promise = callbacks.apply(existingAjaxyFunction, ["/movies.json"]);
 	*
-	* promise.then(function(movies) {
-	*   // Work with movies
-	* }, function(reason) {
+	*	promise.then(function(movies) {
+	*		// Work with movies
+	*	}, function(reason) {
 	*		// Handle error
-	* });
+	*	});
 	*
 	* @param {function} asyncFunction function to be called
 	* @param {Array} [extraAsyncArgs] array of arguments to asyncFunction
@@ -44,9 +44,11 @@ define(['./when'], function(when) {
 	function apply(asyncFunction, extraAsyncArgs) {
 		var deferred = when.defer();
 
-		var asyncArgs = concat.call(extraAsyncArgs || [],
-																alwaysUnary(deferred.resolve),
-																alwaysUnary(deferred.reject));
+		var asyncArgs = concat.call(
+			extraAsyncArgs || [],
+			alwaysUnary(deferred.resolve),
+			alwaysUnary(deferred.reject)
+		);
 
 		asyncFunction.apply(null, asyncArgs);
 
@@ -66,7 +68,7 @@ define(['./when'], function(when) {
 	*
 	*	var sumPromise = callbacks.call(sumInFiveSeconds, 5, 10);
 	*
-	* // Logs '15' 5 seconds later
+	*	// Logs '15' 5 seconds later
 	*	sumPromise.then(console.log);
 	*
 	* @param {function} asyncFunction function to be called
