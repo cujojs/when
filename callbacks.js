@@ -178,40 +178,40 @@ define(['./when'], function(when) {
 
 			return deferred.promise;
 		};
+	}
 
-		function fillableArray() {
-			var beginningArgs = [], endArgs = [];
+	function fillableArray() {
+		var beginningArgs = [], endArgs = [];
 
-			return {
-				add: function(index, value) {
-					if(index >= 0) {
-						beginningArgs[index] = value;
-					} else {
-						var offsetFromEnd = Math.abs(index) - 1;
-						endArgs[offsetFromEnd] = value;
-					}
-				},
-
-				fillHolesWith: function(arrayLike) {
-					var i, j;
-
-					for(i = 0, j = 0; i < arrayLike.length; i++, j++) {
-						while(j in beginningArgs) { j++; }
-						beginningArgs[j] = arrayLike[i];
-					}
-				},
-
-				toArray: function() {
-					var result = slice.call(beginningArgs, 0);
-
-					for(var i = endArgs.length - 1; i >= 0; i--) {
-						result.push(endArgs[i]);
-					}
-
-					return result;
+		return {
+			add: function(index, value) {
+				if(index >= 0) {
+					beginningArgs[index] = value;
+				} else {
+					var offsetFromEnd = Math.abs(index) - 1;
+					endArgs[offsetFromEnd] = value;
 				}
-			};
-		}
+			},
+
+			fillHolesWith: function(arrayLike) {
+				var i, j;
+
+				for(i = 0, j = 0; i < arrayLike.length; i++, j++) {
+					while(j in beginningArgs) { j++; }
+					beginningArgs[j] = arrayLike[i];
+				}
+			},
+
+			toArray: function() {
+				var result = slice.call(beginningArgs, 0);
+
+				for(var i = endArgs.length - 1; i >= 0; i--) {
+					result.push(endArgs[i]);
+				}
+
+				return result;
+			}
+		};
 	}
 
 	function alwaysUnary(fn) {
