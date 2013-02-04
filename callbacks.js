@@ -78,7 +78,37 @@ define(['./when'], function(when) {
 		return apply(asyncFunction, extraAsyncArgs);
 	}
 
-	function bind(asyncFunction) {
+	/**
+	* Takes a 'traditional' callback/errback-taking function and returns a function
+	* that returns a promise instead. The resolution/rejection of the promise
+	* depends on whether the original function will call its callback or its
+	* errback.
+	*
+	* If additional arguments are passed to the `bind` call, they will be prepended
+	* on the calls to the original function, much like `Function.prototype.bind`.
+	*
+	* @example
+	*	function traditionalAjax(method, url, callback, errback) {
+	*		var xhr = new XMLHttpRequest();
+	*		xhr.open(method, url);
+	*
+	*		xhr.onload = callback;
+	*		xhr.onerror = errback;
+	*
+	*		xhr.send();
+	*	}
+	*
+	*	var promiseAjax = callbacks.bind(traditionalAjax);
+	*	promiseAjax("GET", "/movies.json").then(console.log, console.error);
+	*
+	*	var promiseAjaxGet = callbacks.bind(traditionalAjax, "GET");
+	*	promiseAjaxGet("/movies.json").then(console.log, console.error);
+	*
+	* @param {Function} asyncFunction traditional function to be decorated
+	* @param {...*} [args] arguments to be prepended for the new function
+	* @returns {Function} a promise-returning function
+	*/
+	function bind(asyncFunction/*, args...*/) {
 		var leadingArgs = slice.call(arguments, 1);
 
 		return function() {
