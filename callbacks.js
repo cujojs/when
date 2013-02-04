@@ -4,9 +4,10 @@ define(['./when'], function(when) {
 			concat = [].concat;
 
 	return {
-		apply: apply,
-		call:  call,
-		bind:  bind
+		apply:     apply,
+		call:      call,
+		bind:      bind,
+		promisify: promisify
 	};
 
 	/**
@@ -115,6 +116,45 @@ define(['./when'], function(when) {
 			var trailingArgs = slice.call(arguments, 0);
 			return apply(asyncFunction, leadingArgs.concat(trailingArgs));
 		};
+	}
+
+	function promisify(asyncFunction, positions) {
+		return function() {
+			var finalArgs = fillableArray();
+			var deferred = when.defer();
+
+			if('callback' in positions) {
+				finalArgs.add(positions.callback, deferred.resolve);
+			}
+
+			if('errback' in positions) {
+				finalArgs.add(positions.errback, deferred.reject);
+			}
+
+			finalArgs.fillWith(arguments);
+			asyncFunction.apply(null, finalArgs);
+
+			return deferred.promise;
+		};
+
+		function fillableArray() {
+			return {
+				length: 0,
+
+				add: function(index, value) {
+					this[index] = value;
+					this.length++;
+				},
+
+				fillWith: function(arrayLike) {
+					var i, j;
+					for(i = 0, j = 0; i < arrayLike.length; i++, j++) {
+						while(j in this) { j++; }
+						this.add(j, arrayLike[i]);
+					}
+				}
+			};
+		}
 	}
 
 	function alwaysUnary(fn) {

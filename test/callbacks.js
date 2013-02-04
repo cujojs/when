@@ -183,6 +183,37 @@ buster.testCase('when/callbacks', {
 			}, fail).always(done);
 		},
 	},
+
+	'promisify': {
+		'should support callbacks in any position': function(done) {
+			function weirdAsync(a, callback, b) {
+				callback(a + b);
+			}
+
+			var promisified = callbacks.promisify(weirdAsync, {
+				callback: 1
+			});
+
+			promisified(10, 5).then(function(result) {
+				assert.equals(result, 15);
+			}, fail).always(done);
+		},
+
+		'should support errbacks in any position': function(done) {
+			function weirdAsync(errback, a, callback, b) {
+				errback(a + b);
+			}
+
+			var promisified = callbacks.promisify(weirdAsync, {
+				callback: 2,
+				errback:  0
+			});
+
+			promisified(10, 5).then(fail, function(reason) {
+				assert.equals(reason, 15);
+			}).always(done);
+		},
+	}
 });
 
 })(
