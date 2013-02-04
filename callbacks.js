@@ -118,6 +118,46 @@ define(['./when'], function(when) {
 		};
 	}
 
+	/**
+	* `promisify` is a version of `bind` that allows fine-grained control over the
+	* arguments that passed to the underlying function. It is intended to handle
+	* functions that don't follow the common callback and errback positions.
+	*
+	* The control is done by passing an object whose 'callback' and/or 'errback'
+	* keys, whose values are the corresponding 0-based indexes of the arguments on
+	* the function. Negative values are interpreted as being relative to the end
+	* of the arguments array.
+	*
+	* If arguments are given on the call to the 'promisified' function, they are
+	* intermingled with the callback and errback.
+	*
+	* @example
+	*	var delay = callbacks.promisify(setTimeout, {
+	*		callback: 0
+	*	});
+	*
+	*	delay(100).then(function() {
+	*		console.log("This happens 100ms afterwards");
+	*	});
+	*
+	* @example
+	*	function callbackAsLast(errback, followsStandards, callback) {
+	*		if(followsStandards) {
+	*			callback("well done!");
+	*		} else {
+	*			errback("some programmers just want to watch the world burn");
+	*		}
+	*	}
+	*
+	*	var promisified = callbacks.promisify(callbackAsLast, {
+	*		callback: -1,
+	*		errback:   0,
+	*	});
+	*
+	*	promisified(true).then(console.log, console.error);
+	*	promisified(false).then(console.log, console.error);
+	*
+	*/
 	function promisify(asyncFunction, positions) {
 		return function() {
 			var finalArgs = fillableArray();
