@@ -213,6 +213,52 @@ buster.testCase('when/callbacks', {
 				assert.equals(reason, 15);
 			}).always(done);
 		},
+
+		'should understand -1 as "the last argument"': function(done) {
+			function asyncSum(/*n1, n2, n3...callback*/) {
+				var args = [].slice.call(arguments, 0);
+
+				var callback = args.pop();
+
+				var result = args.reduce(function(prev, n) {
+					return prev + n;
+				});
+				callback(result);
+			}
+
+			var promisified = callbacks.promisify(asyncSum, {
+				callback: -1
+			});
+
+			promisified(5, 10, 15).then(function(result) {
+				assert.equals(result, 30);
+			}, fail).always(done);
+		},
+
+		'should understand -2 as "the penultimate argument"': function(done) {
+			function asyncConcat(/*str1, str2, str3...errback, callback*/) {
+				var args = [].slice.call(arguments, 0);
+
+				/*var callback =*/ args.pop();
+				var errback = args.pop();
+
+				var result = args.reduce(function(prev, n) {
+					return prev + ' ' + n;
+				});
+
+				errback(result);
+			}
+
+			var promisified = callbacks.promisify(asyncConcat, {
+				errback: -2,
+				callback: -1
+			});
+
+			var promise = promisified('That\'s', 'an', 'extreme', 'example');
+			promise.then(fail, function(reason) {
+				assert.equals(reason, 'That\'s an extreme example');
+			}).always(done);
+		}
 	}
 });
 
