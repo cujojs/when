@@ -214,6 +214,21 @@ buster.testCase('when/callbacks', {
 			}).always(done);
 		},
 
+		'should turn multiple callback values into an array': function(done) {
+			function invert(cb, eb, a, b) {
+				cb(b, a);
+			}
+
+			var promisified = callbacks.promisify(invert, {
+				callback: 0,
+				errback:  1,
+			});
+
+			promisified(10, 20).then(function(results) {
+				assert.equals(results, [20, 10]);
+			}, fail).always(done);
+		},
+
 		'should understand -1 as "the last argument"': function(done) {
 			function asyncSum(/*n1, n2, n3...callback*/) {
 				var args = [].slice.call(arguments, 0);

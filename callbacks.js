@@ -124,14 +124,14 @@ define(['./when'], function(when) {
 			var deferred = when.defer();
 
 			if('callback' in positions) {
-				finalArgs.add(positions.callback, deferred.resolve);
+				finalArgs.add(positions.callback, alwaysUnary(deferred.resolve));
 			}
 
 			if('errback' in positions) {
-				finalArgs.add(positions.errback, deferred.reject);
+				finalArgs.add(positions.errback, alwaysUnary(deferred.reject));
 			}
 
-			finalArgs.fillWith(arguments);
+			finalArgs.fillHolesWith(arguments);
 			asyncFunction.apply(null, finalArgs.toArray());
 
 			return deferred.promise;
@@ -150,7 +150,7 @@ define(['./when'], function(when) {
 					}
 				},
 
-				fillWith: function(arrayLike) {
+				fillHolesWith: function(arrayLike) {
 					var i, j;
 
 					for(i = 0, j = 0; i < arrayLike.length; i++, j++) {
