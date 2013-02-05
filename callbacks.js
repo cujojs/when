@@ -188,6 +188,10 @@ define(['./when'], function(when) {
 				if(index >= 0) {
 					beginningArgs[index] = value;
 				} else {
+					// Since we can't know how many arguments at the end there'll be
+					// (there might be -1, -2, -3...), we fill the array containing them
+					// in reverse order: from the element that will be the last argument
+					// (-1), following to the penultimate (-2) etc.
 					var offsetFromEnd = Math.abs(index) - 1;
 					endArgs[offsetFromEnd] = value;
 				}
@@ -205,6 +209,10 @@ define(['./when'], function(when) {
 			toArray: function() {
 				var result = slice.call(beginningArgs, 0);
 
+				// Now, the 'endArgs' array is supposedly finished, and we can traverse
+				// it to get the elements that should be appended to the array. Since
+				// the elements are in reversed order, we traverse it from back to
+				// front.
 				for(var i = endArgs.length - 1; i >= 0; i--) {
 					result.push(endArgs[i]);
 				}
