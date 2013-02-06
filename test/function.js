@@ -33,6 +33,13 @@ buster.testCase('when/function', {
 			}).always(done);
 		},
 
+		'should accept promises for arguments': function(done) {
+			var result = fn.apply(f, [when(1), 2]);
+			return when(result, function(result) {
+				assert.equals(result, 3);
+			}).always(done);
+		},
+
 		'should consider the arguments optional': function(done) {
 			function countArgs() {
 				return arguments.length;
@@ -71,6 +78,13 @@ buster.testCase('when/function', {
 
 		'should accept values for arguments': function(done) {
 			var result = fn.call(f, 1, 2);
+			return when(result, function(result) {
+				assert.equals(result, 3);
+			}).always(done);
+		},
+
+		'should accept promises for arguments': function(done) {
+			var result = fn.call(f, when(1), 2);
 			return when(result, function(result) {
 				assert.equals(result, 3);
 			}).always(done);
@@ -124,6 +138,14 @@ buster.testCase('when/function', {
 				}, fail).always(done);
 			},
 
+			'should accept promises for arguments': function(done) {
+				var result = fn.bind(f);
+
+				result(1, when(2)).then(function(value) {
+					assert.equals(value, 3);
+				}, fail).always(done);
+			},
+
 			'should reject the promise upon error': function(done) {
 				var error = new Error();
 				var throwingFn = functionThatThrows(error);
@@ -173,6 +195,15 @@ buster.testCase('when/function', {
 
 				var composed = fn.compose(f, sumWithFive);
 				composed(10, 15).then(function(value) {
+					assert.equals(value, 30);
+				}, fail).always(done);
+			},
+
+			'should accept promises for arguments': function(done) {
+				var sumWithFive = f.bind(null, 5);
+
+				var composed = fn.compose(f, sumWithFive);
+				composed(when(10), 15).then(function(value) {
 					assert.equals(value, 30);
 				}, fail).always(done);
 			},

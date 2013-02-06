@@ -25,9 +25,9 @@ define(['./when'], function(when) {
 	};
 
 	/**
-	* Takes a function and an optional array of arguments, and calls the function
-	* immediately. The return value is a promise whose resolution depends on the
-	* value returned by the function.
+	* Takes a function and an optional array of arguments (that might be promises),
+	* and calls the function. The return value is a promise whose resolution
+	* depends on the value returned by the function.
 	*
 	* @example
 	*	function onlySmallNumbers(n) {
@@ -50,15 +50,7 @@ define(['./when'], function(when) {
 	*/
 
 	function apply(func, args) {
-		var d = when.defer();
-
-		try {
-			d.resolve(func.apply(null, args));
-		} catch(e) {
-			d.reject(e);
-		}
-
-		return d.promise;
+		return when.all(args || []).spread(func);
 	}
 
 	/**
@@ -96,6 +88,9 @@ define(['./when'], function(when) {
 	* returns a promise instead of a plain value, and handles thrown errors by
 	* returning a rejected promise. Also accepts a list of arguments to be
 	* prepended to the new function, as does Function.prototype.bind.
+	*
+	* The resulting function is promise-aware, in the sense that it accepts
+	* promise arguments, and waits for their resolution.
 	*
 	* @example
 	*	function mayThrowError(n) {
@@ -143,8 +138,8 @@ define(['./when'], function(when) {
 	* throws or returns a rejected promise, the composed promise will be also
 	* rejected.
 	*
-	* The arguments given to the returned function (if any), are passed directly
-	* to the first function on the 'pipeline'.
+	* The arguments (or promises to arguments) given to the returned function (if
+	* any), are passed directly to the first function on the 'pipeline'.
 	*
 	* @example
 	*	function getHowMuchWeWillDestroy(parameter) {
