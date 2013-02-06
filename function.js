@@ -1,7 +1,13 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
 /**
+ * function.js
+ *
+ * Collection of helper functions for wraping and executing 'traditional'
+ * synchronous functions in a promise interface.
+ *
  * @author brian@hovercraftstudios.com
+ * @contributor renato.riccieri@gmail.com
  */
 
 (function(define) {
@@ -15,14 +21,13 @@ define(['./when'], function(when) {
 		apply: apply,
 		call: call,
 		bind: bind,
-		compose: compose,
-		promisify: promisify
+		compose: compose
 	};
 
 	/**
-	* Takes a function and an optional array of arguments, and calls the function
-	* immediately. The return value is a promise whose resolution depends on the
-	* value returned by the function.
+	* Takes a function and an optional array of arguments (that might be promises),
+	* and calls the function. The return value is a promise whose resolution
+	* depends on the value returned by the function.
 	*
 	* @example
 	*	function onlySmallNumbers(n) {
@@ -45,15 +50,7 @@ define(['./when'], function(when) {
 	*/
 
 	function apply(func, args) {
-		var d = when.defer();
-
-		try {
-			d.resolve(func.apply(null, args));
-		} catch(e) {
-			d.reject(e);
-		}
-
-		return d.promise;
+		return when.all(args || []).spread(func);
 	}
 
 	/**
@@ -91,6 +88,9 @@ define(['./when'], function(when) {
 	* returns a promise instead of a plain value, and handles thrown errors by
 	* returning a rejected promise. Also accepts a list of arguments to be
 	* prepended to the new function, as does Function.prototype.bind.
+	*
+	* The resulting function is promise-aware, in the sense that it accepts
+	* promise arguments, and waits for their resolution.
 	*
 	* @example
 	*	function mayThrowError(n) {
@@ -138,8 +138,8 @@ define(['./when'], function(when) {
 	* throws or returns a rejected promise, the composed promise will be also
 	* rejected.
 	*
-	* The arguments given to the returned function (if any), are passed directly
-	* to the first function on the 'pipeline'.
+	* The arguments (or promises to arguments) given to the returned function (if
+	* any), are passed directly to the first function on the 'pipeline'.
 	*
 	* @example
 	*	function getHowMuchWeWillDestroy(parameter) {
@@ -191,71 +191,6 @@ define(['./when'], function(when) {
 				return func(arg);
 			}, firstPromise);
 		};
-	}
-
-	function promisify(func, callbackPos, errbackPos, progbackPos) {
-		var orig, initArgs;
-
-		orig = func;
-
-		// If you only supply the function, assume callback and errback
-		// will always be the last two params.
-		// If you supply positions, use them to inject callback/errback/progback
-		// into the args.
-		if(arguments.length === 1) {
-			initArgs = function(args, callbacks) {
-				args.push(callbacks.resolve);
-				args.push(callbacks.reject);
-
-				return args;
-			};
-		} else {
-			initArgs = function(args, callbacks) {
-				if(typeof callbackPos == 'number') {
-					args.splice(callbackPos, 0, callbacks.resolve);
-				}
-
-				if(typeof errbackPos == 'number') {
-					args.splice(errbackPos, 0, callbacks.reject);
-				}
-
-				if(typeof progbackPos == 'number') {
-					args.splice(progbackPos, 0, callbacks.progress);
-				}
-
-				return args;
-			};
-		}
-
-		return function() {
-			var args, d, callbacks;
-
-			args = slice.call(arguments);
-			d = when.defer();
-			callbacks = callbacksFromResolver(d.resolver);
-
-			return apply(orig, initArgs(args, callbacks)).then(function() {
-				return d.promise;
-			});
-		};
-	}
-
-	function callbacksFromResolver(resolver) {
-		return {
-			resolve:  createCallback(resolver.resolve),
-			reject:   createCallback(resolver.reject),
-			progress: createCallback(resolver.progress)
-		};
-
-		function createCallback(f) {
-			return function(value) {
-				if(arguments.length > 1) {
-					f(slice.call(arguments));
-				} else {
-					f(value);
-				}
-			};
-		}
 	}
 });
 

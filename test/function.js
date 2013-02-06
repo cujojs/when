@@ -33,6 +33,13 @@ buster.testCase('when/function', {
 			}).always(done);
 		},
 
+		'should accept promises for arguments': function(done) {
+			var result = fn.apply(f, [when(1), 2]);
+			return when(result, function(result) {
+				assert.equals(result, 3);
+			}).always(done);
+		},
+
 		'should consider the arguments optional': function(done) {
 			function countArgs() {
 				return arguments.length;
@@ -71,6 +78,13 @@ buster.testCase('when/function', {
 
 		'should accept values for arguments': function(done) {
 			var result = fn.call(f, 1, 2);
+			return when(result, function(result) {
+				assert.equals(result, 3);
+			}).always(done);
+		},
+
+		'should accept promises for arguments': function(done) {
+			var result = fn.call(f, when(1), 2);
 			return when(result, function(result) {
 				assert.equals(result, 3);
 			}).always(done);
@@ -124,6 +138,14 @@ buster.testCase('when/function', {
 				}, fail).always(done);
 			},
 
+			'should accept promises for arguments': function(done) {
+				var result = fn.bind(f);
+
+				result(1, when(2)).then(function(value) {
+					assert.equals(value, 3);
+				}, fail).always(done);
+			},
+
 			'should reject the promise upon error': function(done) {
 				var error = new Error();
 				var throwingFn = functionThatThrows(error);
@@ -136,9 +158,17 @@ buster.testCase('when/function', {
 		},
 
 		'should accept leading arguments': function(done) {
-			var curried = fn.bind(f, 5);
+			var partiallyApplied = fn.bind(f, 5);
 
-			curried(10).then(function(value) {
+			partiallyApplied(10).then(function(value) {
+				assert.equals(value, 15);
+			}, fail).always(done);
+		},
+
+		'should accept promises as leading arguments': function(done) {
+			var partiallyApplied = fn.bind(f, when(5));
+
+			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
 			}, fail).always(done);
 		},
@@ -173,6 +203,15 @@ buster.testCase('when/function', {
 
 				var composed = fn.compose(f, sumWithFive);
 				composed(10, 15).then(function(value) {
+					assert.equals(value, 30);
+				}, fail).always(done);
+			},
+
+			'should accept promises for arguments': function(done) {
+				var sumWithFive = f.bind(null, 5);
+
+				var composed = fn.compose(f, sumWithFive);
+				composed(when(10), 15).then(function(value) {
 					assert.equals(value, 30);
 				}, fail).always(done);
 			},
@@ -232,88 +271,6 @@ buster.testCase('when/function', {
 			}, fail).always(done);
 		}
 	},
-
-	'promisify': {
-		'should return a function': function() {
-			var result = fn.promisify(f);
-			assert.isFunction(result);
-		},
-
-		'the promise from the returned function': {
-			'should resolve for the callback': function(done) {
-				var promisified = fn.promisify(function(callback) {
-					callback(10);
-				});
-
-				promisified()
-					.then(function(value) { assert.equals(value, 10); })
-					.always(done);
-			},
-
-			'should reject for the errback': function(done) {
-				var promisified = fn.promisify(function(callbac, errback) {
-					errback(10);
-				});
-
-				promisified()
-					.then(null, function(value) { assert.equals(value, 10); })
-					.always(done);
-			},
-
-			'should resolve to an array for multi-arg callbacks': function(done) {
-				var promisified = fn.promisify(function(callback/*, errback */) {
-					callback(10, 20);
-				});
-
-				promisified()
-					.then(function(values) { assert.equals(values, [10, 20]); })
-					.always(done);
-			},
-
-			'should reject to an array for multi-arg errbacks': function(done) {
-				var promisified = fn.promisify(function(callback, errback) {
-					errback(10, 20);
-				});
-
-				promisified()
-					.then(fail, function(values) { assert.equals(values, [10, 20]); })
-					.always(done);
-			}
-		},
-
-		'should accept functions with non-standard callback': function(done) {
-			function nonstandard(errback, callback) {
-				callback(10);
-			}
-
-			var promisified = fn.promisify(nonstandard, 1, 0);
-
-			promisified()
-				.then(function(value) { assert.equals(value, 10); })
-				.always(done);
-		},
-
-		'should accept functions with non-standard errback': function(done) {
-			function nonstandard(errback/*, callback */) {
-				errback(10);
-			}
-
-			var promisified = fn.promisify(nonstandard, 1, 0);
-
-			promisified()
-				.then(fail, function(value) { assert.equals(value, 10); })
-				.always(done);
-		},
-
-		'should translate exceptions into rejections': function(done) {
-			var error = new Error();
-			var promisified = fn.promisify(functionThatThrows(error));
-
-			promisified()
-				.then(fail, function(reason) { assert.same(reason, error); })
-				.always(done);
-		}
-	}
 });
 
 })(
