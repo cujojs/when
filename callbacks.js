@@ -11,8 +11,7 @@
 
 (function(define) {
 define(['./when'], function(when) {
-	var slice  = [].slice,
-		concat = [].concat;
+	var slice = [].slice;
 
 	return {
 		apply:     apply,
@@ -23,10 +22,10 @@ define(['./when'], function(when) {
 
 	/**
 	* Takes a `traditional` callback-taking function and returns a promise for its
-	* result, accepting an optional array of arguments. It assumes that the
-	* function takes its callback and errback as the last two arguments. The
-	* resolution of the promise depends on whether the function will call its
-	* callback or its errback.
+	* result, accepting an optional array of arguments (that might be values or
+	* promises). It assumes that the function takes its callback and errback as
+	* the last two arguments. The resolution of the promise depends on whether the
+	* function will call its callback or its errback.
 	*
 	* @example
 	*	var domIsLoaded = callbacks.apply($);
@@ -53,17 +52,18 @@ define(['./when'], function(when) {
 	*/
 
 	function apply(asyncFunction, extraAsyncArgs) {
-		var deferred = when.defer();
+		return when.all(extraAsyncArgs || []).then(function(args) {
+			var deferred = when.defer();
 
-		var asyncArgs = concat.call(
-			extraAsyncArgs || [],
-			alwaysUnary(deferred.resolve),
-			alwaysUnary(deferred.reject)
-		);
+			var asyncArgs = args.concat(
+				alwaysUnary(deferred.resolve),
+				alwaysUnary(deferred.reject)
+			);
 
-		asyncFunction.apply(null, asyncArgs);
+			asyncFunction.apply(null, asyncArgs);
 
-		return deferred.promise;
+			return deferred.promise;
+		});
 	}
 
 	/**
@@ -100,6 +100,9 @@ define(['./when'], function(when) {
 	*
 	* If additional arguments are passed to the `bind` call, they will be prepended
 	* on the calls to the original function, much like `Function.prototype.bind`.
+	*
+	* The resulting function is also "promise-aware", in the sense that, if given
+	* promises as arguments, it will wait for their resolution before executing.
 	*
 	* @example
 	*	function traditionalAjax(method, url, callback, errback) {
@@ -142,7 +145,8 @@ define(['./when'], function(when) {
 	* of the arguments array.
 	*
 	* If arguments are given on the call to the 'promisified' function, they are
-	* intermingled with the callback and errback.
+	* intermingled with the callback and errback. If a promise is given among them,
+	* the execution of the function will only occur after its resolution.
 	*
 	* @example
 	*	var delay = callbacks.promisify(setTimeout, {
@@ -184,10 +188,12 @@ define(['./when'], function(when) {
 				finalArgs.add(positions.errback, alwaysUnary(deferred.reject));
 			}
 
-			finalArgs.fillHolesWith(arguments);
-			asyncFunction.apply(null, finalArgs.toArray());
+			return when.all(arguments).then(function(args) {
+				finalArgs.fillHolesWith(args);
+				asyncFunction.apply(null, finalArgs.toArray());
 
-			return deferred.promise;
+				return deferred.promise;
+			});
 		};
 	}
 

@@ -39,6 +39,17 @@ buster.testCase('when/callbacks', {
 			}).always(done);
 		},
 
+		'should turn exceptions into rejections': function(done) {
+			var error = new Error();
+			var promise = callbacks.apply(function(){
+				throw error;
+			});
+
+			promise.then(fail, function(reason) {
+				assert.equals(reason, error);
+			}).always(done);
+		},
+
 		'should forward its second argument to the function': function(done) {
 			var async = function(a, b, cb/*, eb*/) {
 				cb(a + b);
@@ -59,6 +70,18 @@ buster.testCase('when/callbacks', {
 			var promise = callbacks.apply(async, [10, 20]);
 			promise.then(function(results) {
 				assert.equals(results, [100, 400]);
+			}, fail).always(done);
+		},
+
+		'should accept promises on the extra arguments': function(done) {
+			var async = function(a, b, cb/*, eb*/) {
+				cb(a + b);
+			};
+
+			var promise = callbacks.apply(async, [when(10), 15]);
+
+			promise.then(function(result) {
+				assert.equals(result, 25);
 			}, fail).always(done);
 		}
 	},
@@ -94,6 +117,17 @@ buster.testCase('when/callbacks', {
 			}).always(done);
 		},
 
+		'should turn exceptions into rejections': function(done) {
+			var error = new Error();
+			var promise = callbacks.call(function(){
+				throw error;
+			});
+
+			promise.then(fail, function(reason) {
+				assert.equals(reason, error);
+			}).always(done);
+		},
+
 		'should forward its extra arguments to the function': function(done) {
 			var async = function(a, b, cb/*, eb*/) {
 				cb(a + b);
@@ -114,6 +148,18 @@ buster.testCase('when/callbacks', {
 			var promise = callbacks.call(async, 10, 20);
 			promise.then(function(results) {
 				assert.equals(results, [100, 400]);
+			}, fail).always(done);
+		},
+
+		'should accept promises on the extra arguments': function(done) {
+			var async = function(a, b, cb/*, eb*/) {
+				cb(a + b);
+			};
+
+			var promise = callbacks.call(async, when(10), 15);
+
+			promise.then(function(result) {
+				assert.equals(result, 25);
 			}, fail).always(done);
 		}
 	},
@@ -160,6 +206,17 @@ buster.testCase('when/callbacks', {
 				}).always(done);
 			},
 
+			'should turn exceptions into rejections': function(done) {
+				var error = new Error();
+				var result = callbacks.bind(function(){
+					throw error;
+				});
+
+				result().then(fail, function(reason) {
+					assert.equals(reason, error);
+				}).always(done);
+			},
+
 			'should turn multiple callback values into an array': function(done) {
 				var result = callbacks.bind(function(a, b, cb/*, eb*/) {
 					cb(a * 10, b * 20);
@@ -167,6 +224,16 @@ buster.testCase('when/callbacks', {
 
 				result(10, 20).then(function(results) {
 					assert.equals(results, [100, 400]);
+				}, fail).always(done);
+			},
+
+			'should accept promises as arguments': function(done) {
+				var result = callbacks.bind(function(a, b, cb/*, eb*/) {
+					cb(a + b);
+				});
+
+				result(when(10), 15).then(function(result) {
+					assert.equals(result, 25);
 				}, fail).always(done);
 			}
 		},
@@ -226,6 +293,30 @@ buster.testCase('when/callbacks', {
 
 			promisified(10, 20).then(function(results) {
 				assert.equals(results, [20, 10]);
+			}, fail).always(done);
+		},
+
+		'should turn exceptions into rejections': function(done) {
+			var error = new Error();
+			var result = callbacks.promisify(function(){
+				throw error;
+			}, {});
+
+			result().then(fail, function(reason) {
+				assert.equals(reason, error);
+			}).always(done);
+		},
+
+		'should accept promises as arguments': function(done) {
+			var result = callbacks.promisify(function(a, b, cb/*, eb*/) {
+				cb(a + b);
+			}, {
+				callback: -2,
+				errback:  -1,
+			});
+
+			result(when(10), 15).then(function(result) {
+				assert.equals(result, 25);
 			}, fail).always(done);
 		},
 
