@@ -1,7 +1,13 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
 /**
+ * node/function.js
+ *
+ * Collection of helpers for interfacing with node-style asynchronous functions
+ * using promises.
+ *
  * @author brian@hovercraftstudios.com
+ * @contributor renato.riccieri@gmail.com
  */
 
 (function(define) {

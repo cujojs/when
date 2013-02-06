@@ -1,7 +1,13 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
 /**
+ * function.js
+ *
+ * Collection of helper functions for wraping and executing 'traditional'
+ * synchronous functions in a promise interface.
+ *
  * @author brian@hovercraftstudios.com
+ * @contributor renato.riccieri@gmail.com
  */
 
 (function(define) {

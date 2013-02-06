@@ -1,3 +1,14 @@
+/** @license MIT License (c) copyright B Cavalier & J Hann */
+
+/**
+ * delay.js
+ *
+ * Collection of helper functions for interacting with 'traditional',
+ * callback-taking functions using a promise interface.
+ *
+ * @author renato.riccieri@gmail.com
+ */
+
 (function(define) {
 define(['./when'], function(when) {
 	var slice  = [].slice,
