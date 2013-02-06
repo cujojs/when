@@ -158,17 +158,17 @@ buster.testCase('when/function', {
 		},
 
 		'should accept leading arguments': function(done) {
-			var curried = fn.bind(f, 5);
+			var partiallyApplied = fn.bind(f, 5);
 
-			curried(10).then(function(value) {
+			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
 			}, fail).always(done);
 		},
 
 		'should accept promises as leading arguments': function(done) {
-			var curried = fn.bind(f, when(5));
+			var partiallyApplied = fn.bind(f, when(5));
 
-			curried(10).then(function(value) {
+			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
 			}, fail).always(done);
 		},

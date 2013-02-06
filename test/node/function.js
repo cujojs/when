@@ -198,9 +198,9 @@ buster.testCase('when/node/function', {
 				callback(null, x + y);
 			}
 
-			var curried = nodefn.bind(fancySum, 5);
+			var partiallyApplied = nodefn.bind(fancySum, 5);
 
-			curried(10).then(function(value) {
+			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
 			}, fail).always(done);
 		},
@@ -210,9 +210,9 @@ buster.testCase('when/node/function', {
 				callback(null, x + y);
 			}
 
-			var curried = nodefn.bind(fancySum, when(5));
+			var partiallyApplied = nodefn.bind(fancySum, when(5));
 
-			curried(10).then(function(value) {
+			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
 			}, fail).always(done);
 		},
