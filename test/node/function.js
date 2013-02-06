@@ -204,6 +204,18 @@ buster.testCase('when/node/function', {
 				assert.equals(value, 15);
 			}, fail).always(done);
 		},
+
+		'should accept promises as leading arguments': function(done) {
+			function fancySum(x, y, callback) {
+				callback(null, x + y);
+			}
+
+			var curried = nodefn.bind(fancySum, when(5));
+
+			curried(10).then(function(value) {
+				assert.equals(value, 15);
+			}, fail).always(done);
+		},
 	},
 
 	'createCallback': {

@@ -249,6 +249,18 @@ buster.testCase('when/callbacks', {
 				assert.equals(value, 15);
 			}, fail).always(done);
 		},
+
+		'should accept promises as leading arguments': function(done) {
+			function fancySum(x, y, callback) {
+				callback(x + y);
+			}
+
+			var partiallyApplied = callbacks.bind(fancySum, when(5));
+
+			partiallyApplied(10).then(function(value) {
+				assert.equals(value, 15);
+			}, fail).always(done);
+		},
 	},
 
 	'promisify': {

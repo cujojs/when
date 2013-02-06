@@ -164,6 +164,14 @@ buster.testCase('when/function', {
 				assert.equals(value, 15);
 			}, fail).always(done);
 		},
+
+		'should accept promises as leading arguments': function(done) {
+			var curried = fn.bind(f, when(5));
+
+			curried(10).then(function(value) {
+				assert.equals(value, 15);
+			}, fail).always(done);
+		},
 	},
 
 	'compose': {
