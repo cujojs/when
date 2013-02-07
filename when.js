@@ -31,6 +31,7 @@ define(['module'], function () {
 
 	when.map       = map;       // Array.map() for promises
 	when.reduce    = reduce;    // Array.reduce() for promises
+	when.throttle  = throttle;  // Array.map() with throttling
 
 	when.chain     = chain;     // Make a promise trigger another resolver
 
@@ -38,7 +39,42 @@ define(['module'], function () {
 
 	when.f = f;
 	when.partial = partial;
-	
+
+	function throttle(max, arr, fn) {
+		var running = 0;
+		var next = 0;
+		var results = [];
+		var dfd = when.defer();
+
+		function runNext() {
+			if(!dfd) {
+				return;
+			}
+			if(next >= arr.length) {
+				if(running === 0) {
+					return dfd.resolve(results);
+				}
+				return;
+			}
+			if(running >= max) {
+				return;
+			}
+			running++;
+			var ix = next++;
+			fn(arr[ix]).then(function(r) {
+				running--;
+				results[ix] = r;
+				runNext();
+			}).otherwise(function(e) {
+				dfd.reject(e);
+				dfd = null;
+			});
+		}
+
+		arr.forEach(function() { runNext(); });
+		return dfd;
+	}
+
 	/** wrap given function (node) into a promise and call it with arguments */
 	function f(node) {
 		var args = [];
