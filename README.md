@@ -6,6 +6,12 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 # What's New?
 
+### 1.8.0
+
+* New when/function, when/node/function, and when/callback with functional programming goodness, and adapters for turning callback-based APIs into promise-based APIs. Kudos [@riccieri](https://github.com/riccieri)
+* New when/unfold, and when/unfold/list promise-aware anamorphic unfolds that can be used to generate and/or process unbounded lists.
+* New when/poll promise-based periodic polling and task execution.
+
 ### 1.7.1
 
 * Removed leftover internal usages of `deferred.then`.
