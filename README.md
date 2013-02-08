@@ -2,7 +2,7 @@
 
 When.js is cujojs's lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation, derived from the async core of [wire.js](https://github.com/cujojs/wire), cujojs's IOC Container.  It also provides several other useful Promise-related concepts, such as joining multiple promises, mapping and reducing collections of promises, timed promises, and has a robust [unit test suite](#running-the-unit-tests).
 
-It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests), is [frighteningly fast](https://github.com/cujojs/promise-perf-tests#test-results), and is **under 1.3k** when compiled with Google Closure (w/advanced optimizations) and gzipped, and has no dependencies.
+It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests), is [frighteningly fast](https://github.com/cujojs/promise-perf-tests#test-results), and is **around 1.3k** when compiled with Google Closure (w/advanced optimizations) and gzipped, and has no external dependencies.
 
 # What's New?
 
