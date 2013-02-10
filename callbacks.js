@@ -1,7 +1,7 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
 /**
- * delay.js
+ * callbacks.js
  *
  * Collection of helper functions for interacting with 'traditional',
  * callback-taking functions using a promise interface.
