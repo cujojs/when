@@ -28,6 +28,8 @@ API
 	* [when/sequence](#whensequence)
 	* [when/pipeline](#whenpipeline)
 	* [when/parallel](#whenparallel)
+1. [Interacting with non-promise code](#interacting-with-non-promise-code)
+	* [Synchronous functions](#synchronous-functions)
 1. [Helpers](#helpers)
 	* [when/apply](#whenapply)
 1. [Configuration](#configuration)
@@ -537,6 +539,122 @@ resultsPromise = parallel(arrayOfTasks, arg1, arg2 /*, ... */);
 Run an array of tasks in "parallel".  The tasks are allowed to execute in any order, and may interleave if they are asynchronous. Each task will be called with the arguments passed to `when.parallel()`, and each may return a promise or a value.
 
 When all tasks have completed, the returned promise will resolve to an array containing the result of each task at the corresponding array position.  The returned promise will reject when any task throws or returns a rejection.
+
+Interacting with non-promise code
+=================================
+
+These modules are aimed at dampening the friction between code that is based on promises and code that follows more conventional approaches to make asynchronous tasks and/or error handling. By using those, you are more likely to be able to reuse code that already exists, while still being able to reap the benefits of promises on your new code.
+
+## Synchronous functions
+
+The `when/function` module contains functions for calling and decorating "normal" functions - that take plain values, returns plain values, and raise exceptions on errors. By calling those functions with `fn.call` and `fn.apply`, or by creating a new function with `fn.bind`, the return value will always be a promise, and thrown exceptions will be turned into rejections. As a bonus, promises given as arguments will be transparently resolved before the call.
+
+### `fn.call()`
+
+A parallel to the `Function.prototype.call` function, that gives promise-awareness to the function given as first argument.
+
+```js
+var when, fn;
+
+when = require("when");
+fn   = require("when/function");
+
+function divideNumbers(a, b) {
+	if(b !== 0) {
+		return a / b;
+	} else {
+		throw new Error("Can't divide by zero!");
+	}
+}
+
+// Prints '2'
+fn.call(divideNumbers, 10, 5).then(console.log);
+
+// Prints '4'
+var promiseForFive = when.resolve(5);
+fn.call(divideNumbers, 20, promiseForFive).then(console.log);
+
+// Prints "Can't divide by zero!"
+fn.call(divideNumbers, 10, 0).then(console.log, console.error);
+```
+
+### `fn.apply()`
+
+`fn.apply` is to [`fn.call`](#fncall) as `Function.prototype.apply` is to `Function.prototype.call`: what changes is the way the arguments are taken.  While `fn.call` takes the arguments separately, `fn.apply` takes them as an array.
+
+```js
+var fn, when;
+
+when = require("when");
+fn   = require("when/function");
+
+function sumMultipleNumbers() {
+	return Array.prototype.reduce.call(arguments, function(prev, n) {
+		return prev + n;
+	}, 0);
+}
+
+// Prints '50'
+fn.apply(sumMultipleNumbers, [10, 20, 20]).then(console.log, console.error);
+
+// Prints 'something wrong happened', and the sum function never executes
+var shortCircuit = when.reject("something wrong happened");
+fn.apply(sumMultipleNumbers, [10, 20, shortCircuit]).then(console.log, console.error);
+```
+
+### `fn.bind()`
+
+When the same function will be called through `fn.call()` or `fn.apply()` on multiple places, it might be interesting to create a wrapper function, that has promise-awareness and exposes the same behavior as the original function. That's what `fn.bind()` does: It takes a normal function and returns a new, promise-aware version of it. As `Function.prototype.bind`, it makes partial application of any additional arguments.
+
+```js
+var fn, when;
+
+when = require("when");
+fn   = require("when/function");
+
+function setText(element, text) {
+	element.text = text;
+}
+
+function getMessage() {
+	// Async function that returns a promise
+}
+
+var element = {};
+
+// Resolving the promies ourselves
+getMessage().then(function(message) {
+	setText(element, message);
+});
+
+// Using fn.call()
+fn.call(setText, element, getMessage());
+
+// Creating a new function using fn.bind()
+var promiseSetText = fn.bind(setText);
+promiseSetText(element, getMessage());
+
+// Leveraging the partial application
+var setElementMessage = fn.bind(setText, element);
+setElementMessage(geMessage());
+```
+
+### `fn.compose()`
+
+Composes multiple functions by piping their return values. It is transparent to whether the functions return 'regular' values or promises: the piped argument is always a resolved value. If one of the functions throws or returns a rejected promise, the composed promise will be also rejected.
+
+```js
+// Reusing the same functions from the fn.bind() example
+
+// Gets the message from the server every 1s, then sets it on the 'element'
+var refreshMessage = fn.compose(getMessage, setElementMessage);
+setInterval(refreshMessage, 1000);
+
+// Which is equivalent to:
+setInterval(function() {
+	return fn.call(getMessage).then(setElementMessage);
+}, 1000);
+```
 
 Helpers
 =======
