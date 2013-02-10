@@ -39,7 +39,7 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 # Docs & Examples
 
-[API docs](when/blob/master/docs/api.md#api)
+[API docs](docs/api.md#api)
 
 [More info on the wiki](https://github.com/cujojs/when/wiki)
 
