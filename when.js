@@ -146,7 +146,7 @@ define(function () {
 	 * @return {Promise} rejected {@link Promise}
 	 */
 	function reject(promiseOrValue) {
-		return when(promiseOrValue).then(rejected);
+		return when(promiseOrValue, rejected);
 	}
 
 	/**
@@ -354,7 +354,7 @@ define(function () {
 				return coerce(typeof onFulfilled == 'function'
 					? onFulfilled(value) : value);
 			} catch (e) {
-				return reject(e);
+				return rejected(e);
 			}
 		});
 	}
@@ -373,7 +373,7 @@ define(function () {
 				return coerce(typeof onRejected == 'function'
 					? onRejected(reason) : rejected(reason));
 			} catch (e) {
-				return reject(e);
+				return rejected(e);
 			}
 		});
 	}

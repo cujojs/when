@@ -59,6 +59,17 @@ buster.testCase('when/node/function', {
 			promise.then(function(value) {
 				assert.equals(value, 30);
 			}).always(done);
+		},
+
+		'should handle promises on the args array': function(done) {
+			function async(x, y, cb) {
+				cb(null, x + y);
+			}
+
+			var promise = nodefn.apply(async, [when(10), 20]);
+			promise.then(function(value) {
+				assert.equals(value, 30);
+			}).always(done);
 		}
 	},
 
@@ -113,6 +124,17 @@ buster.testCase('when/node/function', {
 			promise.then(function(value) {
 				assert.equals(value, 30);
 			}).always(done);
+		},
+
+		'should handle promises on the args array': function(done) {
+			function async(x, y, cb) {
+				cb(null, x + y);
+			}
+
+			var promise = nodefn.call(async, when(10), 20);
+			promise.then(function(value) {
+				assert.equals(value, 30);
+			}).always(done);
 		}
 	},
 
@@ -135,6 +157,16 @@ buster.testCase('when/node/function', {
 
 				result().then(function(value) {
 					assert.equals(value, 10);
+				}, fail).always(done);
+			},
+
+			'should handle promises as arguments': function(done) {
+				var result = nodefn.bind(function(x, callback) {
+					callback(null, x + 10);
+				});
+
+				result(when(10)).then(function(value) {
+					assert.equals(value, 20);
 				}, fail).always(done);
 			},
 
@@ -166,9 +198,21 @@ buster.testCase('when/node/function', {
 				callback(null, x + y);
 			}
 
-			var curried = nodefn.bind(fancySum, 5);
+			var partiallyApplied = nodefn.bind(fancySum, 5);
 
-			curried(10).then(function(value) {
+			partiallyApplied(10).then(function(value) {
+				assert.equals(value, 15);
+			}, fail).always(done);
+		},
+
+		'should accept promises as leading arguments': function(done) {
+			function fancySum(x, y, callback) {
+				callback(null, x + y);
+			}
+
+			var partiallyApplied = nodefn.bind(fancySum, when(5));
+
+			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
 			}, fail).always(done);
 		},

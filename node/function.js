@@ -1,7 +1,13 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
 /**
+ * node/function.js
+ *
+ * Collection of helpers for interfacing with node-style asynchronous functions
+ * using promises.
+ *
  * @author brian@hovercraftstudios.com
+ * @contributor renato.riccieri@gmail.com
  */
 
 (function(define) {
@@ -20,9 +26,9 @@ define(['../when'], function(when) {
 
 	/**
 	* Takes a node-style async function and calls it immediately (with an optional
-	* array of arguments). It returns a promise whose resolution depends on whether
-	* the async functions calls its callback with the conventional error argument
-	* or not.
+	* array of arguments or promises for arguments). It returns a promise whose
+	* resolution depends on whether the async functions calls its callback with the
+	* conventional error argument or not.
 	*
 	* With this it becomes possible to leverage existing APIs while still reaping
 	* the benefits of promises.
@@ -50,18 +56,14 @@ define(['../when'], function(when) {
 	*
 	*/
 	function apply(func, args) {
-		var d = when.defer();
+		return when.all(args || []).then(function(resolvedArgs) {
+			var d = when.defer();
+			var callback = createCallback(d.resolver);
 
-		args = args || [];
-		args.push(createCallback(d));
+			func.apply(null, resolvedArgs.concat(callback));
 
-		try {
-			func.apply(null, args);
-		} catch(e) {
-			d.reject(e);
-		}
-
-		return d.promise;
+			return d.promise;
+		});
 	}
 
 	/**
@@ -95,7 +97,9 @@ define(['../when'], function(when) {
 
 	/**
 	* Takes a node-style function and returns new function that wraps the
-	* original and, instead of taking a callback, returns a promise.
+	* original and, instead of taking a callback, returns a promise. Also, it
+	* knows how to handle promises given as arguments, waiting for their
+	* resolution before executing.
 	*
 	* Upon execution, the orginal function is executed as well. If it passes
 	* a truthy value as the first argument to the callback, it will be

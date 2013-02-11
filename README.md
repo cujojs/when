@@ -2,9 +2,15 @@
 
 When.js is cujojs's lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation, derived from the async core of [wire.js](https://github.com/cujojs/wire), cujojs's IOC Container.  It also provides several other useful Promise-related concepts, such as joining multiple promises, mapping and reducing collections of promises, timed promises, and has a robust [unit test suite](#running-the-unit-tests).
 
-It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests), is [frighteningly fast](https://github.com/cujojs/promise-perf-tests#test-results), and is **under 1.3k** when compiled with Google Closure (w/advanced optimizations) and gzipped, and has no dependencies.
+It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests), is [frighteningly fast](https://github.com/cujojs/promise-perf-tests#test-results), and is **around 1.3k** when compiled with Google Closure (w/advanced optimizations) and gzipped, and has no external dependencies.
 
 # What's New?
+
+### 1.8.0
+
+* New when/function, when/node/function, and when/callback with functional programming goodness, and adapters for turning callback-based APIs into promise-based APIs. Kudos [@riccieri](https://github.com/riccieri)
+* New when/unfold, and when/unfold/list promise-aware anamorphic unfolds that can be used to generate and/or process unbounded lists.
+* New when/poll promise-based periodic polling and task execution.
 
 ### 1.7.1
 
@@ -13,12 +19,12 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 ### 1.7.0
 
-* **DEPRECATED:** `deferred.then` [is deprecated](when/blob/master/docs/api.md#deferred) and will be removed in an upcoming release.  Use `deferred.promise.then` instead.
-* [promise.yield](when/blob/master/docs/api.md#yield)(promiseOrValue) convenience API for substituting a new value into a promise chain.
-* [promise.spread](when/blob/master/docs/api.md#spread)(variadicFunction) convenience API for spreading an array onto a fulfill handler that accepts variadic arguments. [Mmmm, buttery](http://s.shld.net/is/image/Sears/033W048977110001_20100422100331516?hei=1600&wid=1600&op_sharpen=1&resMode=sharp&op_usm=0.9,0.5,0,0)
+* **DEPRECATED:** `deferred.then` [is deprecated](docs/api.md#deferred) and will be removed in an upcoming release.  Use `deferred.promise.then` instead.
+* [promise.yield](docs/api.md#yield)(promiseOrValue) convenience API for substituting a new value into a promise chain.
+* [promise.spread](docs/api.md#spread)(variadicFunction) convenience API for spreading an array onto a fulfill handler that accepts variadic arguments. [Mmmm, buttery](http://s.shld.net/is/image/Sears/033W048977110001_20100422100331516?hei=1600&wid=1600&op_sharpen=1&resMode=sharp&op_usm=0.9,0.5,0,0)
 * Doc improvements:
-	* [when()](when/blob/master/docs/api.md#when) and [promise.then()](when/blob/master/docs/api.md#main-promise-api) have more info about callbacks and chaining behavior.
-	* More info and clarifications about the roles of [Deferred](when/blob/master/docs/api.md#deferred) and [Resolver](when/blob/master/docs/api.md#resolver)
+	* [when()](docs/api.md#when) and [promise.then()](docs/api.md#main-promise-api) have more info about callbacks and chaining behavior.
+	* More info and clarifications about the roles of [Deferred](docs/api.md#deferred) and [Resolver](docs/api.md#resolver)
 	* Several minor clarifications for various APIs
 * Internal improvements to assimilation and interoperability with other promise implementations.
 
@@ -28,18 +34,18 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 ### 1.6.0
 
-* New [when.join](when/blob/master/docs/api.md#whenjoin) - Joins 2 or more promises together into a single promise.
-* [when.some](when/blob/master/docs/api.md#whensome) and [when.any](when/blob/master/docs/api.md#whenany) now act like competitive races, and have generally more useful behavior.  [Read the discussion in #60](https://github.com/cujojs/when/issues/60).
-* *Experimental* progress event propagation.  Progress events will propagate through promise chains. [Read the details here](when/blob/master/docs/api.md#progress-events).
+* New [when.join](docs/api.md#whenjoin) - Joins 2 or more promises together into a single promise.
+* [when.some](docs/api.md#whensome) and [when.any](docs/api.md#whenany) now act like competitive races, and have generally more useful behavior.  [Read the discussion in #60](https://github.com/cujojs/when/issues/60).
+* *Experimental* progress event propagation.  Progress events will propagate through promise chains. [Read the details here](docs/api.md#progress-events).
 * *Temporarily* removed calls to `Object.freeze`. Promises are no longer frozen due to a horrendous v8 performance penalty.  [Read discussion here](https://groups.google.com/d/topic/cujojs/w_olYqorbsY/discussion).
 	* **IMPORTANT:** Continue to treat promises as if they are frozen, since `freeze()` will be reintroduced once v8 performance improves.
 * [when/debug](https://github.com/cujojs/when/wiki/when-debug) now allows setting global a debugging callback for rejected promises.
 
-[Full Changelog](https://github.com/cujojs/when/wiki/Changelog)
+[Full Changelog](CHANGES.md)
 
 # Docs & Examples
 
-[API docs](when/blob/master/docs/api.md#api)
+[API docs](docs/api.md#api)
 
 [More info on the wiki](https://github.com/cujojs/when/wiki)
 
