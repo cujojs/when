@@ -41,7 +41,7 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 	* **IMPORTANT:** Continue to treat promises as if they are frozen, since `freeze()` will be reintroduced once v8 performance improves.
 * [when/debug](https://github.com/cujojs/when/wiki/when-debug) now allows setting global a debugging callback for rejected promises.
 
-[Full Changelog](https://github.com/cujojs/when/wiki/Changelog)
+[Full Changelog](CHANGES.md)
 
 # Docs & Examples
 
