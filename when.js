@@ -21,12 +21,14 @@ define(function () {
 	when.defer     = defer;     // Create a deferred
 	when.resolve   = resolve;   // Create a resolved promise
 	when.reject    = reject;    // Create a rejected promise
+	when.fulfilled = fulfilled;
 
 	when.join      = join;      // Join 2 or more promises
 
 	when.all       = all;       // Resolve a list of promises
 	when.map       = map;       // Array.map() for promises
 	when.reduce    = reduce;    // Array.reduce() for promises
+	when.throttle  = throttle;  // Array.map() with throttling
 
 	when.any       = any;       // One-winner race
 	when.some      = some;      // Multi-winner race
@@ -34,6 +36,79 @@ define(function () {
 	when.chain     = chain;     // Make a promise trigger another resolver
 
 	when.isPromise = isPromise; // Determine if a thing is a promise
+
+	when.f = f;
+	when.partial = partial;
+
+	function throttle(max, arr, fn) {
+		var running = 0;
+		var next = 0;
+		var results = [];
+		var dfd = when.defer();
+
+		function runNext() {
+			if(!dfd) {
+				return;
+			}
+			if(next >= arr.length) {
+				if(running === 0) {
+					return dfd.resolve(results);
+				}
+				return;
+			}
+			if(running >= max) {
+				return;
+			}
+			running++;
+			var ix = next++;
+			fn(arr[ix]).then(function(r) {
+				running--;
+				results[ix] = r;
+				runNext();
+			}).otherwise(function(e) {
+				dfd.reject(e);
+				dfd = null;
+			});
+		}
+
+		arr.forEach(function() { runNext(); });
+		return dfd;
+	}
+
+	/** wrap given function (node) into a promise and call it with arguments */
+	function f(node) {
+		var args = [];
+		for(var i = 1; i < arguments.length; i++) {
+			args.push(arguments[i]);
+		}
+		var dfd = when.defer();
+		args.push(function(err) {
+			var args = [];
+			if(err) {
+				return dfd.reject.apply(null, arguments);
+			}
+			for(var i = 1; i < arguments.length; i++) {
+				args.push(arguments[i]);
+			}
+			return dfd.resolve.apply(null, args);
+		});
+		node.apply(null, args);
+		return dfd;
+	}
+
+	/** partially apply function to arguments */
+	function partial(fn) {
+		var args = [];
+		for(var i = 1; i < arguments.length; i++) {
+			args.push(arguments[i]);
+		}
+		return function() {
+			for (var i = 0; i < arguments.length; i++) {
+				args.push(arguments[i]);
+			}
+			return fn.apply(null, args);
+		};
+	}
 
 	/**
 	 * Register an observer for a promise or immediate value.
@@ -181,7 +256,6 @@ define(function () {
 
 	/**
 	 * Create an already-resolved promise for the supplied value
-	 * @private
 	 *
 	 * @param {*} value
 	 * @return {Promise} fulfilled promise
