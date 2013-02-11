@@ -733,7 +733,7 @@ when.join(venuesLoaded, artistsLoaded, transitionedScreens).then(function() {
 var promiseFunc = callbacks.bind(callbackTakingFunc, arg1, arg2/* ...more args */);
 ```
 
-Much like [`fn.bind()`](#fnbind), `callbacks.bind` creates a promise-friendly function, based on an existing function, but following the asynchronous resolution patters from [`callbacks.call()`](#callbacks-call) and [`callbacks.apply()`](#callback-apply). It can be useful when a particular function needs no be called on multiple places, or for creating an alternative API for a library.
+Much like [`fn.bind()`](#fnbind), `callbacks.bind` creates a promise-friendly function, based on an existing function, but following the asynchronous resolution patters from [`callbacks.call()`](#callbackscall) and [`callbacks.apply()`](#callbacksapply). It can be useful when a particular function needs no be called on multiple places, or for creating an alternative API for a library.
 
 Like `Function.prototype.bind`, additional arguments will be partially applied to the new function.
 
@@ -813,7 +813,7 @@ Node.js APIs have their own standard for asynchronous functions: Instead of taki
 var promisedResult = nodefn.call(nodeStyleFunction, arg1, arg2/*...more args*/);
 ```
 
-Analogous to [`fn.call()`](#fn-call) and [`callbacks.call()`](#callbacks-call): Takes a function plus optional arguments to that function, and returns a promise for its final value. The promise will be resolved or rejected depending on whether the conventional error argument is passed or not.
+Analogous to [`fn.call()`](#fncall) and [`callbacks.call()`](#callbackscall): Takes a function plus optional arguments to that function, and returns a promise for its final value. The promise will be resolved or rejected depending on whether the conventional error argument is passed or not.
 
 ```js
 var fs, nodefn;
@@ -857,7 +857,7 @@ getCats.then(function(cats) {
 var promiseFunc = nodefn.bind(nodeStyleFunction, arg1, arg2/*...more args*/);
 ```
 
-Function based on the same principles from [`fn.bind()`](#fn-bind) and [`callbacks.bind()`](#callbacks-bind), but tuned to handle nodejs-style async functions.
+Function based on the same principles from [`fn.bind()`](#fnbind) and [`callbacks.bind()`](#callbacksbind), but tuned to handle nodejs-style async functions.
 
 ```js
 var dns, when, nodefn;
