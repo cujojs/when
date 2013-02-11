@@ -833,7 +833,7 @@ loadPasswd.then(function(passwd) {
 ### `nodefn.apply()`
 
 ```js
-var promisedResult = nodefn.call(nodeStyleFunction, [arg1, arg2/*...more args*/]);
+var promisedResult = nodefn.apply(nodeStyleFunction, [arg1, arg2/*...more args*/]);
 ```
 
 Following the tradition from `when/function` and `when/callbacks`, `when/node/function` also provides a array-based alternative to `nodefn.call()`.
