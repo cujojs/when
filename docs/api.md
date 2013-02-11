@@ -31,6 +31,7 @@ API
 1. [Interacting with non-promise code](#interacting-with-non-promise-code)
 	* [Synchronous functions](#synchronous-functions)
 	* [Asynchronous functions](#asynchronous-functions)
+	* [Node-style asynchronous functions](#node-style-asynchronous-functions)
 1. [Helpers](#helpers)
 	* [when/apply](#whenapply)
 1. [Configuration](#configuration)
@@ -765,6 +766,96 @@ function inverseVariadic(/* arg1, arg2, arg3... , */errback, callback) {
 var promisified3 = callbacks.promisify(inverseVariadic, {
 	callback: -1, // Negative indexes represent positions relative to the end
 	errback:  -2,
+});
+```
+
+## Node-style asynchronous functions
+
+Node.js APIs have their own standard for asynchronous functions: Instead of taking an errback, any occasional error is passed as the first argument to the callback function. To use promises instead of callbacks with those functions, you can use the `when/node/function` module, which is very similar to `when/callbacks`, but tuned to this convention.
+
+### `nodefn.call()`
+
+Analogous to [`fn.call()`](#fn-call) and [`callbacks.call()`](#callbacks-call): Takes a function plus optional arguments to that function, and returns a promise for its final value. The promise will be resolved or rejected depending on whether the conventional error argument is passed or not.
+
+```js
+var fs, nodefn;
+
+fs     = require("fs");
+nodefn = require("when/node/function");
+
+var loadPasswd = nodefn.call(fn.readFile, "/etc/passwd");
+
+loadPasswd.then(function(passwd) {
+	console.log("Contents of /etc/passwd:\n" + passwd);
+}, function(error) {
+	console.log("Something wrong happened: " + error);
+});
+```
+
+### `nodefn.apply()`
+
+Following the tradition from `when/function` and `when/callbacks`, `when/node/function` also provides a array-taking alternative to `nodefn.call()`.
+
+```js
+var nodefn, http;
+
+nodefn = require("when/node/function");
+http   = require("http");
+
+var getCats = nodefn.apply(http.get, ["http://lolcats.com"]);
+
+getCats.then(function(cats) {
+	// Rejoice!
+});
+```
+
+### `nodefn.bind()`
+
+Function based on the same principles from [`fn.bind()`](#fn-bind) and [`callbacks.bind()`](#callbacks-bind), but tuned to handle nodejs-style async functions.
+
+```js
+var dns, when, nodefn;
+
+dns    = require("dns");
+when   = require("when");
+nodefn = require("when/node/function");
+
+var resolveAddress = nodefn.bind(dns.resolve);
+
+when.join(
+	resolveAddress("twitter.com"),
+	resolveAddress("facebook.com"),
+	resolveAddress("google.com")
+).then(function(addresses) {
+  // All addresses resolved
+}, function(reason) {
+  // At least one of the lookups failed
+});
+```
+
+### `nodefn.createCallback()`
+
+The core function on the `when/node/function` implementation, which might be useful for cases that aren't covered by the higher level API. It takes an object that responds to the [resolver interface](#resolver) and returns a node-style callback function, which will `resolve()` or `reject()` on the resolver depending or how it is called.
+
+```js
+var when, nodefn;
+
+when   = require("when");
+nodefn = require("when/node/function");
+
+function callbackTakingFunction(callback) {
+	if(somethingWrongHappened) {
+		callback(error);
+	} else {
+		callback(null, interestingValue);
+	}
+}
+
+var deferred = when.defer();
+callbackTakingFunction(nodefn.createCallback(deferred.resolver));
+
+deferred.promise.then(function(interestingValue) {
+	// Use interestingValue
 });
 ```
 
