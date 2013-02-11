@@ -191,7 +191,7 @@ define(function () {
 			try {
 				return resolve(typeof onFulfilled == 'function' ? onFulfilled(value) : value);
 			} catch(e) {
-				return reject(e);
+				return rejected(e);
 			}
 		});
 
@@ -211,7 +211,7 @@ define(function () {
 			try {
 				return resolve(typeof onRejected == 'function' ? onRejected(reason) : rejected(reason));
 			} catch(e) {
-				return reject(e);
+				return rejected(e);
 			}
 		});
 

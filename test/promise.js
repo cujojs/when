@@ -296,17 +296,20 @@ buster.testCase('promise', {
 			},
 
 			'should reject if the exception is a resolved promise': function(done) {
-				var d = when.defer();
+				var d, expected;
+
+				d = when.defer();
+				expected = when.resolve();
 
 				d.promise.then(
 					function() {
-						throw when.resolve(sentinel);
+						throw expected;
 					},
 					fail
 				).then(
 					fail,
 					function(val) {
-						assert.same(val, sentinel);
+						assert.same(val, expected);
 					}
 				).always(done);
 
@@ -314,17 +317,20 @@ buster.testCase('promise', {
 			},
 
 			'should reject if the exception is a rejected promise': function(done) {
-				var d = when.defer();
+				var d, expected;
+
+				d = when.defer();
+				expected = when.reject();
 
 				d.promise.then(
 					function() {
-						throw when.reject(sentinel);
+						throw expected;
 					},
 					fail
 				).then(
 					fail,
 					function(val) {
-						assert.same(val, sentinel);
+						assert.same(val, expected);
 					}
 				).always(done);
 
@@ -354,17 +360,20 @@ buster.testCase('promise', {
 			},
 
 			'should reject if the exception is a resolved promise': function(done) {
-				var d = when.defer();
+				var d, expected;
+
+				d = when.defer();
+				expected = when.resolve();
 
 				d.promise.then(
 					null,
 					function() {
-						throw when.resolve(sentinel);
+						throw expected
 					}
 				).then(
 					fail,
 					function(val) {
-						assert.same(val, sentinel);
+						assert.same(val, expected);
 					}
 				).always(done);
 
@@ -372,17 +381,20 @@ buster.testCase('promise', {
 			},
 
 			'should reject if the exception is a rejected promise': function(done) {
-				var d = when.defer();
+				var d, expected;
+
+				d = when.defer();
+				expected = when.reject();
 
 				d.promise.then(
 					null,
 					function() {
-						throw when.reject(sentinel);
+						throw expected;
 					}
 				).then(
 					fail,
 					function(val) {
-						assert.same(val, sentinel);
+						assert.same(val, expected);
 					}
 				).always(done);
 
