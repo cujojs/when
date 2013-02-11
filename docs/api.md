@@ -30,6 +30,7 @@ API
 	* [when/parallel](#whenparallel)
 1. [Interacting with non-promise code](#interacting-with-non-promise-code)
 	* [Synchronous functions](#synchronous-functions)
+	* [Asynchronous functions](#asynchronous-functions)
 1. [Helpers](#helpers)
 	* [when/apply](#whenapply)
 1. [Configuration](#configuration)
@@ -654,6 +655,117 @@ setInterval(refreshMessage, 1000);
 setInterval(function() {
 	return fn.call(getMessage).then(setElementMessage);
 }, 1000);
+```
+
+## Asynchronous functions
+
+Much of the functionality available to javascript developers, be it directly from the environment or via third party libraries, is callback/errback-based. The `when/callbacks` module provides functions to interact with those APIs via promises in a transparent way, without having to write custom wrappers or change existing code. All the functions on this module (with the exception of `callbacks.promisify()`) assume that the callback and errback will be on the "standard" positions - the penultimate and last arguments, respectively.
+
+### `callbacks.call()`
+
+Takes a callback-taking function and returns a promise for its final value, forwarding any additional arguments. The promise will be resolved when the function calls its callback, and the resolution value will be callback's first argument. If multiple values are passed to the callback, the promise will resolve to an array. The same thing happens if the function call the errback, with the difference that the promise will be rejected instead.
+
+```js
+var domIsLoaded = callbacks.call($);
+domIsLoaded.then(doMyDomStuff);
+
+var waitFiveSeconds = callbacks.call(setTimeout, 5000);
+waitFiveSeconds.then(function() {
+	console.log("Five seconds have passed");
+});
+```
+
+### `callbacks.apply()`
+
+The array-taking analog to `callbacks.call`, as `Function.prototype.apply` is to `Function.prototype.call`.
+
+```js
+// This example simulates fading away an element, fading in a new one, fetching
+// two remote resources, and then waiting for all that to finish before going
+// forward. The APIs are all callback-based, but only promises are manipulated.
+
+// .bind is needed because the context is lost
+var oldHidden = callbacks.apply($old.fadeOut.bind($old), ["slow"]);
+
+var transitionedScreens = oldHidden.then(function() {
+	return callbacks.apply($new.fadeIn.bind($new),  ["slow"]);
+});
+
+var venuesLoaded  = callbacks.apply($.getJSON, ["./venues.json"]);
+var artistsLoaded = callbacks.apply($.getJSON, ["./artists.json"]);
+
+// Leveraging when.join to combine promises
+when.join(venuesLoaded, artistsLoaded, transitionedScreens).then(function() {
+	// Render next screen when everything is ready
+}, function() {
+	// Catch-all error handler
+});
+```
+
+### `callbacks.bind()`
+
+Much like [`fn.bind()`](#fnbind), `callbacks.bind` creates a promise-friendly function, based on an existing function, but following the asynchronous resolution patters from [`callbacks.call()`](#callbacks-call) and [`callbacks.apply()`](#callback-apply). It can be useful when a particular function needs no be called on multiple places, or for creating an alternative API for a library.
+
+Making justice to its `Function.prototype.bind` heritage, additional arguments will be partially applied to the new function.
+
+```js
+// Fictional ajax library, because we don't have enough of those
+
+function traditionalAjax(method, url, callback, errback) {
+	var xhr = new XMLHttpRequest();
+	xhr.open(method, url);
+
+	xhr.onload = callback;
+	xhr.onerror = errback;
+
+	xhr.send();
+}
+
+var myLib = {
+	// Traditional browser API: Takes callback and errback
+	ajax: traditionalAjax,
+
+	// Promise API: returns a promise, and may take promises as arguments
+	promiseAjax: callbacks.bind(traditionalAjax)
+};
+```
+
+### `callbacks.promisify()`
+
+Almost all the functions on the `callbacks` module assume that the creators of the API were kind enough to follow the unspoken standard of taking the callback and errback as the last arguments on the function call; `callbacks.promisify()` is for when they weren't. In addition to the function to be decorated, `promisify` takes an object that describes what are the positions of the callback and errback arguments.
+
+```js
+function inverseStandard(errback, callback) {
+	// ...
+}
+
+var promisified1 = callbacks.promisify(firstAndThird, {
+	callback: 1,
+	errback:  0, // indexes are zero-based
+});
+
+function firstAndThird(callback, someParam, errback) {
+	// ...
+}
+
+var promisified2 = callbacks.promisify(firstAndThird, {
+	callback: 0,
+	errback:  2,
+});
+
+// The arguments to the promisified call are interleaved with the callback and
+// errback.
+promisified(10);
+
+
+function inverseVariadic(/* arg1, arg2, arg3... , */errback, callback) {
+	// ...
+}
+
+var promisified3 = callbacks.promisify(inverseVariadic, {
+	callback: -1, // Negative indexes represent positions relative to the end
+	errback:  -2,
+});
 ```
 
 Helpers
