@@ -549,7 +549,7 @@ These modules are aimed at dampening the friction between code that is based on 
 
 ## Synchronous functions
 
-The `when/function` module contains functions for calling and decorating "normal" functions - that take plain values, returns plain values, and raise exceptions on errors. By calling those functions with `fn.call` and `fn.apply`, or by creating a new function with `fn.bind`, the return value will always be a promise, and thrown exceptions will be turned into rejections. As a bonus, promises given as arguments will be transparently resolved before the call.
+The `when/function` module contains functions for calling and decorating "normal" functions - that take plain values, return plain values, and raise exceptions on errors. By calling those functions with `fn.call` and `fn.apply`, or by creating a new function with `fn.bind`, the return value will always be a promise, and thrown exceptions will be turned into rejections. As a bonus, promises given as arguments will be transparently resolved before the call.
 
 ### `fn.call()`
 
@@ -606,7 +606,7 @@ fn.apply(sumMultipleNumbers, [10, 20, shortCircuit]).then(console.log, console.e
 
 ### `fn.bind()`
 
-When the same function will be called through `fn.call()` or `fn.apply()` on multiple places, it might be interesting to create a wrapper function, that has promise-awareness and exposes the same behavior as the original function. That's what `fn.bind()` does: It takes a normal function and returns a new, promise-aware version of it. As `Function.prototype.bind`, it makes partial application of any additional arguments.
+When the same function will be called through `fn.call()` or `fn.apply()` on multiple places, it might be interesting to create a wrapper function that has promise-awareness and exposes the same behavior as the original function. That's what `fn.bind()` does: It takes a normal function and returns a new, promise-aware version of it. As `Function.prototype.bind`, it makes partial application of any additional arguments.
 
 ```js
 var fn, when;
@@ -740,7 +740,7 @@ function inverseStandard(errback, callback) {
 	// ...
 }
 
-var promisified1 = callbacks.promisify(firstAndThird, {
+var promisified1 = callbacks.promisify(inverseStandard, {
 	callback: 1,
 	errback:  0, // indexes are zero-based
 });
@@ -757,7 +757,6 @@ var promisified2 = callbacks.promisify(firstAndThird, {
 // The arguments to the promisified call are interleaved with the callback and
 // errback.
 promisified(10);
-
 
 function inverseVariadic(/* arg1, arg2, arg3... , */errback, callback) {
 	// ...
