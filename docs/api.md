@@ -545,13 +545,17 @@ When all tasks have completed, the returned promise will resolve to an array con
 Interacting with non-promise code
 =================================
 
-These modules are aimed at dampening the friction between code that is based on promises and code that follows more conventional approaches to make asynchronous tasks and/or error handling. By using those, you are more likely to be able to reuse code that already exists, while still being able to reap the benefits of promises on your new code.
+These modules are aimed at dampening the friction between code that is based on promises and code that follows more conventional approaches to make asynchronous tasks and/or error handling. By using them, you are more likely to be able to reuse code that already exists, while still being able to reap the benefits of promises on your new code.
 
 ## Synchronous functions
 
-The `when/function` module contains functions for calling and decorating "normal" functions - that take plain values, return plain values, and raise exceptions on errors. By calling those functions with `fn.call` and `fn.apply`, or by creating a new function with `fn.bind`, the return value will always be a promise, and thrown exceptions will be turned into rejections. As a bonus, promises given as arguments will be transparently resolved before the call.
+The `when/function` module contains functions for calling and adapting "normal" functions (i.e. those that take plain values, return plain values, and throw exceptions on errors). By calling those functions with `fn.call` and `fn.apply`, or by creating a new function with `fn.bind`, the return value will always be a promise, and thrown exceptions will be turned into rejections. As a bonus, promises given as arguments will be transparently resolved before the call.
 
 ### `fn.call()`
+
+```js
+var promisedResult = fn.call(normalFunction, arg1, arg2/* ...more args */);
+```
 
 A parallel to the `Function.prototype.call` function, that gives promise-awareness to the function given as first argument.
 
@@ -582,6 +586,10 @@ fn.call(divideNumbers, 10, 0).then(console.log, console.error);
 
 ### `fn.apply()`
 
+```js
+var promisedResult = fn.apply(normalFunction, [arg1, arg2/* ...more args */]);
+```
+
 `fn.apply` is to [`fn.call`](#fncall) as `Function.prototype.apply` is to `Function.prototype.call`: what changes is the way the arguments are taken.  While `fn.call` takes the arguments separately, `fn.apply` takes them as an array.
 
 ```js
@@ -606,7 +614,11 @@ fn.apply(sumMultipleNumbers, [10, 20, shortCircuit]).then(console.log, console.e
 
 ### `fn.bind()`
 
-When the same function will be called through `fn.call()` or `fn.apply()` on multiple places, it might be interesting to create a wrapper function that has promise-awareness and exposes the same behavior as the original function. That's what `fn.bind()` does: It takes a normal function and returns a new, promise-aware version of it. As `Function.prototype.bind`, it makes partial application of any additional arguments.
+```js
+var promiseFunction = fn.bind(normalFunction, arg1, arg2/* ...more args */);
+```
+
+When the same function will be called through `fn.call()` or `fn.apply()` multiple times, it can be more efficient to create a wrapper function that has promise-awareness and exposes the same behavior as the original function. That's what `fn.bind()` does: It takes a normal function and returns a new, promise-aware version of it. As `Function.prototype.bind`, it makes partial application of any additional arguments.
 
 ```js
 var fn, when;
@@ -643,7 +655,11 @@ setElementMessage(geMessage());
 
 ### `fn.compose()`
 
-Composes multiple functions by piping their return values. It is transparent to whether the functions return 'regular' values or promises: the piped argument is always a resolved value. If one of the functions throws or returns a rejected promise, the composed promise will be also rejected.
+```js
+var composedFunc = fn.compose(func1, func2 /* ...more functions */);
+```
+
+Composes multiple functions by piping their return values. It is transparent to whether the functions return 'regular' values or promises: the piped argument is always a resolved value. If one of the functions throws or returns a rejected promise, the promise returned by `composedFunc` will be rejected.
 
 ```js
 // Reusing the same functions from the fn.bind() example
@@ -660,9 +676,13 @@ setInterval(function() {
 
 ## Asynchronous functions
 
-Much of the functionality available to javascript developers, be it directly from the environment or via third party libraries, is callback/errback-based. The `when/callbacks` module provides functions to interact with those APIs via promises in a transparent way, without having to write custom wrappers or change existing code. All the functions on this module (with the exception of `callbacks.promisify()`) assume that the callback and errback will be on the "standard" positions - the penultimate and last arguments, respectively.
+Much of the asynchronous functionality available to javascript developers, be it directly from the environment or via third party libraries, is callback/errback-based. The `when/callbacks` module provides functions to interact with those APIs via promises in a transparent way, without having to write custom wrappers or change existing code. All the functions on this module (with the exception of `callbacks.promisify()`) assume that the callback and errback will be on the "standard" positions - the penultimate and last arguments, respectively.
 
 ### `callbacks.call()`
+
+```js
+var promisedResult = callbacks.call(callbackTakingFunc, arg1, arg2/* ...more args */);
+```
 
 Takes a callback-taking function and returns a promise for its final value, forwarding any additional arguments. The promise will be resolved when the function calls its callback, and the resolution value will be callback's first argument. If multiple values are passed to the callback, the promise will resolve to an array. The same thing happens if the function call the errback, with the difference that the promise will be rejected instead.
 
@@ -677,6 +697,10 @@ waitFiveSeconds.then(function() {
 ```
 
 ### `callbacks.apply()`
+
+```js
+var promisedResult = callbacks.apply(callbackTakingFunc, [arg1, arg2/* ...more args */]);
+```
 
 The array-taking analog to `callbacks.call`, as `Function.prototype.apply` is to `Function.prototype.call`.
 
@@ -705,9 +729,13 @@ when.join(venuesLoaded, artistsLoaded, transitionedScreens).then(function() {
 
 ### `callbacks.bind()`
 
+```js
+var promiseFunc = callbacks.bind(callbackTakingFunc, arg1, arg2/* ...more args */);
+```
+
 Much like [`fn.bind()`](#fnbind), `callbacks.bind` creates a promise-friendly function, based on an existing function, but following the asynchronous resolution patters from [`callbacks.call()`](#callbacks-call) and [`callbacks.apply()`](#callback-apply). It can be useful when a particular function needs no be called on multiple places, or for creating an alternative API for a library.
 
-Making justice to its `Function.prototype.bind` heritage, additional arguments will be partially applied to the new function.
+Like `Function.prototype.bind`, additional arguments will be partially applied to the new function.
 
 ```js
 // Fictional ajax library, because we don't have enough of those
@@ -733,7 +761,14 @@ var myLib = {
 
 ### `callbacks.promisify()`
 
-Almost all the functions on the `callbacks` module assume that the creators of the API were kind enough to follow the unspoken standard of taking the callback and errback as the last arguments on the function call; `callbacks.promisify()` is for when they weren't. In addition to the function to be decorated, `promisify` takes an object that describes what are the positions of the callback and errback arguments.
+```js
+var promiseFunc = callbacks.promisify(nonStandardFunc, {
+    callback: zeroBasedIndex,
+    errback:  otherZeroBasedIndex,
+});
+```
+
+Almost all the functions on the `callbacks` module assume that the creators of the API were kind enough to follow the unspoken standard of taking the callback and errback as the last arguments on the function call; `callbacks.promisify()` is for when they weren't. In addition to the function to be adapted, `promisify` takes an object that describes what are the positions of the callback and errback arguments.
 
 ```js
 function inverseStandard(errback, callback) {
@@ -770,9 +805,13 @@ var promisified3 = callbacks.promisify(inverseVariadic, {
 
 ## Node-style asynchronous functions
 
-Node.js APIs have their own standard for asynchronous functions: Instead of taking an errback, any occasional error is passed as the first argument to the callback function. To use promises instead of callbacks with those functions, you can use the `when/node/function` module, which is very similar to `when/callbacks`, but tuned to this convention.
+Node.js APIs have their own standard for asynchronous functions: Instead of taking an errback, errors are passed as the first argument to the callback function. To use promises instead of callbacks with node-style asynchronous functions, you can use the `when/node/function` module, which is very similar to `when/callbacks`, but tuned to this convention.
 
 ### `nodefn.call()`
+
+```js
+var promisedResult = nodefn.call(nodeStyleFunction, arg1, arg2/*...more args*/);
+```
 
 Analogous to [`fn.call()`](#fn-call) and [`callbacks.call()`](#callbacks-call): Takes a function plus optional arguments to that function, and returns a promise for its final value. The promise will be resolved or rejected depending on whether the conventional error argument is passed or not.
 
@@ -793,7 +832,11 @@ loadPasswd.then(function(passwd) {
 
 ### `nodefn.apply()`
 
-Following the tradition from `when/function` and `when/callbacks`, `when/node/function` also provides a array-taking alternative to `nodefn.call()`.
+```js
+var promisedResult = nodefn.call(nodeStyleFunction, [arg1, arg2/*...more args*/]);
+```
+
+Following the tradition from `when/function` and `when/callbacks`, `when/node/function` also provides a array-based alternative to `nodefn.call()`.
 
 ```js
 var nodefn, http;
@@ -809,6 +852,10 @@ getCats.then(function(cats) {
 ```
 
 ### `nodefn.bind()`
+
+```js
+var promiseFunc = nodefn.bind(nodeStyleFunction, arg1, arg2/*...more args*/);
+```
 
 Function based on the same principles from [`fn.bind()`](#fn-bind) and [`callbacks.bind()`](#callbacks-bind), but tuned to handle nodejs-style async functions.
 
@@ -834,7 +881,11 @@ when.join(
 
 ### `nodefn.createCallback()`
 
-The core function on the `when/node/function` implementation, which might be useful for cases that aren't covered by the higher level API. It takes an object that responds to the [resolver interface](#resolver) and returns a node-style callback function, which will `resolve()` or `reject()` on the resolver depending or how it is called.
+```js
+var nodeStyleCallback = nodefn.createCallback(resolver);
+```
+
+The core function on the `when/node/function` implementation, which might be useful for cases that aren't covered by the higher level API. It takes an object that responds to the [resolver interface](#resolver) and returns a function that can be used with any node-style asynchronous function, and will call `resolve()` or `reject()` on the resolver depending on whether the conventional error argument is passed to it.
 
 ```js
 var when, nodefn;
@@ -842,7 +893,7 @@ var when, nodefn;
 when   = require("when");
 nodefn = require("when/node/function");
 
-function callbackTakingFunction(callback) {
+function nodeStyleAsyncFunction(callback) {
 	if(somethingWrongHappened) {
 		callback(error);
 	} else {
@@ -851,7 +902,7 @@ function callbackTakingFunction(callback) {
 }
 
 var deferred = when.defer();
-callbackTakingFunction(nodefn.createCallback(deferred.resolver));
+callbackTakingFunction(nodefn.nodeStyleAsyncFunction(deferred.resolver));
 
 deferred.promise.then(function(interestingValue) {
 	// Use interestingValue
