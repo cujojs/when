@@ -252,7 +252,7 @@ buster.testCase('when/callbacks', {
 			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
 			}, fail).always(done);
-		},
+		}
 	},
 
 	'promisify': {
@@ -292,7 +292,7 @@ buster.testCase('when/callbacks', {
 
 			var promisified = callbacks.promisify(invert, {
 				callback: 0,
-				errback:  1,
+				errback:  1
 			});
 
 			promisified(10, 20).then(function(results) {
@@ -316,7 +316,7 @@ buster.testCase('when/callbacks', {
 				cb(a + b);
 			}, {
 				callback: -2,
-				errback:  -1,
+				errback:  -1
 			});
 
 			result(when(10), 15).then(function(result) {
