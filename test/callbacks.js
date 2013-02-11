@@ -1,11 +1,15 @@
 (function(buster, when, callbacks) {
 
-var assert = buster.assert;
-var fail   = buster.fail;
+var assert, fail, sentinel;
 
-var assertIsPromise = function(arg) {
+assert = buster.assert;
+fail   = buster.fail;
+
+sentinel = {};
+
+function assertIsPromise(arg) {
 	assert(when.isPromise(arg));
-};
+}
 
 buster.testCase('when/callbacks', {
 	'apply': {
@@ -14,28 +18,22 @@ buster.testCase('when/callbacks', {
 		},
 
 		'should resolve with the callback arguments': function(done) {
-			var callback;
 			var promise = callbacks.apply(function(cb) {
-				callback = cb;
+				cb(sentinel);
 			});
 
-			callback(15);
-
 			promise.then(function(val) {
-				assert.equals(val, 15);
+				assert.same(val, sentinel);
 			}, fail).always(done);
 		},
 
 		'should reject with the errback arguments': function(done) {
-			var errback;
 			var promise = callbacks.apply(function(cb, eb){
-				errback = eb;
+				eb(sentinel);
 			});
 
-			errback('error');
-
 			promise.then(fail, function(reason) {
-				assert.equals(reason, 'error');
+				assert.same(reason, sentinel);
 			}).always(done);
 		},
 
@@ -92,28 +90,22 @@ buster.testCase('when/callbacks', {
 		},
 
 		'should resolve with the callback arguments': function(done) {
-			var callback;
-			var promise = callbacks.call(function(cb) {
-				callback = cb;
+			var promise = callbacks.apply(function(cb) {
+				cb(sentinel);
 			});
 
-			callback(15);
-
 			promise.then(function(val) {
-				assert.equals(val, 15);
+				assert.same(val, sentinel);
 			}, fail).always(done);
 		},
 
 		'should reject with the errback arguments': function(done) {
-			var errback;
-			var promise = callbacks.call(function(cb, eb){
-				errback = eb;
+			var promise = callbacks.apply(function(cb, eb){
+				eb(sentinel);
 			});
 
-			errback('error');
-
 			promise.then(fail, function(reason) {
-				assert.equals(reason, 'error');
+				assert.same(reason, sentinel);
 			}).always(done);
 		},
 
