@@ -658,6 +658,10 @@ define(function () {
 	//
 	// Handler queue processing
 	//
+	// Credit to Twisol (https://github.com/Twisol) for suggesting
+	// this type of extensible queue + trampoling approach for
+	// next-tick conflation.
+	//
 
 	/*global setImmediate:true */
 	nextTick = typeof setImmediate === 'function'
