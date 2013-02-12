@@ -9,27 +9,26 @@ define(['when'], function(when) {
 
 	/**
 	 * Anamorphic unfold/map that generates values by applying
-	 * seed = transform(generator(seed)) iteratively until proceed(seed)
-	 * returns false.
-	 * @param {function} generator function that generates a value given a seed,
-	 *  may return a promise.
-	 * @param {function} condition given a seed, must return truthy if the unfold
-	 *  should continue, or falsey if it should terminate
-	 * @param {function} transform function that transforms the result of
-	 *  generate(seed) to produce a new seed to use in the next iteration
+	 * handler(generator(seed)) iteratively until condition(seed)
+	 * returns true.
+	 * @param {function} unspool function that generates a [value, newSeed]
+	 *  given a seed.
+	 * @param {function} condition function that, given the current seed, returns
+	 *  truthy when the unfold should stop
+	 * @param {function} handler function to handle the value produced by generator
 	 * @param seed {*|Promise} any value or promise
 	 * @return {Promise} the result of the unfold
 	 */
-	return function unfold(generator, condition, transform, seed) {
+	return function unfold(unspool, condition, handler, seed) {
 		return when(seed, function(seed) {
 
-			return condition(seed)
-				? when.join(generator(seed), seed).spread(unfoldNext)
-				: seed;
+			return when(condition(seed), function(done) {
+				return done ? seed : when.resolve(unspool(seed)).spread(next);
+			});
 
-			function unfoldNext(next, seed) {
-				return when(transform(next, seed), function(newSeed) {
-					return unfold(generator, condition, transform, newSeed);
+			function next(item, newSeed) {
+				return when(handler(item), function() {
+					return unfold(unspool, condition, handler, newSeed);
 				});
 			}
 		});

@@ -22,7 +22,7 @@ define(['when', 'unfold'], function(when, unfold) {
 
 		return unfold(generator, condition, append, seed).yield(result);
 
-		function append(newSeed, value) {
+		function append(value, newSeed) {
 			result.push(value);
 			return newSeed;
 		}

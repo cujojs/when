@@ -1,4 +1,4 @@
-(function(buster, unfold) {
+(function(buster, unfold, when) {
 
 var assert, refute, fail, sentinel, other;
 
@@ -13,65 +13,143 @@ function noop() {}
 
 buster.testCase('when/unfold', {
 
-	'should invoke proceed first': function(done) {
-		var spy;
+	'should invoke condition first': function(done) {
+		var condition;
 
-		spy = this.stub().returns(false);
+		condition = this.stub().returns(true);
 
-		unfold(noop, spy, noop, sentinel).then(
+		unfold(noop, condition, noop, sentinel).then(
 			function(value) {
 				assert.same(value, sentinel);
 			}
 		).always(done);
 	},
 
-	'should call generator until proceed returns falsey': function(done) {
-		var i, spy;
-
-		i = 3;
-		function proceed() {
-			return i--;
+	'should call generator until condition returns truthy': function(done) {
+		function condition(i) {
+			return i == 0;
 		}
 
-		spy = this.spy();
+		var unspool = this.spy(function(x) {
+			return [x, x-1];
+		});
 
-		unfold(spy, proceed, noop, sentinel).then(
+		unfold(unspool, condition, noop, 3).then(
 			function() {
-				assert.calledWith(spy, sentinel);
-				assert.equals(spy.callCount, 3);
+				assert.equals(unspool.callCount, 3);
 			}
 		).always(done);
 	},
 
-	'should call transform with generator result': function(done) {
-		var i, spy;
+	'generator': {
+		'should be allowed to return an array of promises': function(done) {
+			function condition(i) {
+				return i == 0;
+			}
 
-		i = 1;
-		function proceed() {
-			return i--;
+			var unspool = this.spy(function(x) {
+				return [when.resolve(x), when.resolve(x-1)];
+			});
+
+			unfold(unspool, condition, noop, 3).then(
+				function() {
+					assert.equals(unspool.callCount, 3);
+				}
+			).always(done);
+		},
+
+		'should be allowed to return a promise for an array': function(done) {
+			function condition(i) {
+				return i == 0;
+			}
+
+			var unspool = this.spy(function(x) {
+				return when.resolve([x, x-1]);
+			});
+
+			unfold(unspool, condition, noop, 3).then(
+				function() {
+					assert.equals(unspool.callCount, 3);
+				}
+			).always(done);
+		},
+
+		'should be allowed to return a promise for an array of promises': function(done) {
+			function condition(i) {
+				return i == 0;
+			}
+
+			var unspool = this.spy(function(x) {
+				return when.resolve([when.resolve(x), when.resolve(x-1)]);
+			});
+
+			unfold(unspool, condition, noop, 3).then(
+				function() {
+					assert.equals(unspool.callCount, 3);
+				}
+			).always(done);
+		}
+	},
+
+	'condition': {
+		'should be allowed to return a promise that fulfills': function(done) {
+			function condition(i) {
+				return when.resolve(i == 0);
+			}
+
+			var unspool = this.spy(function(x) {
+				return [x, x-1];
+			});
+
+			unfold(unspool, condition, noop, 3).then(
+				function() {
+					assert.equals(unspool.callCount, 3);
+				}
+			).always(done);
+		},
+
+		'should abort unfold by returning a rejection': function(done) {
+			function condition() {
+				return when.reject();
+			}
+
+			var unspool = this.spy();
+
+			unfold(unspool, condition, noop, 3).then(
+				fail,
+				function() {
+					refute.called(unspool);
+				}
+			).always(done);
+		}
+	},
+
+	'should call handler with generator result': function(done) {
+		function condition(i) {
+			return i == 0;
 		}
 
-		spy = this.spy();
+		var handler = this.spy();
 
-		unfold(this.stub().returns(sentinel), proceed, spy).then(
+		unfold(this.stub().returns([sentinel, 0]), condition, handler).then(
 			function() {
-				assert.calledOnceWith(spy, sentinel);
+				assert.calledOnceWith(handler, sentinel);
 			}
 		).always(done);
 	},
 
-	'should reject when proceed throws': function(done) {
-		var proceed, transform, generator;
+	'should reject when condition throws': function(done) {
+		var condition, handler, generator;
 
-		generator = this.stub().returns(other);
-		transform = this.spy();
-		proceed = this.stub().throws(sentinel);
+		generator = this.spy();
+		handler = this.spy();
+		condition = this.stub().throws(sentinel);
 
-		unfold(generator, proceed, transform, other).then(
+		unfold(generator, condition, handler, other).then(
 			fail,
 			function(e) {
 				refute.called(generator);
-				refute.called(transform);
+				refute.called(handler);
 				assert.same(e, sentinel);
 			}
 		).always(done);
@@ -79,29 +157,29 @@ buster.testCase('when/unfold', {
 	},
 
 	'should reject when generator throws': function(done) {
-		var proceed, transform, generator;
+		var condition, handler, generator;
 
-		proceed = this.stub().returns(true);
-		transform = this.spy();
+		condition = this.stub().returns(false);
+		handler = this.spy();
 		generator = this.stub().throws(sentinel);
 
-		unfold(generator, proceed, transform, other).then(
+		unfold(generator, condition, handler, other).then(
 			fail,
 			function(e) {
-				refute.called(transform);
+				refute.called(handler);
 				assert.same(e, sentinel);
 			}
 		).always(done);
 	},
 
 	'should reject when transform throws': function(done) {
-		var proceed, transform, generator;
+		var condition, transform, generator;
 
-		proceed = this.stub().returns(true);
+		condition = this.stub().returns(false);
 		transform = this.stub().throws(sentinel);
-		generator = this.stub().returns(other);
+		generator = this.stub().returns([other, other]);
 
-		unfold(generator, proceed, transform, other).then(
+		unfold(generator, condition, transform, other).then(
 			fail,
 			function(e) {
 				assert.same(e, sentinel);
@@ -112,5 +190,6 @@ buster.testCase('when/unfold', {
 });
 })(
 	this.buster || require('buster'),
-	this.when_unfold || require('../unfold')
+	this.when_unfold || require('../unfold'),
+	this.when || require('../when')
 );

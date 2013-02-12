@@ -11,10 +11,10 @@ function noop() {}
 
 buster.testCase('when/unfold/list', {
 
-	'should produce an empty list when proceed returns false immediately': function(done) {
+	'should produce an empty list when proceed returns truthy immediately': function(done) {
 		var spy;
 
-		spy = this.stub().returns(false);
+		spy = this.stub().returns(true);
 
 		list(noop, spy, sentinel).then(
 			function(value) {
@@ -24,19 +24,17 @@ buster.testCase('when/unfold/list', {
 	},
 
 	'should produce a list of N elements': function(done) {
-		var len, i;
+		var len = 3;
 
-		len = i = 3;
-
-		function proceed() {
-			return i--;
+		function condition(i) {
+			return i == 0;
 		}
 
-		function generate() {
-			return i;
+		function generate(x) {
+			return [x, x-1];
 		}
 
-		list(generate, proceed, 3).then(
+		list(generate, condition, len).then(
 			function(result) {
 				assert.equals(result.length, len);
 				assert.equals(result, [3, 2, 1]);
