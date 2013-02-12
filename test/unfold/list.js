@@ -27,17 +27,17 @@ buster.testCase('when/unfold/list', {
 		var len = 3;
 
 		function condition(i) {
-			return i == 0;
+			return i == len;
 		}
 
 		function generate(x) {
-			return [x, x-1];
+			return [x, x+1];
 		}
 
-		list(generate, condition, len).then(
+		list(generate, condition, 0).then(
 			function(result) {
 				assert.equals(result.length, len);
-				assert.equals(result, [3, 2, 1]);
+				assert.equals(result, [0, 1, 2]);
 			}
 		).always(done);
 	}
