@@ -8,7 +8,7 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 ### 1.8.0
 
-* New when/function, when/node/function, and when/callback with functional programming goodness, and adapters for turning callback-based APIs into promise-based APIs. Kudos [@riccieri](https://github.com/riccieri)
+* New [when/function](docs/api.md#synchronous-functions), [when/node/function](docs/api.md#node-style-asynchronous-functions), and [when/callbacks](docs/api.md#asynchronous-functions) with functional programming goodness, and adapters for turning callback-based APIs into promise-based APIs. Kudos [@riccieri](https://github.com/riccieri)
 * New when/unfold, and when/unfold/list promise-aware anamorphic unfolds that can be used to generate and/or process unbounded lists.
 * New when/poll promise-based periodic polling and task execution.
 
@@ -27,19 +27,6 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 	* More info and clarifications about the roles of [Deferred](docs/api.md#deferred) and [Resolver](docs/api.md#resolver)
 	* Several minor clarifications for various APIs
 * Internal improvements to assimilation and interoperability with other promise implementations.
-
-### 1.6.1
-
-* Fix for accidental coercion of non-promises. See [#62](https://github.com/cujojs/when/issues/60).
-
-### 1.6.0
-
-* New [when.join](docs/api.md#whenjoin) - Joins 2 or more promises together into a single promise.
-* [when.some](docs/api.md#whensome) and [when.any](docs/api.md#whenany) now act like competitive races, and have generally more useful behavior.  [Read the discussion in #60](https://github.com/cujojs/when/issues/60).
-* *Experimental* progress event propagation.  Progress events will propagate through promise chains. [Read the details here](docs/api.md#progress-events).
-* *Temporarily* removed calls to `Object.freeze`. Promises are no longer frozen due to a horrendous v8 performance penalty.  [Read discussion here](https://groups.google.com/d/topic/cujojs/w_olYqorbsY/discussion).
-	* **IMPORTANT:** Continue to treat promises as if they are frozen, since `freeze()` will be reintroduced once v8 performance improves.
-* [when/debug](https://github.com/cujojs/when/wiki/when-debug) now allows setting global a debugging callback for rejected promises.
 
 [Full Changelog](CHANGES.md)
 

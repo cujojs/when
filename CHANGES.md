@@ -1,3 +1,9 @@
+### 1.8.0
+
+* New [when/function](docs/api.md#synchronous-functions), [when/node/function](docs/api.md#node-style-asynchronous-functions), and [when/callbacks](docs/api.md#asynchronous-functions) with functional programming goodness, and adapters for turning callback-based APIs into promise-based APIs. Kudos [@riccieri](https://github.com/riccieri)
+* New when/unfold, and when/unfold/list promise-aware anamorphic unfolds that can be used to generate and/or process unbounded lists.
+* New when/poll promise-based periodic polling and task execution.
+
 ### 1.7.1
 
 * Removed leftover internal usages of `deferred.then`.
