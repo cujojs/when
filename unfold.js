@@ -13,23 +13,23 @@ define(['when'], function(when) {
 	 * returns false.
 	 * @param {function} generator function that generates a value given a seed,
 	 *  may return a promise.
-	 * @param {function} proceed given a seed, must return truthy if the unfold
+	 * @param {function} condition given a seed, must return truthy if the unfold
 	 *  should continue, or falsey if it should terminate
 	 * @param {function} transform function that transforms the result of
 	 *  generate(seed) to produce a new seed to use in the next iteration
 	 * @param seed {*|Promise} any value or promise
 	 * @return {Promise} the result of the unfold
 	 */
-	return function unfold(generator, proceed, transform, seed) {
+	return function unfold(generator, condition, transform, seed) {
 		return when(seed, function(seed) {
 
-			return proceed(seed)
+			return condition(seed)
 				? when.join(generator(seed), seed).spread(unfoldNext)
 				: seed;
 
 			function unfoldNext(next, seed) {
 				return when(transform(next, seed), function(newSeed) {
-					return unfold(generator, proceed, transform, newSeed);
+					return unfold(generator, condition, transform, newSeed);
 				});
 			}
 		});

@@ -12,15 +12,15 @@ define(['when', 'unfold'], function(when, unfold) {
 	 * dual (opposite) of when.reduce()
 	 * @param {function} generator function that generates a value (or promise
 	 *  for a value) to be placed in the resulting array
-	 * @param {function} proceed given a seed, must return truthy if the unfold
+	 * @param {function} condition given a seed, must return truthy if the unfold
 	 *  should continue, or falsey if it should terminate
 	 * @param {*|Promise} seed any value or promise
 	 * @return {Promise} resulting array
 	 */
-	return function list(generator, proceed, seed) {
+	return function list(generator, condition, seed) {
 		var result = [];
 
-		return unfold(generator, proceed, append, seed).yield(result);
+		return unfold(generator, condition, append, seed).yield(result);
 
 		function append(newSeed, value) {
 			result.push(value);

@@ -18,12 +18,12 @@ API
 	* [when.all](#whenall)
 	* [when.map](#whenmap)
 	* [when.reduce](#whenreduce)
-1. [Unbounded lists](#unbounded-lists)
-	* [when/unfold](#whenunfold)
-	* [when/unfold/list](#whenunfoldlist)
 1. [Competitive races](#competitive-races)
 	* [when.any](#whenany)
 	* [when.some](#whensome)
+1. [Unbounded lists](#unbounded-lists)
+	* [when/unfold](#whenunfold)
+	* [when/unfold/list](#whenunfoldlist)
 1. [Timed promises](#timed-promises)
 	* [when/delay](#whendelay)
 	* [when/timeout](#whentimeout)
@@ -31,12 +31,12 @@ API
 	* [when/sequence](#whensequence)
 	* [when/pipeline](#whenpipeline)
 	* [when/parallel](#whenparallel)
+1. [Polling with promises](#polling-with-promises)
+	* [when/poll](#whenpoll)
 1. [Interacting with non-promise code](#interacting-with-non-promise-code)
 	* [Synchronous functions](#synchronous-functions)
 	* [Asynchronous functions](#asynchronous-functions)
 	* [Node-style asynchronous functions](#node-style-asynchronous-functions)
-1. [Polling with promises](#polling-with-promises)
-	* [when/poll](#whenpoll)
 1. [Helpers](#helpers)
 	* [when/apply](#whenapply)
 1. [Configuration](#configuration)
@@ -452,6 +452,39 @@ Where:
 
 Initiates a competitive race that allows `howMany` winners, returning a promise that will resolve when `howMany` of the items in `array` resolve.  The returned promise will reject if it becomes impossible for `howMany` items to resolve--that is, when `(array.length - howMany) + 1` items reject.  The resolution value of the returned promise will be an array of `howMany` winning item resolution values.  The rejection value will be an array of `(array.length - howMany) + 1` rejection reasons.
 
+# Unbounded lists
+
+[when.reduce], [when/sequence], and [when/pipeline] are great ways to process asynchronous arrays of promises and tasks.  Sometimes, however, you may not know the array in advance.  For example, here are a few situations where you may not know the bounds:
+
+1. You need to process a queue to which items are still being added as you process it
+2. You need to execute a task repeatedly until a particular condition becomes false
+3. You need to process part of an array, but don't know in advance the index at which to stop (and thus can't simply `slice()` the array)
+
+In these cases, you can use `when/unfold` to iteratively (and asynchronously) process items while a particular condition, which you supply, is true.
+
+## when/unfold
+
+```js
+var unfold, promise;
+
+unfold = require('when/unfold');
+
+promise = unfold(generator, condition, transform, seed);
+```
+
+## when/unfold/list
+
+```js
+var unfoldList, promise;
+
+unfoldList = require('when/unfold/list');
+
+promise = unfoldList(generator, condition, seed);
+```
+
+Generate a list of items from a seed by executing the `generator` function while `condition` returns true.
+
+
 # Timed promises
 
 ## when/delay
@@ -547,8 +580,29 @@ Run an array of tasks in "parallel".  The tasks are allowed to execute in any or
 
 When all tasks have completed, the returned promise will resolve to an array containing the result of each task at the corresponding array position.  The returned promise will reject when any task throws or returns a rejection.
 
-Interacting with non-promise code
-=================================
+# Polling with promises
+
+## when/poll
+
+```js
+var poll, resultPromise;
+
+poll = require('when/poll');
+
+resultPromise = poll(work, interval, condition /*, initialDelay */);
+```
+
+Where:
+
+* `work` - function to be called periodically
+* `interval` - interval between calls to `work`. It may be a number *or* a function that returns a number.
+* `condition` - function that evaluates each result of `work`. Polling will continue until it returns a truthy value.
+* `initialDelay` - if provided and truthy, the first execution of `work` will be delayed by `interval`.  If not provided, or falsey, the first execution of `work` will happen as soon as possible.
+
+Execute a task (`work`) repeatedly at the specified `interval`, until the `condition` function returns true.  The `resultPromise` will be resolved with the most recent value returned from `work`.  If `work` fails (throws an exception or returns a rejected promise) before `condition` returns true, the `resultPromise` will be rejected.
+
+
+# Interacting with non-promise code
 
 These modules are aimed at dampening the friction between code that is based on promises and code that follows more conventional approaches to make asynchronous tasks and/or error handling. By using them, you are more likely to be able to reuse code that already exists, while still being able to reap the benefits of promises on your new code.
 
@@ -914,11 +968,9 @@ deferred.promise.then(function(interestingValue) {
 });
 ```
 
-Helpers
-=======
+# Helpers
 
-when/apply
-----------
+## when/apply
 
 ```js
 function functionThatAcceptsMultipleArgs(arg1, arg2, arg3) {
