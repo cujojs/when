@@ -454,13 +454,13 @@ Initiates a competitive race that allows `howMany` winners, returning a promise 
 
 # Unbounded lists
 
-[when.reduce], [when/sequence], and [when/pipeline] are great ways to process asynchronous arrays of promises and tasks.  Sometimes, however, you may not know the array in advance.  For example, here are a few situations where you may not know the bounds:
+[when.reduce], [when/sequence], and [when/pipeline] are great ways to process asynchronous arrays of promises and tasks.  Sometimes, however, you may not know the array in advance, or may not need or want to process *all* the items in the array.  For example, here are a few situations where you may not know the bounds:
 
 1. You need to process a queue to which items are still being added as you process it
-2. You need to execute a task repeatedly until a particular condition becomes false
-3. You need to process part of an array, but don't know in advance the index at which to stop (and thus can't simply `slice()` the array)
+1. You need to execute a task repeatedly until a particular condition becomes true
+1. You need to selectively process items in an array, rather than all items
 
-In these cases, you can use `when/unfold` to iteratively (and asynchronously) process items while a particular condition, which you supply, is true.
+In these cases, you can use `when/unfold` to iteratively (and asynchronously) process items until a particular condition, which you supply, is true.
 
 ## when/unfold
 
@@ -471,6 +471,18 @@ unfold = require('when/unfold');
 
 promise = unfold(unspool, condition, handler, seed);
 ```
+
+Where:
+* `unspool` - function that, given a seed, returns a `[valueToSendToHandler, newSeed]` pair. May return an array, array of promises, promise for an array, or promise for an array of promises.
+* `condition` - function that should return truthy when the unfold should stop
+* `handler` - function that receives the `valueToSendToHandler` of the current iteration. This function can process `valueToSendToHandler` in whatever way you need.  It may return a promise to delay the next iteration of the unfold.
+* `seed` - intial value provided to the first `unspool` invocation. May be a promise.
+
+Send values produced by `unspool` iteratively to `handler` until a `condition` is true.
+
+### Example
+
+TODO: Example
 
 ## when/unfold/list
 
