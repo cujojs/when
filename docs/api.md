@@ -480,9 +480,100 @@ Where:
 
 Send values produced by `unspool` iteratively to `handler` until a `condition` is true.
 
-### Example
+### Examples
 
-TODO: Example
+```js
+var when, delay, unfold, end, start;
+
+when = require('../when');
+delay = require('../delay');
+unfold = require('../unfold');
+
+end = Date.now() + 10000;
+
+// Generate random numbers at random intervals!
+// Note that we could generate these forever, and never
+// blow the call stack, nor would we starve the application
+function unspool(seed) {
+	// seed is passed in, although for this example, we don't need it
+
+	// Return a random number as the value, and the time it was generated
+	// as the new seed
+	var next = [Math.random(), Date.now()];
+
+	// Introduce a delay, just for fun, to show that we can return a promise
+	return delay(next, Math.random() * 1000);
+}
+
+// Stop after 10 seconds
+function condition(time) {
+	return time >= end;
+}
+
+function log(value) {
+	console.log(value);
+}
+
+start = Date.now();
+unfold(unspool, condition, log, start).then(function() {
+	console.log('Ran for', Date.now() - start, 'ms');
+});
+```
+
+```js
+var when, delay, unfold, nodefn, fs, files;
+
+when = require('../when');
+delay = require('../delay');
+unfold = require('../unfold');
+nodefn = require('../node/function');
+fs = require('fs');
+
+// Use when/node/function to promisify-call fs.readdir
+// files is a promise for the file list
+files = nodefn.call(fs.readdir, '.');
+
+function unspool(files) {
+  // Return the pair [<*promise* for contents of first file>, <remaining files>]
+	// the first file's contents will be handed to printFirstLine()
+	// the remaining files will be handed to condition(), and then
+	// to the next call to unspool.
+	// So we are iteratively working our way through the files in
+	// the dir, but allowing condition() to stop the iteration at
+	// any point.
+	var file, content;
+
+	file = files[0];
+	content = nodefn.call(fs.readFile, file)
+		.otherwise(function(e) {
+			return '[Skipping dir ' + file + ']';
+		});
+	return [content, files.slice(1)];
+}
+
+function condition(remaining) {
+	// This could be any test we want.  For fun, stop when
+	// the next file name starts with a 'p' stop.
+	return remaining[0].charAt(0) === 'p';
+}
+
+function printFirstLine(content) {
+	// Even though contents was a promise in unspool() above,
+	// when/unfold ensures that it is fully resolved here, i.e. it is
+	// not a promise any longer.
+	// We can do any work, even asyncrhonous work, we need
+	// here on the current file
+
+	// Node fs returns buffers, convert to string
+	content = String(content);
+
+	// Print the first line, or only the first 80 chars if the fist line is longer
+	console.log(content.slice(0, Math.min(80, content.indexOf('\n'))));
+}
+
+unfold(unspool, condition, printFirstLine, files).otherwise(console.error);
+```
+
 
 ## when/unfold/list
 
