@@ -36,7 +36,7 @@ buster.testCase('when/poll', {
 		delay(100).then(p.cancel);
 	},
 
-	'=>should poll with interval function': function (done) {
+	'should poll with interval function': function (done) {
 		var countdown, interval;
 
 		countdown = 3;
