@@ -46,8 +46,6 @@ buster.testCase('when/poll', {
 
 		poll(function () {}, interval, function () { countdown -= 1; return countdown == 0; }).then(
 			function () {
-//				assert(interval.withArgs(undef).calledOnce);
-//				assert(interval.withArgs(10).calledOnce);
 				assert(interval.calledTwice);
 				done();
 			},
