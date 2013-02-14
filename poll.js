@@ -1,4 +1,4 @@
-/** @license MIT License (c) Copyright 2012-2013 original author or authors */
+/** @license MIT License (c) copyright 2012-2013 original author or authors */
 
 /**
  * poll.js

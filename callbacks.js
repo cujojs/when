@@ -1,4 +1,4 @@
-/** @license MIT License (c) Copyright 2013 original author or authors */
+/** @license MIT License (c) copyright 2013 original author or authors */
 
 /**
  * callbacks.js
