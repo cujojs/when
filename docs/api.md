@@ -478,9 +478,13 @@ Where:
 * `handler` - function that receives the `valueToSendToHandler` of the current iteration. This function can process `valueToSendToHandler` in whatever way you need.  It may return a promise to delay the next iteration of the unfold.
 * `seed` - intial value provided to the first `unspool` invocation. May be a promise.
 
-Send values produced by `unspool` iteratively to `handler` until a `condition` is true.
+Send values produced by `unspool` iteratively to `handler` until a `condition` is true.  The `unspool` function acts like a generator, taking a seed and producing a pair of `[value, newSeed]` (or a promised pair, see above).  The `value` will be passed to `handler`, which can do any necessary on or with `value`, and may return a promise.  The `newSeed` will be passed as the seed to the next iteration of `unspool`.
 
 ### Examples
+
+This example generates random numbers at random intervals for 10 seconds.
+
+The `condition` could easily be modified (to `return false;`) to generate random numbers *forever*.  Interestingly, this would not overflow the call stack, and would not starve application code since it is asynchronous.
 
 ```js
 var when, delay, unfold, end, start;
@@ -519,6 +523,12 @@ unfold(unspool, condition, log, start).then(function() {
 	console.log('Ran for', Date.now() - start, 'ms');
 });
 ```
+
+This example iterates over files in a directory, mapping each file to the first line (or first 80 characters) of its content.  It uses a `condition` to terminate early, which would not be possible with `when.map`.
+
+Notice that, while the pair returned by `unspool` is an Array (not a promise), it does *contain* a promise as it's 0th element.  The promise will be resolved by the `unfold` machinery.
+
+Notice also the use of `when/node/function`'s [`call()`](#node-style-asynchronous-functions) to call Node-style async functions (`fs.readdir` and `fs.readFile`), and return a promise instead of requiring a callback.  This allows node-style functions can be promisified and composed with other promise-aware functions.
 
 ```js
 var when, delay, unfold, nodefn, fs, files;
@@ -724,12 +734,11 @@ resultPromise = poll(work, interval, condition /*, initialDelay */);
 Where:
 
 * `work` - function to be called periodically
-* `interval` - interval between calls to `work`. It may be a number *or* a function that returns a number.
+* `interval` - interval between calls to `work`. It may be a number *or* a function that returns a promise. If it's a function, the next polling iteration will wait until the promise fulfills.
 * `condition` - function that evaluates each result of `work`. Polling will continue until it returns a truthy value.
 * `initialDelay` - if provided and truthy, the first execution of `work` will be delayed by `interval`.  If not provided, or falsey, the first execution of `work` will happen as soon as possible.
 
 Execute a task (`work`) repeatedly at the specified `interval`, until the `condition` function returns true.  The `resultPromise` will be resolved with the most recent value returned from `work`.  If `work` fails (throws an exception or returns a rejected promise) before `condition` returns true, the `resultPromise` will be rejected.
-
 
 # Interacting with non-promise code
 
