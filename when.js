@@ -644,12 +644,14 @@ define(function () {
 				if(useResolveValue) {
 					value = resolveValue;
 				}
+				// Don't completely trust resolver; it may not be a when.js resolver
 				resolver.resolve(value);
 				return value;
 			},
 			function(reason) {
+				// Don't completely trust resolver; it may not be a when.js resolver
 				resolver.reject(reason);
-				return reject(reason);
+				return rejected(reason);
 			},
 			function(update) {
 				typeof resolver.progress === 'function' && resolver.progress(update);
