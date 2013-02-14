@@ -37,14 +37,15 @@ buster.testCase('when/poll', {
 	},
 
 	'should poll with interval function': function (done) {
-		var abort, interval, undef;
+		var countdown, interval;
 
-		abort = false;
-		interval = this.spy(function (prevInterval) { abort = !!prevInterval; return 10; });
-		poll(function () { return abort; }, interval, function (result) { return !!result; }).then(
+		countdown = 3;
+		interval = this.spy(function () {
+			return delay(10);
+		});
+
+		poll(function () {}, interval, function () { countdown -= 1; return countdown == 0; }).then(
 			function () {
-				assert(interval.withArgs(undef).calledOnce);
-				assert(interval.withArgs(10).calledOnce);
 				assert(interval.calledTwice);
 				done();
 			},

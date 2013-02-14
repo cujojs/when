@@ -1,4 +1,4 @@
-/** @license MIT License (c) copyright B Cavalier & J Hann */
+/** @license MIT License (c) copyright 2013 original author or authors */
 
 /**
  * callbacks.js
@@ -6,7 +6,7 @@
  * Collection of helper functions for interacting with 'traditional',
  * callback-taking functions using a promise interface.
  *
- * @author renato.riccieri@gmail.com
+ * @author Renato Zannon <renato.riccieri@gmail.com>
  */
 
 (function(define) {

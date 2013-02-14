@@ -21,6 +21,9 @@ API
 1. [Competitive races](#competitive-races)
 	* [when.any](#whenany)
 	* [when.some](#whensome)
+1. [Unbounded lists](#unbounded-lists)
+	* [when/unfold](#whenunfold)
+	* [when/unfold/list](#whenunfoldlist)
 1. [Timed promises](#timed-promises)
 	* [when/delay](#whendelay)
 	* [when/timeout](#whentimeout)
@@ -28,6 +31,8 @@ API
 	* [when/sequence](#whensequence)
 	* [when/pipeline](#whenpipeline)
 	* [when/parallel](#whenparallel)
+1. [Polling with promises](#polling-with-promises)
+	* [when/poll](#whenpoll)
 1. [Interacting with non-promise code](#interacting-with-non-promise-code)
 	* [Synchronous functions](#synchronous-functions)
 	* [Asynchronous functions](#asynchronous-functions)
@@ -447,6 +452,178 @@ Where:
 
 Initiates a competitive race that allows `howMany` winners, returning a promise that will resolve when `howMany` of the items in `array` resolve.  The returned promise will reject if it becomes impossible for `howMany` items to resolve--that is, when `(array.length - howMany) + 1` items reject.  The resolution value of the returned promise will be an array of `howMany` winning item resolution values.  The rejection value will be an array of `(array.length - howMany) + 1` rejection reasons.
 
+# Unbounded lists
+
+[when.reduce], [when/sequence], and [when/pipeline] are great ways to process asynchronous arrays of promises and tasks.  Sometimes, however, you may not know the array in advance, or may not need or want to process *all* the items in the array.  For example, here are a few situations where you may not know the bounds:
+
+1. You need to process a queue to which items are still being added as you process it
+1. You need to execute a task repeatedly until a particular condition becomes true
+1. You need to selectively process items in an array, rather than all items
+
+In these cases, you can use `when/unfold` to iteratively (and asynchronously) process items until a particular condition, which you supply, is true.
+
+## when/unfold
+
+```js
+var unfold, promise;
+
+unfold = require('when/unfold');
+
+promise = unfold(unspool, condition, handler, seed);
+```
+
+Where:
+* `unspool` - function that, given a seed, returns a `[valueToSendToHandler, newSeed]` pair. May return an array, array of promises, promise for an array, or promise for an array of promises.
+* `condition` - function that should return truthy when the unfold should stop
+* `handler` - function that receives the `valueToSendToHandler` of the current iteration. This function can process `valueToSendToHandler` in whatever way you need.  It may return a promise to delay the next iteration of the unfold.
+* `seed` - intial value provided to the first `unspool` invocation. May be a promise.
+
+Send values produced by `unspool` iteratively to `handler` until a `condition` is true.  The `unspool` function acts like a generator, taking a seed and producing a pair of `[value, newSeed]` (or a promised pair, see above).  The `value` will be passed to `handler`, which can do any necessary on or with `value`, and may return a promise.  The `newSeed` will be passed as the seed to the next iteration of `unspool`.
+
+### Examples
+
+This example generates random numbers at random intervals for 10 seconds.
+
+The `condition` could easily be modified (to `return false;`) to generate random numbers *forever*.  Interestingly, this would not overflow the call stack, and would not starve application code since it is asynchronous.
+
+```js
+var when, delay, unfold, end, start;
+
+when = require('../when');
+delay = require('../delay');
+unfold = require('../unfold');
+
+end = Date.now() + 10000;
+
+// Generate random numbers at random intervals!
+// Note that we could generate these forever, and never
+// blow the call stack, nor would we starve the application
+function unspool(seed) {
+	// seed is passed in, although for this example, we don't need it
+
+	// Return a random number as the value, and the time it was generated
+	// as the new seed
+	var next = [Math.random(), Date.now()];
+
+	// Introduce a delay, just for fun, to show that we can return a promise
+	return delay(next, Math.random() * 1000);
+}
+
+// Stop after 10 seconds
+function condition(time) {
+	return time >= end;
+}
+
+function log(value) {
+	console.log(value);
+}
+
+start = Date.now();
+unfold(unspool, condition, log, start).then(function() {
+	console.log('Ran for', Date.now() - start, 'ms');
+});
+```
+
+This example iterates over files in a directory, mapping each file to the first line (or first 80 characters) of its content.  It uses a `condition` to terminate early, which would not be possible with `when.map`.
+
+Notice that, while the pair returned by `unspool` is an Array (not a promise), it does *contain* a promise as it's 0th element.  The promise will be resolved by the `unfold` machinery.
+
+Notice also the use of `when/node/function`'s [`call()`](#node-style-asynchronous-functions) to call Node-style async functions (`fs.readdir` and `fs.readFile`), and return a promise instead of requiring a callback.  This allows node-style functions can be promisified and composed with other promise-aware functions.
+
+```js
+var when, delay, unfold, nodefn, fs, files;
+
+when = require('../when');
+delay = require('../delay');
+unfold = require('../unfold');
+nodefn = require('../node/function');
+fs = require('fs');
+
+// Use when/node/function to promisify-call fs.readdir
+// files is a promise for the file list
+files = nodefn.call(fs.readdir, '.');
+
+function unspool(files) {
+  // Return the pair [<*promise* for contents of first file>, <remaining files>]
+	// the first file's contents will be handed to printFirstLine()
+	// the remaining files will be handed to condition(), and then
+	// to the next call to unspool.
+	// So we are iteratively working our way through the files in
+	// the dir, but allowing condition() to stop the iteration at
+	// any point.
+	var file, content;
+
+	file = files[0];
+	content = nodefn.call(fs.readFile, file)
+		.otherwise(function(e) {
+			return '[Skipping dir ' + file + ']';
+		});
+	return [content, files.slice(1)];
+}
+
+function condition(remaining) {
+	// This could be any test we want.  For fun, stop when
+	// the next file name starts with a 'p' stop.
+	return remaining[0].charAt(0) === 'p';
+}
+
+function printFirstLine(content) {
+	// Even though contents was a promise in unspool() above,
+	// when/unfold ensures that it is fully resolved here, i.e. it is
+	// not a promise any longer.
+	// We can do any work, even asyncrhonous work, we need
+	// here on the current file
+
+	// Node fs returns buffers, convert to string
+	content = String(content);
+
+	// Print the first line, or only the first 80 chars if the fist line is longer
+	console.log(content.slice(0, Math.min(80, content.indexOf('\n'))));
+}
+
+unfold(unspool, condition, printFirstLine, files).otherwise(console.error);
+```
+
+
+## when/unfold/list
+
+```js
+var unfoldList, resultPromise;
+
+unfoldList = require('when/unfold/list');
+
+resultPromise = unfoldList(unspool, condition, seed);
+```
+
+Where:
+* `unspool` - function that, given a seed, returns a `[valueToAddToList, newSeed]` pair. May return an array, array of promises, promise for an array, or promise for an array of promises.
+* `condition` - function that should return truthy when the unfold should stop
+* `seed` - intial value provided to the first `unspool` invocation. May be a promise.
+
+Generate a list of items from a seed by executing the `unspool` function while `condition` returns true.  The `resultPromise` will fulfill with an array containing all each `valueToAddToList` that is generated by `unspool`.
+
+### Example
+
+```js
+function condition(i) {
+	// Terminate the unfold when i == 3;
+	return i == 3;
+}
+
+// unspool will be called initially with the seed value, 0, passed
+// to unfoldList() below
+function unspool(x) {
+	// Return a pair
+	// item 0: will be added to the resulting list
+	// item 1: will be passed to the next call to condition() and unspool()
+	return [x, x+1];
+}
+
+// Logs:
+// [0, 1, 2]
+unfoldList(unspool, condition, 0).then(console.log.bind(console));
+```
+
 # Timed promises
 
 ## when/delay
@@ -542,8 +719,28 @@ Run an array of tasks in "parallel".  The tasks are allowed to execute in any or
 
 When all tasks have completed, the returned promise will resolve to an array containing the result of each task at the corresponding array position.  The returned promise will reject when any task throws or returns a rejection.
 
-Interacting with non-promise code
-=================================
+# Polling with promises
+
+## when/poll
+
+```js
+var poll, resultPromise;
+
+poll = require('when/poll');
+
+resultPromise = poll(work, interval, condition /*, initialDelay */);
+```
+
+Where:
+
+* `work` - function to be called periodically
+* `interval` - interval between calls to `work`. It may be a number *or* a function that returns a promise. If it's a function, the next polling iteration will wait until the promise fulfills.
+* `condition` - function that evaluates each result of `work`. Polling will continue until it returns a truthy value.
+* `initialDelay` - if provided and truthy, the first execution of `work` will be delayed by `interval`.  If not provided, or falsey, the first execution of `work` will happen as soon as possible.
+
+Execute a task (`work`) repeatedly at the specified `interval`, until the `condition` function returns true.  The `resultPromise` will be resolved with the most recent value returned from `work`.  If `work` fails (throws an exception or returns a rejected promise) before `condition` returns true, the `resultPromise` will be rejected.
+
+# Interacting with non-promise code
 
 These modules are aimed at dampening the friction between code that is based on promises and code that follows more conventional approaches to make asynchronous tasks and/or error handling. By using them, you are more likely to be able to reuse code that already exists, while still being able to reap the benefits of promises on your new code.
 
@@ -909,11 +1106,9 @@ deferred.promise.then(function(interestingValue) {
 });
 ```
 
-Helpers
-=======
+# Helpers
 
-when/apply
-----------
+## when/apply
 
 ```js
 function functionThatAcceptsMultipleArgs(arg1, arg2, arg3) {

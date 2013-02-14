@@ -1,16 +1,16 @@
-/** @license MIT License (c) copyright Scott Andrews */
+/** @license MIT License (c) copyright 2012-2013 original author or authors */
 
 /**
  * poll.js
  *
  * Helper that polls until cancelled or for a condition to become true.
  *
- * @author scothis@gmail.com
+ * @author Scott Andrews
  */
 
 (function (define) {
 'use strict';
-define(['./when', './cancelable', './delay'], function(when, cancelable, delay) {
+define(['./when', './cancelable', './delay', './function'], function(when, cancelable, delay, fn) {
 
 	var undef;
 
@@ -49,21 +49,23 @@ define(['./when', './cancelable', './delay'], function(when, cancelable, delay) 
 	 * @param [verifier] {Function} function to evaluate the result of the vote.
 	 *     May return a {Promise} or a {Boolean}. Rejecting the promise or a
 	 *     falsey value will schedule the next vote.
-	 * @param [delayed] {boolean} when true, the first vote is scheduled
+	 * @param [delayInitialWork] {boolean} if truthy, the first vote is scheduled
 	 *     instead of immediate
 	 *
 	 * @returns {Promise}
 	 */
-	return function poll(work, interval, verifier, delayed) {
-		var deferred, canceled, prevInterval;
+	return function poll(work, interval, verifier, delayInitialWork) {
+		var deferred, canceled, reject;
 
 		canceled = false;
 		deferred = cancelable(when.defer(), function () { canceled = true; });
+		reject = deferred.reject;
+
 		verifier = verifier || function () { return false; };
 
 		if (typeof interval !== 'function') {
 			interval = (function (interval) {
-				return function () { return interval; };
+				return function () { return delay(interval); };
 			})(interval);
 		}
 
@@ -72,8 +74,7 @@ define(['./when', './cancelable', './delay'], function(when, cancelable, delay) 
 		}
 
 		function schedule(result) {
-			prevInterval = interval(prevInterval);
-			delay(prevInterval).then(vote);
+			fn.apply(interval).then(vote, reject);
 			if (result !== undef) {
 				deferred.progress(result);
 			}
@@ -90,11 +91,11 @@ define(['./when', './cancelable', './delay'], function(when, cancelable, delay) 
 						function () { schedule(result); }
 					);
 				},
-				deferred.reject
+				reject
 			);
 		}
 
-		if (delayed) {
+		if (delayInitialWork) {
 			schedule();
 		}
 		else {
@@ -122,8 +123,8 @@ define(['./when', './cancelable', './delay'], function(when, cancelable, delay) 
 })(typeof define == 'function' && define.amd
 	? define
 	: function (deps, factory) { typeof exports == 'object'
-		? (module.exports = factory(require('./when'), require('./cancelable'), require('./delay')))
-		: (this.when_poll = factory(this.when, this.when_cancelable, this.when_delay));
+		? (module.exports = factory(require('./when'), require('./cancelable'), require('./delay'), require('./function')))
+		: (this.when_poll = factory(this.when, this.when_cancelable, this.when_delay, this.when_function));
 	}
 	// Boilerplate for AMD, Node, and browser global
 );
