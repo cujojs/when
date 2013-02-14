@@ -1,11 +1,11 @@
-/** @license MIT License (c) copyright Scott Andrews */
+/** @license MIT License (c) Copyright 2012-2013 original author or authors */
 
 /**
  * poll.js
  *
  * Helper that polls until cancelled or for a condition to become true.
  *
- * @author scothis@gmail.com
+ * @author Scott Andrews
  */
 
 (function (define) {
