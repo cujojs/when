@@ -343,6 +343,13 @@ define(function() {
 		return defer().resolve(value);
 	};
 	when.reject = function(reason) {
+		// Rejection passes the reason on verbatim, whether or not it's a promise.
+		//   Because we -do- want to chain onto the reason here if it's a promise,
+		//   we have to send it through the success path first, then redirect it
+		//   into the failure path.
+		//
+		// This has the side effect that
+		//   when.defer().reject(x) is not the same as when.reject(x).
 		return defer().resolve(reason).then(rejected);
 	};
 
