@@ -77,6 +77,16 @@ define(function () {
 		always: function(onFulfilledOrRejected, onProgress) {
 			return this.then(onFulfilledOrRejected, onFulfilledOrRejected, onProgress);
 		},
+		
+		'finally': function(onFulfilledOrRejected) {
+			var self = this;
+			
+			return this.then(injectHandler, injectHandler);
+			
+			function injectHandler() {
+				return resolve(onFulfilledOrRejected()).yield(self);
+			}
+		},
 
 		/**
 		 * Register a rejection handler.  Shortcut for .then(undefined, onRejected)

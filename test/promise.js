@@ -519,6 +519,110 @@ buster.testCase('promise', {
 		}
 
 	},
+	
+	'finally': {
+		'should return a promise': function() {
+			assert.isFunction(defer().promise.finally().then);
+		},
+		
+		'when fulfilled': {
+			'should call callback': function(done) {
+				var d = when.defer();
+
+				d.promise.finally(
+					function() {
+						assert.equals(arguments.length, 0);
+						done();
+					}
+				);
+
+				d.resolve(sentinel);
+			},
+			
+			'should ignore callback return value': function(done) {
+				var d = when.defer();
+
+				d.promise.finally(
+					function() {
+						return other;
+					}
+				).then(
+					function(val) {
+						assert.same(val, sentinel);
+					},
+					fail
+				).always(done);
+
+				d.resolve(sentinel);
+			},
+
+			'should propagate rejection on throw': function(done) {
+				var d = when.defer();
+
+				d.promise.finally(
+					function() {
+						throw sentinel;
+					}
+				).then(
+					fail,
+					function(val) {
+						assert.same(val, sentinel);
+					}
+				).always(done);
+
+				d.resolve(other);
+			}
+		},
+
+		'when rejected': {
+			'should call callback': function(done) {
+				var d = when.defer();
+
+				d.promise.finally(
+					function() {
+						assert.equals(arguments.length, 0);
+						done();
+					}
+				);
+
+				d.reject(sentinel);
+			},
+			
+			'should propagate rejection, ignoring callback return value': function(done) {
+				var d = when.defer();
+
+				d.promise.finally(
+					function() {
+						return other;
+					}
+				).then(
+					fail,
+					function(val) {
+						assert.same(val, sentinel);
+					}
+				).always(done);
+
+				d.reject(sentinel);
+			},
+
+			'should propagate rejection on throw': function(done) {
+				var d = when.defer();
+
+				d.promise.finally(
+					function() {
+						throw sentinel;
+					}
+				).then(
+					fail,
+					function(val) {
+						assert.same(val, sentinel);
+					}
+				).always(done);
+
+				d.reject(other);
+			}
+		}
+	},
 
 	'otherwise': {
 		'should return a promise': function() {
