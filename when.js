@@ -86,6 +86,26 @@ define(function() {
 		return (p && typeof p.then === 'function');
 	}
 
+	// Wrap an external promise with a trusted promise.
+	function canonize(promise) {
+		var trigger = defer();
+		promise.then(
+			function(x) { trigger.resolve(x); },
+			function(x) { trigger.reject(x);  });
+		return trigger.promise;
+	}
+
+	function promiseFor(value, defaultKind) {
+		if (!isPromise(value)) {
+			return defaultKind(value);
+		} else if (!(value instanceof Promise)) {
+			return canonize(value);
+		} else {
+			return value;
+		}
+	}
+
+
 	// A promise that immediately calls an onFulfilled handler with a value.
 	function fulfilled(value) {
 		return new Promise(function(onFulfilled) {
@@ -93,19 +113,11 @@ define(function() {
 				onFulfilled = fulfilled;
 			}
 
-			var result;
 			try {
-				result = onFulfilled(value);
-				if (!isPromise(result)) {
-					result = fulfilled(result);
-				} else if (!(result instanceof Promise)) {
-					result = canonize(result);
-				}
+				return promiseFor(onFulfilled(value), fulfilled);
 			} catch (err) {
-				result = rejected(err);
+				return rejected(err);
 			}
-
-			return result;
 		});
 	}
 
@@ -116,19 +128,11 @@ define(function() {
 				onRejected = rejected;
 			}
 
-			var result;
 			try {
-				result = onRejected(reason);
-				if (!isPromise(result)) {
-					result = fulfilled(result);
-				} else if (!(result instanceof Promise)) {
-					result = canonize(result);
-				}
+				return promiseFor(onRejected(reason), fulfilled);
 			} catch (err) {
-				result = rejected(err);
+				return rejected(err);
 			}
-
-			return result;
 		});
 	}
 
@@ -138,19 +142,11 @@ define(function() {
 				onProgress = progressing;
 			}
 
-			var result;
 			try {
-				result = onProgress(update);
-				if (!isPromise(result)) {
-					result = progressing(result);
-				} else if (!(result instanceof Promise)) {
-					result = canonize(result);
-				}
+				return promiseFor(onProgress(update), progressing);
 			} catch (err) {
-				result = progressing(err);
+				return progressing(err);
 			}
-
-			return result;
 		});
 	}
 
@@ -342,15 +338,6 @@ define(function() {
 
 	function defer() {
 		return deferred(new Trampoline());
-	}
-
-	// Wrap an external promise with a trusted promise.
-	function canonize(promise) {
-		var trigger = defer();
-		promise.then(
-			function(x) { trigger.resolve(x); },
-			function(x) { trigger.reject(x);  });
-		return trigger.promise;
 	}
 
 	function when(promise, onFulfilled, onRejected, onProgress) {
@@ -692,14 +679,7 @@ define(function() {
 		return defer().resolve(value);
 	};
 	when.reject = function(reason) {
-		if (!isPromise(reason)) {
-			return defer().reject(reason);
-		} else {
-			if (!(reason instanceof Promise)) {
-				reason = canonize(reason);
-			}
-			return reason.then(rejected, rejected);
-		}
+		return defer().resolve(reason).then(rejected);
 	};
 
 	when.join      = join;      // Join 2 or more promises
