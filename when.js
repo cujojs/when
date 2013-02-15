@@ -336,14 +336,23 @@ define(function() {
 		};
 	}
 
-
 	function defer() {
 		return deferred(new Trampoline());
 	}
 
+
 	function when(promise, onFulfilled, onRejected, onProgress) {
 		return defer().resolve(promise).then(onFulfilled, onRejected, onProgress);
 	}
+
+	when.defer = defer;
+	when.isPromise = isPromise; // Determine if a thing is a promise
+	when.resolve = function(value) {
+		return defer().resolve(value);
+	};
+	when.reject = function(reason) {
+		return defer().resolve(reason).then(rejected);
+	};
 
 
 	/*
@@ -673,15 +682,6 @@ define(function() {
 			resolver.progress
 		);
 	}
-
-	when.defer = defer;
-	when.isPromise = isPromise; // Determine if a thing is a promise
-	when.resolve = function(value) {
-		return defer().resolve(value);
-	};
-	when.reject = function(reason) {
-		return defer().resolve(reason).then(rejected);
-	};
 
 	when.join      = join;      // Join 2 or more promises
 
