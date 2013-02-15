@@ -67,7 +67,7 @@ buster.testCase('when/cancelable', {
 			done();
 		});
 
-		c.progress(expected);
+		c.notify(expected);
 	}
 
 });

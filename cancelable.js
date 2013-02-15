@@ -41,7 +41,7 @@ define(['./when'], function(when) {
 
         // Ensure that the original resolve, reject, and progress all forward
         // to the delegate
-        deferred.promise.then(delegate.resolve, delegate.reject, delegate.progress);
+        deferred.promise.then(delegate.resolve, delegate.reject, delegate.notify);
 
         // Replace deferred's promise with the delegate promise
         deferred.promise = delegate.promise;

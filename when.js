@@ -90,7 +90,7 @@ define(function () {
 				promiseOrValue.then(
 					function(value)  { deferred.resolve(value); },
 					function(reason) { deferred.reject(reason); },
-					function(update) { deferred.progress(update); }
+					function(update) { deferred.notify(update); }
 				);
 
 				promise = deferred.promise;
@@ -232,7 +232,7 @@ define(function () {
 	 */
 	function defer() {
 		var deferred, promise, handlers, progressHandlers,
-			_then, _progress, _resolve;
+			_then, _notify, _resolve;
 
 		/**
 		 * The promise for the new deferred
@@ -249,15 +249,16 @@ define(function () {
 			then:     then, // DEPRECATED: use deferred.promise.then
 			resolve:  promiseResolve,
 			reject:   promiseReject,
-			// TODO: Consider renaming progress() to notify()
-			progress: promiseProgress,
+			progress: promiseNotify, // DEPRECATED: use deferred.notify
+			notify:   promiseNotify,
 
 			promise:  promise,
 
 			resolver: {
 				resolve:  promiseResolve,
 				reject:   promiseReject,
-				progress: promiseProgress
+				progress: promiseNotify, // DEPRECATED: use deferred.notify
+				notify:   promiseNotify
 			}
 		};
 
@@ -282,13 +283,13 @@ define(function () {
 				? function(update) {
 					try {
 						// Allow progress handler to transform progress event
-						deferred.progress(onProgress(update));
+						deferred.notify(onProgress(update));
 					} catch(e) {
 						// Use caught value as progress
-						deferred.progress(e);
+						deferred.notify(e);
 					}
 				}
-				: function(update) { deferred.progress(update); };
+				: function(update) { deferred.notify(update); };
 
 			handlers.push(function(promise) {
 				promise.then(onFulfilled, onRejected)
@@ -305,7 +306,7 @@ define(function () {
 		 * @private
 		 * @param {*} update progress event payload to pass to all listeners
 		 */
-		_progress = function(update) {
+		_notify = function(update) {
 			processQueue(progressHandlers, update);
 			return update;
 		};
@@ -322,7 +323,7 @@ define(function () {
 			// Replace _resolve so that this Deferred can only be resolved once
 			_resolve = resolve;
 			// Make _progress a noop, to disallow progress for the resolved promise.
-			_progress = identity;
+			_notify = identity;
 
 			// Notify handlers
 			processQueue(handlers, value);
@@ -362,10 +363,10 @@ define(function () {
 		}
 
 		/**
-		 * Wrapper to allow _progress to be replaced
+		 * Wrapper to allow _notify to be replaced
 		 */
-		function promiseProgress(update) {
-			return _progress(update);
+		function promiseNotify(update) {
+			return _notify(update);
 		}
 	}
 
@@ -403,7 +404,7 @@ define(function () {
 
 		return when(promisesOrValues, function(promisesOrValues) {
 
-			var toResolve, toReject, values, reasons, deferred, fulfillOne, rejectOne, progress, len, i;
+			var toResolve, toReject, values, reasons, deferred, fulfillOne, rejectOne, notify, len, i;
 
 			len = promisesOrValues.length >>> 0;
 
@@ -420,7 +421,7 @@ define(function () {
 				deferred.resolve(values);
 
 			} else {
-				progress = deferred.progress;
+				notify = deferred.notify;
 
 				rejectOne = function(reason) {
 					reasons.push(reason);
@@ -444,7 +445,7 @@ define(function () {
 
 				for(i = 0; i < len; ++i) {
 					if(i in promisesOrValues) {
-						when(promisesOrValues[i], fulfiller, rejecter, progress);
+						when(promisesOrValues[i], fulfiller, rejecter, notify);
 					}
 				}
 			}
@@ -622,7 +623,7 @@ define(function () {
 				resolver.reject(reason);
 				return rejected(reason);
 			},
-			resolver.progress
+			typeof resolver.notify === 'function' ? resolver.notify : noop
 		);
 	}
 
