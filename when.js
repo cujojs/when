@@ -293,8 +293,7 @@ define(function() {
 		};
 
 		_progress = function(update) {
-			update = progressing(update);
-			fire(update);
+			fire(progressing(update));
 			trampoline = new Trampoline();
 			return update;
 		};
