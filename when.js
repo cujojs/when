@@ -296,6 +296,7 @@ define(function() {
 			update = progressing(update);
 			fire(update);
 			trampoline = new Trampoline();
+			return update;
 		};
 
 		_then = liveThen;
@@ -313,8 +314,7 @@ define(function() {
 			},
 
 			progress: function(update) {
-				_progress(update);
-				return update;
+				return _progress(update);
 			}
 		};
 
