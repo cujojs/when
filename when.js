@@ -354,13 +354,7 @@ define(function() {
 	}
 
 	function when(promise, onFulfilled, onRejected, onProgress) {
-		if (!isPromise(promise)) {
-			promise = defer().resolve(promise);
-		} else if (!(promise instanceof Promise)) {
-			promise = canonize(promise);
-		}
-
-		return promise.then(onFulfilled, onRejected, onProgress);
+		return defer().resolve(promise).then(onFulfilled, onRejected, onProgress);
 	}
 
 
