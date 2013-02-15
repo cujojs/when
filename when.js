@@ -281,26 +281,19 @@ define(function() {
 
 
 		_resolve = function(value) {
-			if (!isPromise(value)) {
-				value = fulfilled(value);
-			} else if (!(value instanceof Promise)) {
-				value = canonize(value);
-			}
-
+			value = promiseFor(value, fulfilled);
 			fire(value);
 			return freeze(value);
 		};
 
 		_reject = function(reason) {
 			reason = rejected(reason);
-
 			fire(reason);
 			return freeze(reason);
 		};
 
 		_progress = function(update) {
 			update = progressing(update);
-
 			fire(update);
 			trampoline = new Trampoline();
 		};
