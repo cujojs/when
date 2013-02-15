@@ -16,7 +16,7 @@
 (function(define) { 'use strict';
 define(function () {
 	var reduceArray, slice,
-		nextTick, handlerQueue, queueProcessLimit, maxQueueProcessLimit,
+		nextTick, handlerQueue, queueProcessLimit,
 		undef;
 
 	//
@@ -664,7 +664,7 @@ define(function () {
 	// Handler queue processing
 	//
 	// Credit to Twisol (https://github.com/Twisol) for suggesting
-	// this type of extensible queue + trampoling approach for
+	// this type of extensible queue + trampoline approach for
 	// next-tick conflation.
 	//
 
@@ -679,7 +679,6 @@ define(function () {
 
 	handlerQueue = [];
 	queueProcessLimit = 1000;
-	maxQueueProcessLimit = 10000;
 
 	/**
 	 * Enqueue a task. If the queue is not currently scheduled to be
@@ -708,20 +707,11 @@ define(function () {
 		var task, i = 0;
 
 		// Drain up to queueProcessLimit items to avoid starving the tick/timer queue
-		while(i < queueProcessLimit && (task = handlerQueue[i++])) {
+		while(task = handlerQueue[i++]) {
 			task();
 		}
 
-		if (handlerQueue.length > i) {
-			// If there are handlers remaining, schedule another drain, but
-			// also increase the max number of handlers (to a point) that'll be drained
-			// from now on.
-			queueProcessLimit = Math.max(queueProcessLimit * 2, maxQueueProcessLimit);
-			handlerQueue = handlerQueue.slice(i, handlerQueue.length);
-			scheduleDrainQueue();
-		} else {
-			handlerQueue = [];
-		}
+		handlerQueue = [];
 	}
 
 	//
