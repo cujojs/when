@@ -90,8 +90,9 @@ define(function() {
 	function canonize(promise) {
 		var trigger = defer();
 		promise.then(
-			function(x) { trigger.resolve(x); },
-			function(x) { trigger.reject(x);  });
+			function(x) { trigger.resolve(x);  },
+			function(x) { trigger.reject(x);   },
+			function(x) { trigger.progress(x); });
 		return trigger.promise;
 	}
 
