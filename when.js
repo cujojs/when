@@ -163,30 +163,25 @@ define(function() {
 		var stack = [];
 		var running = false;
 
-		function pump() {
-			running = true;
-			try {
-				while (stack.length > 0) {
-					stack.pop()();
-				}
-			} finally {
-				running = false;
-			}
-		}
-
 		return {
-			invoke: function(f) {
-				stack.push(f);
-				if (!running) {
-					pump();
-				}
-			},
-
 			push: function(f) {
 				stack.push(f);
 			},
 
-			pump: pump
+			pump: function() {
+				if (running) {
+					return;
+				}
+
+				running = true;
+				try {
+					while (stack.length > 0) {
+						stack.pop()();
+					}
+				} finally {
+					running = false;
+				}
+			}
 		};
 	})();
 
@@ -215,7 +210,8 @@ define(function() {
 		}
 
 		function callImmediate(f) {
-			gTrampoline.invoke(f);
+			gTrampoline.push(f);
+			gTrampoline.pump();
 		}
 
 		_invoke = callLater;
