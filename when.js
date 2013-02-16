@@ -109,9 +109,9 @@ define(function() {
 
 	// A promise that immediately calls an onFulfilled handler with a value.
 	function fulfilled(value) {
-		return new Promise(function(onFulfilled) {
+		var self = new Promise(function(onFulfilled) {
 			if (typeof onFulfilled !== 'function') {
-				onFulfilled = fulfilled;
+				return self;
 			}
 
 			try {
@@ -120,13 +120,15 @@ define(function() {
 				return rejected(err);
 			}
 		});
+
+		return self;
 	}
 
 	// A promise that immediately calls an onRejected handler with a reason.
 	function rejected(reason) {
-		return new Promise(function(onFulfilled, onRejected) {
+		var self = new Promise(function(onFulfilled, onRejected) {
 			if (typeof onRejected !== 'function') {
-				onRejected = rejected;
+				return self;
 			}
 
 			try {
@@ -135,12 +137,14 @@ define(function() {
 				return rejected(err);
 			}
 		});
+
+		return self;
 	}
 
 	function progressing(update) {
-		return new Promise(function(onFulfilled, onRejected, onProgress) {
+		var self = new Promise(function(onFulfilled, onRejected, onProgress) {
 			if (typeof onProgress !== 'function') {
-				onProgress = progressing;
+				return self;
 			}
 
 			try {
@@ -149,6 +153,8 @@ define(function() {
 				return progressing(err);
 			}
 		});
+
+		return self;
 	}
 
 
