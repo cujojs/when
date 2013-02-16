@@ -200,14 +200,14 @@ define(function() {
 			stack.push(f);
 			_invoke = callPush;
 
-			setTimeout(function() {
+			nextTick(function() {
 				_invoke = callImmediate;
 				while (stack.length > 0) {
 					gTrampoline.push(stack.pop());
 				}
 
 				gTrampoline.pump();
-			}, 0);
+			});
 		}
 
 		function callPush(f) {
