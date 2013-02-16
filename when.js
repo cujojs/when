@@ -198,7 +198,7 @@ define(function() {
 
 		function callLater(f) {
 			stack.push(f);
-			_invoke = callUnshift;
+			_invoke = callPush;
 
 			setTimeout(function() {
 				_invoke = callImmediate;
@@ -210,7 +210,7 @@ define(function() {
 			}, 0);
 		}
 
-		function callUnshift(f) {
+		function callPush(f) {
 			stack.push(f);
 		}
 
