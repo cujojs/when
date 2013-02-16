@@ -260,11 +260,19 @@ define(function() {
 			var trampoline = _trampoline;
 			var handlers = _handlers;
 
+			// Helper function, akin to ES5 bind. We don't assume ES5 support,
+			// so a helper is necessary.
+			function bindHandler(handler) {
+				return function() {
+					handler(promise);
+				};
+			}
+
 			trampoline.invoke(function() {
 				_then = deadThen;
 
 				for (var i = handlers.length - 1; i >= 0; --i) {
-					trampoline.invoke(handlers[i].bind(undef, promise));
+					trampoline.invoke(bindHandler(handlers[i]));
 				}
 			});
 		}
