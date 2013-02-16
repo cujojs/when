@@ -197,6 +197,7 @@ define(function() {
 
 			nextTick(function() {
 				_invoke = callImmediate;
+
 				while (stack.length > 0) {
 					gTrampoline.push(stack.pop());
 				}
@@ -226,13 +227,13 @@ define(function() {
 
 	// Resolves an associate promise, invoking it handlers via
 	// the provided trampoline.
-	function deferred(trampoline) {
+	function deferred(_trampoline) {
 		var _handlers = [];
 		var _promise;
 		var _then, _resolve, _reject, _progress;
 
 		function liveThen(onFulfilled, onRejected, onProgress) {
-			var trigger = deferred(trampoline);
+			var trigger = deferred(_trampoline);
 
 			_handlers.push(function(promise) {
 				promise
@@ -247,7 +248,7 @@ define(function() {
 		}
 
 		function deadThen(onFulfilled, onRejected, onProgress) {
-			trampoline = new Trampoline();
+			_trampoline = new Trampoline();
 			_handlers = [];
 			_then = liveThen;
 
@@ -256,12 +257,14 @@ define(function() {
 		}
 
 		function fire(promise) {
-			var _trampoline = trampoline;
-			_trampoline.invoke(function() {
+			var trampoline = _trampoline;
+			var handlers = _handlers;
+
+			trampoline.invoke(function() {
 				_then = deadThen;
 
-				for (var i = _handlers.length - 1; i >= 0; --i) {
-					_trampoline.invoke(_handlers[i].bind(undef, promise));
+				for (var i = handlers.length - 1; i >= 0; --i) {
+					trampoline.invoke(handlers[i].bind(undef, promise));
 				}
 			});
 		}
@@ -296,7 +299,7 @@ define(function() {
 
 		_progress = function(update) {
 			fire(progressing(update));
-			trampoline = new Trampoline();
+			_trampoline = new Trampoline();
 			return update;
 		};
 
