@@ -8,7 +8,7 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 ### 1.8.1
 
-* Performance improvements across the board for [when/function](docs/api.md#synchronous-functions), [when/node/function](docs/api.md#node-style-asynchronous-functions), and [when/callbacks](docs/api.md#asynchronous-functions).
+* Performance improvements for [when/function](docs/api.md#synchronous-functions).
 
 ### 1.8.0
 
