@@ -93,6 +93,24 @@ buster.testCase('when.resolve', {
 					assert.same(val, sentinel);
 				}
 			).always(done);
+		},
+
+		'should assimilate thenable used as fulfillment value': function(done) {
+			when.resolve({
+				then: function(onFulfilled) {
+					onFulfilled({
+						then: function(onFulfilled) {
+							onFulfilled(sentinel);
+						}
+					});
+					throw other;
+				}
+			}).then(
+				function(val) {
+					assert.same(val, sentinel);
+				},
+				fail
+			).always(done);
 		}
 	}
 
