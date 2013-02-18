@@ -65,43 +65,53 @@ define(function () {
 	 * whose value is promiseOrValue if promiseOrValue is an immediate value.
 	 *
 	 * @param {*} promiseOrValue
-	 * @returns Guaranteed to return a trusted Promise.  If promiseOrValue is a when.js {@link Promise}
-	 *   returns promiseOrValue, otherwise, returns a new, already-resolved, when.js {@link Promise}
-	 *   whose resolution value is:
+	 * @returns Guaranteed to return a trusted Promise.  If promiseOrValue is trusted,
+	 *   returns promiseOrValue, otherwise, returns a new, already-resolved when.js
+	 *   promise whose resolution value is:
 	 *   * the resolution value of promiseOrValue if it's a foreign promise, or
 	 *   * promiseOrValue if it's a value
 	 */
 	function resolve(promiseOrValue) {
-		var promise, deferred;
+		var promise;
 
 		if(promiseOrValue instanceof Promise) {
 			// It's a when.js promise, so we trust it
 			promise = promiseOrValue;
 
+		} else if(isPromise(promiseOrValue)) {
+			// Assimilate foreign promises
+			promise = assimilate(promiseOrValue);
 		} else {
-			// It's not a when.js promise. See if it's a foreign promise or a value.
-			if(isPromise(promiseOrValue)) {
-				// It's a thenable, but we don't know where it came from, so don't trust
-				// its implementation entirely.  Introduce a trusted middleman when.js promise
-				deferred = defer();
-
-				// IMPORTANT: This is the only place when.js should ever call .then() on an
-				// untrusted promise. Don't expose the return value to the untrusted promise
-				promiseOrValue.then(
-					function(value)  { deferred.resolve(value); },
-					function(reason) { deferred.reject(reason); },
-					function(update) { deferred.notify(update); }
-				);
-
-				promise = deferred.promise;
-
-			} else {
-				// It's a value, not a promise.  Create a resolved promise for it.
-				promise = fulfilled(promiseOrValue);
-			}
+			// It's a value, create a fulfilled promise for it.
+			promise = fulfilled(promiseOrValue);
 		}
 
 		return promise;
+	}
+
+	/**
+	 * Assimilate an untrusted thenable by introducing a trusted middle man.
+	 * Not a perfect strategy, but possibly the best we can do.
+	 * IMPORTANT: This is the only place when.js should ever call an untrusted
+	 * thenable's then() on an. Don't expose the return value to the untrusted thenable
+	 * @param {*} thenable
+	 * @param {function} thenable.then
+	 */
+	function assimilate(thenable) {
+		var d = defer();
+
+		// TODO: Enqueue this for future execution in 2.0
+		try {
+			thenable.then(
+				function(value)  { d.resolve(value); },
+				function(reason) { d.reject(reason); },
+				function(update) { d.progress(update); }
+			);
+		} catch(e) {
+			d.reject(e);
+		}
+
+		return d.promise;
 	}
 
 	/**

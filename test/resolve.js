@@ -1,10 +1,13 @@
 (function(buster, when) {
 
-var assert, refute, fail;
+var assert, refute, fail, sentinel, other;
 
 assert = buster.assert;
 refute = buster.refute;
 fail = buster.assertions.fail;
+
+sentinel = {};
+other = {};
 
 buster.testCase('when.resolve', {
 
@@ -49,46 +52,49 @@ buster.testCase('when.resolve', {
 		).always(done);
 	},
 
-	'should use valueOf immediate values': function(done) {
-		// See https://github.com/kriskowal/q/issues/106
-		var fake, expected;
+	'should trap exceptions during assimilation': function(done) {
 
-		expected = 1;
-		fake = {
-			valueOf: this.stub().returns(expected)
-		};
-
-		when.resolve(fake).then(
-			function(value) {
-				assert.equals(value, expected);
-			},
-			fail
+		when.resolve({
+			then: function() {
+				throw sentinel;
+			}
+		}).then(
+			fail,
+			function(val) {
+				assert.same(val, sentinel);
+			}
 		).always(done);
 	},
 
-	'should use valueOf foreign promises': function(done) {
-		// See https://github.com/kriskowal/q/issues/106
-		var fake, expected;
-
-		expected = 1;
-		fake = {
-			valueOf: function() {
-				return this;
-			},
-			then: function(cb) {
-				return cb(expected);
+	'should ignore exceptions after fulfillment': function(done) {
+		when.resolve({
+			then: function(onFulfilled) {
+				onFulfilled(sentinel);
+				throw other;
 			}
-		};
-
-		when.resolve(fake).then(
-			function(value) {
-				assert.equals(value, expected);
+		}).then(
+			function(val) {
+				assert.same(val, sentinel);
 			},
 			fail
 		).always(done);
+
+	},
+
+	'should ignore exceptions after rejection': function(done) {
+		when.resolve({
+			then: function(_, onRejected) {
+				onRejected(sentinel);
+				throw other;
+			}
+		}).then(
+			fail,
+			function(val) {
+				assert.same(val, sentinel);
+			}
+		).always(done);
+
 	}
-
-
 });
 
 })(
