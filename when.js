@@ -187,7 +187,7 @@ define(function() {
 
 	// Defers the execution of a chain of handlers until a later tick
 	// in the event loop.
-	function Trampoline() {
+	function trampoline() {
 		var _invoke;
 		var stack = [];
 
@@ -217,23 +217,21 @@ define(function() {
 
 		_invoke = callLater;
 
-		return {
-			invoke: function(f) {
-				return _invoke(f);
-			}
+		return function(f) {
+			return _invoke(f);
 		};
 	}
 
 
 	// Resolves an associate promise, invoking it handlers via
 	// the provided trampoline.
-	function deferred(_trampoline) {
+	function deferred(_bounce) {
 		var _handlers = [];
 		var _promise;
 		var _then, _resolve, _reject, _progress;
 
 		function liveThen(onFulfilled, onRejected, onProgress) {
-			var trigger = deferred(_trampoline);
+			var trigger = deferred(_bounce);
 
 			_handlers.push(function(promise) {
 				promise
@@ -248,7 +246,7 @@ define(function() {
 		}
 
 		function deadThen(onFulfilled, onRejected, onProgress) {
-			_trampoline = new Trampoline();
+			_bounce = trampoline();
 			_handlers = [];
 			_then = liveThen;
 
@@ -257,7 +255,7 @@ define(function() {
 		}
 
 		function fire(promise) {
-			var trampoline = _trampoline;
+			var bounce = _bounce;
 			var handlers = _handlers;
 
 			// Helper function, akin to ES5 bind. We don't assume ES5 support,
@@ -268,11 +266,11 @@ define(function() {
 				};
 			}
 
-			trampoline.invoke(function() {
+			bounce(function() {
 				_then = deadThen;
 
 				for (var i = handlers.length - 1; i >= 0; --i) {
-					trampoline.invoke(bindHandler(handlers[i]));
+					bounce(bindHandler(handlers[i]));
 				}
 			});
 		}
@@ -307,7 +305,7 @@ define(function() {
 
 		_progress = function(update) {
 			fire(progressing(update));
-			_trampoline = new Trampoline();
+			_bounce = trampoline();
 			return update;
 		};
 
@@ -342,7 +340,7 @@ define(function() {
 	}
 
 	function defer() {
-		return deferred(new Trampoline());
+		return deferred(trampoline());
 	}
 
 
