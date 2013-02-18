@@ -381,6 +381,42 @@ buster.testCase('promise', {
 		d.progress(expected);
 	},
 
+	'should evaluate dependency tree depth-first': function(done) {
+		var expected, value, d;
+
+		expected = 'good';
+		value = expected;
+		d = when.defer();
+
+		d.promise
+			.then(function() {})
+			.then(function() {
+				assert.same(value, expected);
+				done();
+			});
+
+		d.promise.then(function() { value = 'bad'; });
+
+		d.resolve();
+	},
+
+	'should not process multiple stimuli simultaneously': function(done) {
+		var d1, d2, wasCalled;
+
+		d1 = when.defer();
+		d2 = when.defer();
+		wasCalled = false;
+
+		d1.promise.then(function() { d2.resolve(); });
+		d2.promise.then(function() { wasCalled = true; });
+
+		d1.resolve();
+		process.nextTick(function() {
+			assert(!wasCalled);
+			done();
+		});
+	},
+
 	'always': {
 		'should return a promise': function() {
 			assert.isFunction(defer().promise.always().then);
