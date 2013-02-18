@@ -623,7 +623,10 @@ define(function () {
 				resolver.reject(reason);
 				return rejected(reason);
 			},
-			typeof resolver.notify === 'function' ? resolver.notify : noop
+			function(update) {
+				typeof resolver.notify === 'function' && resolver.notify(update);
+				return update;
+			}
 		);
 	}
 
