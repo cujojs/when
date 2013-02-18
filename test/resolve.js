@@ -52,49 +52,50 @@ buster.testCase('when.resolve', {
 		).always(done);
 	},
 
-	'should trap exceptions during assimilation': function(done) {
+	'when assimilating untrusted thenables': {
 
-		when.resolve({
-			then: function() {
-				throw sentinel;
-			}
-		}).then(
-			fail,
-			function(val) {
-				assert.same(val, sentinel);
-			}
-		).always(done);
-	},
+		'should trap exceptions during assimilation': function(done) {
+			when.resolve({
+				then: function() {
+					throw sentinel;
+				}
+			}).then(
+				fail,
+				function(val) {
+					assert.same(val, sentinel);
+				}
+			).always(done);
+		},
 
-	'should ignore exceptions after fulfillment': function(done) {
-		when.resolve({
-			then: function(onFulfilled) {
-				onFulfilled(sentinel);
-				throw other;
-			}
-		}).then(
-			function(val) {
-				assert.same(val, sentinel);
-			},
-			fail
-		).always(done);
+		'should ignore exceptions after fulfillment': function(done) {
+			when.resolve({
+				then: function(onFulfilled) {
+					onFulfilled(sentinel);
+					throw other;
+				}
+			}).then(
+				function(val) {
+					assert.same(val, sentinel);
+				},
+				fail
+			).always(done);
+		},
 
-	},
-
-	'should ignore exceptions after rejection': function(done) {
-		when.resolve({
-			then: function(_, onRejected) {
-				onRejected(sentinel);
-				throw other;
-			}
-		}).then(
-			fail,
-			function(val) {
-				assert.same(val, sentinel);
-			}
-		).always(done);
-
+		'should ignore exceptions after rejection': function(done) {
+			when.resolve({
+				then: function(_, onRejected) {
+					onRejected(sentinel);
+					throw other;
+				}
+			}).then(
+				fail,
+				function(val) {
+					assert.same(val, sentinel);
+				}
+			).always(done);
+		}
 	}
+
 });
 
 })(
