@@ -65,9 +65,9 @@ define(function () {
 	 * whose value is promiseOrValue if promiseOrValue is an immediate value.
 	 *
 	 * @param {*} promiseOrValue
-	 * @returns Guaranteed to return a trusted Promise.  If promiseOrValue is trusted,
-	 *   returns promiseOrValue, otherwise, returns a new, already-resolved when.js
-	 *   promise whose resolution value is:
+	 * @returns {Promise} Guaranteed to return a trusted Promise.  If promiseOrValue
+	 *   is trusted, returns promiseOrValue, otherwise, returns a new, already-resolved
+	 *   when.js promise whose resolution value is:
 	 *   * the resolution value of promiseOrValue if it's a foreign promise, or
 	 *   * promiseOrValue if it's a value
 	 */
@@ -94,8 +94,10 @@ define(function () {
 	 * Not a perfect strategy, but possibly the best we can do.
 	 * IMPORTANT: This is the only place when.js should ever call an untrusted
 	 * thenable's then() on an. Don't expose the return value to the untrusted thenable
+	 *
 	 * @param {*} thenable
 	 * @param {function} thenable.then
+	 * @returns {Promise}
 	 */
 	function assimilate(thenable) {
 		var d = defer();
