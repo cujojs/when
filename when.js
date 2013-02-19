@@ -177,10 +177,8 @@ define(function () {
 		 * @name Deferred
 		 */
 		deferred = {
-			then:     then, // DEPRECATED: use deferred.promise.then
 			resolve:  promiseResolve,
 			reject:   promiseReject,
-			progress: promiseNotify, // DEPRECATED: use deferred.notify
 			notify:   promiseNotify,
 
 			promise:  promise,
@@ -188,7 +186,6 @@ define(function () {
 			resolver: {
 				resolve:  promiseResolve,
 				reject:   promiseReject,
-				progress: promiseNotify, // DEPRECATED: use deferred.notify
 				notify:   promiseNotify
 			}
 		};
