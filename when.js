@@ -164,8 +164,8 @@ define(function() {
 		var running = false;
 
 		return {
-			push: function(f) {
-				stack.push(f);
+			push: function() {
+				stack.push.apply(stack, arguments);
 			},
 
 			pump: function() {
@@ -189,25 +189,24 @@ define(function() {
 	// in the event loop.
 	function trampoline() {
 		var _invoke;
-		var stack = [];
+		var list = [];
 
 		function callLater(f) {
-			stack.push(f);
-			_invoke = callPush;
+			list.unshift(f);
+			_invoke = callUnshift;
 
 			nextTick(function() {
 				_invoke = callImmediate;
 
-				while (stack.length > 0) {
-					gTrampoline.push(stack.pop());
-				}
+				gTrampoline.push.apply(undef, list);
+				list = undef;
 
 				gTrampoline.pump();
 			});
 		}
 
-		function callPush(f) {
-			stack.push(f);
+		function callUnshift(f) {
+			list.unshift(f);
 		}
 
 		function callImmediate(f) {
