@@ -11,130 +11,18 @@
  */
 
 (function(define) { 'use strict';
-define(function () {
-	var reduceArray, slice,
-		nextTick, handlerQueue, queueProcessLimit, maxQueueProcessLimit,
-		undef;
+define(function() {
+	var undef, nextTick, slice, reduceArray;
 
-	//
-	// Public API
-	//
+	/*global setImmediate:true */
+	nextTick = typeof process === 'object' ? process.nextTick
+	: typeof setImmediate === 'function' ? setImmediate
+	: function(task) { setTimeout(task, 0); };
 
-	when.defer     = defer;     // Create a deferred
-	when.resolve   = resolve;   // Create a resolved promise
-	when.reject    = reject;    // Create a rejected promise
+	function identity(x) { return x; }
+	function noop() {}
 
-	when.join      = join;      // Join 2 or more promises
 
-	when.all       = all;       // Resolve a list of promises
-	when.map       = map;       // Array.map() for promises
-	when.reduce    = reduce;    // Array.reduce() for promises
-
-	when.any       = any;       // One-winner race
-	when.some      = some;      // Multi-winner race
-
-	when.chain     = chain;     // Make a promise trigger another resolver
-
-	when.isPromise = isPromise; // Determine if a thing is a promise
-
-	/**
-	 * Register an observer for a promise or immediate value.
-	 *
-	 * @param {*} promiseOrValue
-	 * @param {function?} [onFulfilled] callback to be called when promiseOrValue is
-	 *   successfully fulfilled.  If promiseOrValue is an immediate value, callback
-	 *   will be invoked immediately.
-	 * @param {function?} [onRejected] callback to be called when promiseOrValue is
-	 *   rejected.
-	 * @param {function?} [onProgress] callback to be called when progress updates
-	 *   are issued for promiseOrValue.
-	 * @returns {Promise} a new {@link Promise} that will complete with the return
-	 *   value of callback or errback or the completion value of promiseOrValue if
-	 *   callback and/or errback is not supplied.
-	 */
-	function when(promiseOrValue, onFulfilled, onRejected, onProgress) {
-		// Get a trusted promise for the input promiseOrValue, and then
-		// register promise handlers
-		return resolve(promiseOrValue).then(onFulfilled, onRejected, onProgress);
-	}
-
-	/**
-	 * Returns promiseOrValue if promiseOrValue is a {@link Promise}, a new Promise if
-	 * promiseOrValue is a foreign promise, or a new, already-fulfilled {@link Promise}
-	 * whose value is promiseOrValue if promiseOrValue is an immediate value.
-	 *
-	 * @param {*} promiseOrValue
-	 * @returns Guaranteed to return a trusted Promise.  If promiseOrValue is a when.js {@link Promise}
-	 *   returns promiseOrValue, otherwise, returns a new, already-resolved, when.js {@link Promise}
-	 *   whose resolution value is:
-	 *   * the resolution value of promiseOrValue if it's a foreign promise, or
-	 *   * promiseOrValue if it's a value
-	 */
-	function promiseFor(promiseOrValue) {
-		var promise, deferred;
-
-		if(promiseOrValue instanceof Promise) {
-			// It's a when.js promise, so we trust it
-			promise = promiseOrValue;
-
-		} else {
-			// It's not a when.js promise. See if it's a foreign promise or a value.
-			if(isPromise(promiseOrValue)) {
-				// It's a thenable, but we don't know where it came from, so don't trust
-				// its implementation entirely.  Introduce a trusted middleman when.js promise
-				deferred = defer();
-
-				// IMPORTANT: This is the only place when.js should ever call .then() on an
-				// untrusted promise. Don't expose the return value to the untrusted promise
-				promiseOrValue.then(
-					function(value)  { deferred.resolve(value); },
-					function(reason) { deferred.reject(reason); },
-					function(update) { deferred.progress(update); }
-				);
-
-				promise = deferred.promise;
-
-			} else {
-				// It's a value, not a promise.  Create a resolved promise for it.
-				promise = fulfilled(promiseOrValue);
-			}
-		}
-
-		return promise;
-	}
-
-	/**
-	 * Returns a fulfilled promise. If promiseOrValue is a value, it will be the fulfillment
-	 * value of the returned promise.  If promiseOrValue is a promise, the returned promise will
-	 * parallel the state and value/reason of promiseOrValue.
-	 * @param  {*} promiseOrValue the fulfillment value or a promise with whose state will be paralleled
-	 * @return {Promise} fulfilled promise or pending promise paralleling the state of promiseOrValue.
-	 */
-	function resolve(promiseOrValue) {
-		return defer().resolve(promiseOrValue);
-	}
-
-	/**
-	 * Returns a rejected promise for the supplied promiseOrValue.  The returned
-	 * promise will be rejected with:
-	 * - promiseOrValue, if it is a value, or
-	 * - if promiseOrValue is a promise
-	 *   - promiseOrValue's value after it is fulfilled
-	 *   - promiseOrValue's reason after it is rejected
-	 * @param {*} promiseOrValue the rejected value of the returned {@link Promise}
-	 * @return {Promise} rejected {@link Promise}
-	 */
-	function reject(promiseOrValue) {
-		return when(promiseOrValue, rejected);
-	}
-
-	/**
-	 * Trusted Promise constructor.  A Promise created from this constructor is
-	 * a trusted when.js promise.  Any other duck-typed promise is considered
-	 * untrusted.
-	 * @constructor
-	 * @name Promise
-	 */
 	function Promise(then) {
 		this.then = then;
 	}
@@ -192,204 +80,372 @@ define(function () {
 		}
 	};
 
-	/**
-	 * Create an already-resolved promise for the supplied value
-	 * @private
-	 *
-	 * @param {*} value
-	 * @return {Promise} fulfilled promise
-	 */
+
+	// Duck-typing for promises
+	function isPromise(p) {
+		return (p && typeof p.then === 'function');
+	}
+
+	// Wrap an external promise with a trusted promise.
+	function canonize(promise) {
+		var trigger = defer();
+		promise.then(
+			function(x) { trigger.resolve(x);  },
+			function(x) { trigger.reject(x);   },
+			function(x) { trigger.progress(x); });
+		return trigger.promise;
+	}
+
+	function promiseFor(value, defaultKind) {
+		if (!isPromise(value)) {
+			return defaultKind(value);
+		} else if (!(value instanceof Promise)) {
+			return canonize(value);
+		} else {
+			return value;
+		}
+	}
+
+
+	// A promise that immediately calls an onFulfilled handler with a value.
 	function fulfilled(value) {
-		var p = new Promise(function(onFulfilled) {
+		var self = new Promise(function(onFulfilled) {
+			if (typeof onFulfilled !== 'function') {
+				return self;
+			}
+
 			try {
-				return promiseFor(typeof onFulfilled == 'function' ? onFulfilled(value) : value);
-			} catch(e) {
-				return rejected(e);
+				return promiseFor(onFulfilled(value), fulfilled);
+			} catch (err) {
+				return rejected(err);
 			}
 		});
 
-		return p;
+		return self;
 	}
 
-	/**
-	 * Create an already-rejected {@link Promise} with the supplied
-	 * rejection reason.
-	 * @private
-	 *
-	 * @param {*} reason
-	 * @return {Promise} rejected promise
-	 */
+	// A promise that immediately calls an onRejected handler with a reason.
 	function rejected(reason) {
-		var p = new Promise(function(_, onRejected) {
+		var self = new Promise(function(onFulfilled, onRejected) {
+			if (typeof onRejected !== 'function') {
+				return self;
+			}
+
 			try {
-				return promiseFor(typeof onRejected == 'function' ? onRejected(reason) : rejected(reason));
-			} catch(e) {
-				return rejected(e);
+				return promiseFor(onRejected(reason), fulfilled);
+			} catch (err) {
+				return rejected(err);
 			}
 		});
 
-		return p;
+		return self;
 	}
 
-	/**
-	 * Creates a new, Deferred with fully isolated resolver and promise parts,
-	 * either or both of which may be given out safely to consumers.
-	 * The Deferred itself has the full API: resolve, reject, progress, and
-	 * then. The resolver has resolve, reject, and progress.  The promise
-	 * only has then.
-	 *
-	 * @return {Deferred}
-	 */
-	function defer() {
-		var deferred, promise, handlers, progressHandlers,
-			_bind, _progress, _resolve;
-		/**
-		 * The promise for the new deferred
-		 * @type {Promise}
-		 */
-		promise = new Promise(then);
+	function progressing(update) {
+		var self = new Promise(function(onFulfilled, onRejected, onProgress) {
+			if (typeof onProgress !== 'function') {
+				return self;
+			}
 
-		/**
-		 * The full Deferred object, with {@link Promise} and {@link Resolver} parts
-		 * @class Deferred
-		 * @name Deferred
-		 */
-		deferred = {
-			then:     then, // DEPRECATED: use deferred.promise.then
-			resolve:  promiseResolve,
-			reject:   promiseReject,
-			// TODO: Consider renaming progress() to notify()
-			progress: promiseProgress,
+			try {
+				return promiseFor(onProgress(update), progressing);
+			} catch (err) {
+				return progressing(err);
+			}
+		});
 
-			promise:  promise,
+		return self;
+	}
 
-			resolver: {
-				resolve:  promiseResolve,
-				reject:   promiseReject,
-				progress: promiseProgress
+
+	// Pumps through a chain of handlers for every external stimulus.
+	var gTrampoline = (function() {
+		var stack = [];
+		var running = false;
+
+		return {
+			push: function() {
+				stack.push.apply(stack, arguments);
+			},
+
+			pump: function() {
+				if (running) {
+					return;
+				}
+
+				running = true;
+				try {
+					while (stack.length > 0) {
+						stack.pop()();
+					}
+				} finally {
+					running = false;
+				}
 			}
 		};
+	})();
 
-		handlers = [];
-		progressHandlers = [];
+	// Defers the execution of a chain of handlers until a later tick
+	// in the event loop.
+	function trampoline() {
+		var _invoke;
+		var list = [];
 
-		_bind = function(onFulfilled, onRejected, onProgress, next) {
-			var progressHandler = typeof onProgress === 'function'
-				? function(update) {
-					try {
-						// Allow progress handler to transform progress event
-						next.progress(onProgress(update));
-					} catch(e) {
-						// Use caught value as progress
-						next.progress(e);
-					}
-				}
-				: next.progress;
+		function callLater(f) {
+			list.unshift(f);
+			_invoke = callUnshift;
 
-			handlers.push(function(promise) {
-				promise.then(onFulfilled, onRejected).then(
-					function(value)  { next.resolve(value); },
-					function(reason) { next.reject(reason); },
-					progressHandler
-				);
+			nextTick(function() {
+				_invoke = callImmediate;
+
+				gTrampoline.push.apply(undef, list);
+				list = undef;
+
+				gTrampoline.pump();
+			});
+		}
+
+		function callUnshift(f) {
+			list.unshift(f);
+		}
+
+		function callImmediate(f) {
+			gTrampoline.push(f);
+			gTrampoline.pump();
+		}
+
+		_invoke = callLater;
+
+		return function(f) {
+			return _invoke(f);
+		};
+	}
+
+
+	// Resolves an associate promise, invoking it handlers via
+	// the provided trampoline.
+	function deferred(_bounce) {
+		var _handlers = [];
+		var _promise;
+		var _then, _resolve, _reject, _progress;
+
+		function liveThen(onFulfilled, onRejected, onProgress) {
+			var trigger = deferred(_bounce);
+
+			_handlers.push(function(promise) {
+				promise
+					.then(onFulfilled, onRejected, onProgress)
+					.then(
+						function(x) { trigger.resolve(x);  },
+						function(x) { trigger.reject(x);   },
+						function(x) { trigger.progress(x); });
 			});
 
-			progressHandlers.push(progressHandler);
+			return trigger.promise;
+		}
+
+		function deadThen(onFulfilled, onRejected, onProgress) {
+			_bounce = trampoline();
+			_handlers = [];
+			_then = liveThen;
+
+			fire(_promise);
+			return liveThen(onFulfilled, onRejected, onProgress);
+		}
+
+		function fire(promise) {
+			var bounce = _bounce;
+			var handlers = _handlers;
+
+			// Helper function, akin to ES5 bind. We don't assume ES5 support,
+			// so a helper is necessary.
+			function bindHandler(handler) {
+				return function() {
+					handler(promise);
+				};
+			}
+
+			bounce(function() {
+				_then = deadThen;
+
+				for (var i = handlers.length - 1; i >= 0; --i) {
+					bounce(bindHandler(handlers[i]));
+				}
+			});
+		}
+
+		function freeze(promise) {
+			var oldPromise = _promise;
+			_promise = promise;
+
+			_resolve = function(value) {
+				return defer().resolve(value);
+			};
+			_reject = function(reason) {
+				return defer().reject(reason);
+			};
+			_progress = identity;
+
+			return oldPromise;
+		}
+
+
+		_resolve = function(value) {
+			value = promiseFor(value, fulfilled);
+			fire(value);
+			return freeze(value);
 		};
 
-		/**
-		 * Issue a progress event, notifying all progress listeners
-		 * @private
-		 * @param {*} update progress event payload to pass to all listeners
-		 */
+		_reject = function(reason) {
+			reason = rejected(reason);
+			fire(reason);
+			return freeze(reason);
+		};
+
 		_progress = function(update) {
-			scheduleHandlers(progressHandlers, update);
+			fire(progressing(update));
+			_bounce = trampoline();
 			return update;
 		};
 
-		/**
-		 * Transition from pre-resolution state to post-resolution state, notifying
-		 * all listeners of the resolution or rejection
-		 * @private
-		 * @param {*} value the value of this deferred
-		 */
-		_resolve = function(value) {
+		_then = liveThen;
+		_promise = new Promise(function(onSuccess, onFailure, onProgress) {
+			return _then(onSuccess, onFailure, onProgress);
+		});
 
-			value = promiseFor(value);
+		var resolver = {
+			resolve: function(value) {
+				return _resolve(value);
+			},
 
-			// Replace _resolve so that this Deferred can only be completed once
-			// Make _progress a noop, to disallow progress for the resolved promise.
-			_resolve = resolve;
-			_progress = noop;
+			reject: function(reason) {
+				return _reject(reason);
+			},
 
-			// Make _bind invoke callbacks "immediately"
-			_bind = function(fulfilled, rejected, _, next) {
-				enqueue(function() {
-					value.then(fulfilled, rejected).then(
-						function(value)  { next.resolve(value); },
-						function(reason) { next.reject(reason); },
-						function(update) { next.progress(update); }
-					);
-				});
-			};
-
-			// Notify handlers
-			scheduleHandlers(handlers, value);
-			handlers = progressHandlers = undef;
-
-			return promise;
+			progress: function(update) {
+				return _progress(update);
+			}
 		};
 
-		return deferred;
+		return {
+			promise: _promise,
+			resolver: resolver,
 
-		/**
-		 * Wrapper to allow _then to be replaced safely
-		 * @param [onFulfilled] {Function} resolution handler
-		 * @param [onRejected] {Function} rejection handler
-		 * @param [onProgress] {Function} progress handler
-		 * @return {Promise} new Promise
-		 */
-		function then(onFulfilled, onRejected, onProgress) {
-			var deferred = defer();
-
-			_bind(onFulfilled, onRejected, onProgress, deferred);
-
-			return deferred.promise;
-		}
-
-		/**
-		 * Wrapper to allow _resolve to be replaced
-		 */
-		function promiseResolve(val) {
-			return _resolve(val);
-		}
-
-		/**
-		 * Wrapper to allow _reject to be replaced
-		 */
-		function promiseReject(reason) {
-			return _resolve(rejected(reason));
-		}
-
-		/**
-		 * Wrapper to allow _progress to be replaced
-		 */
-		function promiseProgress(update) {
-			return _progress(update);
-		}
+			then: _promise.then,
+			resolve: resolver.resolve,
+			reject: resolver.reject,
+			progress: resolver.progress
+		};
 	}
+
+	function defer() {
+		return deferred(trampoline());
+	}
+
+
+	function when(promise, onFulfilled, onRejected, onProgress) {
+		return defer().resolve(promise).then(onFulfilled, onRejected, onProgress);
+	}
+
+	when.defer = defer;
+	when.isPromise = isPromise; // Determine if a thing is a promise
+	when.resolve = function(value) {
+		return defer().resolve(value);
+	};
+	when.reject = function(reason) {
+		// Rejection passes the reason on verbatim, whether or not it's a promise.
+		//   Because we -do- want to chain onto the reason here if it's a promise,
+		//   we have to send it through the success path first, then redirect it
+		//   into the failure path.
+		//
+		// This has the side effect that
+		//   when.defer().reject(x) is not the same as when.reject(x).
+		return defer().resolve(reason).then(rejected);
+	};
+
+
+	/*
+	 * Non-core primitives
+	 */
+
+	slice = [].slice;
+
+	// ES5 reduce implementation if native not available
+	// See: http://es5.github.com/#x15.4.4.21 as there are many
+	// specifics and edge cases.
+	reduceArray = [].reduce ||
+		function(reduceFunc /*, initialValue */) {
+			/*jshint maxcomplexity: 7*/
+
+			// ES5 dictates that reduce.length === 1
+
+			// This implementation deviates from ES5 spec in the following ways:
+			// 1. It does not check if reduceFunc is a Callable
+
+			var arr, args, reduced, len, i;
+
+			i = 0;
+			// This generates a jshint warning, despite being valid
+			// "Missing 'new' prefix when invoking a constructor."
+			// See https://github.com/jshint/jshint/issues/392
+			arr = Object(this);
+			len = arr.length >>> 0;
+			args = arguments;
+
+			// If no initialValue, use first item of array (we know length !== 0 here)
+			// and adjust i to start at second item
+			if(args.length <= 1) {
+				// Skip to the first real element in the array
+				for(;;) {
+					if(i in arr) {
+						reduced = arr[i++];
+						break;
+					}
+
+					// If we reached the end of the array without finding any real
+					// elements, it's a TypeError
+					if(++i >= len) {
+						throw new TypeError();
+					}
+				}
+			} else {
+				// If initialValue provided, use it
+				reduced = args[1];
+			}
+
+			// Do the actual reduce
+			for(;i < len; ++i) {
+				// Skip holes
+				if(i in arr) {
+					reduced = reduceFunc(reduced, arr[i], i, arr);
+				}
+			}
+
+			return reduced;
+		};
 
 	/**
-	 * Determines if promiseOrValue is a promise or not.  Uses the feature
-	 * test from http://wiki.commonjs.org/wiki/Promises/A to determine if
-	 * promiseOrValue is a promise.
-	 *
-	 * @param {*} promiseOrValue anything
-	 * @returns {boolean} true if promiseOrValue is a {@link Promise}
+	 * Helper that checks arrayOfCallbacks to ensure that each element is either
+	 * a function, or null or undefined.
+	 * @private
+	 * @param {number} start index at which to start checking items in arrayOfCallbacks
+	 * @param {Array} arrayOfCallbacks array to check
+	 * @throws {Error} if any element of arrayOfCallbacks is something other than
+	 * a functions, null, or undefined.
 	 */
-	function isPromise(promiseOrValue) {
-		return promiseOrValue && typeof promiseOrValue.then === 'function';
+	function checkCallbacks(start, arrayOfCallbacks) {
+		// TODO: Promises/A+ update type checking and docs
+		var arg, i = arrayOfCallbacks.length;
+
+		while(i > start) {
+			arg = arrayOfCallbacks[--i];
+
+			if (arg != null && typeof arg != 'function') {
+				throw new Error('arg '+i+' must be a function');
+			}
+		}
 	}
+
 
 	/**
 	 * Initiates a competitive race, returning a promise that will resolve when
@@ -459,7 +515,7 @@ define(function () {
 				}
 			}
 
-			return deferred.promise.then(onFulfilled, onRejected, onProgress);
+			return deferred.then(onFulfilled, onRejected, onProgress);
 
 			function rejecter(reason) {
 				rejectOne(reason);
@@ -636,194 +692,16 @@ define(function () {
 		);
 	}
 
-	//
-	// Handler queue processing
-	//
+	when.join      = join;      // Join 2 or more promises
 
-	//
-	// Experiment
-	// Can we process pending handlers for all resolved promises
-	// the the *very next tick* without introducing subsequent ticks
-	//
-	// Example:
-	// p.then(f).then(g).then(h)
-	//
-	// It should be possible to process f, g, and h in the tick
-	// immediately after the one where the above statement executes.
-	// However, when.js (and afaik, all other async promise impls) will
-	// process them in separate ticks.
-	//
-	// It may be important to be friendly to the platform's tick/timer
-	// queue.  Allowing when.js' queue to extend while it is also
-	// being processed, could potentially starve the platform tick
-	// queue.  A strategy where we drain up to N handlers from
-	// the queue, then schedule another drain, and so on, will yield
-	// some time back to the platform and be more friendly.
-	//
-	// Finding N may be tricky. Allowing N to vary adaptively may
-	// be a good solution.
+	when.all       = all;       // Resolve a list of promises
+	when.map       = map;       // Array.map() for promises
+	when.reduce    = reduce;    // Array.reduce() for promises
 
-	/*global setImmediate:true */
-	nextTick = typeof setImmediate === 'function' ? setImmediate
-		: typeof process === 'object' ? process.nextTick
-			: function(task) { setTimeout(task, 0); };
+	when.any       = any;       // One-winner race
+	when.some      = some;      // Multi-winner race
 
-	// NOTE: For sync testing only:
-//		nextTick = function(t) { t(); };
-
-	handlerQueue = [];
-	queueProcessLimit = 1000;
-	maxQueueProcessLimit = 10000;
-
-	/**
-	 * Schedule a task that will process a list of handlers
-	 * in the next queue drain run.
-	 * @param {Array} handlers queue of handlers to execute
-	 * @param {*} value passed as the only arg to each handler
-	 */
-	function scheduleHandlers(handlers, value) {
-		enqueue(function() {
-			var handler, i = 0;
-			while (handler = handlers[i++]) {
-				handler(value);
-			}
-		});
-	}
-
-	/**
-	 * Enqueue a task. If the queue is not currently scheduled to be
-	 * drained, schedule it.
-	 * @param {function} task
-	 */
-	function enqueue(task) {
-		if(handlerQueue.push(task) === 1) {
-			scheduleDrainQueue();
-		}
-	}
-
-	/**
-	 * Schedule the queue to be drained in the next tick.
-	 */
-	function scheduleDrainQueue() {
-		nextTick(drainQueue);
-	}
-
-	/**
-	 * Drain the handler queue entirely or partially, being careful to allow
-	 * the queue to be extended while it is being processed, and to continue
-	 * processing until it is truly empty.
-	 */
-	function drainQueue() {
-		var task, i = 0;
-
-		// Drain up to queueProcessLimit items to avoid starving the tick/timer queue
-		while(i < queueProcessLimit && (task = handlerQueue[i++])) {
-			task();
-		}
-
-		if (handlerQueue.length > i) {
-			// If there are handlers remaining, schedule another drain, but
-			// also increase the max number of handlers (to a point) that'll be drained
-			// from now on.
-			queueProcessLimit = Math.max(queueProcessLimit * 2, maxQueueProcessLimit);
-			handlerQueue = handlerQueue.slice(i, handlerQueue.length);
-			scheduleDrainQueue();
-		} else {
-			handlerQueue = [];
-		}
-	}
-
-	//
-	// Utility functions
-	//
-
-	/**
-	 * Helper that checks arrayOfCallbacks to ensure that each element is either
-	 * a function, or null or undefined.
-	 * @private
-	 * @param {number} start index at which to start checking items in arrayOfCallbacks
-	 * @param {Array} arrayOfCallbacks array to check
-	 * @throws {Error} if any element of arrayOfCallbacks is something other than
-	 * a functions, null, or undefined.
-	 */
-	function checkCallbacks(start, arrayOfCallbacks) {
-		// TODO: Promises/A+ update type checking and docs
-		var arg, i = arrayOfCallbacks.length;
-
-		while(i > start) {
-			arg = arrayOfCallbacks[--i];
-
-			if (arg != null && typeof arg != 'function') {
-				throw new Error('arg '+i+' must be a function');
-			}
-		}
-	}
-
-	/**
-	 * No-Op function used in method replacement
-	 * @private
-	 */
-	function noop() {}
-
-	slice = [].slice;
-
-	// ES5 reduce implementation if native not available
-	// See: http://es5.github.com/#x15.4.4.21 as there are many
-	// specifics and edge cases.
-	reduceArray = [].reduce ||
-		function(reduceFunc /*, initialValue */) {
-			/*jshint maxcomplexity: 7*/
-
-			// ES5 dictates that reduce.length === 1
-
-			// This implementation deviates from ES5 spec in the following ways:
-			// 1. It does not check if reduceFunc is a Callable
-
-			var arr, args, reduced, len, i;
-
-			i = 0;
-			// This generates a jshint warning, despite being valid
-			// "Missing 'new' prefix when invoking a constructor."
-			// See https://github.com/jshint/jshint/issues/392
-			arr = Object(this);
-			len = arr.length >>> 0;
-			args = arguments;
-
-			// If no initialValue, use first item of array (we know length !== 0 here)
-			// and adjust i to start at second item
-			if(args.length <= 1) {
-				// Skip to the first real element in the array
-				for(;;) {
-					if(i in arr) {
-						reduced = arr[i++];
-						break;
-					}
-
-					// If we reached the end of the array without finding any real
-					// elements, it's a TypeError
-					if(++i >= len) {
-						throw new TypeError();
-					}
-				}
-			} else {
-				// If initialValue provided, use it
-				reduced = args[1];
-			}
-
-			// Do the actual reduce
-			for(;i < len; ++i) {
-				// Skip holes
-				if(i in arr) {
-					reduced = reduceFunc(reduced, arr[i], i, arr);
-				}
-			}
-
-			return reduced;
-		};
-
-	function identity(x) {
-		return x;
-	}
+	when.chain     = chain;     // Make a promise trigger another resolver
 
 	return when;
 });
