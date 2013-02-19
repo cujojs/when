@@ -22,10 +22,11 @@ define(['./when'], function(when) {
      * Makes deferred cancelable, adding a cancel() method.
      *
      * @param deferred {Deferred} the {@link Deferred} to make cancelable
-     * @param canceler {Function} cancel handler function to execute when this deferred is canceled.  This
-     * is guaranteed to run before all other rejection handlers.  The canceler will NOT be executed if the
-     * deferred is rejected in the standard way, i.e. deferred.reject().  It ONLY executes if the deferred
-     * is canceled, i.e. deferred.cancel()
+     * @param canceler {Function} cancel handler function to execute when this deferred
+	 * is canceled.  This is guaranteed to run before all other rejection handlers.
+	 * The canceler will NOT be executed if the deferred is rejected in the standard
+	 * way, i.e. deferred.reject().  It ONLY executes if the deferred is canceled,
+	 * i.e. deferred.cancel()
      *
      * @returns deferred, with an added cancel() method.
      */
@@ -36,12 +37,12 @@ define(['./when'], function(when) {
         // Add a cancel method to the deferred to reject the delegate
         // with the special canceled indicator.
         deferred.cancel = function() {
-            return delegate.reject(canceler(deferred));
+            return deferred.reject(canceler(deferred));
         };
 
         // Ensure that the original resolve, reject, and progress all forward
         // to the delegate
-        deferred.promise.then(delegate.resolve, delegate.reject, delegate.progress);
+        deferred.promise.then(delegate.resolve, delegate.reject, delegate.notify);
 
         // Replace deferred's promise with the delegate promise
         deferred.promise = delegate.promise;

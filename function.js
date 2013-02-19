@@ -49,8 +49,10 @@ define(['./when'], function(when) {
 	* @returns {Promise} promise for the return value of func
 	*/
 
-	function apply(func, args) {
-		return when.all(args || []).spread(func);
+	function apply(func, promisedArgs) {
+		return when.all(promisedArgs || [], function(args) {
+			return func.apply(null, args);
+		});
 	}
 
 	/**

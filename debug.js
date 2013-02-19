@@ -136,7 +136,7 @@ define(['./when'], function(when) {
 	 * @return {Deferred} a Deferred with debug logging
 	 */
 	function deferDebug(/* id */) {
-		var d, status, value, origResolve, origReject, origProgress, origThen, id;
+		var d, status, value, origResolve, origReject, origNotify, origThen, id;
 
 		// Delegate to create a Deferred;
 		d = when.defer();
@@ -163,13 +163,18 @@ define(['./when'], function(when) {
 			return toString('Resolver', id, status, value);
 		};
 
-		origProgress = d.resolver.progress;
-		d.progress = d.resolver.progress = function(update) {
+		origNotify = d.resolver.notify;
+		d.notify = d.resolver.notify = promiseNotify;
+		
+		// deferred.progress and deferred.resolver.progress are DEPRECATED.
+		d.progress = deprecated('deferred.progress', 'deferred.notify', promiseNotify, d);
+		d.resolver.progress = deprecated('deferred.resolver.progress', 'deferred.resolver.notify', promiseNotify, d.resolver);
+		function promiseNotify(update) {
 			// Notify global debug handler, if set
 			callGlobalHandler('progress', d, update);
 
-			return origProgress(update);
-		};
+			return origNotify(update);
+		}
 
 		origResolve = d.resolver.resolve;
 		d.resolve = d.resolver.resolve = function(val) {

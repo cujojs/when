@@ -76,7 +76,7 @@ define(['./when', './cancelable', './delay', './function'], function(when, cance
 		function schedule(result) {
 			fn.apply(interval).then(vote, reject);
 			if (result !== undef) {
-				deferred.progress(result);
+				deferred.notify(result);
 			}
 		}
 

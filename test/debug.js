@@ -70,7 +70,7 @@ buster.testCase('when/debug', {
 				fail
 			).always(done);
 
-			d.progress();
+			d.notify();
 			d.resolve();
 		}
 	}

@@ -6,6 +6,11 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 # What's New?
 
+### 1.8.1
+
+* Performance improvements for [when/function](docs/api.md#synchronous-functions).
+* **DEPRECATED:** `deferred.progress` and `deferred.resolver.progress`. Use `deferred.notify` and `deferred.resolver.notify` instead.
+
 ### 1.8.0
 
 * New [when/function](docs/api.md#synchronous-functions), [when/node/function](docs/api.md#node-style-asynchronous-functions), and [when/callbacks](docs/api.md#asynchronous-functions) with functional programming goodness, and adapters for turning callback-based APIs into promise-based APIs. Kudos [@riccieri](https://github.com/riccieri)!

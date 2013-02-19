@@ -112,32 +112,32 @@ buster.testCase('promise', {
 				'is empty string': function(done) {
 					var d = when.defer();
 					d.promise.then(null, null, '').then(fail, fail, assert).then(null, null, done);
-					d.progress(true);
+					d.notify(true);
 				},
 				'is false': function(done) {
 					var d = when.defer();
 					d.promise.then(null, null, false).then(fail, fail, assert).then(null, null, done);
-					d.progress(true);
+					d.notify(true);
 				},
 				'is true': function(done) {
 					var d = when.defer();
 					d.promise.then(null, null, true).then(fail, fail, assert).then(null, null, done);
-					d.progress(true);
+					d.notify(true);
 				},
 				'is object': function(done) {
 					var d = when.defer();
 					d.promise.then(null, null, {}).then(fail, fail, assert).then(null, null, done);
-					d.progress(true);
+					d.notify(true);
 				},
 				'is falsey': function(done) {
 					var d = when.defer();
 					d.promise.then(null, null, 0).then(fail, fail, assert).then(null, null, done);
-					d.progress(true);
+					d.notify(true);
 				},
 				'is truthy': function(done) {
 					var d = when.defer();
 					d.promise.then(null, null, 1).then(fail, fail, assert).then(null, null, done);
-					d.progress(true);
+					d.notify(true);
 				}
 			}
 		}
@@ -473,7 +473,7 @@ buster.testCase('promise', {
 			done();
 		});
 
-		d.progress(expected);
+		d.notify(expected);
 	},
 
 	'always': {
@@ -515,7 +515,7 @@ buster.testCase('promise', {
 				done();
 			});
 
-			d.progress(1);
+			d.notify(1);
 		}
 
 	},

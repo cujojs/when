@@ -191,9 +191,9 @@ buster.testCase('when.defer', {
 		}
 	},
 
-	'progress': {
+	'notify': {
 
-		'should progress': function(done) {
+		'should notify of progress updates': function(done) {
 			var d = when.defer();
 
 			d.promise.then(
@@ -205,7 +205,7 @@ buster.testCase('when.defer', {
 				}
 			);
 
-			d.progress(sentinel);
+			d.notify(sentinel);
 		},
 
 		'should propagate progress to downstream promises': function(done) {
@@ -224,7 +224,7 @@ buster.testCase('when.defer', {
 				}
 			);
 
-			d.progress(sentinel);
+			d.notify(sentinel);
 		},
 
 		'should propagate transformed progress to downstream promises': function(done) {
@@ -243,7 +243,7 @@ buster.testCase('when.defer', {
 				}
 			);
 
-			d.progress(other);
+			d.notify(other);
 		},
 
 		'should propagate caught exception value as progress': function(done) {
@@ -262,7 +262,7 @@ buster.testCase('when.defer', {
 				}
 			);
 
-			d.progress(other);
+			d.notify(other);
 		},
 
 		'should forward progress events when intermediary callback (tied to a resolved promise) returns a promise': function(done) {
@@ -285,7 +285,7 @@ buster.testCase('when.defer', {
 				}
 			);
 
-			d2.progress(sentinel);
+			d2.notify(sentinel);
 		},
 
 		'should forward progress events when intermediary callback (tied to an unresovled promise) returns a promise': function(done) {
@@ -307,7 +307,7 @@ buster.testCase('when.defer', {
 
 			// resolve d AFTER calling attaching progress handler
 			d.resolve();
-			d2.progress(sentinel);
+			d2.notify(sentinel);
 		},
 
 		'should forward progress when resolved with another promise': function(done) {
@@ -331,7 +331,7 @@ buster.testCase('when.defer', {
 
 			d.resolve(d2.promise);
 
-			d2.progress();
+			d2.notify();
 		},
 
 		'should allow resolve after progress': function(done) {
@@ -349,7 +349,7 @@ buster.testCase('when.defer', {
 				}
 			);
 
-			d.progress();
+			d.notify();
 			d.resolve();
 		},
 
@@ -368,7 +368,7 @@ buster.testCase('when.defer', {
 				}
 			);
 
-			d.progress();
+			d.notify();
 			d.reject();
 		},
 
@@ -377,9 +377,9 @@ buster.testCase('when.defer', {
 
 			d = when.defer();
 
-			before = d.progress(sentinel);
+			before = d.notify(sentinel);
 			d.resolve();
-			after = d.progress(sentinel);
+			after = d.notify(sentinel);
 
 			assert.same(before, after);
 		}
@@ -410,7 +410,7 @@ buster.testCase('when.defer', {
 		var d = when.defer();
 		d.resolve();
 
-		refute.defined(d.progress());
+		refute.defined(d.notify());
 	},
 
 	'should return a promise for passed-in resolution value when already rejected': function(done) {
@@ -438,7 +438,7 @@ buster.testCase('when.defer', {
 		var d = when.defer();
 		d.reject();
 
-		refute.defined(d.progress());
+		refute.defined(d.notify());
 	}
 
 });

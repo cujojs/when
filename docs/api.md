@@ -103,10 +103,13 @@ var resolver = deferred.resolver;
 ```js
 deferred.resolve(promiseOrValue);
 deferred.reject(reason);
-deferred.progress(update);
+deferred.notify(update);
 
 // NOTE: deferred.then is DEPRECATED, use deferred.promise.then
 deferred.then(onFulfilled, onRejected, onProgress);
+
+// NOTE: deferred.progress is DEPRECATED, use deferred.notify
+deferred.progress(update);
 ```
 
 ## Resolver
@@ -117,6 +120,9 @@ The resolver represents *responsibility*--the responsibility of fulfilling or re
 var resolver = deferred.resolver;
 resolver.resolve(promiseOrValue);
 resolver.reject(reason);
+resolver.notify(update);
+
+// NOTE: resolver.progress is DEPRECATED, use resolver.notify
 resolver.progress(update);
 ```
 
@@ -243,7 +249,7 @@ var chainedPromise = d.promise.then(doStuff);
 chainedPromise.then(undefined, undefined, myOtherProgressHandler);
 
 var update = 1;
-d.progress(update);
+d.notify(update);
 ```
 
 ### 1.6.0 and later
@@ -278,7 +284,7 @@ var chainedPromise = d.promise.then(doStuff);
 chainedPromise.then(undefined, undefined, myOtherProgressHandler);
 
 var update = 1;
-d.progress(update);
+d.notify(update);
 
 // Results in:
 // logProgress(1);
