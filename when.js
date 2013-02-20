@@ -15,9 +15,7 @@
 
 (function(define) { 'use strict';
 define(function () {
-	var reduceArray, slice,
-		nextTick, handlerQueue, queueProcessLimit,
-		undef;
+	var reduceArray, slice, nextTick, handlerQueue, undef;
 
 	//
 	// Public API
@@ -693,7 +691,6 @@ define(function () {
 			: function(task) { setTimeout(task, 0); };
 
 	handlerQueue = [];
-	queueProcessLimit = 1000;
 
 	/**
 	 * Enqueue a task. If the queue is not currently scheduled to be
