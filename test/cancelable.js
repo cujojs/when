@@ -18,7 +18,7 @@ buster.testCase('when/cancelable', {
 		var c = cancelable(when.defer(), function() { return sentinel; });
 		c.cancel();
 
-		c.then(
+		c.promise.then(
 			fail,
 			function(v) {
 				assert.equals(v, sentinel);
@@ -45,7 +45,7 @@ buster.testCase('when/cancelable', {
 		c.reject(sentinel);
 		c.cancel();
 
-		c.then(
+		c.promise.then(
 			fail,
 			function(v) {
 				assert.equals(v, sentinel);
@@ -58,7 +58,7 @@ buster.testCase('when/cancelable', {
 		c.resolve(sentinel);
 		c.cancel();
 
-		c.then(
+		c.promise.then(
 			function(val) {
 				assert.same(val, sentinel);
 			},
@@ -69,7 +69,7 @@ buster.testCase('when/cancelable', {
 	'should call progback for cancelable deferred': function(done) {
 		var c = cancelable(when.defer());
 
-		c.then(null, null, function (status) {
+		c.promise.then(null, null, function (status) {
 			assert.same(status, sentinel);
 			done();
 		});
