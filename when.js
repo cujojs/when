@@ -363,14 +363,16 @@ define(function () {
 	 * @return {Promise} fulfilled promise
 	 */
 	function fulfilled(value) {
-		return new Promise(function (onFulfilled) {
+		var self = new Promise(function (onFulfilled) {
 			try {
-				return coerce(typeof onFulfilled == 'function'
-					? onFulfilled(value) : value);
+				return typeof onFulfilled == 'function'
+					? coerce(onFulfilled(value)) : self;
 			} catch (e) {
 				return rejected(e);
 			}
 		});
+
+		return self;
 	}
 
 	/**
@@ -382,14 +384,16 @@ define(function () {
 	 * @return {Promise} rejected promise
 	 */
 	function rejected(reason) {
-		return new Promise(function (_, onRejected) {
+		var self = new Promise(function (_, onRejected) {
 			try {
-				return coerce(typeof onRejected == 'function'
-					? onRejected(reason) : rejected(reason));
+				return typeof onRejected == 'function'
+					? coerce(onRejected(reason)) : self;
 			} catch (e) {
 				return rejected(e);
 			}
 		});
+
+		return self;
 	}
 
 	/**
