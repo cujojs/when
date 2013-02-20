@@ -162,7 +162,7 @@ define(function () {
 	 * @return {Deferred}
 	 */
 	function defer() {
-		var deferred, promise, handlers, progressHandlers,
+		var deferred, promise, handlers,
 			_bind, _notify, _resolve;
 
 		/**
@@ -191,30 +191,15 @@ define(function () {
 		};
 
 		handlers = [];
-		progressHandlers = [];
 
 		_bind = function(onFulfilled, onRejected, onProgress, next) {
-			var progressHandler = typeof onProgress === 'function'
-				? function(update) {
-					try {
-						// Allow progress handler to transform progress event
-						next.notify(onProgress(update));
-					} catch(e) {
-						// Use caught value as progress
-						next.notify(e);
-					}
-				}
-				: next.notify;
-
 			handlers.push(function(promise) {
-				promise.then(onFulfilled, onRejected).then(
+				promise.then(onFulfilled, onRejected, onProgress).then(
 					function(value)  { next.resolve(value); },
 					function(reason) { next.reject(reason); },
-					progressHandler
+					function(update) { next.notify(update); }
 				);
 			});
-
-			progressHandlers.push(progressHandler);
 		};
 
 		/**
@@ -223,7 +208,7 @@ define(function () {
 		 * @param {*} update progress event payload to pass to all listeners
 		 */
 		_notify = function(update) {
-			scheduleHandlers(progressHandlers, update);
+			scheduleHandlers(handlers, progressing(update));
 			return update;
 		};
 
@@ -241,9 +226,9 @@ define(function () {
 			_notify = identity;
 
 			// Make _bind invoke callbacks "immediately"
-			_bind = function(fulfilled, rejected, _, next) {
+			_bind = function(fulfilled, rejected, progress, next) {
 				enqueue(function() {
-					value.then(fulfilled, rejected).then(
+					value.then(fulfilled, rejected, progress).then(
 						function(value)  { next.resolve(value); },
 						function(reason) { next.reject(reason); },
 						function(update) { next.notify(update); }
@@ -253,7 +238,7 @@ define(function () {
 
 			// Notify handlers
 			scheduleHandlers(handlers, value);
-			handlers = progressHandlers = undef;
+			handlers = undef;
 
 			return promise;
 		};
@@ -390,6 +375,26 @@ define(function () {
 					? coerce(onRejected(reason)) : self;
 			} catch (e) {
 				return rejected(e);
+			}
+		});
+
+		return self;
+	}
+
+	/**
+	 * Create a progress promise with the supplied update.
+	 * @private
+	 *
+	 * @param {*} update
+	 * @return {Promise} progress promise
+	 */
+	function progressing(update) {
+		var self = new Promise(function (_, __, onProgress) {
+			try {
+				return typeof onProgress == 'function'
+					? progressing(onProgress(update)) : self;
+			} catch (e) {
+				return progressing(e);
 			}
 		});
 
