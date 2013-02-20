@@ -499,7 +499,7 @@ when.some(remotes, 1, initP2PServer, failGracefully);
 
 # Unbounded lists
 
-[when.reduce], [when/sequence], and [when/pipeline] are great ways to process asynchronous arrays of promises and tasks.  Sometimes, however, you may not know the array in advance, or may not need or want to process *all* the items in the array.  For example, here are a few situations where you may not know the bounds:
+[when.reduce](#whenreduce), [when/sequence](#whensequence), and [when/pipeline](#whenpipeline) are great ways to process asynchronous arrays of promises and tasks.  Sometimes, however, you may not know the array in advance, or may not need or want to process *all* the items in the array.  For example, here are a few situations where you may not know the bounds:
 
 1. You need to process a queue to which items are still being added as you process it
 1. You need to execute a task repeatedly until a particular condition becomes true
