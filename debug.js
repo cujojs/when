@@ -165,7 +165,7 @@ define(['./when'], function(when) {
 
 		origNotify = d.resolver.notify;
 		d.notify = d.resolver.notify = promiseNotify;
-		
+
 		// deferred.progress and deferred.resolver.progress are DEPRECATED.
 		d.progress = deprecated('deferred.progress', 'deferred.notify', promiseNotify, d);
 		d.resolver.progress = deprecated('deferred.resolver.progress', 'deferred.resolver.notify', promiseNotify, d.resolver);
