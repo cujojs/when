@@ -215,6 +215,10 @@ define(['./when'], function(when) {
 
 	whenDebug.defer = deferDebug;
 	whenDebug.isPromise = when.isPromise;
+	whenDebug.chain = deprecated(
+		'when.chain(p, resolver)',
+		'resolver.resolve(p) or resolver.resolve(p.yield(optionalValue))',
+		when.chain, when);
 
 	// For each method we haven't already replaced, replace it with
 	// one that sets up debug logging on the returned promise
