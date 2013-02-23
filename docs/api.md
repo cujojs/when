@@ -13,7 +13,7 @@ API
 	* [when.reject](#whenreject)
 1. [Joining promises](#joining-promises)
 	* [when.join](#whenjoin)
-	* [when.chain](#whenchain)
+	* [when.chain](#whenchain) **DEPRECATED**
 1. [Arrays of promises](#arrays-of-promises)
 	* [when.all](#whenall)
 	* [when.map](#whenmap)
@@ -39,8 +39,6 @@ API
 	* [Node-style asynchronous functions](#node-style-asynchronous-functions)
 1. [Helpers](#helpers)
 	* [when/apply](#whenapply)
-1. [Configuration](#configuration)
-	* [Paranoid mode](#paranoid-mode) (NO LONGER APPLICABLE)
 
 ## when()
 
@@ -367,6 +365,44 @@ var largerPromise = when.join(promise1, promise2).then(function (values) {
 * [when.all()](#whenall) - resolving an Array of promises
 
 ## when.chain()
+
+**DEPRECATED**
+
+Unfortunately, `when.chain` depends on a resolver interface for which there is no *de-facto* or established standard. While it's safe to use with when.js deferred and resolver objects, there's no guarantee it's usable with any other implementations' resolution interface. Even if a 3rd party resolver supports an API with the required `resolve` and `reject` methods, they may work differently. For example, some promise implementations do not support passing a promise to their `resolve` method.
+
+You can easily replace `when.chain` with an equivalent construct:
+
+```js
+// These are equivalent when promise and resolver are when.js
+when.chain(promise, resolver);
+resolver.resolve(promise);
+```
+
+```js
+// If using optionalValue, use promise.yield
+// These are equivalent
+when.chain(promise, resolver, value);
+
+// if promise is known to be a when.js promise:
+resolver.resolve(promise.yield(value)); // less pretty than when.chain?
+
+// if promise might not be a when.js promise, it can be assimilated
+// using when(), so that yield is available
+resolver.resolve(when(promise).yield(value));
+```
+
+With 3rd party resolvers, all bets are off, but the following options represent the usual ways to accomplish the goal, depending on what the 3rd party resolver API supports:
+
+```js
+// If 3rd party resolver accepts promises
+// "resolve" is whatever name the 3rd party resolver uses to perform
+// a "proper" resolve with another promise
+resolver.resolve(promise);
+
+// If 3rd party resolver DOESN'T accept promises
+// "fulfill" is whatever name the 3rd party resolver uses to fulfill its promise verbatim
+promise.then(resolver.fulfill, resolver.reject);
+```
 
 ```js
 var promise = when.chain(promiseOrValue, resolver, optionalValue)
@@ -1175,75 +1211,3 @@ when.all(arrayOfPromisesOrValues, apply(functionThatAcceptsMultipleArgs));
 
 More when/apply [examples on the wiki](https://github.com/cujojs/when/wiki/when-apply).
 
-# Configuration
-
-## Paranoid mode
-
-### PARANOID MODE NO LONGER APPLICABLE
-
-As of 1.6.0, when.js never calls `Object.freeze` due to the v8 performance penalty, so there is no paranoid vs. non-paranoid mode.  If you had disabled paranoid mode using the instructions below, that setting is currently harmless and can be safely removed.
-
-----
-
-By default, the `when` module, and all when.js promises are *frozen* (in enviroments that provide `Object.freeze()`).  This prevents promise consumers from interfering with one another (for example, by replacing a promise's `.then()` method to intercept results), or from modifying `when()`, `when.defer()`, or any other method.  It means that when you write code that depends on when.js, you get what you expect.
-
-However, you may not need that level of paranoia.  For example, you may trust all the code in your application, either because you or your team members wrote it all, or it comes from other trustworthy sources.
-
-## Turning off Paranoid mode
-
-**IMPORTANT:** This is a tradeoff of safety vs. performance.  Please choose carefully for your particular situation!  This setting is checked *once at load time, and never again*.  So, once paranoid mode is enabled (default), or disabled, it cannot be changed at runtime.
-
-Due to a [major performance degredation of frozen objects in v8](http://stackoverflow.com/questions/8435080/any-performance-benefit-to-locking-down-javascript-objects), you can turn off when.js's default paranoid setting, and get a significant speed boost.  In some tests, we've seen as much as a 4x increase *just by not calling Object.freeze*.
-
-Use one of the following to turn off paranoid mode, so that when.js no longer calls `Object.freeze` on any of its internal data structures.
-
-### AMD
-
-Use a module configuration to turn off paranoid mode.  Your AMD loader configuration syntax may vary.  Here are examples for curl.js and RequireJS:
-
-#### curl.js
-
-```js
-{
-	baseUrl: //...
-	packages: [
-		{ name: 'when', location: 'path/to/when', main: 'when',
-			config: {
-				paranoid: false
-			}
-		}
-	]
-}
-```
-
-#### RequireJS
-
-```js
-{
-	baseUrl: //...
-	config: {
-		when: {
-			paranoid: false
-		},
-		// Other module configs ...
-	}
-}
-```
-
-See the [module config section](http://requirejs.org/docs/api.html#config-moduleconfig) of the RequireJS docs for more info and examples.
-
-### Node and RingoJS
-
-Set the `WHEN_PARANOID` environment variable to "false".  For example, depending on your shell:
-
-`export WHEN_PARANOID=false`
-
-**NOTE:** It *must* be the string literal "false".  No other value (0, "no", etc.) will work.
-
-### Script Tag
-
-*Before* loading `when.js` Set `window.when_config.paranoid` to `false`:
-
-```js
-window.when_config = { paranoid: false };
-```

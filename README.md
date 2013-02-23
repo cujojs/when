@@ -10,7 +10,9 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 * Performance improvements for [when/function](docs/api.md#synchronous-functions).
 * [Documentation](docs/api.md) updates and fixes. Thanks, [@unscriptable](https://github.com/unscriptable)!
-* **DEPRECATED:** `deferred.progress` and `deferred.resolver.progress`. Use `deferred.notify` and `deferred.resolver.notify` instead.
+* **DEPRECATED:** `deferred.progress` and `deferred.resolver.progress`. Use [`deferred.notify`](docs/api.md#progress-events) and [`deferred.resolver.notify`](docs/api.md#progress-events) instead.
+* **DEPRECATED:** [`when.chain`](docs/api.md#whenchain). Use [`resolver.resolve(promise)`](docs/api.md#resolver) or `resolver.resolve(promise.yield)` ([see `promise.yield`](docs/api.md#yield)) instead.
+* **DEPRECATED:** `when/timed` module.  Use [`when/delay`](docs/api.md#whendelay) and [`when/timeout`](docs/api.md#whentimeout) modules instead.
 
 ### 1.8.0
 
