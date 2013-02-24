@@ -8,6 +8,8 @@ It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests),
 
 ### 1.8.1
 
+* Last 1.x.x release before 2.0.0 barring critical fixes.
+	* To prepare for 2.0.0, [test your code against the dev-200 branch](https://github.com/cujojs/when/tree/dev-200). It is fully API compatible, but has fully asynchronous resolutions.
 * Performance improvements for [when/function](docs/api.md#synchronous-functions).
 * [Documentation](docs/api.md) updates and fixes. Thanks, [@unscriptable](https://github.com/unscriptable)!
 * **DEPRECATED:** `deferred.progress` and `deferred.resolver.progress`. Use [`deferred.notify`](docs/api.md#progress-events) and [`deferred.resolver.notify`](docs/api.md#progress-events) instead.
