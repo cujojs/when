@@ -18,7 +18,7 @@ buster.testCase('when/cancelable', {
 		var c = cancelable(when.defer(), function() { return sentinel; });
 		c.cancel();
 
-		c.then(
+		c.promise.then(
 			fail,
 			function(v) {
 				assert.equals(v, sentinel);

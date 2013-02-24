@@ -32,7 +32,7 @@ define(['./when'], function(when) {
 			runTask = function(task, arg) {
 				return task(arg);
 			};
-			
+
 			return task.apply(null, args);
 		};
 

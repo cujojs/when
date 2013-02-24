@@ -165,7 +165,7 @@ define(['./when'], function(when) {
 
 		origNotify = d.resolver.notify;
 		d.notify = d.resolver.notify = promiseNotify;
-		
+
 		// deferred.progress and deferred.resolver.progress are DEPRECATED.
 		d.progress = deprecated('deferred.progress', 'deferred.notify', promiseNotify, d);
 		d.resolver.progress = deprecated('deferred.resolver.progress', 'deferred.resolver.notify', promiseNotify, d.resolver);
@@ -215,6 +215,10 @@ define(['./when'], function(when) {
 
 	whenDebug.defer = deferDebug;
 	whenDebug.isPromise = when.isPromise;
+	whenDebug.chain = deprecated(
+		'when.chain(p, resolver)',
+		'resolver.resolve(p) or resolver.resolve(p.yield(optionalValue))',
+		when.chain, when);
 
 	// For each method we haven't already replaced, replace it with
 	// one that sets up debug logging on the returned promise

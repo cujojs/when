@@ -13,7 +13,7 @@ API
 	* [when.reject](#whenreject)
 1. [Joining promises](#joining-promises)
 	* [when.join](#whenjoin)
-	* [when.chain](#whenchain)
+	* [when.chain](#whenchain) **DEPRECATED**
 1. [Arrays of promises](#arrays-of-promises)
 	* [when.all](#whenall)
 	* [when.map](#whenmap)
@@ -39,8 +39,6 @@ API
 	* [Node-style asynchronous functions](#node-style-asynchronous-functions)
 1. [Helpers](#helpers)
 	* [when/apply](#whenapply)
-1. [Configuration](#configuration)
-	* [Paranoid mode](#paranoid-mode) (NO LONGER APPLICABLE)
 
 ## when()
 
@@ -293,13 +291,16 @@ d.notify(update);
 
 # Creating promises
 
+Typically, promises are created as part of a [Deferred](#deferred) operation.  However, there are occasions when the fate of a promise is already known.
+
 ## when.defer()
 
 ```js
 var deferred = when.defer();
+var promise = deferred.promise;
 ```
 
-Create a new [Deferred](#deferred) that can resolved at a later time.
+Create a new [Deferred](#deferred) that can be used to resolve or reject its associated promise at a later time.
 
 ## when.resolve()
 
@@ -341,6 +342,8 @@ Return true if `anything` is truthy and implements the then() promise API.  Note
 
 # Joining promises
 
+Promises can be immensely helpful when coordinating multiple *eventual outcomes*.
+
 ## when.join()
 
 ```js
@@ -349,18 +352,65 @@ var joinedPromise = when.join(promiseOrValue1, promiseOrValue2, ...);
 
 Return a promise that will resolve only once *all* the inputs have resolved.  The resolution value of the returned promise will be an array containing the resolution values of each of the inputs.
 
+If any of the input promises is rejected, the returned promise will be rejected with the reason from the first one that is rejected.
+
+```js
+// largerPromise will resolve to the greater of two eventual values
+var largerPromise = when.join(promise1, promise2).then(function (values) {
+	return values[0] > values[1] ? values[0] : values[1];
+});
+```
+
 ### See also:
 * [when.all()](#whenall) - resolving an Array of promises
 
 ## when.chain()
 
+**DEPRECATED**
+
+Unfortunately, `when.chain` depends on a resolver interface for which there is no *de-facto* or established standard. While it's safe to use with when.js deferred and resolver objects, there's no guarantee it's usable with any other implementations' resolution interface. Even if a 3rd party resolver supports an API with the required `resolve` and `reject` methods, they may work differently. For example, some promise implementations do not support passing a promise to their `resolve` method.
+
+You can easily replace `when.chain` with an equivalent construct:
+
+```js
+// These are equivalent when promise and resolver are when.js
+when.chain(promise, resolver);
+resolver.resolve(promise);
+```
+
+```js
+// If using optionalValue, use promise.yield
+// These are equivalent
+when.chain(promise, resolver, value);
+
+// if promise is known to be a when.js promise:
+resolver.resolve(promise.yield(value)); // less pretty than when.chain?
+
+// if promise might not be a when.js promise, it can be assimilated
+// using when(), so that yield is available
+resolver.resolve(when(promise).yield(value));
+```
+
+With 3rd party resolvers, all bets are off, but the following options represent the usual ways to accomplish the goal, depending on what the 3rd party resolver API supports:
+
+```js
+// If 3rd party resolver accepts promises
+// "resolve" is whatever name the 3rd party resolver uses to perform
+// a "proper" resolve with another promise
+resolver.resolve(promise);
+
+// If 3rd party resolver DOESN'T accept promises
+// "fulfill" is whatever name the 3rd party resolver uses to fulfill its promise verbatim
+promise.then(resolver.fulfill, resolver.reject);
+```
+
 ```js
 var promise = when.chain(promiseOrValue, resolver, optionalValue)
 ```
 
-Arrange for `resolver` to be resolved when `promiseOrValue` resolves.  If `optionalValue` is provided, `resolver` will be resolved with `optionalValue`, if provided, or otherwise with the resolution value of `promiseOrValue`.
+Arrange for `resolver` to be resolved when `promiseOrValue` resolves.  If `optionalValue` is provided, `resolver` will be resolved with `optionalValue`, or otherwise with the resolution value of `promiseOrValue`.
 
-Returns a new promise that will resolve when `promiseOrValue` resolves, with `optionalValue` as its resolution value, if provided, or otherwise with the resolution value of `promiseOrValue`.
+Returns a new promise that will also resolve when `promiseOrValue` resolves, with `optionalValue` as its resolution value, if provided, or otherwise with the resolution value of `promiseOrValue`.
 
 Where:
 
@@ -368,7 +418,11 @@ Where:
 * `resolver` - any object that supports the [Resolver API](#resolver)
 * `optionalValue` - any value.  **Note:** May be a promise if `resolver` supports being resolved with another promise.  When.js resolvers *do* support this, but other implementations may not.
 
+> TODO: this needs an example badly.
+
 # Arrays of promises
+
+When.js provides methods to use array-like patterns to coordinate several promises.
 
 ## when.all()
 
@@ -381,6 +435,8 @@ Where:
 * array is an Array *or a promise for an array*, which may contain promises and/or values.
 
 Return a promise that will resolve only once *all* the items in `array` have resolved.  The resolution value of the returned promise will be an array containing the resolution values of each of the items in `array`.
+
+If any of the promises is rejected, the returned promise will be rejected with the rejection reason of the first promise that was rejected.
 
 ### See also:
 * [when.join()](#whenjoin) - joining multiple promises
@@ -397,6 +453,8 @@ Where:
 
 Traditional map function, similar to `Array.prototype.map()`, but allows input to contain promises and/or values, and mapFunc may return either a value or a promise.
 
+If any of the promises is rejected, the returned promise will be rejected with the rejection reason of the first promise that was rejected.
+
 The map function should have the signature:
 
 ```js
@@ -405,7 +463,7 @@ mapFunc(item)
 
 Where:
 
-* `item` is a fully resolved value of a promise or value in `promisesOrValues`
+* `item` is a fully resolved value
 
 ## when.reduce()
 
@@ -428,11 +486,22 @@ reduceFunc(currentValue, nextItem, index, total)
 Where:
 
 * `currentValue` is the current accumulated reduce value
-* `nextItem` is the fully resolved value of the promise or value at `index` in `promisesOrValues`
-* `index` the *basis* of `nextItem` ... practically speaking, this is the array index of the promiseOrValue corresponding to `nextItem`
+* `nextItem` is the fully resolved value at `index` in `promisesOrValues`
+* `index` is the *basis* of `nextItem` ... practically speaking, this is the array index of the promiseOrValue corresponding to `nextItem`
 * `total` is the total number of items in `promisesOrValues`
 
+```js
+// sum the eventual values of several promises
+var sumPromise = when.reduce(inputPromisesOrValues, function (sum, value) {
+	return sum += value;
+}, 0);
+```
+
+If any of the promises is rejected, the returned promise will be rejected with the rejection reason of the first promise that was rejected.
+
 # Competitive races
+
+The *competitive race* pattern may be used if one or more of the entire possible set of *eventual outcomes* are sufficient to resolve a promise.
 
 ## when.any()
 
@@ -458,9 +527,15 @@ Where:
 
 Initiates a competitive race that allows `howMany` winners, returning a promise that will resolve when `howMany` of the items in `array` resolve.  The returned promise will reject if it becomes impossible for `howMany` items to resolve--that is, when `(array.length - howMany) + 1` items reject.  The resolution value of the returned promise will be an array of `howMany` winning item resolution values.  The rejection value will be an array of `(array.length - howMany) + 1` rejection reasons.
 
+```js
+// try all of the p2p servers and fail if at least one doesn't respond
+var remotes = ['p2p.cdn.com', 'p2p2.cdn.com', 'p2p3.cdn.com'];
+when.some(remotes, 1, initP2PServer, failGracefully);
+```
+
 # Unbounded lists
 
-[when.reduce], [when/sequence], and [when/pipeline] are great ways to process asynchronous arrays of promises and tasks.  Sometimes, however, you may not know the array in advance, or may not need or want to process *all* the items in the array.  For example, here are a few situations where you may not know the bounds:
+[when.reduce](#whenreduce), [when/sequence](#whensequence), and [when/pipeline](#whenpipeline) are great ways to process asynchronous arrays of promises and tasks.  Sometimes, however, you may not know the array in advance, or may not need or want to process *all* the items in the array.  For example, here are a few situations where you may not know the bounds:
 
 1. You need to process a queue to which items are still being added as you process it
 1. You need to execute a task repeatedly until a particular condition becomes true
@@ -1136,75 +1211,3 @@ when.all(arrayOfPromisesOrValues, apply(functionThatAcceptsMultipleArgs));
 
 More when/apply [examples on the wiki](https://github.com/cujojs/when/wiki/when-apply).
 
-# Configuration
-
-## Paranoid mode
-
-### PARANOID MODE NO LONGER APPLICABLE
-
-As of 1.6.0, when.js never calls `Object.freeze` due to the v8 performance penalty, so there is no paranoid vs. non-paranoid mode.  If you had disabled paranoid mode using the instructions below, that setting is currently harmless and can be safely removed.
-
-----
-
-By default, the `when` module, and all when.js promises are *frozen* (in enviroments that provide `Object.freeze()`).  This prevents promise consumers from interfering with one another (for example, by replacing a promise's `.then()` method to intercept results), or from modifying `when()`, `when.defer()`, or any other method.  It means that when you write code that depends on when.js, you get what you expect.
-
-However, you may not need that level of paranoia.  For example, you may trust all the code in your application, either because you or your team members wrote it all, or it comes from other trustworthy sources.
-
-## Turning off Paranoid mode
-
-**IMPORTANT:** This is a tradeoff of safety vs. performance.  Please choose carefully for your particular situation!  This setting is checked *once at load time, and never again*.  So, once paranoid mode is enabled (default), or disabled, it cannot be changed at runtime.
-
-Due to a [major performance degredation of frozen objects in v8](http://stackoverflow.com/questions/8435080/any-performance-benefit-to-locking-down-javascript-objects), you can turn off when.js's default paranoid setting, and get a significant speed boost.  In some tests, we've seen as much as a 4x increase *just by not calling Object.freeze*.
-
-Use one of the following to turn off paranoid mode, so that when.js no longer calls `Object.freeze` on any of its internal data structures.
-
-### AMD
-
-Use a module configuration to turn off paranoid mode.  Your AMD loader configuration syntax may vary.  Here are examples for curl.js and RequireJS:
-
-#### curl.js
-
-```js
-{
-	baseUrl: //...
-	packages: [
-		{ name: 'when', location: 'path/to/when', main: 'when',
-			config: {
-				paranoid: false
-			}
-		}
-	]
-}
-```
-
-#### RequireJS
-
-```js
-{
-	baseUrl: //...
-	config: {
-		when: {
-			paranoid: false
-		},
-		// Other module configs ...
-	}
-}
-```
-
-See the [module config section](http://requirejs.org/docs/api.html#config-moduleconfig) of the RequireJS docs for more info and examples.
-
-### Node and RingoJS
-
-Set the `WHEN_PARANOID` environment variable to "false".  For example, depending on your shell:
-
-`export WHEN_PARANOID=false`
-
-**NOTE:** It *must* be the string literal "false".  No other value (0, "no", etc.) will work.
-
-### Script Tag
-
-*Before* loading `when.js` Set `window.when_config.paranoid` to `false`:
-
-```js
-window.when_config = { paranoid: false };
-```
