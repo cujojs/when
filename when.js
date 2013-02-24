@@ -34,8 +34,6 @@ define(function () {
 	when.any       = any;       // One-winner race
 	when.some      = some;      // Multi-winner race
 
-	when.chain     = chain;     // Make a promise trigger another resolver
-
 	when.isPromise = isPromise; // Determine if a thing is a promise
 
 	/**
@@ -641,41 +639,6 @@ define(function () {
 
 			return reduceArray.apply(array, args);
 		});
-	}
-
-	/**
-	 * Ensure that resolution of promiseOrValue will trigger resolver with the
-	 * value or reason of promiseOrValue, or instead with resolveValue if it is provided.
-	 *
-	 * @param promiseOrValue
-	 * @param {Object} resolver
-	 * @param {function} resolver.resolve
-	 * @param {function} resolver.reject
-	 * @param {*} [resolveValue]
-	 * @returns {Promise}
-	 */
-	function chain(promiseOrValue, resolver, resolveValue) {
-		var useResolveValue = arguments.length > 2;
-
-		return when(promiseOrValue,
-			function(value)  {
-				if(useResolveValue) {
-					value = resolveValue;
-				}
-				// Don't completely trust resolver; it may not be a when.js resolver
-				resolver.resolve(value);
-				return value;
-			},
-			function(reason) {
-				// Don't completely trust resolver; it may not be a when.js resolver
-				resolver.reject(reason);
-				return rejected(reason);
-			},
-			function(update) {
-				typeof resolver.notify === 'function' && resolver.notify(update);
-				return update;
-			}
-		);
 	}
 
 	//
