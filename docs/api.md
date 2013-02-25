@@ -375,6 +375,8 @@ You can easily replace `when.chain` with an equivalent construct:
 ```js
 // These are equivalent when promise and resolver are when.js
 when.chain(promise, resolver);
+
+// This is the preferred way to trigger resolution with a promise
 resolver.resolve(promise);
 ```
 
@@ -384,14 +386,14 @@ resolver.resolve(promise);
 when.chain(promise, resolver, value);
 
 // if promise is known to be a when.js promise:
-resolver.resolve(promise.yield(value)); // less pretty than when.chain?
+resolver.resolve(promise.yield(value));
 
 // if promise might not be a when.js promise, it can be assimilated
 // using when(), so that yield is available
 resolver.resolve(when(promise).yield(value));
 ```
 
-With 3rd party resolvers, all bets are off, but the following options represent the usual ways to accomplish the goal, depending on what the 3rd party resolver API supports:
+With 3rd party resolvers, you should consult the documentation of the 3rd party library.  The following options represent the *usual ways* to accomplish the goal, depending on what the 3rd party resolver API supports:
 
 ```js
 // If 3rd party resolver accepts promises
@@ -403,6 +405,8 @@ resolver.resolve(promise);
 // "fulfill" is whatever name the 3rd party resolver uses to fulfill its promise verbatim
 promise.then(resolver.fulfill, resolver.reject);
 ```
+
+### `when.chain` docs
 
 ```js
 var promise = when.chain(promiseOrValue, resolver, optionalValue)
