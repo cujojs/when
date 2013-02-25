@@ -422,8 +422,6 @@ Where:
 * `resolver` - any object that supports the [Resolver API](#resolver)
 * `optionalValue` - any value.  **Note:** May be a promise if `resolver` supports being resolved with another promise.  When.js resolvers *do* support this, but other implementations may not.
 
-> TODO: this needs an example badly.
-
 # Arrays of promises
 
 When.js provides methods to use array-like patterns to coordinate several promises.
