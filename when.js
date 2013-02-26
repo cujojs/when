@@ -209,21 +209,21 @@ define(function () {
 
 		/**
 		 * Transition from pre-resolution state to post-resolution state, notifying
-		 * all listeners of the resolution or rejection
+		 * all listeners of the ultimate fulfillment or rejection
 		 * @private
-		 * @param {*} value the value of this deferred
+		 * @param {Promise} nearer trusted promise nearer to the ultimate result
 		 */
-		_resolve = function(value) {
+		_resolve = function(nearer) {
 
-			// Make _progress a noop, to disallow progress for the resolved promise.
 			// Replace _resolve so that this Deferred can only be resolved once
+			// Make _progress a noop, to disallow progress for the resolved promise.
 			_resolve = resolve;
 			_notify = identity;
 
 			// Make _bind invoke callbacks "immediately"
 			_bind = function(fulfilled, rejected, progress, next) {
 				enqueue(function() {
-					value.then(fulfilled, rejected, progress).then(
+					nearer.then(fulfilled, rejected, progress).then(
 						function(value)  { next.resolve(value); },
 						function(reason) { next.reject(reason); },
 						function(update) { next.notify(update); }
@@ -232,7 +232,7 @@ define(function () {
 			};
 
 			// Notify handlers
-			scheduleHandlers(handlers, value);
+			scheduleHandlers(handlers, nearer);
 			handlers = undef;
 
 			return promise;
@@ -258,15 +258,15 @@ define(function () {
 		/**
 		 * Wrapper to allow _resolve to be replaced
 		 */
-		function promiseResolve(val) {
-			return _resolve(coerce(val));
+		function promiseResolve(value) {
+			return _resolve(coerce(value));
 		}
 
 		/**
-		 * Wrapper to allow _reject to be replaced
+		 * Wrapper to allow _resolve to be replaced
 		 */
-		function promiseReject(err) {
-			return _resolve(rejected(err));
+		function promiseReject(reason) {
+			return _resolve(rejected(reason));
 		}
 
 		/**
@@ -475,7 +475,7 @@ define(function () {
 					reasons.push(reason);
 					if(!--toReject) {
 						fulfillOne = rejectOne = noop;
-						deferred.reject(reasons.slice());
+						deferred.reject(slice.call(reasons));
 					}
 				};
 
@@ -487,7 +487,7 @@ define(function () {
 
 					if (!--toResolve) {
 						fulfillOne = rejectOne = noop;
-						deferred.resolve(values.slice());
+						deferred.resolve(slice.call(values));
 					}
 				};
 
