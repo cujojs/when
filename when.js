@@ -311,7 +311,7 @@ define(function () {
 	 * Assimilate an untrusted thenable by introducing a trusted middle man.
 	 * Not a perfect strategy, but possibly the best we can do.
 	 * IMPORTANT: This is the only place when.js should ever call an untrusted
-	 * thenable's then() on an. Don't expose the return value to the
+	 * thenable's then(). Don't expose the return value to the
 	 * untrusted thenable
 	 *
 	 * @param {*} thenable
