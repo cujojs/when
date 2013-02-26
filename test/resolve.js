@@ -111,7 +111,40 @@ buster.testCase('when.resolve', {
 				},
 				fail
 			).always(done);
+		},
+
+		'should call untrusted then only after stack clears': function(done) {
+			var value, p, spy;
+
+			value = other;
+			spy = this.spy();
+
+			p = when.resolve({
+				then: function(fulfill) {
+					spy(value);
+					fulfill();
+				}
+			}).then(function() {
+				assert.calledWith(spy, sentinel);
+			}).always(done);
+
+			value = sentinel;
+		},
+
+		'should assimilate thenables provided as fulfillment arg': function(done) {
+			when.resolve({
+				then: function(fulfill) {
+					fulfill({
+						then: function(fulfill) {
+							fulfill(sentinel);
+						}
+					});
+				}
+			}).then(function(value) {
+				assert.same(value, sentinel);
+			}).always(done);
 		}
+
 	}
 
 });

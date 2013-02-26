@@ -155,7 +155,7 @@ define(function () {
 	 * then. The resolver has resolve, reject, and progress.  The promise
 	 * only has then.
 	 *
-	 * @return {Deferred}
+	 * @return {object} deferred object with {promise, resolver}
 	 */
 	function defer() {
 		var deferred, promise, handlers,
@@ -163,7 +163,6 @@ define(function () {
 
 		/**
 		 * The promise for the new deferred
-		 * @type {Promise}
 		 */
 		promise = new Promise(then);
 
@@ -312,25 +311,32 @@ define(function () {
 	 * Assimilate an untrusted thenable by introducing a trusted middle man.
 	 * Not a perfect strategy, but possibly the best we can do.
 	 * IMPORTANT: This is the only place when.js should ever call an untrusted
-	 * thenable's then() on an. Don't expose the return value to the untrusted thenable
+	 * thenable's then() on an. Don't expose the return value to the
+	 * untrusted thenable
 	 *
 	 * @param {*} thenable
 	 * @param {function} thenable.then
 	 * @returns {Promise}
 	 */
 	function assimilate(thenable) {
-		var d = defer();
+		var d, untrustedThen;
 
-		// TODO: Enqueue this for future execution in 2.0
-		try {
-			thenable.then(
-				function(value)  { d.resolve(value); },
-				function(reason) { d.reject(reason); },
-				function(update) { d.notify(update); }
-			);
-		} catch(e) {
-			d.reject(e);
-		}
+		// We MUST get a reference to this specific then() synchronously.
+		// Otherwise, interleaving code might switch/remove it.
+		untrustedThen = thenable.then;
+		d = defer();
+
+		enqueue(function() {
+			try {
+				untrustedThen.call(thenable,
+					function(value)  { d.resolve(value); },
+					function(reason) { d.reject(reason); },
+					function(update) { d.notify(update); }
+				);
+			} catch(e) {
+				d.reject(e);
+			}
+		});
 
 		return d.promise;
 	}
