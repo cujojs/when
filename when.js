@@ -363,8 +363,7 @@ define(function () {
 	}
 
 	/**
-	 * Create an already-rejected promise with the supplied
-	 * rejection reason.
+	 * Create an already-rejected promise with the supplied rejection reason.
 	 * @private
 	 *
 	 * @param {*} reason

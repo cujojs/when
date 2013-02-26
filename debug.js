@@ -164,17 +164,12 @@ define(['./when'], function(when) {
 		};
 
 		origNotify = d.resolver.notify;
-		d.notify = d.resolver.notify = promiseNotify;
-
-		// deferred.progress and deferred.resolver.progress are DEPRECATED.
-		d.progress = deprecated('deferred.progress', 'deferred.notify', promiseNotify, d);
-		d.resolver.progress = deprecated('deferred.resolver.progress', 'deferred.resolver.notify', promiseNotify, d.resolver);
-		function promiseNotify(update) {
+		d.notify = d.resolver.notify = function(update) {
 			// Notify global debug handler, if set
 			callGlobalHandler('progress', d, update);
 
 			return origNotify(update);
-		}
+		};
 
 		origResolve = d.resolver.resolve;
 		d.resolve = d.resolver.resolve = function(val) {
@@ -204,8 +199,6 @@ define(['./when'], function(when) {
 			function(e) { status = 'REJECTED'; return when.reject(e); }
 		);
 
-		d.then = deprecated('deferred.then', 'deferred.promise.then', d.promise.then, d);
-
 		// Add an id to all directly created promises.  It'd be great
 		// to find a way to propagate this id to promise created by .then()
 		d.resolver.id = id;
@@ -215,10 +208,6 @@ define(['./when'], function(when) {
 
 	whenDebug.defer = deferDebug;
 	whenDebug.isPromise = when.isPromise;
-	whenDebug.chain = deprecated(
-		'when.chain(p, resolver)',
-		'resolver.resolve(p) or resolver.resolve(p.yield(optionalValue))',
-		when.chain, when);
 
 	// For each method we haven't already replaced, replace it with
 	// one that sets up debug logging on the returned promise
@@ -317,13 +306,14 @@ define(['./when'], function(when) {
 		}, 0);
 	}
 
-	function deprecated(name, preferred, f, context) {
-		return function() {
-			warn(new Error(name + ' is deprecated, use ' + preferred).stack);
-
-			return f.apply(context, arguments);
-		};
-	}
+	// Commented out until we need it, to appease JSHint
+//	function deprecated(name, preferred, f, context) {
+//		return function() {
+//			warn(new Error(name + ' is deprecated, use ' + preferred).stack);
+//
+//			return f.apply(context, arguments);
+//		};
+//	}
 
 	function checkCallbacks() {
 		var i, len, a;
