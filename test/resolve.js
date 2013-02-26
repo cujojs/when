@@ -116,7 +116,7 @@ buster.testCase('when.resolve', {
 		'should call untrusted then only after stack clears': function(done) {
 			var value, p, spy;
 
-			value = other;
+			// value = intentionally undefined
 			spy = this.spy();
 
 			p = when.resolve({
