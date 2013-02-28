@@ -9,17 +9,14 @@
  *
  * @author Brian Cavalier
  * @author John Hann
- *
  * @version 2.x.x
  */
-
 (function(define) { 'use strict';
 define(function () {
 	var reduceArray, slice, nextTick, handlerQueue, undef;
 
 	//
 	// Public API
-	//
 
 	when.defer     = defer;     // Create a deferred
 	when.resolve   = resolve;   // Create a resolved promise
@@ -647,12 +644,11 @@ define(function () {
 	}
 
 	//
-	// Handler queue processing
+	// Shared handler queue processing
 	//
 	// Credit to Twisol (https://github.com/Twisol) for suggesting
 	// this type of extensible queue + trampoline approach for
 	// next-tick conflation.
-	//
 
 	/*global setImmediate:true */
 	nextTick = typeof setImmediate === 'function'
@@ -725,12 +721,6 @@ define(function () {
 		}
 	}
 
-	/**
-	 * No-Op function used in method replacement
-	 * @private
-	 */
-	function noop() {}
-
 	slice = [].slice;
 
 	// ES5 reduce implementation if native not available
@@ -786,6 +776,8 @@ define(function () {
 
 			return reduced;
 		};
+
+	function noop() {}
 
 	function identity(x) {
 		return x;
