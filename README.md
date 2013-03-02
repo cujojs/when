@@ -20,38 +20,6 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 * Fully asynchronous resolutions.
 * [Promises/A+](http://promises-aplus.github.com/promises-spec) compliance.
 
-### 1.8.1
-
-* Last 1.x.x release before 2.0.0 barring critical fixes.
-	* To prepare for 2.0.0, [test your code against the dev-200 branch](https://github.com/cujojs/when/tree/dev-200). It is fully API compatible, but has fully asynchronous resolutions.
-* Performance improvements for [when/function](docs/api.md#synchronous-functions).
-* [Documentation](docs/api.md) updates and fixes. Thanks, [@unscriptable](https://github.com/unscriptable)!
-* **DEPRECATED:** `deferred.progress` and `deferred.resolver.progress`. Use [`deferred.notify`](docs/api.md#progress-events) and [`deferred.resolver.notify`](docs/api.md#progress-events) instead.
-* **DEPRECATED:** [`when.chain`](docs/api.md#whenchain). Use [`resolver.resolve(promise)`](docs/api.md#resolver) or `resolver.resolve(promise.yield)` ([see `promise.yield`](docs/api.md#yield)) instead.
-* **DEPRECATED:** `when/timed` module.  Use [`when/delay`](docs/api.md#whendelay) and [`when/timeout`](docs/api.md#whentimeout) modules instead.
-
-### 1.8.0
-
-* New [when/function](docs/api.md#synchronous-functions), [when/node/function](docs/api.md#node-style-asynchronous-functions), and [when/callbacks](docs/api.md#asynchronous-functions) with functional programming goodness, and adapters for turning callback-based APIs into promise-based APIs. Kudos [@riccieri](https://github.com/riccieri)!
-* New [when/unfold](docs/api.md#whenunfold), and [when/unfold/list](docs/api.md#whenunfoldlist) promise-aware anamorphic unfolds that can be used to generate and/or process unbounded lists.
-* New [when/poll](docs/api.md#whenpoll) promise-based periodic polling and task execution. Kudos [@scothis](https://github.com/scothis)!
-
-### 1.7.1
-
-* Removed leftover internal usages of `deferred.then`.
-* [when/debug](https://github.com/cujojs/when/wiki/when-debug) allows configuring the set of "fatal" error types that will be rethrown to the host env.
-
-### 1.7.0
-
-* **DEPRECATED:** `deferred.then` [is deprecated](docs/api.md#deferred) and will be removed in an upcoming release.  Use `deferred.promise.then` instead.
-* [promise.yield](docs/api.md#yield)(promiseOrValue) convenience API for substituting a new value into a promise chain.
-* [promise.spread](docs/api.md#spread)(variadicFunction) convenience API for spreading an array onto a fulfill handler that accepts variadic arguments. [Mmmm, buttery](http://s.shld.net/is/image/Sears/033W048977110001_20100422100331516?hei=1600&wid=1600&op_sharpen=1&resMode=sharp&op_usm=0.9,0.5,0,0)
-* Doc improvements:
-	* [when()](docs/api.md#when) and [promise.then()](docs/api.md#main-promise-api) have more info about callbacks and chaining behavior.
-	* More info and clarifications about the roles of [Deferred](docs/api.md#deferred) and [Resolver](docs/api.md#resolver)
-	* Several minor clarifications for various APIs
-* Internal improvements to assimilation and interoperability with other promise implementations.
-
 [Full Changelog](CHANGES.md)
 
 # Docs & Examples
