@@ -15,6 +15,20 @@ define(function(require) {
 
 	return guard;
 
+	/**
+	 * Creates a guarded version of f that can only be entered when the supplied
+	 * condition allows.
+	 * @param {object} condition represents a critical section that may only
+	 *  be entered simultaneously by a certain number of executions
+	 * @param {function} condition.enter function that must return true if an
+	 *  invocation of f is allowed, or false if it must be forced to wait,
+	 *  i.e. determines when an invocation of f is allowed to enter the
+	 *  critical section
+	 * @param {function} condition.exit function to be called when an invocation
+	 *  of f has returned, i.e. it has exited the critical section
+	 * @param {function} f function to guard
+	 * @returns {Function} guarded f
+	 */
 	function guard(condition, f) {
 
 		var waiting = [];
@@ -31,6 +45,11 @@ define(function(require) {
 			);
 		};
 
+		/**
+		 * Wait for condition to allow entry into the critical section
+		 * @returns {Promise} promise that will fulfill when the critical
+		 *  section may be entered
+		 */
 		function wait() {
 			var d = when.defer();
 
@@ -43,6 +62,10 @@ define(function(require) {
 			return d.promise;
 		}
 
+		/**
+		 * Once the critical section is exited, notify the next waiting
+		 * execution
+		 */
 		function notify() {
 			condition.exit();
 			if(waiting.length) {
@@ -51,10 +74,19 @@ define(function(require) {
 		}
 	}
 
+	/**
+	 * Condition that allows only one execution in a critical section
+	 * @returns {{enter: Function, exit: Function}} condition with enter/exit methods
+	 */
 	function one() {
 		return n(1);
 	}
 
+	/**
+	 * Condition that allows n simultaneous executions in a critical section
+	 * @param {number} n number allowed
+	 * @returns {{enter: Function, exit: Function}}
+	 */
 	function n(n) {
 		var count = 0;
 
