@@ -650,14 +650,18 @@ define(function () {
 	// this type of extensible queue + trampoline approach for
 	// next-tick conflation.
 
-	/*global setImmediate:true */
-	nextTick = typeof setImmediate === 'function'
-		? typeof window === 'undefined'
-			? setImmediate
-			: setImmediate.bind(window)
-		: typeof process === 'object'
-			? process.nextTick
-			: function(task) { setTimeout(task, 0); };
+	nextTick = (function () {
+		// hoist setTimeout to avoid being caught by fake timers commonly used in time based tests
+		var timeout = setTimeout;
+		/*global setImmediate:true */
+		return typeof setImmediate === 'function'
+			? typeof window === 'undefined'
+				? setImmediate
+				: setImmediate.bind(window)
+			: typeof process === 'object'
+				? process.nextTick
+				: function(task) { timeout(task, 0); };
+	}());
 
 	handlerQueue = [];
 
