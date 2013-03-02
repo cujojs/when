@@ -13,7 +13,6 @@ API
 	* [when.reject](#whenreject)
 1. [Joining promises](#joining-promises)
 	* [when.join](#whenjoin)
-	* [when.chain](#whenchain) **DEPRECATED**
 1. [Arrays of promises](#arrays-of-promises)
 	* [when.all](#whenall)
 	* [when.map](#whenmap)
@@ -364,64 +363,6 @@ var largerPromise = when.join(promise1, promise2).then(function (values) {
 ### See also:
 * [when.all()](#whenall) - resolving an Array of promises
 
-## when.chain()
-
-**DEPRECATED**
-
-Unfortunately, `when.chain` depends on a resolver interface for which there is no *de-facto* or established standard. While it's safe to use with when.js deferred and resolver objects, there's no guarantee it's usable with any other implementations' resolution interface. Even if a 3rd party resolver supports an API with the required `resolve` and `reject` methods, they may work differently. For example, some promise implementations do not support passing a promise to their `resolve` method.
-
-You can easily replace `when.chain` with an equivalent construct:
-
-```js
-// These are equivalent when promise and resolver are when.js
-when.chain(promise, resolver);
-
-// This is the preferred way to trigger resolution with a promise
-resolver.resolve(promise);
-```
-
-```js
-// If using optionalValue, use promise.yield
-// These are equivalent
-when.chain(promise, resolver, value);
-
-// if promise is known to be a when.js promise:
-resolver.resolve(promise.yield(value));
-
-// if promise might not be a when.js promise, it can be assimilated
-// using when(), so that yield is available
-resolver.resolve(when(promise).yield(value));
-```
-
-With 3rd party resolvers, you should consult the documentation of the 3rd party library.  The following options represent the *usual ways* to accomplish the goal, depending on what the 3rd party resolver API supports:
-
-```js
-// If 3rd party resolver accepts promises
-// "resolve" is whatever name the 3rd party resolver uses to perform
-// a "proper" resolve with another promise
-resolver.resolve(promise);
-
-// If 3rd party resolver DOESN'T accept promises
-// "fulfill" is whatever name the 3rd party resolver uses to fulfill its promise verbatim
-promise.then(resolver.fulfill, resolver.reject);
-```
-
-### `when.chain` docs
-
-```js
-var promise = when.chain(promiseOrValue, resolver, optionalValue)
-```
-
-Arrange for `resolver` to be resolved when `promiseOrValue` resolves.  If `optionalValue` is provided, `resolver` will be resolved with `optionalValue`, or otherwise with the resolution value of `promiseOrValue`.
-
-Returns a new promise that will also resolve when `promiseOrValue` resolves, with `optionalValue` as its resolution value, if provided, or otherwise with the resolution value of `promiseOrValue`.
-
-Where:
-
-* `promiseOrValue` - any promise or value.
-* `resolver` - any object that supports the [Resolver API](#resolver)
-* `optionalValue` - any value.  **Note:** May be a promise if `resolver` supports being resolved with another promise.  When.js resolvers *do* support this, but other implementations may not.
-
 # Arrays of promises
 
 When.js provides methods to use array-like patterns to coordinate several promises.
@@ -429,7 +370,7 @@ When.js provides methods to use array-like patterns to coordinate several promis
 ## when.all()
 
 ```js
-var promise = when.all(array, onFulfilled, onRejected, onProgress)
+var promise = when.all(array)
 ```
 
 Where:
@@ -470,7 +411,7 @@ Where:
 ## when.reduce()
 
 ```js
-var promise = when.reduce(array, reduceFunc, initialValue)
+var promise = when.reduce(array, reduceFunc [, initialValue])
 ```
 
 Where:
@@ -508,26 +449,27 @@ The *competitive race* pattern may be used if one or more of the entire possible
 ## when.any()
 
 ```js
-var promise = when.any(array, onFulfilled, onRejected, onProgress)
+var promise = when.any(array)
 ```
 
 Where:
 
 * array is an Array *or a promise for an array*, which may contain promises and/or values.
 
-Initiates a competitive race that allows one winner, returning a promise that will resolve when any one of the items in `array` resolves.  The returned promise will only reject if *all* items in `array` are rejected.  The resolution value of the returned promise will be the resolution value of the winning item.  The rejection value will be an array of all rejection reasons.
+Initiates a competitive race that allows one winner, returning a promise that will resolve when any one of the items in `array` resolves.  The returned promise will only reject if *all* items in `array` are rejected.  The resolution value of the returned promise will be the fulfillment value of the winning promise.  The rejection value will be an array of all rejection reasons.
 
 ## when.some()
 
 ```js
-var promise = when.some(array, howMany, onFulfilled, onRejected, onProgress)
+var promise = when.some(array, howMany)
 ```
 
 Where:
 
 * array is an Array *or a promise for an array*, which may contain promises and/or values.
+* howMany is the number of promises from array that must fulfill to end the race
 
-Initiates a competitive race that allows `howMany` winners, returning a promise that will resolve when `howMany` of the items in `array` resolve.  The returned promise will reject if it becomes impossible for `howMany` items to resolve--that is, when `(array.length - howMany) + 1` items reject.  The resolution value of the returned promise will be an array of `howMany` winning item resolution values.  The rejection value will be an array of `(array.length - howMany) + 1` rejection reasons.
+Initiates a competitive race that allows `howMany` winners, returning a promise that will resolve when `howMany` of the items in `array` resolve.  The returned promise will reject if it becomes impossible for `howMany` items to resolve--that is, when `(array.length - howMany) + 1` items reject.  The resolution value of the returned promise will be an array of `howMany` winning promise fulfillment values.  The rejection value will be an array of `(array.length - howMany) + 1` rejection reasons.
 
 ```js
 // try all of the p2p servers and fail if at least one doesn't respond
