@@ -1,10 +1,21 @@
 # when.js [![Build Status](https://secure.travis-ci.org/cujojs/when.png)](http://travis-ci.org/cujojs/when)
 
-When.js is cujojs's lightweight [CommonJS](http://wiki.commonjs.org/wiki/Promises) [Promises/A](http://wiki.commonjs.org/wiki/Promises/A) and `when()` implementation, derived from the async core of [wire.js](https://github.com/cujojs/wire), cujojs's IOC Container.  It also provides several other useful Promise-related concepts, such as joining multiple promises, mapping and reducing collections of promises, timed promises, and has a robust [unit test suite](#running-the-unit-tests).
+<a href="http://promises-aplus.github.com/promises-spec"><img src="http://promises-aplus.github.com/promises-spec/assets/logo-small.png" align="right" alt="Promises/A+ logo"/></a>
 
-It passes the [Promises/A Test Suite](https://github.com/domenic/promise-tests), is [frighteningly fast](https://github.com/cujojs/promise-perf-tests#test-results), and is **around 1.4k** when compiled with Google Closure (w/advanced optimizations) and gzipped, and has no external dependencies.
+When.js is cujojs's lightweight [Promises/A+](http://promises-aplus.github.com/promises-spec) and `when()` implementation, derived from the async core of [wire.js](https://github.com/cujojs/wire), cujojs's IOC Container.  It provides many other useful features for managing promises and asynchrony, such as:
+
+* Resolving, mapping, and reducing arrays of promises
+* Executing tasks in parallel and sequence
+* Transforming Node-style and other callback-based APIs into promise-based APIs
+
+It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promises-tests), is [very fast](https://github.com/cujojs/promise-perf-tests#test-results), and is **around 1.4k** when compiled with Google Closure (w/advanced optimizations) and gzipped, and has no external dependencies.
 
 # What's New?
+
+### 2.0.0
+
+* Fully asynchronous resolutions.
+* Promises/A+ compliance.
 
 ### 1.8.1
 
