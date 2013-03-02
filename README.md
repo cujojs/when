@@ -1,9 +1,12 @@
-# when.js [![Build Status](https://secure.travis-ci.org/cujojs/when.png)](http://travis-ci.org/cujojs/when)
+<a href="http://promises-aplus.github.com/promises-spec"><img src="http://promises-aplus.github.com/promises-spec/assets/logo-small.png" alt="Promises/A+ logo" align="right" /></a>
 
-<a href="http://promises-aplus.github.com/promises-spec"><img src="http://promises-aplus.github.com/promises-spec/assets/logo-small.png" align="right" alt="Promises/A+ logo"/></a>
+[![Build Status](https://secure.travis-ci.org/cujojs/when.png)](http://travis-ci.org/cujojs/when)
 
-When.js is cujojs's lightweight [Promises/A+](http://promises-aplus.github.com/promises-spec) and `when()` implementation, derived from the async core of [wire.js](https://github.com/cujojs/wire), cujojs's IOC Container.  It provides many other useful features for managing promises and asynchrony, such as:
+# when.js
 
+When.js is cujojs's lightweight [Promises/A+](http://promises-aplus.github.com/promises-spec) and `when()` implementation, derived from the async core of [wire.js](https://github.com/cujojs/wire), cujojs's IOC Container.  It features:
+
+* A rock solid, battle-tested Promise implementation
 * Resolving, mapping, and reducing arrays of promises
 * Executing tasks in parallel and sequence
 * Transforming Node-style and other callback-based APIs into promise-based APIs
