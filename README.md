@@ -1,6 +1,6 @@
 <a href="http://promises-aplus.github.com/promises-spec"><img src="http://promises-aplus.github.com/promises-spec/assets/logo-small.png" alt="Promises/A+ logo" align="right" /></a>
 
-[![Build Status](https://secure.travis-ci.org/cujojs/when.png)](http://travis-ci.org/cujojs/when)
+[![Build Status](https://secure.travis-ci.org/cujojs/when.png)](http://travis-ci.org/cujojs/when) 
 
 # when.js
 
@@ -18,7 +18,7 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 ### 2.0.0
 
 * Fully asynchronous resolutions.
-* Promises/A+ compliance.
+* [Promises/A+](http://promises-aplus.github.com/promises-spec) compliance.
 
 ### 1.8.1
 

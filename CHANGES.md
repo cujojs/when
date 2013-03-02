@@ -1,3 +1,8 @@
+### 2.0.0
+
+* Fully asynchronous resolutions.
+* [Promises/A+](http://promises-aplus.github.com/promises-spec) compliance.
+
 ### 1.8.1
 
 * Last 1.x.x release before 2.0.0 barring critical fixes.
