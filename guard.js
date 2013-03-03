@@ -31,47 +31,17 @@ define(function(require) {
 	 */
 	function guard(condition, f) {
 
-		var waiting = [];
-
 		return function() {
 			var args = slice.call(arguments);
 
 			// TODO: Need better always/finally
-			return when(wait(), function() {
+			return when(condition.enter(), function() {
 				return f.apply(undef, args);
 			}).then(
-				function(value) { notify(); return value; },
-				function(reason) { notify(); throw reason; }
+				function(value) { condition.exit(); return value; },
+				function(reason) { condition.exit(); throw reason; }
 			);
 		};
-
-		/**
-		 * Wait for condition to allow entry into the critical section
-		 * @returns {Promise} promise that will fulfill when the critical
-		 *  section may be entered
-		 */
-		function wait() {
-			var d = when.defer();
-
-			if(condition.enter()) {
-				d.resolve();
-			} else {
-				waiting.push(d.resolver);
-			}
-
-			return d.promise;
-		}
-
-		/**
-		 * Once the critical section is exited, notify the next waiting
-		 * execution
-		 */
-		function notify() {
-			condition.exit();
-			if(waiting.length) {
-				waiting.shift().resolve();
-			}
-		}
 	}
 
 	/**
@@ -88,15 +58,30 @@ define(function(require) {
 	 * @returns {{enter: Function, exit: Function}}
 	 */
 	function n(n) {
-		var count = 0;
+		var count, waiting;
+
+		count = 0;
+		waiting = [];
 
 		return {
 			enter: function() {
+				var d = when.defer();
+
 				count += 1;
-				return count <= n;
+				if(count <= n) {
+					d.resolve();
+				} else {
+					waiting.push(d.resolver);
+				}
+
+				return d.promise;
 			},
 			exit: function() {
 				count = Math.max(count-1, 0);
+
+				if(waiting.length) {
+					waiting.shift().resolve();
+				}
 			}
 		}
 	}
