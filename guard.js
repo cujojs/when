@@ -18,35 +18,29 @@ define(function(require) {
 	/**
 	 * Creates a guarded version of f that can only be entered when the supplied
 	 * condition allows.
-	 * @param {object} condition represents a critical section that may only
+	 * @param {function} condition represents a critical section that may only
 	 *  be entered simultaneously by a certain number of executions
-	 * @param {function} condition.enter function that must return true if an
-	 *  invocation of f is allowed, or false if it must be forced to wait,
-	 *  i.e. determines when an invocation of f is allowed to enter the
-	 *  critical section
-	 * @param {function} condition.exit function to be called when an invocation
-	 *  of f has returned, i.e. it has exited the critical section
 	 * @param {function} f function to guard
-	 * @returns {Function} guarded f
+	 * @returns {function} guarded f
 	 */
 	function guard(condition, f) {
 
 		return function() {
 			var args = slice.call(arguments);
 
-			// TODO: Need better always/finally
-			return when(condition.enter(), function() {
-				return f.apply(undef, args);
-			}).then(
-				function(value) { condition.exit(); return value; },
-				function(reason) { condition.exit(); throw reason; }
-			);
+			return when(condition(), function(exit) {
+				try {
+					return when(f.apply(undef, args)).always(exit);
+				} catch(e) {
+					return exit();
+				}
+			});
 		};
 	}
 
 	/**
 	 * Condition that allows only one execution in a critical section
-	 * @returns {{enter: Function, exit: Function}} condition with enter/exit methods
+	 * @returns {function} condition with enter/exit methods
 	 */
 	function one() {
 		return n(1);
@@ -55,7 +49,7 @@ define(function(require) {
 	/**
 	 * Condition that allows n simultaneous executions in a critical section
 	 * @param {number} n number allowed
-	 * @returns {{enter: Function, exit: Function}}
+	 * @returns {function}
 	 */
 	function n(n) {
 		var count, waiting;
@@ -63,27 +57,33 @@ define(function(require) {
 		count = 0;
 		waiting = [];
 
-		return {
-			enter: function() {
-				var d = when.defer();
+		return function() {
 
-				count += 1;
-				if(count <= n) {
-					d.resolve();
-				} else {
-					waiting.push(d.resolver);
-				}
+			var enter, exit;
 
-				return d.promise;
-			},
-			exit: function() {
+			enter = when.defer();
+			exit = when.defer();
+
+			count += 1;
+			if(count <= n) {
+				enter.resolve(exit.resolve);
+			} else {
+				waiting.push(enter.resolve.bind(enter, exit.resolve));
+			}
+
+			exit.promise.then(notify);
+
+			return enter.promise;
+
+			function notify() {
 				count = Math.max(count-1, 0);
 
 				if(waiting.length) {
-					waiting.shift().resolve();
+					waiting.shift()();
 				}
 			}
-		}
+		};
+
 	}
 
 });
