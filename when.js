@@ -439,8 +439,8 @@ define(function () {
 	 * @param {function?} [onRejected] rejection handler
 	 * @param {function?} [onProgress] progress handler
 	 * @returns {Promise} promise that will resolve to an array of howMany values that
-	 * resolved first, or will reject with an array of (promisesOrValues.length - howMany) + 1
-	 * rejection reasons.
+	 *  resolved first, or will reject with an array of
+	 *  (promisesOrValues.length - howMany) + 1 rejection reasons.
 	 */
 	function some(promisesOrValues, howMany, onFulfilled, onRejected, onProgress) {
 
