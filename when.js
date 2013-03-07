@@ -589,7 +589,7 @@ define(function () {
 						if(!--toResolve) {
 							d.resolve(results);
 						}
-					}, d.reject);
+					}, d.reject, d.notify);
 				};
 
 				// Since mapFunc may be async, get all invocations of it into flight
