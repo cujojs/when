@@ -15,8 +15,7 @@ define(['./when'], function(when) {
 
 	keys = {
 		all: all,
-		map: map,
-		reduce: reduce
+		map: map
 	};
 
 	// Safe ownProp
@@ -79,33 +78,6 @@ define(['./when'], function(when) {
 			});
 
 			return d.promise;
-		});
-	}
-
-	/**
-	 * Reduce object's key-value pairs
-	 * @param {Promise|object} object or promise for object whose key-value pairs
-	 *  will be reduced
-	 * @param {function} reduceFunc reduce function reduceFunc(currentResult, value, key)
-	 * @param {*} initialValue initial value passed as currentResult to the first
-	 *  invocation of the reduceFunc.
-	 * @returns {Promise} promise for the reduced value
-	 */
-	function reduce(object, reduceFunc, initialValue) {
-		return when(object, function(object) {
-			var result;
-
-			result = initialValue;
-
-			eachKey(object, function(value, key) {
-				result = when(result, function(c) {
-					return when(value, function(value) {
-						return reduceFunc(c, value, key);
-					});
-				});
-			});
-
-			return result;
 		});
 	}
 
