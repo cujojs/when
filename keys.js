@@ -19,28 +19,46 @@ define(['./when'], function(when) {
 		reduce: reduce
 	};
 
+	// Safe ownProp
 	owns = {}.hasOwnProperty;
 
+	// Use Object.keys if available, otherwise for..in
 	eachKey = Object.keys
 		? function(object, lambda) {
-		Object.keys(object).forEach(function(key) {
-			lambda(object[key], key);
-		});
-	}
-		: function(object, lambda) {
-		for(var key in object) {
-			if(owns.call(object, key)) {
+			Object.keys(object).forEach(function(key) {
 				lambda(object[key], key);
-			}
+			});
 		}
-	};
+		: function(object, lambda) {
+			for(var key in object) {
+				if(owns.call(object, key)) {
+					lambda(object[key], key);
+				}
+			}
+		};
 
 	return keys;
 
+	/**
+	 * Resolve all the key-value pairs in the supplied object or promise
+	 * for an object.
+	 * @param {Promise|object} object or promise for object whose key-value pairs
+	 *  will be resolved
+	 * @returns {Promise} promise for an object with the fully resolved key-value pairs
+	 */
 	function all(object) {
 		return map(object, identity);
 	}
 
+	/**
+	 * Map values in the supplied object's keys
+	 * @param {Promise|object} object or promise for object whose key-value pairs
+	 *  will be reduced
+	 * @param {function} mapFunc mapping function mapFunc(value) which may
+	 *  return either a promise or a value
+	 * @returns {Promise} promise for an object with the mapped and fully
+	 *  resolved key-value pairs
+	 */
 	function map(object, mapFunc) {
 		return when(object, function(object) {
 			var results, d, toResolve;
@@ -64,6 +82,15 @@ define(['./when'], function(when) {
 		});
 	}
 
+	/**
+	 * Reduce object's key-value pairs
+	 * @param {Promise|object} object or promise for object whose key-value pairs
+	 *  will be reduced
+	 * @param {function} reduceFunc reduce function reduceFunc(currentResult, value, key)
+	 * @param {*} initialValue initial value passed as currentResult to the first
+	 *  invocation of the reduceFunc.
+	 * @returns {Promise} promise for the reduced value
+	 */
 	function reduce(object, reduceFunc, initialValue) {
 		return when(object, function(object) {
 			var result;

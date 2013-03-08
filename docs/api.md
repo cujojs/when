@@ -20,6 +20,10 @@ API
 1. [Competitive races](#competitive-races)
 	* [when.any](#whenany)
 	* [when.some](#whensome)
+1. [Object keys](#object-keys)
+	* [when/keys all](#whenkeys-all)
+	* [when/keys map](#whenkeys-map)
+	* [when/keys reduce](#whenkeys-reduce)
 1. [Unbounded lists](#unbounded-lists)
 	* [when/unfold](#whenunfold)
 	* [when/unfold/list](#whenunfoldlist)
@@ -423,15 +427,15 @@ Traditional reduce function, similar to `Array.prototype.reduce()`, but input ma
 The reduce function should have the signature:
 
 ```js
-reduceFunc(currentValue, nextItem, index, total)
+reduceFunc(currentResult, value, index, total)
 ```
 
 Where:
 
-* `currentValue` is the current accumulated reduce value
-* `nextItem` is the fully resolved value at `index` in `promisesOrValues`
-* `index` is the *basis* of `nextItem` ... practically speaking, this is the array index of the promiseOrValue corresponding to `nextItem`
-* `total` is the total number of items in `promisesOrValues`
+* `currentResult` is the current accumulated reduce value
+* `value` is the fully resolved value at `index` in `array`
+* `index` is the *basis* of `value` ... practically speaking, this is the array index of the array corresponding to `value`
+* `total` is the total number of items in `array`
 
 ```js
 // sum the eventual values of several promises
@@ -441,6 +445,91 @@ var sumPromise = when.reduce(inputPromisesOrValues, function (sum, value) {
 ```
 
 If any of the promises is rejected, the returned promise will be rejected with the rejection reason of the first promise that was rejected.
+
+# Object Keys
+
+the `when/keys` module provides `all()`, `map()`, and `reduce()` for working with object keys, for the times when organizing promises in a hash using object keys is more convenient than using an array.
+
+## when/keys all
+
+```js
+var promise = keys.all(object)
+```
+
+Where:
+
+* object is an Object *or a promise for an Object*, whose keys represent promises and/or values.
+
+Return a promise that will resolve only once *all* the items in `object` have resolved.  The resolution value of the returned promise will be an object containing the resolved key-value pairs of each of the items in `object`.
+
+If any of the promises is rejected, the returned promise will be rejected with the rejection reason of the first promise that was rejected.
+
+### See also:
+* [when.all()](#whenall)
+
+## when/keys map
+
+```js
+var promise = keys.map(array, mapFunc)
+```
+
+Where:
+
+* object is an Object *or a promise for an Object*, whose keys represent promises and/or values.
+
+Similar to `when.map`, but for object keys, returns a promise for the key-mappedValue pairs by applying `mapFunc` to every value.  `mapFunc` may return either a promise or a value.
+
+If any of the promises is rejected, the returned promise will be rejected with the rejection reason of the first promise that was rejected.
+
+The map function should have the signature:
+
+```js
+mapFunc(value)
+```
+
+Where:
+
+* `value` is a fully resolved value
+
+### See also:
+* [when.map()](#whenmap)
+
+## when/keys reduce
+
+
+```js
+var promise = keys.reduce(object, reduceFunc, initialValue)
+```
+
+Where:
+
+* object is an Object *or a promise for an Object*, whose keys represent promises and/or values.
+
+Traditional reduce function, similar to `Array.prototype.reduce()`, but input may contain promises and/or values, and reduceFunc may return either a value or a promise, *and* initialValue may be a promise for the starting value.
+
+The reduce function should have the signature:
+
+```js
+reduceFunc(currentResult, value, key)
+```
+
+Where:
+
+* `currentResult` is the current accumulated reduce value
+* `value` is the fully resolved value of `key` in `promisesOrValues`
+* `key` is the *basis* of `nextItem` ... practically speaking, this is the array index of the promiseOrValue corresponding to `nextItem`
+
+```js
+// sum the eventual values of several promises
+var sumPromise = when.reduce(hashOfEventualValues, function (sum, value, key) {
+	return sum += value;
+}, 0);
+```
+
+If any of the promises is rejected, the returned promise will be rejected with the rejection reason of the first promise that was rejected.
+
+### See also:
+* [when.reduce()](#whenreduce)
 
 # Competitive races
 
@@ -473,8 +562,8 @@ Initiates a competitive race that allows `howMany` winners, returning a promise 
 
 ```js
 // try all of the p2p servers and fail if at least one doesn't respond
-var remotes = ['p2p.cdn.com', 'p2p2.cdn.com', 'p2p3.cdn.com'];
-when.some(remotes, 1, initP2PServer, failGracefully);
+var remotes = [connect('p2p.cdn.com'), connect('p2p2.cdn.com'), connect('p2p3.cdn.com')];
+when.some(remotes, 1).then(initP2PServer, failGracefully);
 ```
 
 # Unbounded lists
