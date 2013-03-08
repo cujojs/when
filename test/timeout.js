@@ -1,6 +1,6 @@
 (function(buster, when, timeout) {
 
-var assert, fail;
+var assert, fail, sentinel;
 
 assert = buster.assert;
 fail = buster.assertions.fail;
@@ -10,6 +10,8 @@ function FakePromise() {
 		return this;
 	};
 }
+
+sentinel = {};
 
 buster.testCase('when/timeout', {
 	'should reject after timeout': function(done) {
@@ -22,21 +24,34 @@ buster.testCase('when/timeout', {
 	},
 
 	'should not timeout when rejected before timeout': function(done) {
-		timeout(when.reject(1), 10).then(
+		timeout(when.reject(sentinel), 10).then(
 			fail,
 			function(val) {
-				assert.equals(val, 1);
+				assert.same(val, sentinel);
 			}
 		).always(done);
 	},
 
 	'should not timeout when forcibly resolved before timeout': function(done) {
-		timeout(when.resolve(1), 10).then(
+		timeout(when.resolve(sentinel), 10).then(
 			function(val) {
-				assert.equals(val, 1);
+				assert.same(val, sentinel);
 			},
 			fail
 		).always(done);
+	},
+
+	'should propagate progress': function(done) {
+		var d = when.defer();
+
+		timeout(d.promise, 10).then(null, null,
+			function(val) {
+				assert.same(val, sentinel);
+				d.resolve();
+			}
+		).always(done);
+
+		d.notify(sentinel);
 	}
 
 });

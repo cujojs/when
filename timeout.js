@@ -56,7 +56,8 @@ define(['./when'], function(when) {
             function(reason) {
                 cancelTimeout();
                 deferred.reject(reason);
-            }
+            },
+			deferred.notify
         );
 
         return deferred.promise;

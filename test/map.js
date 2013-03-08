@@ -1,6 +1,6 @@
 (function(buster, when, delay) {
 
-var assert, fail, resolved, reject;
+var assert, fail, resolved, reject, sentinel;
 
 assert = buster.assert;
 fail = buster.assertions.fail;
@@ -15,6 +15,8 @@ function mapper(val) {
 function deferredMapper(val) {
 	return delay(mapper(val), Math.random()*10);
 }
+
+sentinel = {};
 
 buster.testCase('when.map', {
 
@@ -96,7 +98,20 @@ buster.testCase('when.map', {
 		).always(done);
 	},
 
+	'should propagate progress': function(done) {
+		var input = [1, 2, 3];
 
+		when.map(input, function(x) {
+			var d = when.defer();
+			d.notify(x);
+			setTimeout(d.resolve.bind(d, x), 0);
+			return d.promise;
+		}).then(null, null,
+			function(update) {
+				assert.equals(update, input.shift());
+			}
+		).always(done);
+	}
 });
 })(
 	this.buster     || require('buster'),

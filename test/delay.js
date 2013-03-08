@@ -1,6 +1,6 @@
 (function(buster, when, delay) {
 
-var assert, fail;
+var assert, fail, sentinel;
 
 assert = buster.assert;
 fail = buster.assertions.fail;
@@ -8,6 +8,8 @@ fail = buster.assertions.fail;
 function now() {
 	return (new Date()).getTime();
 }
+
+sentinel = {};
 
 buster.testCase('when/delay', {
 	'should resolve after delay': function(done) {
@@ -20,9 +22,9 @@ buster.testCase('when/delay', {
 	},
 
 	'should resolve with provided value after delay': function(done) {
-		delay(1, 0).then(
+		delay(sentinel, 0).then(
 			function(val) {
-				assert.equals(val, 1);
+				assert.same(val, sentinel);
 				done();
 			},
 			fail
@@ -41,9 +43,9 @@ buster.testCase('when/delay', {
 	},
 
 	'should resolve after input promise plus delay': function(done) {
-		delay(when.resolve(1), 10).then(
+		delay(when.resolve(sentinel), 10).then(
 			function(val) {
-				assert.equals(val, 1);
+				assert.equals(val, sentinel);
 			},
 			fail
 		).always(done);
@@ -51,14 +53,27 @@ buster.testCase('when/delay', {
 
 	'should not delay if rejected': function(done) {
 		var d = when.defer();
-		d.reject(1);
+		d.reject(sentinel);
 
 		delay(d.promise, 0).then(
 			fail,
 			function(val) {
-				assert.equals(val, 1);
+				assert.equals(val, sentinel);
 			}
 		).always(done);
+	},
+
+	'should propagate progress': function(done) {
+		var d = when.defer();
+
+		delay(d.promise, 0).then(null, null,
+			function(val) {
+				assert.same(val, sentinel);
+				d.resolve();
+			}
+		).always(done);
+
+		d.notify(sentinel);
 	}
 });
 })(

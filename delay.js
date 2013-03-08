@@ -41,9 +41,15 @@ define(['./when'], function(when) {
 
         var deferred = when.defer();
 
-        setTimeout(function() {
-            deferred.resolve(promise);
-        }, msec);
+		when(promise,
+			function(val) {
+				setTimeout(function() {
+					deferred.resolve(val);
+				}, msec);
+			},
+			deferred.reject,
+			deferred.notify
+		);
 
         return deferred.promise;
     };
