@@ -448,7 +448,9 @@ If any of the promises is rejected, the returned promise will be rejected with t
 
 # Object Keys
 
-the `when/keys` module provides `all()`, `map()`, and `reduce()` for working with object keys, for the times when organizing promises in a hash using object keys is more convenient than using an array.
+the `when/keys` module provides `all()`, and `map()` for working with object keys, for the times when organizing promises in a hash using object keys is more convenient than using an array.
+
+**NOTE:** Key enumeration order (via `for..in` and `Object.keys()`) in JavaScript/ECMAScript is not defined, making an inherently ordered operation like reduce/fold impossible to implement reliably across VMs (For example, see [this v8 bug](http://code.google.com/p/v8/issues/detail?id=164) showing that v8 key ordering has changed across versions).  Thus, `when/keys` does not provide `keys.reduce()`.
 
 ## when/keys all
 
@@ -493,43 +495,6 @@ Where:
 
 ### See also:
 * [when.map()](#whenmap)
-
-## when/keys reduce
-
-
-```js
-var promise = keys.reduce(object, reduceFunc, initialValue)
-```
-
-Where:
-
-* object is an Object *or a promise for an Object*, whose keys represent promises and/or values.
-
-Traditional reduce function, similar to `Array.prototype.reduce()`, but input may contain promises and/or values, and reduceFunc may return either a value or a promise, *and* initialValue may be a promise for the starting value.
-
-The reduce function should have the signature:
-
-```js
-reduceFunc(currentResult, value, key)
-```
-
-Where:
-
-* `currentResult` is the current accumulated reduce value
-* `value` is the fully resolved value of `key` in `promisesOrValues`
-* `key` is the *basis* of `nextItem` ... practically speaking, this is the array index of the promiseOrValue corresponding to `nextItem`
-
-```js
-// sum the eventual values of several promises
-var sumPromise = when.reduce(hashOfEventualValues, function (sum, value, key) {
-	return sum += value;
-}, 0);
-```
-
-If any of the promises is rejected, the returned promise will be rejected with the rejection reason of the first promise that was rejected.
-
-### See also:
-* [when.reduce()](#whenreduce)
 
 # Competitive races
 
