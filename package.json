@@ -28,7 +28,7 @@
 	],
 	"devDependencies": {
 		"buster": "~0.6",
-		"jshint": "~1.0",
+		"jshint": "~1.1",
 		"promises-aplus-tests": "~1"
 	},
 	"main": "when",
