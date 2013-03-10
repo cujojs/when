@@ -124,11 +124,13 @@ define(function () {
 	 *  - if promiseOrValue is a promise
 	 *    - fulfilled with promiseOrValue's value after it is fulfilled
 	 *    - rejected with promiseOrValue's reason after it is rejected
-	 * @param  {*} promiseOrValue
+	 * @param  {*} value
 	 * @return {Promise}
 	 */
-	function resolve(promiseOrValue) {
-		return defer().resolve(promiseOrValue);
+	function resolve(value) {
+		return promise(function(resolve) {
+			resolve(value);
+		});
 	}
 
 	/**
@@ -146,7 +148,7 @@ define(function () {
 	}
 
 	/**
-	 * Creates a new, Deferred with fully isolated resolver and promise parts,
+	 * Creates a new Deferred with fully isolated resolver and promise parts,
 	 * either or both of which may be given out safely to consumers.
 	 * The Deferred itself has the full API: resolve, reject, progress, and
 	 * then. The resolver has resolve, reject, and progress.  The promise
@@ -155,43 +157,91 @@ define(function () {
 	 * @return {object} deferred object with {promise, resolver}
 	 */
 	function defer() {
-		var deferred, promise, handlers,
-			_bind, _notify, _resolve;
+		var pending, deferred, resolved;
 
-		/**
-		 * The promise for the new deferred
-		 */
-		promise = new Promise(then);
-
-		/**
-		 * The full Deferred object, with {@link Promise} and {@link Resolver} parts
-		 * @class Deferred
-		 * @name Deferred
-		 */
 		deferred = {
-			resolve:  promiseResolve,
-			reject:   promiseReject,
-			notify:   promiseNotify,
-
-			promise:  promise,
-
-			resolver: {
-				resolve:  promiseResolve,
-				reject:   promiseReject,
-				notify:   promiseNotify
-			}
+			resolver: {}
 		};
+
+		deferred.promise = pending = promise(makeDeferred);
+
+		return deferred;
+
+		function makeDeferred(resolveDefer, rejectDefer, notifyDefer) {
+			deferred.resolve = deferred.resolver.resolve = function(value) {
+				if(resolved) {
+					return resolve(value);
+				}
+				resolved = true;
+				resolveDefer(value);
+				return pending;
+			};
+			deferred.reject  = deferred.resolver.reject  = function(reason) {
+				if(resolved) {
+					return resolve(rejected(reason));
+				}
+				resolved = true;
+				rejectDefer(reason);
+				return pending;
+			};
+			deferred.notify  = deferred.resolver.notify  = function(update) {
+				notifyDefer(update);
+				return update;
+			};
+		}
+	}
+
+	/**
+	 * Creates a new promise whose fate is determined by resolver
+	 * @param {function} resolver function(resolve, reject, notify)
+	 * @returns {Promise} promise whose fate is determine by resolver
+	 */
+	function promise(resolver) {
+		var self, handlers, _then, _notify, _resolve;
+
+		self = new Promise(then);
 
 		handlers = [];
 
-		_bind = function(onFulfilled, onRejected, onProgress, next) {
-			handlers.push(function(promise) {
-				promise.then(onFulfilled, onRejected, onProgress).then(
-					function(value)  { next.resolve(value); },
-					function(reason) { next.reject(reason); },
-					function(update) { next.notify(update); }
-				);
+		/**
+		 * Register handlers for this promise.
+		 * @param [onFulfilled] {Function} fulfillment handler
+		 * @param [onRejected] {Function} rejection handler
+		 * @param [onProgress] {Function} progress handler
+		 * @return {Promise} new Promise
+		 */
+		_then = function(onFulfilled, onRejected, onProgress) {
+			return promise(function(resolve, reject, notify) {
+				handlers.push(function(nearer) {
+					nearer.then(onFulfilled, onRejected, onProgress)
+						.then(resolve, reject, notify);
+				});
 			});
+		};
+
+		/**
+		 * Transition from pre-resolution state to post-resolution state, notifying
+		 * all listeners of the ultimate fulfillment or rejection
+		 * @private
+		 * @param {Promise} nearer trusted promise nearer to the ultimate result
+		 */
+		_resolve = function(nearer) {
+
+			scheduleHandlers(handlers, nearer);
+
+			// Optimize post-resolution methods
+			handlers = undef;
+			_resolve = resolve;
+			_notify = identity;
+			_then = function(onFulfilled, onRejected, onProgress) {
+				return promise(function(resolve, reject, notify) {
+					// Invoke callbacks as soon as possible, but not in the current stack
+					enqueue(function() {
+						nearer.then(onFulfilled, onRejected, onProgress)
+							.then(resolve, reject, notify);
+					});
+				});
+			};
 		};
 
 		/**
@@ -204,73 +254,40 @@ define(function () {
 			return update;
 		};
 
-		/**
-		 * Transition from pre-resolution state to post-resolution state, notifying
-		 * all listeners of the ultimate fulfillment or rejection
-		 * @private
-		 * @param {Promise} nearer trusted promise nearer to the ultimate result
-		 */
-		_resolve = function(nearer) {
+		try {
+			resolver(promiseResolve, promiseReject, promiseNotify);
+		} catch(e) {
+			promiseReject(e);
+		}
 
-			// Replace _resolve so that this Deferred can only be resolved once
-			// Make _progress a noop, to disallow progress for the resolved promise.
-			_resolve = resolve;
-			_notify = identity;
-
-			// Make _bind invoke callbacks "immediately"
-			_bind = function(fulfilled, rejected, progress, next) {
-				enqueue(function() {
-					nearer.then(fulfilled, rejected, progress).then(
-						function(value)  { next.resolve(value); },
-						function(reason) { next.reject(reason); },
-						function(update) { next.notify(update); }
-					);
-				});
-			};
-
-			// Notify handlers
-			scheduleHandlers(handlers, nearer);
-			handlers = undef;
-
-			return promise;
-		};
-
-		return deferred;
+		return self;
 
 		/**
 		 * Wrapper to allow _then to be replaced safely
-		 * @param [onFulfilled] {Function} resolution handler
-		 * @param [onRejected] {Function} rejection handler
-		 * @param [onProgress] {Function} progress handler
-		 * @return {Promise} new Promise
 		 */
 		function then(onFulfilled, onRejected, onProgress) {
-			var deferred = defer();
-
-			_bind(onFulfilled, onRejected, onProgress, deferred);
-
-			return deferred.promise;
+			return _then(onFulfilled, onRejected, onProgress);
 		}
 
 		/**
 		 * Wrapper to allow _resolve to be replaced
 		 */
 		function promiseResolve(value) {
-			return _resolve(coerce(value));
+			_resolve(coerce(value));
 		}
 
 		/**
 		 * Wrapper to allow _resolve to be replaced
 		 */
 		function promiseReject(reason) {
-			return _resolve(rejected(reason));
+			_resolve(rejected(reason));
 		}
 
 		/**
 		 * Wrapper to allow _notify to be replaced
 		 */
 		function promiseNotify(update) {
-			return _notify(update);
+			_notify(update);
 		}
 	}
 
@@ -316,26 +333,19 @@ define(function () {
 	 * @returns {Promise}
 	 */
 	function assimilate(thenable) {
-		var d, untrustedThen;
-
 		// We MUST get a reference to this specific then() synchronously.
 		// Otherwise, interleaving code might switch/remove it.
-		untrustedThen = thenable.then;
-		d = defer();
+		var untrustedThen = thenable.then;
 
-		enqueue(function() {
-			try {
-				untrustedThen.call(thenable,
-					function(value)  { d.resolve(value); },
-					function(reason) { d.reject(reason); },
-					function(update) { d.notify(update); }
-				);
-			} catch(e) {
-				d.reject(e);
-			}
+		return promise(function(resolve, reject, notify) {
+			enqueue(function() {
+				try {
+					untrustedThen.call(thenable, resolve, reject, notify);
+				} catch(e) {
+					reject(e);
+				}
+			});
 		});
-
-		return d.promise;
 	}
 
 
@@ -448,62 +458,57 @@ define(function () {
 
 		return when(promisesOrValues, function(promisesOrValues) {
 
-			var toResolve, toReject, values, reasons, deferred, fulfillOne, rejectOne, notify, len, i;
+			return promise(resolveSome).then(onFulfilled, onRejected, onProgress);
 
-			len = promisesOrValues.length >>> 0;
+			function resolveSome(resolve, reject, notify) {
+				var toResolve, toReject, values, reasons, fulfillOne, rejectOne, len, i;
 
-			toResolve = Math.max(0, Math.min(howMany, len));
-			values = [];
+				len = promisesOrValues.length >>> 0;
 
-			toReject = (len - toResolve) + 1;
-			reasons = [];
+				toResolve = Math.max(0, Math.min(howMany, len));
+				values = [];
 
-			deferred = defer();
+				toReject = (len - toResolve) + 1;
+				reasons = [];
 
-			// No items in the input, resolve immediately
-			if (!toResolve) {
-				deferred.resolve(values);
+				// No items in the input, resolve immediately
+				if (!toResolve) {
+					resolve(values);
 
-			} else {
-				notify = deferred.notify;
+				} else {
+					rejectOne = function(reason) {
+						reasons.push(reason);
+						if(!--toReject) {
+							fulfillOne = rejectOne = noop;
+							reject(slice.call(reasons));
+						}
+					};
 
-				rejectOne = function(reason) {
-					reasons.push(reason);
-					if(!--toReject) {
-						fulfillOne = rejectOne = noop;
-						deferred.reject(slice.call(reasons));
-					}
-				};
+					fulfillOne = function(val) {
+						// This orders the values based on promise resolution order
+						values.push(val);
 
-				fulfillOne = function(val) {
-					// This orders the values based on promise resolution order
-					// Another strategy would be to use the original position of
-					// the corresponding promise.
-					values.push(val);
+						if (!--toResolve) {
+							fulfillOne = rejectOne = noop;
+							resolve(slice.call(values));
+						}
+					};
 
-					if (!--toResolve) {
-						fulfillOne = rejectOne = noop;
-						deferred.resolve(slice.call(values));
-					}
-				};
-
-				for(i = 0; i < len; ++i) {
-					if(i in promisesOrValues) {
-						when(promisesOrValues[i], fulfiller, rejecter, notify);
+					for(i = 0; i < len; ++i) {
+						if(i in promisesOrValues) {
+							when(promisesOrValues[i], fulfiller, rejecter, notify);
+						}
 					}
 				}
+
+				function rejecter(reason) {
+					rejectOne(reason);
+				}
+
+				function fulfiller(val) {
+					fulfillOne(val);
+				}
 			}
-
-			return deferred.promise.then(onFulfilled, onRejected, onProgress);
-
-			function rejecter(reason) {
-				rejectOne(reason);
-			}
-
-			function fulfiller(val) {
-				fulfillOne(val);
-			}
-
 		});
 	}
 
@@ -561,50 +566,50 @@ define(function () {
 	 * input to contain {@link Promise}s and/or values, and mapFunc may return
 	 * either a value or a {@link Promise}
 	 *
-	 * @param {Array|Promise} promise array of anything, may contain a mix
+	 * @param {Array|Promise} array array of anything, may contain a mix
 	 *      of {@link Promise}s and values
 	 * @param {function} mapFunc mapping function mapFunc(value) which may return
 	 *      either a {@link Promise} or value
 	 * @returns {Promise} a {@link Promise} that will resolve to an array containing
 	 *      the mapped output values.
 	 */
-	function map(promise, mapFunc) {
-		return when(promise, function(array) {
-			var results, len, toResolve, resolve, i, d;
+	function map(array, mapFunc) {
+		return when(array, function(array) {
 
-			// Since we know the resulting length, we can preallocate the results
-			// array to avoid array expansions.
-			toResolve = len = array.length >>> 0;
-			results = [];
-			d = defer();
+			return promise(resolveMap);
 
-			if(!toResolve) {
-				d.resolve(results);
-			} else {
+			function resolveMap(resolve, reject, notify) {
+				var results, len, toResolve, resolveOne, i;
 
-				resolve = function resolveOne(item, i) {
-					when(item, mapFunc).then(function(mapped) {
-						results[i] = mapped;
+				// Since we know the resulting length, we can preallocate the results
+				// array to avoid array expansions.
+				toResolve = len = array.length >>> 0;
+				results = [];
 
-						if(!--toResolve) {
-							d.resolve(results);
+				if(!toResolve) {
+					resolve(results);
+				} else {
+
+					resolveOne = function(item, i) {
+						when(item, mapFunc).then(function(mapped) {
+							results[i] = mapped;
+
+							if(!--toResolve) {
+								resolve(results);
+							}
+						}, reject, notify);
+					};
+
+					// Since mapFunc may be async, get all invocations of it into flight
+					for(i = 0; i < len; i++) {
+						if(i in array) {
+							resolveOne(array[i], i);
+						} else {
+							--toResolve;
 						}
-					}, d.reject, d.notify);
-				};
-
-				// Since mapFunc may be async, get all invocations of it into flight
-				for(i = 0; i < len; i++) {
-					if(i in array) {
-						resolve(array[i], i);
-					} else {
-						--toResolve;
 					}
 				}
-
 			}
-
-			return d.promise;
-
 		});
 	}
 
