@@ -254,12 +254,14 @@ define(function () {
 			return update;
 		};
 
+		// Call the provider resolver to seal the promise's fate
 		try {
 			resolver(promiseResolve, promiseReject, promiseNotify);
 		} catch(e) {
 			promiseReject(e);
 		}
 
+		// Return the promise
 		return self;
 
 		/**
