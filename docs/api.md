@@ -178,7 +178,7 @@ promise.ensure(onFulfilledOrRejected);
 
 Ensure allows you to execute "cleanup" type tasks in a promise chain.  It arranges for `onFulfilledOrRejected` to be called, *with no arguments*, when promise is either fulfilled or rejected.  `onFulfilledOrRejected` cannot modify `promise`'s fulfillment value, but may signal a new or additional error by throwing an exception or returning a rejected promise.
 
-`promise.ensure` should be used instead of `promise.always`.  It is safer in that it *cannot* transform a failure into a success simply by returning (which `always` could do).
+`promise.ensure` should be used instead of `promise.always`.  It is safer in that it *cannot* transform a failure into a success by accident (which `always` could do simply by returning successfully!).
 
 When combined with `promise.otherwise`, `promise.ensure` allows you to write code that is similar to the familar synchronous `catch`/`finally` pair.  Consider the following synchronous code:
 
