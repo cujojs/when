@@ -27,7 +27,7 @@ buster.testCase('when/unfold', {
 
 	'should call generator until condition returns truthy': function(done) {
 		function condition(i) {
-			return i == 0;
+			return i === 0;
 		}
 
 		var unspool = this.spy(function(x) {
@@ -44,7 +44,7 @@ buster.testCase('when/unfold', {
 	'generator': {
 		'should be allowed to return an array of promises': function(done) {
 			function condition(i) {
-				return i == 0;
+				return i === 0;
 			}
 
 			var unspool = this.spy(function(x) {
@@ -60,7 +60,7 @@ buster.testCase('when/unfold', {
 
 		'should be allowed to return a promise for an array': function(done) {
 			function condition(i) {
-				return i == 0;
+				return i === 0;
 			}
 
 			var unspool = this.spy(function(x) {
@@ -76,7 +76,7 @@ buster.testCase('when/unfold', {
 
 		'should be allowed to return a promise for an array of promises': function(done) {
 			function condition(i) {
-				return i == 0;
+				return i === 0;
 			}
 
 			var unspool = this.spy(function(x) {
@@ -94,7 +94,7 @@ buster.testCase('when/unfold', {
 	'condition': {
 		'should be allowed to return a promise that fulfills': function(done) {
 			function condition(i) {
-				return when.resolve(i == 0);
+				return when.resolve(i === 0);
 			}
 
 			var unspool = this.spy(function(x) {
@@ -126,7 +126,7 @@ buster.testCase('when/unfold', {
 
 	'should call handler with generator result': function(done) {
 		function condition(i) {
-			return i == 0;
+			return i === 0;
 		}
 
 		var handler = this.spy();

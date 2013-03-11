@@ -368,7 +368,7 @@ buster.testCase('promise', {
 				d.promise.then(
 					null,
 					function() {
-						throw expected
+						throw expected;
 					}
 				).then(
 					fail,
@@ -519,12 +519,12 @@ buster.testCase('promise', {
 		}
 
 	},
-	
+
 	'ensure': {
 		'should return a promise': function() {
 			assert.isFunction(defer().promise.ensure().then);
 		},
-		
+
 		'when fulfilled': {
 			'should call callback': function(done) {
 				var d = when.defer();
@@ -538,7 +538,7 @@ buster.testCase('promise', {
 
 				d.resolve(sentinel);
 			},
-			
+
 			'should ignore callback return value': function(done) {
 				var d = when.defer();
 
@@ -587,7 +587,7 @@ buster.testCase('promise', {
 
 				d.reject(sentinel);
 			},
-			
+
 			'should propagate rejection, ignoring callback return value': function(done) {
 				var d = when.defer();
 

@@ -5,13 +5,13 @@ var tests, config;
 tests = ['test/**/*.js'];
 config = {};
 
-config['node'] = {
+config.node = {
 	environment: 'node',
 	rootPath: '../',
 	tests: tests
 };
 
-config['browser'] = {
+config.browser = {
 	environment: 'browser',
 	rootPath: '../',
 	tests: tests,

@@ -133,7 +133,7 @@ buster.testCase('when.defer', {
 
 		'should reject with fulfilled promised': function(done) {
 			var d, expected;
-			
+
 			d = when.defer();
 			expected = fakeResolved(sentinel);
 
@@ -149,7 +149,7 @@ buster.testCase('when.defer', {
 
 		'should reject with rejected promise': function(done) {
 			var d, expected;
-			
+
 			d = when.defer();
 			expected = fakeRejected(sentinel);
 
