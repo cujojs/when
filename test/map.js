@@ -27,7 +27,7 @@ buster.testCase('when.map', {
 				assert.equals(results, [2,4,6]);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should map input promises array': function(done) {
@@ -37,7 +37,7 @@ buster.testCase('when.map', {
 				assert.equals(results, [2,4,6]);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should map mixed input array': function(done) {
@@ -47,7 +47,7 @@ buster.testCase('when.map', {
 				assert.equals(results, [2,4,6]);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should map input when mapper returns a promise': function(done) {
@@ -57,7 +57,7 @@ buster.testCase('when.map', {
 				assert.equals(results, [2,4,6]);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should accept a promise for an array': function(done) {
@@ -66,7 +66,7 @@ buster.testCase('when.map', {
 				assert.equals(result, [2,4,6]);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve to empty array when input promise does not resolve to an array': function(done) {
@@ -75,7 +75,7 @@ buster.testCase('when.map', {
 				assert.equals(result, []);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should map input promises when mapper returns a promise': function(done) {
@@ -85,7 +85,7 @@ buster.testCase('when.map', {
 				assert.equals(results, [2,4,6]);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reject when input contains rejection': function(done) {
@@ -95,7 +95,7 @@ buster.testCase('when.map', {
 			function(result) {
 				assert.equals(result, 2);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should propagate progress': function(done) {
@@ -110,7 +110,7 @@ buster.testCase('when.map', {
 			function(update) {
 				assert.equals(update, input.shift());
 			}
-		).always(done);
+		).ensure(done);
 	}
 });
 })(

@@ -24,7 +24,7 @@ buster.testCase('when.reduce', {
 				assert.equals(result, 6);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reduce values with initial value': function(done) {
@@ -33,7 +33,7 @@ buster.testCase('when.reduce', {
 				assert.equals(result, 7);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reduce values with initial promise': function(done) {
@@ -42,7 +42,7 @@ buster.testCase('when.reduce', {
 				assert.equals(result, 7);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reduce promised values without initial value': function(done) {
@@ -52,7 +52,7 @@ buster.testCase('when.reduce', {
 				assert.equals(result, 6);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reduce promised values with initial value': function(done) {
@@ -62,7 +62,7 @@ buster.testCase('when.reduce', {
 				assert.equals(result, 7);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reduce promised values with initial promise': function(done) {
@@ -72,7 +72,7 @@ buster.testCase('when.reduce', {
 				assert.equals(result, 7);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reduce empty input with initial value': function(done) {
@@ -82,7 +82,7 @@ buster.testCase('when.reduce', {
 				assert.equals(result, 1);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reduce empty input with initial promise': function(done) {
@@ -91,7 +91,7 @@ buster.testCase('when.reduce', {
 				assert.equals(result, 1);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reject when input contains rejection': function(done) {
@@ -101,7 +101,7 @@ buster.testCase('when.reduce', {
 			function(result) {
 				assert.equals(result, 2);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reject with TypeError when input is empty and no initial value or promise provided': function(done) {
@@ -118,7 +118,7 @@ buster.testCase('when.reduce', {
 			function(e) {
 				assert(e instanceof TypeError);
 			}
-		).always(function() {
+		).ensure(function() {
 			when.debug = debugSave;
 			done();
 		});
@@ -130,7 +130,7 @@ buster.testCase('when.reduce', {
 				assert.equals(result, 3);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should allow sparse array input with initial': function(done) {
@@ -139,7 +139,7 @@ buster.testCase('when.reduce', {
 				assert.equals(result, 4);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reduce in input order': function(done) {
@@ -148,7 +148,7 @@ buster.testCase('when.reduce', {
 				assert.equals(result, '123');
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should accept a promise for an array': function(done) {
@@ -157,7 +157,7 @@ buster.testCase('when.reduce', {
 				assert.equals(result, '123');
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve to initialValue when input promise does not resolve to an array': function(done) {
@@ -166,7 +166,7 @@ buster.testCase('when.reduce', {
 				assert.equals(result, 1);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should provide correct basis value': function(done) {
@@ -180,7 +180,7 @@ buster.testCase('when.reduce', {
 				assert.equals(result, [1,2,3]);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	}
 });
 

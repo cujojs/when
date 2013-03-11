@@ -97,20 +97,12 @@ var promise = deferred.promise;
 var resolver = deferred.resolver;
 ```
 
-**DEPRECATED:** Note that `deferred.then` [is deprecated](https://github.com/cujojs/when/issues/76) and [will be removed](https://github.com/cujojs/when/issues/44) in an upcoming release.
-
 **Note:** Although a deferred has the full `resolver` API, this should used *for convenience only, by the creator of the deferred*.  Only the `resolver` should be given to consumers and producers.
 
 ```js
 deferred.resolve(promiseOrValue);
 deferred.reject(reason);
 deferred.notify(update);
-
-// NOTE: deferred.then is DEPRECATED, use deferred.promise.then
-deferred.then(onFulfilled, onRejected, onProgress);
-
-// NOTE: deferred.progress is DEPRECATED, use deferred.notify
-deferred.progress(update);
 ```
 
 ## Resolver
@@ -122,9 +114,6 @@ var resolver = deferred.resolver;
 resolver.resolve(promiseOrValue);
 resolver.reject(reason);
 resolver.notify(update);
-
-// NOTE: resolver.progress is DEPRECATED, use resolver.notify
-resolver.progress(update);
 ```
 
 ## Promise
@@ -169,18 +158,6 @@ A promise makes the following guarantees about handlers registered in the same c
 
 Convenience methods that are not part of Promises/A+.  These are simply shortcuts for using `.then()`.
 
-### always()
-
-```js
-promise.always(onFulfilledOrRejected [, onProgress]);
-```
-
-Arranges to call `onFulfilledOrRejected` on either the promise's value if it is fulfilled, or on it's rejection reason if it is rejected.  It's a shortcut for:
-
-```js
-promise.then(onFulfilledOrRejected, onFulfilledOrRejected [, onProgress]);
-```
-
 ### otherwise()
 
 ```js
@@ -191,6 +168,36 @@ Arranges to call `onRejected` on the promise's rejection reason if it is rejecte
 
 ```js
 promise.then(undefined, onRejected);
+```
+
+### ensure()
+
+```js
+promise.ensure(onFulfilledOrRejected);
+```
+
+Ensure allows you to execute "cleanup" type tasks in a promise chain.  It arranges for `onFulfilledOrRejected` to be called, *with no arguments*, when promise is either fulfilled or rejected.  `onFulfilledOrRejected` cannot modify `promise`'s fulfillment value, but may signal a new or additional error by throwing an exception or returning a rejected promise.
+
+`promise.ensure` should be used instead of `promise.always`.  It is safer in that it *cannot* transform a failure into a success simply by returning (which `always` could do).
+
+When combined with `promise.otherwise`, `promise.ensure` allows you to write code that is similar to the familar synchronous `catch`/`finally` pair.  Consider the following synchronous code:
+
+```js
+try {
+  return doSomething(x);
+} catch(e) {
+	return handleError(e);
+} finally {
+	cleanup();
+}
+```
+
+Using `promise.ensure`, similar asynchronous code (with `doSomething()` that returns a promise) can be written:
+
+```js
+return doSomething()
+	.otherwise(handleError)
+	.ensure(cleanup);
 ```
 
 ### yield()
@@ -206,7 +213,7 @@ Returns a promise:
 	1. fulfilled with the fulfillment value of `promiseOrValue`, or
 	1. rejected with the rejection reason of `promiseOrValue`
 
-In other words, it's a shortcut for:
+In other words, it's much like:
 
 ```js
 promise.then(function() {
@@ -230,6 +237,20 @@ promise.then(function(array) {
 
 // Or using when/apply
 promise.then(apply(variadicOnFulfilled));
+```
+
+### always()
+
+**DEPRECATED:** Will be removed in an upcoming version
+
+```js
+promise.always(onFulfilledOrRejected [, onProgress]);
+```
+
+Arranges to call `onFulfilledOrRejected` on either the promise's value if it is fulfilled, or on it's rejection reason if it is rejected.  It's a shortcut for:
+
+```js
+promise.then(onFulfilledOrRejected, onFulfilledOrRejected [, onProgress]);
 ```
 
 ## Progress events

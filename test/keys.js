@@ -20,7 +20,7 @@ buster.testCase('when/keys', {
 					assert.equals(results, input);
 				},
 				fail
-			).always(done);
+			).ensure(done);
 		},
 
 		'should resolve promised keys': function(done) {
@@ -30,7 +30,7 @@ buster.testCase('when/keys', {
 					assert.equals(results, { a: 1, b: 2, c: 3 });
 				},
 				fail
-			).always(done);
+			).ensure(done);
 		},
 
 		'should resolve promise for keys': function(done) {
@@ -40,7 +40,7 @@ buster.testCase('when/keys', {
 					assert.equals(results, { a: 1, b: 2, c: 3 });
 				},
 				fail
-			).always(done);
+			).ensure(done);
 		},
 
 		'should reject if key rejects': function(done) {
@@ -50,7 +50,7 @@ buster.testCase('when/keys', {
 				function(e) {
 					assert.same(e, sentinel);
 				}
-			).always(done);
+			).ensure(done);
 		},
 
 		'should reject if input promise rejects': function(done) {
@@ -59,7 +59,7 @@ buster.testCase('when/keys', {
 				function(e) {
 					assert.same(e, sentinel);
 				}
-			).always(done);
+			).ensure(done);
 		}
 
 	},
@@ -74,7 +74,7 @@ buster.testCase('when/keys', {
 					assert.equals(results, { a: 2, b: 3, c: 4 });
 				},
 				fail
-			).always(done);
+			).ensure(done);
 		},
 
 		'should map promised keys': function(done) {
@@ -86,7 +86,7 @@ buster.testCase('when/keys', {
 					assert.equals(results, { a: 2, b: 3, c: 4 });
 				},
 				fail
-			).always(done);
+			).ensure(done);
 		},
 
 		'should map promise for keys': function(done) {
@@ -98,7 +98,7 @@ buster.testCase('when/keys', {
 					assert.equals(results, { a: 2, b: 3, c: 4 });
 				},
 				fail
-			).always(done);
+			).ensure(done);
 		},
 
 		'should reject if key rejects': function(done) {
@@ -110,7 +110,7 @@ buster.testCase('when/keys', {
 				function(e) {
 					assert.same(e, sentinel);
 				}
-			).always(done);
+			).ensure(done);
 		},
 
 		'should reject if input promise rejects': function(done) {
@@ -121,7 +121,7 @@ buster.testCase('when/keys', {
 				function(e) {
 					assert.same(e, sentinel);
 				}
-			).always(done);
+			).ensure(done);
 		},
 
 		'should reject if reduceFunc rejects': function(done) {
@@ -133,7 +133,7 @@ buster.testCase('when/keys', {
 				function(e) {
 					assert.same(e, sentinel);
 				}
-			).always(done);
+			).ensure(done);
 		},
 
 		'should reject if reduceFunc throws': function(done) {
@@ -145,7 +145,7 @@ buster.testCase('when/keys', {
 				function(e) {
 					assert.same(e, sentinel);
 				}
-			).always(done);
+			).ensure(done);
 		}
 
 	}

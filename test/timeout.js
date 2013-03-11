@@ -20,7 +20,7 @@ buster.testCase('when/timeout', {
 			function(e) {
 				assert(e instanceof Error);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should not timeout when rejected before timeout': function(done) {
@@ -29,7 +29,7 @@ buster.testCase('when/timeout', {
 			function(val) {
 				assert.same(val, sentinel);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should not timeout when forcibly resolved before timeout': function(done) {
@@ -38,7 +38,7 @@ buster.testCase('when/timeout', {
 				assert.same(val, sentinel);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should propagate progress': function(done) {
@@ -49,7 +49,7 @@ buster.testCase('when/timeout', {
 				assert.same(val, sentinel);
 				d.resolve();
 			}
-		).always(done);
+		).ensure(done);
 
 		d.notify(sentinel);
 	}

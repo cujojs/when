@@ -16,7 +16,7 @@ buster.testCase('when.all', {
 				assert.equals(result, []);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve values array': function(done) {
@@ -26,7 +26,7 @@ buster.testCase('when.all', {
 				assert.equals(results, input);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve promises array': function(done) {
@@ -36,7 +36,7 @@ buster.testCase('when.all', {
 				assert.equals(results, [1, 2, 3]);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve sparse array input': function(done) {
@@ -46,7 +46,7 @@ buster.testCase('when.all', {
 				assert.equals(results, input);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reject if any input promise rejects': function(done) {
@@ -56,7 +56,7 @@ buster.testCase('when.all', {
 			function(failed) {
 				assert.equals(failed, 2);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should throw if called with something other than a valid input plus callbacks': function() {
@@ -76,7 +76,7 @@ buster.testCase('when.all', {
 				assert.equals(results, expected);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve to empty array when input promise does not resolve to array': function(done) {
@@ -85,7 +85,7 @@ buster.testCase('when.all', {
 				assert.equals(result, []);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	}
 });
 

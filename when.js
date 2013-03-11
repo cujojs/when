@@ -67,34 +67,32 @@ define(function () {
 
 	Promise.prototype = {
 		/**
-		 * Register a callback that will be called when a promise is
-		 * fulfilled or rejected.  Optionally also register a progress handler.
-		 * Shortcut for .then(onFulfilledOrRejected, onFulfilledOrRejected, onProgress)
-		 * @param {function?} [onFulfilledOrRejected]
-		 * @param {function?} [onProgress]
-		 * @return {Promise}
-		 */
-		always: function(onFulfilledOrRejected, onProgress) {
-			return this.then(onFulfilledOrRejected, onFulfilledOrRejected, onProgress);
-		},
-		
-		'finally': function(onFulfilledOrRejected) {
-			var self = this;
-			
-			return this.then(injectHandler, injectHandler);
-			
-			function injectHandler() {
-				return resolve(onFulfilledOrRejected()).yield(self);
-			}
-		},
-
-		/**
 		 * Register a rejection handler.  Shortcut for .then(undefined, onRejected)
 		 * @param {function?} onRejected
 		 * @return {Promise}
 		 */
 		otherwise: function(onRejected) {
 			return this.then(undef, onRejected);
+		},
+
+		/**
+		 * Ensures that onFulfilledOrRejected will be called regardless of whether
+		 * this promise is fulfilled or rejected.  onFulfilledOrRejected WILL NOT
+		 * receive the promises' value or reason.  Any returned value will be disregarded.
+		 * onFulfilledOrRejected may throw or return a rejected promise to signal
+		 * an additional error.
+		 * @param {function} onFulfilledOrRejected handler to be called regardless of
+		 *  fulfillment or rejection
+		 * @returns {Promise}
+		 */
+		ensure: function(onFulfilledOrRejected) {
+			var self = this;
+
+			return this.then(injectHandler, injectHandler).yield(self);
+
+			function injectHandler() {
+				return resolve(onFulfilledOrRejected());
+			}
 		},
 
 		/**
@@ -125,6 +123,17 @@ define(function () {
 					return onFulfilled.apply(undef, array);
 				});
 			});
+		},
+
+		/**
+		 * Shortcut for .then(onFulfilledOrRejected, onFulfilledOrRejected)
+		 * @deprecated
+		 * @param {function} onFulfilledOrRejected
+		 * @param {function?} onProgress
+		 * @returns {Promise}
+		 */
+		always: function(onFulfilledOrRejected, onProgress) {
+			return this.then(onFulfilledOrRejected, onFulfilledOrRejected, onProgress);
 		}
 	};
 

@@ -30,14 +30,14 @@ buster.testCase('when/function', {
 			var result = fn.apply(f, [1, 2]);
 			return when(result, function(result) {
 				assert.equals(result, 3);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should accept promises for arguments': function(done) {
 			var result = fn.apply(f, [when(1), 2]);
 			return when(result, function(result) {
 				assert.equals(result, 3);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should consider the arguments optional': function(done) {
@@ -47,7 +47,7 @@ buster.testCase('when/function', {
 
 			fn.apply(countArgs).then(function(argCount) {
 				assert.equals(argCount, 0);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should reject the promise when the function throws': function(done) {
@@ -56,7 +56,7 @@ buster.testCase('when/function', {
 
 			fn.apply(throwingFn).then(fail, function(reason) {
 				assert.same(reason, error);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should maintain promise flattening semantics': function(done) {
@@ -66,7 +66,7 @@ buster.testCase('when/function', {
 
 			fn.apply(returnsPromise, [5]).then(function(value) {
 				assert.equals(value, 15);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 	},
 
@@ -80,14 +80,14 @@ buster.testCase('when/function', {
 			var result = fn.call(f, 1, 2);
 			return when(result, function(result) {
 				assert.equals(result, 3);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should accept promises for arguments': function(done) {
 			var result = fn.call(f, when(1), 2);
 			return when(result, function(result) {
 				assert.equals(result, 3);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should consider the arguments optional': function(done) {
@@ -97,7 +97,7 @@ buster.testCase('when/function', {
 
 			fn.call(countArgs).then(function(argCount) {
 				assert.equals(argCount, 0);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should reject the promise when the function throws': function(done) {
@@ -106,7 +106,7 @@ buster.testCase('when/function', {
 
 			fn.call(throwingFn).then(fail, function(reason) {
 				assert.same(reason, error);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should maintain promise flattening semantics': function(done) {
@@ -116,7 +116,7 @@ buster.testCase('when/function', {
 
 			fn.call(returnsPromise, 5).then(function(value) {
 				assert.equals(value, 15);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 	},
 
@@ -135,7 +135,7 @@ buster.testCase('when/function', {
 				var result = fn.bind(f);
 				result(1, 2).then(function(value) {
 					assert.equals(value, 3);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			},
 
 			'should accept promises for arguments': function(done) {
@@ -143,7 +143,7 @@ buster.testCase('when/function', {
 
 				result(1, when(2)).then(function(value) {
 					assert.equals(value, 3);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			},
 
 			'should reject the promise upon error': function(done) {
@@ -153,7 +153,7 @@ buster.testCase('when/function', {
 				var result = fn.bind(throwingFn);
 				result().then(fail, function(reason) {
 					assert.same(reason, error);
-				}).always(done);
+				}).ensure(done);
 			}
 		},
 
@@ -162,7 +162,7 @@ buster.testCase('when/function', {
 
 			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should accept promises as leading arguments': function(done) {
@@ -170,7 +170,7 @@ buster.testCase('when/function', {
 
 			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 	},
 
@@ -195,7 +195,7 @@ buster.testCase('when/function', {
 				var composed = fn.compose(sumWithFive, sumWithTen);
 				composed(15).then(function(value) {
 					assert.equals(value, 30);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			},
 
 			'should pass all its arguments to the first function': function(done) {
@@ -204,7 +204,7 @@ buster.testCase('when/function', {
 				var composed = fn.compose(f, sumWithFive);
 				composed(10, 15).then(function(value) {
 					assert.equals(value, 30);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			},
 
 			'should accept promises for arguments': function(done) {
@@ -213,7 +213,7 @@ buster.testCase('when/function', {
 				var composed = fn.compose(f, sumWithFive);
 				composed(when(10), 15).then(function(value) {
 					assert.equals(value, 30);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			},
 
 			'should be transparent to returned promises': function(done) {
@@ -226,7 +226,7 @@ buster.testCase('when/function', {
 				var composed = fn.compose(sumWithTen, promisingSumWithTen);
 				composed(10).then(function(value) {
 					assert.equals(value, 30);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			},
 
 			'should reject when the first function throws': function(done) {
@@ -236,7 +236,7 @@ buster.testCase('when/function', {
 				var composed = fn.compose(throwing, f);
 				composed(5, 10).then(fail, function(reason) {
 					assert.same(reason, error);
-				}).always(done);
+				}).ensure(done);
 			},
 
 			'should reject when a composed function throws': function(done) {
@@ -246,7 +246,7 @@ buster.testCase('when/function', {
 				var composed = fn.compose(f, throwing);
 				composed(5, 10).then(fail, function(reason) {
 					assert.same(reason, error);
-				}).always(done);
+				}).ensure(done);
 			},
 
 			'should reject if a composed function rejects': function(done) {
@@ -255,7 +255,7 @@ buster.testCase('when/function', {
 				var composed = fn.compose(f, rejecting);
 				composed(5, 10).then(fail, function(reason) {
 					assert.equals(reason, 'rejected');
-				}).always(done);
+				}).ensure(done);
 			}
 		},
 
@@ -268,7 +268,7 @@ buster.testCase('when/function', {
 
 			composed('when.js').then(function(value) {
 				assert.equals(value, 'when.js is really awesome!');
-			}, fail).always(done);
+			}, fail).ensure(done);
 		}
 	},
 });

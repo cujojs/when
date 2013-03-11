@@ -19,7 +19,7 @@ buster.testCase('when.resolve', {
 				assert.equals(value, expected);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve a resolved promise': function(done) {
@@ -34,7 +34,7 @@ buster.testCase('when.resolve', {
 				assert.equals(value, expected);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reject a rejected promise': function(done) {
@@ -49,7 +49,7 @@ buster.testCase('when.resolve', {
 			function(value) {
 				assert.equals(value, expected);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'when assimilating untrusted thenables': {
@@ -64,7 +64,7 @@ buster.testCase('when.resolve', {
 				function(val) {
 					assert.same(val, sentinel);
 				}
-			).always(done);
+			).ensure(done);
 		},
 
 		'should ignore exceptions after fulfillment': function(done) {
@@ -78,7 +78,7 @@ buster.testCase('when.resolve', {
 					assert.same(val, sentinel);
 				},
 				fail
-			).always(done);
+			).ensure(done);
 		},
 
 		'should ignore exceptions after rejection': function(done) {
@@ -92,7 +92,7 @@ buster.testCase('when.resolve', {
 				function(val) {
 					assert.same(val, sentinel);
 				}
-			).always(done);
+			).ensure(done);
 		},
 
 		'should assimilate thenable used as fulfillment value': function(done) {
@@ -110,7 +110,7 @@ buster.testCase('when.resolve', {
 					assert.same(val, sentinel);
 				},
 				fail
-			).always(done);
+			).ensure(done);
 		},
 
 		'should call untrusted then only after stack clears': function(done) {
@@ -126,7 +126,7 @@ buster.testCase('when.resolve', {
 				}
 			}).then(function() {
 				assert.calledWith(spy, sentinel);
-			}).always(done);
+			}).ensure(done);
 
 			value = sentinel;
 		},
@@ -142,7 +142,7 @@ buster.testCase('when.resolve', {
 				}
 			}).then(function(value) {
 				assert.same(value, sentinel);
-			}).always(done);
+			}).ensure(done);
 		}
 
 	}

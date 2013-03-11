@@ -22,7 +22,7 @@ buster.testCase('when/unfold', {
 			function(value) {
 				assert.same(value, sentinel);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should call generator until condition returns truthy': function(done) {
@@ -38,7 +38,7 @@ buster.testCase('when/unfold', {
 			function() {
 				assert.equals(unspool.callCount, 3);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'generator': {
@@ -55,7 +55,7 @@ buster.testCase('when/unfold', {
 				function() {
 					assert.equals(unspool.callCount, 3);
 				}
-			).always(done);
+			).ensure(done);
 		},
 
 		'should be allowed to return a promise for an array': function(done) {
@@ -71,7 +71,7 @@ buster.testCase('when/unfold', {
 				function() {
 					assert.equals(unspool.callCount, 3);
 				}
-			).always(done);
+			).ensure(done);
 		},
 
 		'should be allowed to return a promise for an array of promises': function(done) {
@@ -87,7 +87,7 @@ buster.testCase('when/unfold', {
 				function() {
 					assert.equals(unspool.callCount, 3);
 				}
-			).always(done);
+			).ensure(done);
 		}
 	},
 
@@ -105,7 +105,7 @@ buster.testCase('when/unfold', {
 				function() {
 					assert.equals(unspool.callCount, 3);
 				}
-			).always(done);
+			).ensure(done);
 		},
 
 		'should abort unfold by returning a rejection': function(done) {
@@ -120,7 +120,7 @@ buster.testCase('when/unfold', {
 				function() {
 					refute.called(unspool);
 				}
-			).always(done);
+			).ensure(done);
 		}
 	},
 
@@ -135,7 +135,7 @@ buster.testCase('when/unfold', {
 			function() {
 				assert.calledOnceWith(handler, sentinel);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reject when condition throws': function(done) {
@@ -152,7 +152,7 @@ buster.testCase('when/unfold', {
 				refute.called(handler);
 				assert.same(e, sentinel);
 			}
-		).always(done);
+		).ensure(done);
 
 	},
 
@@ -169,7 +169,7 @@ buster.testCase('when/unfold', {
 				refute.called(handler);
 				assert.same(e, sentinel);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reject when transform throws': function(done) {
@@ -184,7 +184,7 @@ buster.testCase('when/unfold', {
 			function(e) {
 				assert.same(e, sentinel);
 			}
-		).always(done);
+		).ensure(done);
 	}
 
 });

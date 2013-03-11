@@ -23,7 +23,7 @@ buster.testCase('when/node/function', {
 				var promise = nodefn.apply(async);
 				promise.then(function(value) {
 					assert.equals(value, 10);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			},
 
 			'should be rejected with the 1st arg to the callback': function(done) {
@@ -35,7 +35,7 @@ buster.testCase('when/node/function', {
 				var promise = nodefn.apply(async);
 				promise.then(fail, function(reason) {
 					assert.same(reason, error);
-				}).always(done);
+				}).ensure(done);
 			},
 
 			'should be resolved to an array for multi-arg callbacks': function(done) {
@@ -46,7 +46,7 @@ buster.testCase('when/node/function', {
 				var promise = nodefn.apply(async);
 				promise.then(function(values) {
 					assert.equals(values, [10, 20, 30]);
-				}).always(done);
+				}).ensure(done);
 			}
 		},
 
@@ -58,7 +58,7 @@ buster.testCase('when/node/function', {
 			var promise = nodefn.apply(async, [10, 20]);
 			promise.then(function(value) {
 				assert.equals(value, 30);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should handle promises on the args array': function(done) {
@@ -69,7 +69,7 @@ buster.testCase('when/node/function', {
 			var promise = nodefn.apply(async, [when(10), 20]);
 			promise.then(function(value) {
 				assert.equals(value, 30);
-			}).always(done);
+			}).ensure(done);
 		}
 	},
 
@@ -88,7 +88,7 @@ buster.testCase('when/node/function', {
 				var promise = nodefn.call(async);
 				promise.then(function(value) {
 					assert.equals(value, 10);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			},
 
 			'should be rejected with the 1st arg to the callback': function(done) {
@@ -100,7 +100,7 @@ buster.testCase('when/node/function', {
 				var promise = nodefn.call(async);
 				promise.then(fail, function(reason) {
 					assert.same(reason, error);
-				}).always(done);
+				}).ensure(done);
 			},
 
 			'should be resolved to an array for multi-arg callbacks': function(done) {
@@ -111,7 +111,7 @@ buster.testCase('when/node/function', {
 				var promise = nodefn.call(async);
 				promise.then(function(values) {
 					assert.equals(values, [10, 20, 30]);
-				}).always(done);
+				}).ensure(done);
 			}
 		},
 
@@ -123,7 +123,7 @@ buster.testCase('when/node/function', {
 			var promise = nodefn.call(async, 10, 20);
 			promise.then(function(value) {
 				assert.equals(value, 30);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should handle promises on the args array': function(done) {
@@ -134,7 +134,7 @@ buster.testCase('when/node/function', {
 			var promise = nodefn.call(async, when(10), 20);
 			promise.then(function(value) {
 				assert.equals(value, 30);
-			}).always(done);
+			}).ensure(done);
 		}
 	},
 
@@ -157,7 +157,7 @@ buster.testCase('when/node/function', {
 
 				result().then(function(value) {
 					assert.equals(value, 10);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			},
 
 			'should handle promises as arguments': function(done) {
@@ -167,7 +167,7 @@ buster.testCase('when/node/function', {
 
 				result(when(10)).then(function(value) {
 					assert.equals(value, 20);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			},
 
 			'should reject the promise with the error argument': function(done) {
@@ -179,7 +179,7 @@ buster.testCase('when/node/function', {
 
 				result().then(fail, function(reason) {
 					assert.same(reason, error);
-				}).always(done);
+				}).ensure(done);
 			},
 
 			'should resolve the promise to an array for mult-args': function(done) {
@@ -189,7 +189,7 @@ buster.testCase('when/node/function', {
 
 				result().then(function(values) {
 					assert.equals(values, [10, 20, 30]);
-				}).always(done);
+				}).ensure(done);
 			}
 		},
 
@@ -202,7 +202,7 @@ buster.testCase('when/node/function', {
 
 			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should accept promises as leading arguments': function(done) {
@@ -214,7 +214,7 @@ buster.testCase('when/node/function', {
 
 			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 	},
 
@@ -233,7 +233,7 @@ buster.testCase('when/node/function', {
 
 				deferred.promise.then(function(value) {
 					assert.equals(value, 10);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			},
 
 			'should reject the resolver when called with errors': function(done) {
@@ -246,7 +246,7 @@ buster.testCase('when/node/function', {
 
 				deferred.promise.then(fail, function(reason) {
 					assert.same(reason, error);
-				}).always(done);
+				}).ensure(done);
 			},
 
 			'should pass multiple arguments as an array': function(done) {
@@ -257,7 +257,7 @@ buster.testCase('when/node/function', {
 
 				deferred.promise.then(function(value) {
 					assert.equals(value, [10, 20, 30]);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			}
 		}
 	}

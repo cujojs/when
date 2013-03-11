@@ -43,7 +43,7 @@ buster.testCase('when/sequence', {
 		expected = [1, 2, 3];
 		tasks = [expectArgs(expected), expectArgs(expected), expectArgs(expected)];
 
-		return sequence.apply(null, [tasks].concat(expected)).always(done);
+		return sequence.apply(null, [tasks].concat(expected)).ensure(done);
 	}
 });
 

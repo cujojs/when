@@ -56,7 +56,7 @@ buster.testCase('when', {
 				assert.equals(val, 2);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should invoke fulfilled handler asynchronously for value': function(done) {
@@ -64,7 +64,7 @@ buster.testCase('when', {
 
 		when({}, function() {
 			assert.same(val, sentinel);
-		}).always(done);
+		}).ensure(done);
 
 		val = sentinel;
 	},
@@ -74,7 +74,7 @@ buster.testCase('when', {
 
 		when(fakePromise, function() {
 			assert.same(val, sentinel);
-		}).always(done);
+		}).ensure(done);
 
 		val = sentinel;
 	},
@@ -84,7 +84,7 @@ buster.testCase('when', {
 
 		when(when.resolve(), function() {
 			assert.same(val, sentinel);
-		}).always(done);
+		}).ensure(done);
 
 		val = sentinel;
 	},
@@ -97,7 +97,7 @@ buster.testCase('when', {
 			function() {
 				assert.same(val, sentinel);
 			}
-		).always(done);
+		).ensure(done);
 
 		val = sentinel;
 	},
@@ -123,7 +123,7 @@ buster.testCase('when', {
 				assert(val);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should return a resolved promise for a resolved input promise': function(done) {
@@ -132,7 +132,7 @@ buster.testCase('when', {
 				assert(val);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should assimilate untrusted promises':function () {
@@ -160,7 +160,7 @@ buster.testCase('when', {
 				assert.equals(val, 2);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 
 		refute(result instanceof FakePromise);
 	},
@@ -187,7 +187,7 @@ buster.testCase('when', {
 				assert.equals(val, 3);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	}
 
 });

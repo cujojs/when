@@ -27,7 +27,7 @@ buster.testCase('when.any', {
 				refute.defined(result);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve with an input value': function(done) {
@@ -37,7 +37,7 @@ buster.testCase('when.any', {
 				assert(contains(input, result));
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve with a promised input value': function(done) {
@@ -47,7 +47,7 @@ buster.testCase('when.any', {
 				assert(contains([1, 2, 3], result));
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reject with all rejected input values if all inputs are rejected': function(done) {
@@ -57,7 +57,7 @@ buster.testCase('when.any', {
 			function(result) {
 				assert.equals(result, [1, 2, 3]);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should throw if called with something other than a valid input plus callbacks': function() {
@@ -77,7 +77,7 @@ buster.testCase('when.any', {
 				refute.equals(expected.indexOf(result), -1);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should allow zero handlers': function(done) {
@@ -87,7 +87,7 @@ buster.testCase('when.any', {
 				assert(contains(input, result));
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve to undefined when input promise does not resolve to array': function(done) {
@@ -96,7 +96,7 @@ buster.testCase('when.any', {
 				refute.defined(result);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	}
 
 });

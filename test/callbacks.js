@@ -24,7 +24,7 @@ buster.testCase('when/callbacks', {
 
 			promise.then(function(val) {
 				assert.same(val, sentinel);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should reject with the errback arguments': function(done) {
@@ -34,7 +34,7 @@ buster.testCase('when/callbacks', {
 
 			promise.then(fail, function(reason) {
 				assert.same(reason, sentinel);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should turn exceptions into rejections': function(done) {
@@ -45,7 +45,7 @@ buster.testCase('when/callbacks', {
 
 			promise.then(fail, function(reason) {
 				assert.equals(reason, error);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should forward its second argument to the function': function(done) {
@@ -57,7 +57,7 @@ buster.testCase('when/callbacks', {
 
 			promise.then(function(result) {
 				assert.equals(result, 25);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should turn multiple callback values into an array': function(done) {
@@ -68,7 +68,7 @@ buster.testCase('when/callbacks', {
 			var promise = callbacks.apply(async, [10, 20]);
 			promise.then(function(results) {
 				assert.equals(results, [100, 400]);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should accept promises on the extra arguments': function(done) {
@@ -80,7 +80,7 @@ buster.testCase('when/callbacks', {
 
 			promise.then(function(result) {
 				assert.equals(result, 25);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		}
 	},
 
@@ -96,7 +96,7 @@ buster.testCase('when/callbacks', {
 
 			promise.then(function(val) {
 				assert.same(val, sentinel);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should reject with the errback arguments': function(done) {
@@ -106,7 +106,7 @@ buster.testCase('when/callbacks', {
 
 			promise.then(fail, function(reason) {
 				assert.same(reason, sentinel);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should turn exceptions into rejections': function(done) {
@@ -117,7 +117,7 @@ buster.testCase('when/callbacks', {
 
 			promise.then(fail, function(reason) {
 				assert.equals(reason, error);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should forward its extra arguments to the function': function(done) {
@@ -129,7 +129,7 @@ buster.testCase('when/callbacks', {
 
 			promise.then(function(result) {
 				assert.equals(result, 25);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should turn multiple callback values into an array': function(done) {
@@ -140,7 +140,7 @@ buster.testCase('when/callbacks', {
 			var promise = callbacks.call(async, 10, 20);
 			promise.then(function(results) {
 				assert.equals(results, [100, 400]);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should accept promises on the extra arguments': function(done) {
@@ -152,7 +152,7 @@ buster.testCase('when/callbacks', {
 
 			promise.then(function(result) {
 				assert.equals(result, 25);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		}
 	},
 
@@ -174,7 +174,7 @@ buster.testCase('when/callbacks', {
 
 				result().then(function(value) {
 					assert.equals(value, 10);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			},
 
 			'should forward arguments to the original function': function(done) {
@@ -184,7 +184,7 @@ buster.testCase('when/callbacks', {
 
 				result(10, 15).then(function(value) {
 					assert.equals(value, 25);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			},
 
 			'should reject the promise with the errback value': function(done) {
@@ -195,7 +195,7 @@ buster.testCase('when/callbacks', {
 
 				result().then(fail, function(reason) {
 					assert.same(reason, error);
-				}).always(done);
+				}).ensure(done);
 			},
 
 			'should turn exceptions into rejections': function(done) {
@@ -206,7 +206,7 @@ buster.testCase('when/callbacks', {
 
 				result().then(fail, function(reason) {
 					assert.equals(reason, error);
-				}).always(done);
+				}).ensure(done);
 			},
 
 			'should turn multiple callback values into an array': function(done) {
@@ -216,7 +216,7 @@ buster.testCase('when/callbacks', {
 
 				result(10, 20).then(function(results) {
 					assert.equals(results, [100, 400]);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			},
 
 			'should accept promises as arguments': function(done) {
@@ -226,7 +226,7 @@ buster.testCase('when/callbacks', {
 
 				result(when(10), 15).then(function(result) {
 					assert.equals(result, 25);
-				}, fail).always(done);
+				}, fail).ensure(done);
 			}
 		},
 
@@ -239,7 +239,7 @@ buster.testCase('when/callbacks', {
 
 			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should accept promises as leading arguments': function(done) {
@@ -251,7 +251,7 @@ buster.testCase('when/callbacks', {
 
 			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		}
 	},
 
@@ -267,7 +267,7 @@ buster.testCase('when/callbacks', {
 
 			promisified(10, 5).then(function(result) {
 				assert.equals(result, 15);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should support errbacks in any position': function(done) {
@@ -282,7 +282,7 @@ buster.testCase('when/callbacks', {
 
 			promisified(10, 5).then(fail, function(reason) {
 				assert.equals(reason, 15);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should turn multiple callback values into an array': function(done) {
@@ -297,7 +297,7 @@ buster.testCase('when/callbacks', {
 
 			promisified(10, 20).then(function(results) {
 				assert.equals(results, [20, 10]);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should turn exceptions into rejections': function(done) {
@@ -308,7 +308,7 @@ buster.testCase('when/callbacks', {
 
 			result().then(fail, function(reason) {
 				assert.equals(reason, error);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should accept promises as arguments': function(done) {
@@ -321,7 +321,7 @@ buster.testCase('when/callbacks', {
 
 			result(when(10), 15).then(function(result) {
 				assert.equals(result, 25);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should understand -1 as "the last argument"': function(done) {
@@ -342,7 +342,7 @@ buster.testCase('when/callbacks', {
 
 			promisified(5, 10, 15).then(function(result) {
 				assert.equals(result, 30);
-			}, fail).always(done);
+			}, fail).ensure(done);
 		},
 
 		'should understand -2 as "the penultimate argument"': function(done) {
@@ -367,7 +367,7 @@ buster.testCase('when/callbacks', {
 			var promise = promisified('That\'s', 'an', 'extreme', 'example');
 			promise.then(fail, function(reason) {
 				assert.equals(reason, 'That\'s an extreme example');
-			}).always(done);
+			}).ensure(done);
 		}
 	}
 });

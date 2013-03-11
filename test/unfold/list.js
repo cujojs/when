@@ -20,7 +20,7 @@ buster.testCase('when/unfold/list', {
 			function(value) {
 				assert.equals(value, []);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should produce a list of N elements': function(done) {
@@ -39,7 +39,7 @@ buster.testCase('when/unfold/list', {
 				assert.equals(result.length, len);
 				assert.equals(result, [0, 1, 2]);
 			}
-		).always(done);
+		).ensure(done);
 	}
 
 });

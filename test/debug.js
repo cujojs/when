@@ -27,7 +27,7 @@ buster.testCase('when/debug', {
 					assert.calledOnce(spy);
 				},
 				fail
-			).always(done);
+			).ensure(done);
 
 			d.reject();
 		}
@@ -48,7 +48,7 @@ buster.testCase('when/debug', {
 				},
 				fail,
 				fail
-			).always(done);
+			).ensure(done);
 
 			d.resolve();
 		}
@@ -68,7 +68,7 @@ buster.testCase('when/debug', {
 					assert.calledOnce(spy);
 				},
 				fail
-			).always(done);
+			).ensure(done);
 
 			d.notify();
 			d.resolve();

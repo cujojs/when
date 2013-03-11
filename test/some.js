@@ -44,7 +44,7 @@ buster.testCase('when.some', {
 				assert.equals(result, []);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve values array': function(done) {
@@ -54,7 +54,7 @@ buster.testCase('when.some', {
 				assert(isSubset(results, input));
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve promises array': function(done) {
@@ -64,7 +64,7 @@ buster.testCase('when.some', {
 				assert(isSubset(results, [1, 2, 3]));
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve sparse array input': function(done) {
@@ -75,7 +75,7 @@ buster.testCase('when.some', {
 				done();
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reject with all rejected input values if resolving howMany becomes impossible': function(done) {
@@ -85,7 +85,7 @@ buster.testCase('when.some', {
 			function(failed) {
 				assert.equals(failed, [2, 3]);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should throw if called with something other than a valid input, count, and callbacks': function() {
@@ -105,7 +105,7 @@ buster.testCase('when.some', {
 				assert.equals(results.length, 2);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve to empty array when input promise does not resolve to array': function(done) {
@@ -114,7 +114,7 @@ buster.testCase('when.some', {
 				assert.equals(result, []);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	}
 
 

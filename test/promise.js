@@ -68,43 +68,43 @@ buster.testCase('promise', {
 		'should ignore non-functions': {
 			'when fulfillment handler': {
 				'is empty string': function(done) {
-					when.resolve(true).then('').then(assert, fail).always(done);
+					when.resolve(true).then('').then(assert, fail).ensure(done);
 				},
 				'is false': function(done) {
-					when.resolve(true).then(false).then(assert, fail).always(done);
+					when.resolve(true).then(false).then(assert, fail).ensure(done);
 				},
 				'is true': function(done) {
-					when.resolve(true).then(true).then(assert, fail).always(done);
+					when.resolve(true).then(true).then(assert, fail).ensure(done);
 				},
 				'is object': function(done) {
-					when.resolve(true).then({}).then(assert, fail).always(done);
+					when.resolve(true).then({}).then(assert, fail).ensure(done);
 				},
 				'is falsey': function(done) {
-					when.resolve(true).then(0).then(assert, fail).always(done);
+					when.resolve(true).then(0).then(assert, fail).ensure(done);
 				},
 				'is truthy': function(done) {
-					when.resolve(true).then(1).then(assert, fail).always(done);
+					when.resolve(true).then(1).then(assert, fail).ensure(done);
 				}
 			},
 
 			'when rejection handler': {
 				'is empty string': function(done) {
-					when.reject(true).then(null, '').then(fail, assert).always(done);
+					when.reject(true).then(null, '').then(fail, assert).ensure(done);
 				},
 				'is false': function(done) {
-					when.reject(true).then(null, false).then(fail, assert).always(done);
+					when.reject(true).then(null, false).then(fail, assert).ensure(done);
 				},
 				'is true': function(done) {
-					when.reject(true).then(null, true).then(fail, assert).always(done);
+					when.reject(true).then(null, true).then(fail, assert).ensure(done);
 				},
 				'is object': function(done) {
-					when.reject(true).then(null, {}).then(fail, assert).always(done);
+					when.reject(true).then(null, {}).then(fail, assert).ensure(done);
 				},
 				'is falsey': function(done) {
-					when.reject(true).then(null, 0).then(fail, assert).always(done);
+					when.reject(true).then(null, 0).then(fail, assert).ensure(done);
 				},
 				'is truthy': function(done) {
-					when.reject(true).then(null, 1).then(fail, assert).always(done);
+					when.reject(true).then(null, 1).then(fail, assert).ensure(done);
 				}
 			},
 
@@ -154,7 +154,7 @@ buster.testCase('promise', {
 				assert.same(val, expected);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 
 		d.resolve(expected);
 
@@ -171,7 +171,7 @@ buster.testCase('promise', {
 				assert.equals(val, 1);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 
 		d.resolve(1);
 	},
@@ -189,7 +189,7 @@ buster.testCase('promise', {
 				assert.equals(val, 2);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 
 		d.resolve(1);
 	},
@@ -207,7 +207,7 @@ buster.testCase('promise', {
 				refute.defined(val);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 
 		d.resolve(1);
 	},
@@ -228,7 +228,7 @@ buster.testCase('promise', {
 				refute.defined(val);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 
 		d.reject(1);
 	},
@@ -248,7 +248,7 @@ buster.testCase('promise', {
 				assert.equals(val, 2);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 
 		d.resolve(1);
 	},
@@ -268,7 +268,7 @@ buster.testCase('promise', {
 			function(val) {
 				assert.equals(val, 2);
 			}
-		).always(done);
+		).ensure(done);
 
 		d.resolve(1);
 	},
@@ -290,7 +290,7 @@ buster.testCase('promise', {
 					function(val) {
 						assert.same(val, sentinel);
 					}
-				).always(done);
+				).ensure(done);
 
 				d.resolve();
 			},
@@ -311,7 +311,7 @@ buster.testCase('promise', {
 					function(val) {
 						assert.same(val, expected);
 					}
-				).always(done);
+				).ensure(done);
 
 				d.resolve();
 			},
@@ -332,7 +332,7 @@ buster.testCase('promise', {
 					function(val) {
 						assert.same(val, expected);
 					}
-				).always(done);
+				).ensure(done);
 
 				d.resolve();
 			}
@@ -354,7 +354,7 @@ buster.testCase('promise', {
 					function(val) {
 						assert.same(val, sentinel);
 					}
-				).always(done);
+				).ensure(done);
 
 				d.reject();
 			},
@@ -375,7 +375,7 @@ buster.testCase('promise', {
 					function(val) {
 						assert.same(val, expected);
 					}
-				).always(done);
+				).ensure(done);
 
 				d.reject();
 			},
@@ -396,7 +396,7 @@ buster.testCase('promise', {
 					function(val) {
 						assert.same(val, expected);
 					}
-				).always(done);
+				).ensure(done);
 
 				d.reject();
 			}
@@ -417,7 +417,7 @@ buster.testCase('promise', {
 				assert.equals(val, 2);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 
 		d.reject(1);
 	},
@@ -437,7 +437,7 @@ buster.testCase('promise', {
 				assert.equals(val, 2);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 
 		d.reject(1);
 	},
@@ -457,7 +457,7 @@ buster.testCase('promise', {
 			function(val) {
 				assert.equals(val, 2);
 			}
-		).always(done);
+		).ensure(done);
 
 		d.reject(1);
 	},
@@ -520,16 +520,16 @@ buster.testCase('promise', {
 
 	},
 	
-	'finally': {
+	'ensure': {
 		'should return a promise': function() {
-			assert.isFunction(defer().promise.finally().then);
+			assert.isFunction(defer().promise.ensure().then);
 		},
 		
 		'when fulfilled': {
 			'should call callback': function(done) {
 				var d = when.defer();
 
-				d.promise.finally(
+				d.promise.ensure(
 					function() {
 						assert.equals(arguments.length, 0);
 						done();
@@ -542,7 +542,7 @@ buster.testCase('promise', {
 			'should ignore callback return value': function(done) {
 				var d = when.defer();
 
-				d.promise.finally(
+				d.promise.ensure(
 					function() {
 						return other;
 					}
@@ -551,7 +551,7 @@ buster.testCase('promise', {
 						assert.same(val, sentinel);
 					},
 					fail
-				).always(done);
+				).ensure(done);
 
 				d.resolve(sentinel);
 			},
@@ -559,7 +559,7 @@ buster.testCase('promise', {
 			'should propagate rejection on throw': function(done) {
 				var d = when.defer();
 
-				d.promise.finally(
+				d.promise.ensure(
 					function() {
 						throw sentinel;
 					}
@@ -568,7 +568,7 @@ buster.testCase('promise', {
 					function(val) {
 						assert.same(val, sentinel);
 					}
-				).always(done);
+				).ensure(done);
 
 				d.resolve(other);
 			}
@@ -578,7 +578,7 @@ buster.testCase('promise', {
 			'should call callback': function(done) {
 				var d = when.defer();
 
-				d.promise.finally(
+				d.promise.ensure(
 					function() {
 						assert.equals(arguments.length, 0);
 						done();
@@ -591,7 +591,7 @@ buster.testCase('promise', {
 			'should propagate rejection, ignoring callback return value': function(done) {
 				var d = when.defer();
 
-				d.promise.finally(
+				d.promise.ensure(
 					function() {
 						return other;
 					}
@@ -600,7 +600,7 @@ buster.testCase('promise', {
 					function(val) {
 						assert.same(val, sentinel);
 					}
-				).always(done);
+				).ensure(done);
 
 				d.reject(sentinel);
 			},
@@ -608,7 +608,7 @@ buster.testCase('promise', {
 			'should propagate rejection on throw': function(done) {
 				var d = when.defer();
 
-				d.promise.finally(
+				d.promise.ensure(
 					function() {
 						throw sentinel;
 					}
@@ -617,7 +617,7 @@ buster.testCase('promise', {
 					function(val) {
 						assert.same(val, sentinel);
 					}
-				).always(done);
+				).ensure(done);
 
 				d.reject(other);
 			}
@@ -651,20 +651,20 @@ buster.testCase('promise', {
 		'should fulfill with the supplied value': function(done) {
 			when.resolve(other).yield(sentinel).then(
 				function(value) { assert.same(value, sentinel); }
-			).always(done);
+			).ensure(done);
 		},
 
 		'should fulfill with the value of a fulfilled promise': function(done) {
 			when.resolve(other).yield(when.resolve(sentinel)).then(
 				function(value) { assert.same(value, sentinel); }
-			).always(done);
+			).ensure(done);
 		},
 
 		'should reject with the reason of a rejected promise': function(done) {
 			when.resolve(other).yield(when.reject(sentinel)).then(
 				fail,
 				function(reason) { assert.same(reason, sentinel); }
-			).always(done);
+			).ensure(done);
 		}
 	},
 
@@ -677,14 +677,14 @@ buster.testCase('promise', {
 			var expected = [1, 2, 3];
 			when.resolve(expected).spread(function() {
 				assert.equals(slice.call(arguments), expected);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should resolve array contents': function(done) {
 			var expected = [when.resolve(1), 2, when.resolve(3)];
 			when.resolve(expected).spread(function() {
 				assert.equals(slice.call(arguments), [1, 2, 3]);
-			}).always(done);
+			}).ensure(done);
 		},
 
 		'should reject if any item in array rejects': function(done) {
@@ -696,7 +696,7 @@ buster.testCase('promise', {
 					function() {
 						assert(true);
 					}
-				).always(done);
+				).ensure(done);
 		},
 
 		'when input is a promise': {
@@ -704,14 +704,14 @@ buster.testCase('promise', {
 				var expected = [1, 2, 3];
 				when.resolve(when.resolve(expected)).spread(function() {
 					assert.equals(slice.call(arguments), expected);
-				}).always(done);
+				}).ensure(done);
 			},
 
 			'should resolve array contents': function(done) {
 				var expected = [when.resolve(1), 2, when.resolve(3)];
 				when.resolve(when.resolve(expected)).spread(function() {
 					assert.equals(slice.call(arguments), [1, 2, 3]);
-				}).always(done);
+				}).ensure(done);
 			},
 
 			'should reject if input is a rejected promise': function(done) {
@@ -723,7 +723,7 @@ buster.testCase('promise', {
 					function() {
 						assert(true);
 					}
-				).always(done);
+				).ensure(done);
 			}
 		}
 	}

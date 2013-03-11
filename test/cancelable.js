@@ -23,7 +23,7 @@ buster.testCase('when/cancelable', {
 			function(v) {
 				assert.equals(v, sentinel);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should return a promise for canceled value when canceled': function(done) {
@@ -37,7 +37,7 @@ buster.testCase('when/cancelable', {
 			function(v) {
 				assert.equals(v, sentinel);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should not invoke canceler when rejected normally': function(done) {
@@ -50,7 +50,7 @@ buster.testCase('when/cancelable', {
 			function(v) {
 				assert.equals(v, sentinel);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should propagate the unaltered resolution value': function(done) {
@@ -66,7 +66,7 @@ buster.testCase('when/cancelable', {
 				console.error(e);
 				fail(e);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should call progback for cancelable deferred': function(done) {

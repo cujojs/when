@@ -36,7 +36,7 @@ buster.testCase('when.defer', {
 					assert.same(val, sentinel);
 				},
 				fail
-			).always(done);
+			).ensure(done);
 
 			d.resolve(sentinel);
 		},
@@ -49,7 +49,7 @@ buster.testCase('when.defer', {
 					assert.same(val, sentinel);
 				},
 				fail
-			).always(done);
+			).ensure(done);
 
 			d.resolve(fakeResolved(sentinel));
 		},
@@ -62,7 +62,7 @@ buster.testCase('when.defer', {
 				function(val) {
 					assert.same(val, sentinel);
 				}
-			).always(done);
+			).ensure(done);
 
 			d.resolve(fakeRejected(sentinel));
 		},
@@ -75,7 +75,7 @@ buster.testCase('when.defer', {
 					assert.equals(returnedPromiseVal, sentinel);
 				},
 				fail
-			).always(done);
+			).ensure(done);
 		},
 
 		'should return a promise for a promised resolution value': function(done) {
@@ -86,7 +86,7 @@ buster.testCase('when.defer', {
 					assert.equals(returnedPromiseVal, sentinel);
 				},
 				fail
-			).always(done);
+			).ensure(done);
 		},
 
 		'should return a promise for a promised rejection value': function(done) {
@@ -99,7 +99,7 @@ buster.testCase('when.defer', {
 				function(returnedPromiseVal) {
 					assert.equals(returnedPromiseVal, sentinel);
 				}
-			).always(done);
+			).ensure(done);
 		},
 
 		'should invoke newly added callback when already resolved': function(done) {
@@ -113,7 +113,7 @@ buster.testCase('when.defer', {
 					done();
 				},
 				fail
-			).always(done);
+			).ensure(done);
 		}
 	},
 
@@ -126,7 +126,7 @@ buster.testCase('when.defer', {
 				function(val) {
 					assert.same(val, sentinel);
 				}
-			).always(done);
+			).ensure(done);
 
 			d.reject(sentinel);
 		},
@@ -142,7 +142,7 @@ buster.testCase('when.defer', {
 				function(val) {
 					assert.same(val, expected);
 				}
-			).always(done);
+			).ensure(done);
 
 			d.reject(expected);
 		},
@@ -158,7 +158,7 @@ buster.testCase('when.defer', {
 				function(val) {
 					assert.same(val, expected);
 				}
-			).always(done);
+			).ensure(done);
 
 			d.reject(expected);
 		},
@@ -174,7 +174,7 @@ buster.testCase('when.defer', {
 				function(returnedPromiseVal) {
 					assert.equals(returnedPromiseVal, sentinel);
 				}
-			).always(done);
+			).ensure(done);
 		},
 
 		'should invoke newly added errback when already rejected': function(done) {
@@ -187,7 +187,7 @@ buster.testCase('when.defer', {
 				function (val) {
 					assert.equals(val, sentinel);
 				}
-			).always(done);
+			).ensure(done);
 		}
 	},
 
@@ -391,7 +391,7 @@ buster.testCase('when.defer', {
 
 		d.resolve(sentinel).then(function(val) {
 			assert.same(val, sentinel);
-		}).always(done);
+		}).ensure(done);
 	},
 
 	'should return a promise for passed-in rejection value when already resolved': function(done) {
@@ -403,7 +403,7 @@ buster.testCase('when.defer', {
 			function(val) {
 				assert.same(val, sentinel);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should return silently on progress when already resolved': function() {
@@ -419,7 +419,7 @@ buster.testCase('when.defer', {
 
 		d.resolve(sentinel).then(function(val) {
 			assert.same(val, sentinel);
-		}).always(done);
+		}).ensure(done);
 	},
 
 	'should return a promise for passed-in rejection value when already rejected': function(done) {
@@ -431,7 +431,7 @@ buster.testCase('when.defer', {
 			function(val) {
 				assert.same(val, sentinel);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should return silently on progress when already rejected': function() {

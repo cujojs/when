@@ -16,7 +16,7 @@ buster.testCase('when.join', {
 				assert.equals(result, []);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should join values': function(done) {
@@ -25,7 +25,7 @@ buster.testCase('when.join', {
 				assert.equals(results, [1, 2, 3]);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should join promises array': function(done) {
@@ -34,7 +34,7 @@ buster.testCase('when.join', {
 				assert.equals(results, [1, 2, 3]);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should join mixed array': function(done) {
@@ -43,7 +43,7 @@ buster.testCase('when.join', {
 				assert.equals(results, [1, 2, 3, 4]);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should reject if any input promise rejects': function(done) {
@@ -52,7 +52,7 @@ buster.testCase('when.join', {
 			function(failed) {
 				assert.equals(failed, 2);
 			}
-		).always(done);
+		).ensure(done);
 	}
 
 });

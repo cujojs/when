@@ -136,7 +136,7 @@ define(['./when'], function(when) {
 	 * @return {Deferred} a Deferred with debug logging
 	 */
 	function deferDebug(/* id */) {
-		var d, status, value, origResolve, origReject, origNotify, origThen, id;
+		var d, status, value, origResolve, origReject, origNotify, origThen, origAlways, id;
 
 		// Delegate to create a Deferred;
 		d = when.defer();
@@ -157,6 +157,9 @@ define(['./when'], function(when) {
 		origThen = d.promise.then;
 		d.id = id;
 		d.promise = debugPromise(d.promise, d);
+
+		origAlways = d.promise.always;
+		d.promise.always = deprecated('promise.always', 'promise.ensure', origAlways, d.promise);
 
 		d.resolver = beget(d.resolver);
 		d.resolver.toString = function() {
@@ -307,13 +310,13 @@ define(['./when'], function(when) {
 	}
 
 	// Commented out until we need it, to appease JSHint
-//	function deprecated(name, preferred, f, context) {
-//		return function() {
-//			warn(new Error(name + ' is deprecated, use ' + preferred).stack);
-//
-//			return f.apply(context, arguments);
-//		};
-//	}
+	function deprecated(name, preferred, f, context) {
+		return function() {
+			warn(new Error(name + ' is deprecated, use ' + preferred).stack);
+
+			return f.apply(context, arguments);
+		};
+	}
 
 	function checkCallbacks() {
 		var i, len, a;

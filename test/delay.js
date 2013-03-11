@@ -18,7 +18,7 @@ buster.testCase('when/delay', {
 				assert(true);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve with provided value after delay': function(done) {
@@ -28,7 +28,7 @@ buster.testCase('when/delay', {
 				done();
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should delay by the provided value': function(done) {
@@ -39,7 +39,7 @@ buster.testCase('when/delay', {
 				assert((now() - start) > 50);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should resolve after input promise plus delay': function(done) {
@@ -48,7 +48,7 @@ buster.testCase('when/delay', {
 				assert.equals(val, sentinel);
 			},
 			fail
-		).always(done);
+		).ensure(done);
 	},
 
 	'should not delay if rejected': function(done) {
@@ -60,7 +60,7 @@ buster.testCase('when/delay', {
 			function(val) {
 				assert.equals(val, sentinel);
 			}
-		).always(done);
+		).ensure(done);
 	},
 
 	'should propagate progress': function(done) {
@@ -71,7 +71,7 @@ buster.testCase('when/delay', {
 				assert.same(val, sentinel);
 				d.resolve();
 			}
-		).always(done);
+		).ensure(done);
 
 		d.notify(sentinel);
 	}
