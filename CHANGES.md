@@ -2,8 +2,9 @@
 
 * Fully asynchronous resolutions.
 * [Promises/A+](http://promises-aplus.github.com/promises-spec) compliance.
-* [`promise.ensure`](docs/api.md#ensure) as a better, and safer, replacement for `promise.always`.  [See discussion](https://github.com/cujojs/when/issues/103)
-* **DEPRECATED:** `promise.always`.  [See discussion](https://github.com/cujojs/when/issues/103) as to why it makes for easy mistakes
+* New [`when/keys`](docs/api.md#object-keys) module with `all()` and `map()` for object keys/values.
+* New [`promise.ensure`](docs/api.md#ensure) as a better, and safer, replacement for `promise.always`.  [See discussion](https://github.com/cujojs/when/issues/103).
+* **DEPRECATED:** `promise.always`.  [See discussion](https://github.com/cujojs/when/issues/103) as to why it makes for easy mistakes.
 
 ### 1.8.1
 

@@ -19,8 +19,9 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 
 * Fully asynchronous resolutions.
 * [Promises/A+](http://promises-aplus.github.com/promises-spec) compliance.
-* [`promise.ensure`](docs/api.md#ensure) as a better, and safer, replacement for `promise.always`.  [See discussion](https://github.com/cujojs/when/issues/103)
-* **DEPRECATED:** `promise.always`.  [See discussion](https://github.com/cujojs/when/issues/103) as to why it makes for easy mistakes
+* New [`when/keys`](docs/api.md#object-keys) module with `all()` and `map()` for object keys/values.
+* New [`promise.ensure`](docs/api.md#ensure) as a better, and safer, replacement for `promise.always`.  [See discussion](https://github.com/cujojs/when/issues/103).
+* **DEPRECATED:** `promise.always`.  [See discussion](https://github.com/cujojs/when/issues/103) as to why it makes for easy mistakes.
 
 [Full Changelog](CHANGES.md)
 
@@ -40,7 +41,7 @@ Quick Start
 1. `git clone https://github.com/cujojs/when` or `git submodule add https://github.com/cujojs/when`
 1. Configure your loader with a package:
 
-	```javascript
+	```js
 	packages: [
 		{ name: 'when', location: 'path/to/when/', main: 'when' },
 		// ... other packages ...
