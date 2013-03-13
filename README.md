@@ -20,8 +20,10 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 * Fully asynchronous resolutions.
 * [Promises/A+](http://promises-aplus.github.com/promises-spec) compliance.
 * New [`when/keys`](docs/api.md#object-keys) module with `all()` and `map()` for object keys/values.
-* New [`promise.ensure`](docs/api.md#ensure) as a better, and safer, replacement for `promise.always`.  [See discussion](https://github.com/cujojs/when/issues/103).
-* **DEPRECATED:** `promise.always`.  [See discussion](https://github.com/cujojs/when/issues/103) as to why it makes for easy mistakes.
+* New [`promise.ensure`](docs/api.md#ensure) as a better, and safer, replacement for `promise.always`.  [See discussion](https://github.com/cujojs/when/issues/103) as to why `promise.always` is mistake-prone.
+	* **DEPRECATED:** `promise.always`
+* `lift()` is now the preferred name for what was `bind()` in [when/function](docs/api.md#synchronous-functions), [when/node/function](docs/api.md#node-style-asynchronous-functions), and [when/callbacks](docs/api.md#asynchronous-functions).
+	* **DEPRECATED:** `bind()` in `when/function`, `when/node/function`, and `when/callbacks`.  Use `lift()` instead.
 
 [Full Changelog](CHANGES.md)
 
