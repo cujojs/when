@@ -10,9 +10,14 @@
 
 (function (define) {
 'use strict';
-define(['./when', './cancelable', './delay', './function'], function(when, cancelable, delay, fn) {
+define(function(require) {
 
-	var undef;
+	var when, cancelable, delay, fn, undef;
+
+	when = require('./when');
+	cancelable = require('./cancelable');
+	delay = require('./delay');
+	fn = require('./function');
 
 	/**
 	 * Periodically execute the work function on the msec delay. The result of
@@ -120,11 +125,7 @@ define(['./when', './cancelable', './delay', './function'], function(when, cance
 	}
 
 });
-})(typeof define == 'function' && define.amd
-	? define
-	: function (deps, factory) { typeof exports == 'object'
-		? (module.exports = factory(require('./when'), require('./cancelable'), require('./delay'), require('./function')))
-		: (this.when_poll = factory(this.when, this.when_cancelable, this.when_delay, this.when_function));
-	}
-	// Boilerplate for AMD, Node, and browser global
+})(
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
+	// Boilerplate for AMD and Node
 );

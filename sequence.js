@@ -10,7 +10,11 @@
  */
 
 (function(define) {
-define(['./when'], function(when) {
+define(function(require) {
+
+	var when;
+
+	when = require('./when');
 
 	/**
 	 * Run array of tasks in sequence with no overlap
@@ -31,13 +35,9 @@ define(['./when'], function(when) {
 	};
 
 });
-})(typeof define == 'function' && define.amd
-	? define
-	: function (deps, factory) { typeof exports == 'object'
-		? (module.exports = factory(require('./when')))
-		: (this.when_sequence = factory(this.when));
-	}
-	// Boilerplate for AMD, Node, and browser global
+})(
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
+	// Boilerplate for AMD and Node
 );
 
 

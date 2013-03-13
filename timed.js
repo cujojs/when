@@ -11,7 +11,12 @@
  */
 
 (function(define) {
-define(['./timeout', './delay'], function(timeout, delay) {
+define(function(require) {
+
+	var timeout, delay;
+
+	timeout = require('./timeout');
+	delay = require('./delay');
 
     return {
         timeout: timeout,
@@ -19,13 +24,9 @@ define(['./timeout', './delay'], function(timeout, delay) {
     };
 
 });
-})(typeof define == 'function'
-    ? define
-    : function (deps, factory) { typeof module != 'undefined'
-        ? (module.exports = factory.apply(this, deps.map(require)))
-        : (this.when_timed = factory(this.when_timeout, this.when_delay));
-    }
-    // Boilerplate for AMD, Node, and browser global
+})(
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
+	// Boilerplate for AMD and Node
 );
 
 
