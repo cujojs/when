@@ -1,12 +1,9 @@
-(function(buster, when) {
+(function(buster, define) {
 
-var assert, fail, resolved, rejected;
+var assert, fail;
 
 assert = buster.assert;
 fail = buster.assertions.fail;
-
-resolved = when.resolve;
-rejected = when.reject;
 
 function contains(array, value) {
 	for(var i = array.length-1; i >= 0; i--) {
@@ -36,90 +33,107 @@ function isSubset(subset, superset) {
 	return true;
 }
 
-buster.testCase('when.some', {
+define('when.some-test', function (require) {
 
-	'should resolve empty input': function(done) {
-		when.some([], 1,
-			function(result) {
-				assert.equals(result, []);
-			},
-			fail
-		).ensure(done);
-	},
+	var when, resolved, rejected;
 
-	'should resolve values array': function(done) {
-		var input = [1, 2, 3];
-		when.some(input, 2,
-			function(results) {
-				assert(isSubset(results, input));
-			},
-			fail
-		).ensure(done);
-	},
+	when = require('when');
+	resolved = when.resolve;
+	rejected = when.reject;
 
-	'should resolve promises array': function(done) {
-		var input = [resolved(1), resolved(2), resolved(3)];
-		when.some(input, 2,
-			function(results) {
-				assert(isSubset(results, [1, 2, 3]));
-			},
-			fail
-		).ensure(done);
-	},
+	buster.testCase('when.some', {
 
-	'should resolve sparse array input': function(done) {
-		var input = [, 1, , 2, 3 ];
-		when.some(input, 2,
-			function(results) {
-				assert(isSubset(results, input));
-				done();
-			},
-			fail
-		).ensure(done);
-	},
+		'should resolve empty input': function(done) {
+			when.some([], 1,
+				function(result) {
+					assert.equals(result, []);
+				},
+				fail
+			).ensure(done);
+		},
 
-	'should reject with all rejected input values if resolving howMany becomes impossible': function(done) {
-		var input = [resolved(1), rejected(2), rejected(3)];
-		when.some(input, 2,
-			fail,
-			function(failed) {
-				assert.equals(failed, [2, 3]);
-			}
-		).ensure(done);
-	},
+		'should resolve values array': function(done) {
+			var input = [1, 2, 3];
+			when.some(input, 2,
+				function(results) {
+					assert(isSubset(results, input));
+				},
+				fail
+			).ensure(done);
+		},
 
-	'should throw if called with something other than a valid input, count, and callbacks': function() {
-		assert.exception(function() {
-			when.some(1, 2, 3, 2);
-		});
-	},
+		'should resolve promises array': function(done) {
+			var input = [resolved(1), resolved(2), resolved(3)];
+			when.some(input, 2,
+				function(results) {
+					assert(isSubset(results, [1, 2, 3]));
+				},
+				fail
+			).ensure(done);
+		},
 
-	'should accept a promise for an array': function(done) {
-		var expected, input;
+		'should resolve sparse array input': function(done) {
+			var input = [, 1, , 2, 3 ];
+			when.some(input, 2,
+				function(results) {
+					assert(isSubset(results, input));
+					done();
+				},
+				fail
+			).ensure(done);
+		},
 
-		expected = [1, 2, 3];
-		input = resolved(expected);
+		'should reject with all rejected input values if resolving howMany becomes impossible': function(done) {
+			var input = [resolved(1), rejected(2), rejected(3)];
+			when.some(input, 2,
+				fail,
+				function(failed) {
+					assert.equals(failed, [2, 3]);
+				}
+			).ensure(done);
+		},
 
-		when.some(input, 2,
-			function(results) {
-				assert.equals(results.length, 2);
-			},
-			fail
-		).ensure(done);
-	},
+		'should throw if called with something other than a valid input, count, and callbacks': function() {
+			assert.exception(function() {
+				when.some(1, 2, 3, 2);
+			});
+		},
 
-	'should resolve to empty array when input promise does not resolve to array': function(done) {
-		when.some(resolved(1), 1,
-			function(result) {
-				assert.equals(result, []);
-			},
-			fail
-		).ensure(done);
-	}
+		'should accept a promise for an array': function(done) {
+			var expected, input;
 
+			expected = [1, 2, 3];
+			input = resolved(expected);
+
+			when.some(input, 2,
+				function(results) {
+					assert.equals(results.length, 2);
+				},
+				fail
+			).ensure(done);
+		},
+
+		'should resolve to empty array when input promise does not resolve to array': function(done) {
+			when.some(resolved(1), 1,
+				function(result) {
+					assert.equals(result, []);
+				},
+				fail
+			).ensure(done);
+		}
+
+	});
 
 });
-})(
+
+}(
 	this.buster || require('buster'),
-	this.when   || require('..')
-);
+	typeof define === 'function' && define.amd ? define : function (id, factory) {
+		var packageName = id.split(/[\/\-\.]/)[0], pathToRoot = id.replace(/[^\/]+/g, '..');
+		pathToRoot = pathToRoot.length > 2 ? pathToRoot.substr(3) : pathToRoot;
+		factory(function (moduleId) {
+			return require(moduleId.indexOf(packageName) === 0 ? pathToRoot + moduleId.substr(packageName.length) : moduleId);
+		});
+	}
+	// Boilerplate for AMD and Node
+));

@@ -34,10 +34,11 @@
  * @author brian@hovercraftstudios.com
  */
 (function(define) {
-define(['./when'], function(when) {
+define(function(require) {
 
-	var promiseId, pending, exceptionsToRethrow, own, warn, undef;
+	var when, promiseId, pending, exceptionsToRethrow, own, warn, undef;
 
+	when = require('./when');
 	promiseId = 0;
 	pending = {};
 	own = Object.prototype.hasOwnProperty;
@@ -343,11 +344,7 @@ define(['./when'], function(when) {
 	}
 
 });
-})(typeof define == 'function'
-	? define
-	: function (deps, factory) { typeof exports != 'undefined'
-		? (module.exports = factory(require('./when')))
-		: (this.when = factory(this.when));
-	}
-	// Boilerplate for AMD, Node, and browser global
+})(
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
+	// Boilerplate for AMD and Node
 );

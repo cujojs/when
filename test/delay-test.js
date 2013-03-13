@@ -1,4 +1,4 @@
-(function(buster, when, delay) {
+(function(buster, define) {
 
 var assert, fail, sentinel;
 
@@ -11,73 +11,89 @@ function now() {
 
 sentinel = {};
 
-buster.testCase('when/delay', {
-	'should resolve after delay': function(done) {
-		delay(0).then(
-			function() {
-				assert(true);
-			},
-			fail
-		).ensure(done);
-	},
+define('when/delay-test', function (require) {
 
-	'should resolve with provided value after delay': function(done) {
-		delay(sentinel, 0).then(
-			function(val) {
-				assert.same(val, sentinel);
-				done();
-			},
-			fail
-		).ensure(done);
-	},
+	var delay, when;
 
-	'should delay by the provided value': function(done) {
-		var start = now();
+	delay = require('when/delay');
+	when = require('when');
 
-		delay(100).then(
-			function() {
-				assert((now() - start) > 50);
-			},
-			fail
-		).ensure(done);
-	},
+	buster.testCase('when/delay', {
+		'should resolve after delay': function(done) {
+			delay(0).then(
+				function() {
+					assert(true);
+				},
+				fail
+			).ensure(done);
+		},
 
-	'should resolve after input promise plus delay': function(done) {
-		delay(when.resolve(sentinel), 10).then(
-			function(val) {
-				assert.equals(val, sentinel);
-			},
-			fail
-		).ensure(done);
-	},
+		'should resolve with provided value after delay': function(done) {
+			delay(sentinel, 0).then(
+				function(val) {
+					assert.same(val, sentinel);
+					done();
+				},
+				fail
+			).ensure(done);
+		},
 
-	'should not delay if rejected': function(done) {
-		var d = when.defer();
-		d.reject(sentinel);
+		'should delay by the provided value': function(done) {
+			var start = now();
 
-		delay(d.promise, 0).then(
-			fail,
-			function(val) {
-				assert.equals(val, sentinel);
-			}
-		).ensure(done);
-	},
+			delay(100).then(
+				function() {
+					assert((now() - start) > 50);
+				},
+				fail
+			).ensure(done);
+		},
 
-	'should propagate progress': function(done) {
-		var d = when.defer();
+		'should resolve after input promise plus delay': function(done) {
+			delay(when.resolve(sentinel), 10).then(
+				function(val) {
+					assert.equals(val, sentinel);
+				},
+				fail
+			).ensure(done);
+		},
 
-		delay(d.promise, 0).then(null, null,
-			function(val) {
-				assert.same(val, sentinel);
-				d.resolve();
-			}
-		).ensure(done);
+		'should not delay if rejected': function(done) {
+			var d = when.defer();
+			d.reject(sentinel);
 
-		d.notify(sentinel);
-	}
+			delay(d.promise, 0).then(
+				fail,
+				function(val) {
+					assert.equals(val, sentinel);
+				}
+			).ensure(done);
+		},
+
+		'should propagate progress': function(done) {
+			var d = when.defer();
+
+			delay(d.promise, 0).then(null, null,
+				function(val) {
+					assert.same(val, sentinel);
+					d.resolve();
+				}
+			).ensure(done);
+
+			d.notify(sentinel);
+		}
+	});
+
 });
-})(
+
+}(
 	this.buster || require('buster'),
-	this.when || require('..'),
-	this.when_delay || require('../delay')
-);
+	typeof define === 'function' && define.amd ? define : function (id, factory) {
+		var packageName = id.split(/[\/\-\.]/)[0], pathToRoot = id.replace(/[^\/]+/g, '..');
+		pathToRoot = pathToRoot.length > 2 ? pathToRoot.substr(3) : pathToRoot;
+		factory(function (moduleId) {
+			return require(moduleId.indexOf(packageName) === 0 ? pathToRoot + moduleId.substr(packageName.length) : moduleId);
+		});
+	}
+	// Boilerplate for AMD and Node
+));

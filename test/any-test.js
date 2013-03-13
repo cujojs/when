@@ -1,6 +1,6 @@
-(function(buster, when) {
+(function(buster, define) {
 
-var assert, refute, fail, resolved, rejected;
+var assert, refute, fail;
 
 assert = buster.assert;
 refute = buster.refute;
@@ -16,92 +16,106 @@ function contains(array, item) {
 	return false;
 }
 
-resolved = when.resolve;
-rejected = when.reject;
+define('when.any-test', function (require) {
 
-buster.testCase('when.any', {
+	var when, resolved, rejected;
 
-	'should resolve to undefined with empty input array': function(done) {
-		when.any([],
-			function(result) {
-				refute.defined(result);
-			},
-			fail
-		).ensure(done);
-	},
+	when = require('when');
+	resolved = when.resolve;
+	rejected = when.reject;
 
-	'should resolve with an input value': function(done) {
-		var input = [1, 2, 3];
-		when.any(input,
-			function(result) {
-				assert(contains(input, result));
-			},
-			fail
-		).ensure(done);
-	},
+	buster.testCase('when.any', {
 
-	'should resolve with a promised input value': function(done) {
-		var input = [resolved(1), resolved(2), resolved(3)];
-		when.any(input,
-			function(result) {
-				assert(contains([1, 2, 3], result));
-			},
-			fail
-		).ensure(done);
-	},
+		'should resolve to undefined with empty input array': function(done) {
+			when.any([],
+				function(result) {
+					refute.defined(result);
+				},
+				fail
+			).ensure(done);
+		},
 
-	'should reject with all rejected input values if all inputs are rejected': function(done) {
-		var input = [rejected(1), rejected(2), rejected(3)];
-		when.any(input,
-			fail,
-			function(result) {
-				assert.equals(result, [1, 2, 3]);
-			}
-		).ensure(done);
-	},
+		'should resolve with an input value': function(done) {
+			var input = [1, 2, 3];
+			when.any(input,
+				function(result) {
+					assert(contains(input, result));
+				},
+				fail
+			).ensure(done);
+		},
 
-	'should throw if called with something other than a valid input plus callbacks': function() {
-		assert.exception(function() {
-			when.any(1, 2, 3);
-		});
-	},
+		'should resolve with a promised input value': function(done) {
+			var input = [resolved(1), resolved(2), resolved(3)];
+			when.any(input,
+				function(result) {
+					assert(contains([1, 2, 3], result));
+				},
+				fail
+			).ensure(done);
+		},
 
-	'should accept a promise for an array': function(done) {
-		var expected, input;
+		'should reject with all rejected input values if all inputs are rejected': function(done) {
+			var input = [rejected(1), rejected(2), rejected(3)];
+			when.any(input,
+				fail,
+				function(result) {
+					assert.equals(result, [1, 2, 3]);
+				}
+			).ensure(done);
+		},
 
-		expected = [1, 2, 3];
-		input = resolved(expected);
+		'should throw if called with something other than a valid input plus callbacks': function() {
+			assert.exception(function() {
+				when.any(1, 2, 3);
+			});
+		},
 
-		when.any(input,
-			function(result) {
-				refute.equals(expected.indexOf(result), -1);
-			},
-			fail
-		).ensure(done);
-	},
+		'should accept a promise for an array': function(done) {
+			var expected, input;
 
-	'should allow zero handlers': function(done) {
-		var input = [1, 2, 3];
-		when.any(input).then(
-			function(result) {
-				assert(contains(input, result));
-			},
-			fail
-		).ensure(done);
-	},
+			expected = [1, 2, 3];
+			input = resolved(expected);
 
-	'should resolve to undefined when input promise does not resolve to array': function(done) {
-		when.any(resolved(1),
-			function(result) {
-				refute.defined(result);
-			},
-			fail
-		).ensure(done);
-	}
+			when.any(input,
+				function(result) {
+					refute.equals(expected.indexOf(result), -1);
+				},
+				fail
+			).ensure(done);
+		},
+
+		'should allow zero handlers': function(done) {
+			var input = [1, 2, 3];
+			when.any(input).then(
+				function(result) {
+					assert(contains(input, result));
+				},
+				fail
+			).ensure(done);
+		},
+
+		'should resolve to undefined when input promise does not resolve to array': function(done) {
+			when.any(resolved(1),
+				function(result) {
+					refute.defined(result);
+				},
+				fail
+			).ensure(done);
+		}
+
+	});
 
 });
 
-})(
+}(
 	this.buster || require('buster'),
-	this.when   || require('..')
-);
+	typeof define === 'function' && define.amd ? define : function (id, factory) {
+		var packageName = id.split(/[\/\-\.]/)[0], pathToRoot = id.replace(/[^\/]+/g, '..');
+		pathToRoot = pathToRoot.length > 2 ? pathToRoot.substr(3) : pathToRoot;
+		factory(function (moduleId) {
+			return require(moduleId.indexOf(packageName) === 0 ? pathToRoot + moduleId.substr(packageName.length) : moduleId);
+		});
+	}
+	// Boilerplate for AMD and Node
+));

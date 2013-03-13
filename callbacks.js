@@ -11,9 +11,12 @@
  */
 
 (function(define) {
-define(['./when'], function(when) {
+define(function(require) {
 
-	var slice = [].slice;
+	var when, slice;
+
+	when = require('./when');
+	slice = [].slice;
 
 	return {
 		apply: apply,
@@ -257,11 +260,7 @@ define(['./when'], function(when) {
 		};
 	}
 });
-})(typeof define == 'function'
-	? define
-	: function (deps, factory) { typeof module != 'undefined'
-		? (module.exports = factory(require('./when')))
-		: (this.when_callback = factory(this.when));
-	}
-	// Boilerplate for AMD, Node, and browser global
+})(
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
+	// Boilerplate for AMD and Node
 );

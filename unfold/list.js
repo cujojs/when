@@ -5,7 +5,12 @@
  * @author: brian@hovercraftstudios.com
  */
 (function(define) {
-define(['when', 'unfold'], function(when, unfold) {
+define(function(require) {
+
+	var when, unfold;
+
+	when = require('../when');
+	unfold = require('../unfold');
 
 	/**
 	 * Given a seed and generator, produces an Array.  Effectively the
@@ -29,12 +34,8 @@ define(['when', 'unfold'], function(when, unfold) {
 	};
 
 });
-})(typeof define == 'function' && define.amd
-	? define
-	: function (deps, factory) { typeof exports == 'object'
-		? (module.exports = factory(require('../when'), require('../unfold')))
-		: (this.when_unfoldList = factory(this.when, this.when_unfold));
-	}
-	// Boilerplate for AMD, Node, and browser global
+})(
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
+	// Boilerplate for AMD and Node
 );
 

@@ -1,4 +1,4 @@
-(function(buster, when) {
+(function(buster, define) {
 
 var assert, refute, fail, fakePromise, sentinel, other;
 
@@ -24,169 +24,185 @@ function FakePromise(val) {
 	};
 }
 
-buster.testCase('when', {
-	'should return a promise for a value': function() {
-		var result = when(1);
-		assert(typeof result.then == 'function');
-	},
+define('when-test', function (require) {
 
-	'should return a promise for a promise': function() {
-		var result = when(fakePromise);
-		assert(typeof result.then == 'function');
-	},
+	var when;
 
-	'should not return the input promise': function() {
-		var result = when(fakePromise, identity);
-		assert(typeof result.then == 'function');
-		refute.same(result, fakePromise);
-	},
+	when = require('when');
 
-	'should return a promise that forwards for a value': function(done) {
-		var result = when(1, constant(2));
+	buster.testCase('when', {
+		'should return a promise for a value': function() {
+			var result = when(1);
+			assert(typeof result.then == 'function');
+		},
 
-		assert(typeof result.then == 'function');
+		'should return a promise for a promise': function() {
+			var result = when(fakePromise);
+			assert(typeof result.then == 'function');
+		},
 
-		result.then(
-			function(val) {
-				assert.equals(val, 2);
-			},
-			fail
-		).ensure(done);
-	},
+		'should not return the input promise': function() {
+			var result = when(fakePromise, identity);
+			assert(typeof result.then == 'function');
+			refute.same(result, fakePromise);
+		},
 
-	'should invoke fulfilled handler asynchronously for value': function(done) {
-		var val = other;
+		'should return a promise that forwards for a value': function(done) {
+			var result = when(1, constant(2));
 
-		when({}, function() {
-			assert.same(val, sentinel);
-		}).ensure(done);
+			assert(typeof result.then == 'function');
 
-		val = sentinel;
-	},
-
-	'should invoke fulfilled handler asynchronously for fake promise': function(done) {
-		var val = other;
-
-		when(fakePromise, function() {
-			assert.same(val, sentinel);
-		}).ensure(done);
-
-		val = sentinel;
-	},
-
-	'should invoke fulfilled handler asynchronously for resolved promise': function(done) {
-		var val = other;
-
-		when(when.resolve(), function() {
-			assert.same(val, sentinel);
-		}).ensure(done);
-
-		val = sentinel;
-	},
-
-	'should invoke fulfilled handler asynchronously for rejected promise': function(done) {
-		var val = other;
-
-		when(when.reject(),
-			fail,
-			function() {
-				assert.same(val, sentinel);
-			}
-		).ensure(done);
-
-		val = sentinel;
-	},
-
-	'should support deep nesting in promise chains': function(done) {
-		var d, result;
-
-		d = when.defer();
-		d.resolve(false);
-
-		result = when(when(d.promise.then(function(val) {
-			var d = when.defer();
-			d.resolve(val);
-			return when(d.promise.then(identity), identity).then(
+			result.then(
 				function(val) {
-					return !val;
+					assert.equals(val, 2);
+				},
+				fail
+			).ensure(done);
+		},
+
+		'should invoke fulfilled handler asynchronously for value': function(done) {
+			var val = other;
+
+			when({}, function() {
+				assert.same(val, sentinel);
+			}).ensure(done);
+
+			val = sentinel;
+		},
+
+		'should invoke fulfilled handler asynchronously for fake promise': function(done) {
+			var val = other;
+
+			when(fakePromise, function() {
+				assert.same(val, sentinel);
+			}).ensure(done);
+
+			val = sentinel;
+		},
+
+		'should invoke fulfilled handler asynchronously for resolved promise': function(done) {
+			var val = other;
+
+			when(when.resolve(), function() {
+				assert.same(val, sentinel);
+			}).ensure(done);
+
+			val = sentinel;
+		},
+
+		'should invoke fulfilled handler asynchronously for rejected promise': function(done) {
+			var val = other;
+
+			when(when.reject(),
+				fail,
+				function() {
+					assert.same(val, sentinel);
 				}
-			);
-		})));
+			).ensure(done);
 
-		result.then(
-			function(val) {
-				assert(val);
-			},
-			fail
-		).ensure(done);
-	},
+			val = sentinel;
+		},
 
-	'should return a resolved promise for a resolved input promise': function(done) {
-		when(when.resolve(true)).then(
-			function(val) {
-				assert(val);
-			},
-			fail
-		).ensure(done);
-	},
+		'should support deep nesting in promise chains': function(done) {
+			var d, result;
 
-	'should assimilate untrusted promises':function () {
-		var untrusted, result;
+			d = when.defer();
+			d.resolve(false);
 
-		// unstrusted promise should never be returned by when()
-		untrusted = new FakePromise();
-		result = when(untrusted);
+			result = when(when(d.promise.then(function(val) {
+				var d = when.defer();
+				d.resolve(val);
+				return when(d.promise.then(identity), identity).then(
+					function(val) {
+						return !val;
+					}
+				);
+			})));
 
-		refute.equals(result, untrusted);
-		refute(result instanceof FakePromise);
-	},
+			result.then(
+				function(val) {
+					assert(val);
+				},
+				fail
+			).ensure(done);
+		},
 
-	'should assimilate intermediate promises returned by callbacks':function (done) {
-		var result;
+		'should return a resolved promise for a resolved input promise': function(done) {
+			when(when.resolve(true)).then(
+				function(val) {
+					assert(val);
+				},
+				fail
+			).ensure(done);
+		},
 
-		// untrusted promise returned by an intermediate
-		// handler should be assimilated
-		result = when(1,
-			function (val) {
+		'should assimilate untrusted promises':function () {
+			var untrusted, result;
+
+			// unstrusted promise should never be returned by when()
+			untrusted = new FakePromise();
+			result = when(untrusted);
+
+			refute.equals(result, untrusted);
+			refute(result instanceof FakePromise);
+		},
+
+		'should assimilate intermediate promises returned by callbacks':function (done) {
+			var result;
+
+			// untrusted promise returned by an intermediate
+			// handler should be assimilated
+			result = when(1,
+				function (val) {
+					return new FakePromise(val + 1);
+				}
+			).then(
+				function (val) {
+					assert.equals(val, 2);
+				},
+				fail
+			).ensure(done);
+
+			refute(result instanceof FakePromise);
+		},
+
+		'should assimilate intermediate promises and forward results':function (done) {
+			var untrusted, result;
+
+			untrusted = new FakePromise(1);
+
+			result = when(untrusted, function (val) {
 				return new FakePromise(val + 1);
-			}
-		).then(
-			function (val) {
-				assert.equals(val, 2);
-			},
-			fail
-		).ensure(done);
+			});
 
-		refute(result instanceof FakePromise);
-	},
+			refute.equals(result, untrusted);
+			refute(result instanceof FakePromise);
 
-	'should assimilate intermediate promises and forward results':function (done) {
-		var untrusted, result;
+			when(result,
+				function (val) {
+					assert.equals(val, 2);
+					return new FakePromise(val + 1);
+				}
+			).then(
+				function (val) {
+					assert.equals(val, 3);
+				},
+				fail
+			).ensure(done);
+		}
 
-		untrusted = new FakePromise(1);
-
-		result = when(untrusted, function (val) {
-			return new FakePromise(val + 1);
-		});
-
-		refute.equals(result, untrusted);
-		refute(result instanceof FakePromise);
-
-		when(result,
-			function (val) {
-				assert.equals(val, 2);
-				return new FakePromise(val + 1);
-			}
-		).then(
-			function (val) {
-				assert.equals(val, 3);
-			},
-			fail
-		).ensure(done);
-	}
+	});
 
 });
-})(
+
+}(
 	this.buster || require('buster'),
-	this.when   || require('..')
-);
+	typeof define === 'function' && define.amd ? define : function (id, factory) {
+		var packageName = id.split(/[\/\-\.]/)[0], pathToRoot = id.replace(/[^\/]+/g, '..');
+		pathToRoot = pathToRoot.length > 2 ? pathToRoot.substr(3) : pathToRoot;
+		factory(function (moduleId) {
+			return require(moduleId.indexOf(packageName) === 0 ? pathToRoot + moduleId.substr(packageName.length) : moduleId);
+		});
+	}
+	// Boilerplate for AMD and Node
+));
