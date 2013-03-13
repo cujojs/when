@@ -21,6 +21,7 @@ buster.testCase('when.isPromise', {
 	},
 
 	'should return false for non-promise': function() {
+		/*jshint -W009, -W010, -W053 */
 		var inputs = [
 			1,
 			0,
