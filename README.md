@@ -11,7 +11,7 @@ When.js is cujojs's lightweight [Promises/A+](http://promises-aplus.github.com/p
 * Executing tasks in parallel and sequence
 * Transforming Node-style and other callback-based APIs into promise-based APIs
 
-It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promises-tests), is [very fast](https://github.com/cujojs/promise-perf-tests#test-results), and is **around 1.4k** when compiled with Google Closure + gzip, and has no external dependencies.
+It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promises-tests), is [very fast](https://github.com/cujojs/promise-perf-tests#test-results), is **around 1.4k** when compiled with Google Closure + gzip, and has no external dependencies.
 
 # What's New?
 
@@ -40,7 +40,9 @@ Quick Start
 
 ### AMD
 
-1. `git clone https://github.com/cujojs/when` or `git submodule add https://github.com/cujojs/when`
+1. Get it
+	- `bower install when` or `yeoman install when`, *or*
+	- `git clone https://github.com/cujojs/when` or `git submodule add https://github.com/cujojs/when`
 1. Configure your loader with a package:
 
 	```js
@@ -52,12 +54,6 @@ Quick Start
 
 1. `define(['when', ...], function(when, ...) { ... });` or `require(['when', ...], function(when, ...) { ... });`
 
-### Script Tag
-
-1. `git clone https://github.com/cujojs/when` or `git submodule add https://github.com/cujojs/when`
-1. `<script src="path/to/when/when.js"></script>`
-1. `when` will be available as `window.when`
-
 ### Node
 
 1. `npm install when`
@@ -68,11 +64,28 @@ Quick Start
 1. `ringo-admin install cujojs/when`
 1. `var when = require('when');`
 
+### Legacy environments
+
+1. `git clone https://github.com/cujojs/when` or `git submodule add https://github.com/cujojs/when`
+1. Add a transient `define` shim, and a `<script>` element for when.js
+
+	```html
+	<script>
+		window.define = function(factory) {
+			try{ delete window.define; } catch(e){ window.define = void 0; } // IE
+			window.when = factory();
+		};
+	</script>
+	<script src="path/to/when/when.js"></script>
+	```
+
+1. `when` will be available as `window.when`
+
 # Running the Unit Tests
 
 ## Node
 
-Note that when.js includes @domenic's [Promises/A Test Suite](https://github.com/domenic/promise-tests).  Running unit tests in Node will run both when.js's own test suite, and the Promises/A Test Suite.
+Note that when.js includes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise-tests).  Running unit tests in Node will run both when.js's own test suite, and the Promises/A+ Test Suite.
 
 1. `npm install`
 1. `npm test`
@@ -87,6 +100,4 @@ Note that when.js includes @domenic's [Promises/A Test Suite](https://github.com
 References
 ----------
 
-Much of this code was inspired by @[unscriptable](https://github.com/unscriptable)'s [tiny promises](https://github.com/unscriptable/promises), the async innards of [wire.js](https://github.com/cujojs/wire), and some gists [here](https://gist.github.com/870729), [here](https://gist.github.com/892345), [here](https://gist.github.com/894356), and [here](https://gist.github.com/894360).
-
-Some of the code has been influenced by the great work in [Q](https://github.com/kriskowal/q), [Dojo's Deferred](https://github.com/dojo/dojo), and [uber.js](https://github.com/phiggins42/uber.js).
+Much of this code was inspired by the async innards of [wire.js](https://github.com/cujojs/wire), and has been influenced by the great work in [Q](https://github.com/kriskowal/q), [Dojo's Deferred](https://github.com/dojo/dojo), and [uber.js](https://github.com/phiggins42/uber.js).
