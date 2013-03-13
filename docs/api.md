@@ -846,7 +846,7 @@ These modules are aimed at dampening the friction between code that is based on 
 
 ## Synchronous functions
 
-The `when/function` module contains functions for calling and adapting "normal" functions (i.e. those that take plain values, return plain values, and throw exceptions on errors). By calling those functions with `fn.call` and `fn.apply`, or by creating a new function with `fn.bind`, the return value will always be a promise, and thrown exceptions will be turned into rejections. As a bonus, promises given as arguments will be transparently resolved before the call.
+The `when/function` module contains functions for calling and adapting "normal" functions (i.e. those that take plain values, return plain values, and throw exceptions on errors). By calling those functions with `fn.call` and `fn.apply`, or by creating a new function with `fn.lift`, the return value will always be a promise, and thrown exceptions will be turned into rejections. As a bonus, promises given as arguments will be transparently resolved before the call.
 
 ### `fn.call()`
 
@@ -909,13 +909,15 @@ var shortCircuit = when.reject("something wrong happened");
 fn.apply(sumMultipleNumbers, [10, 20, shortCircuit]).then(console.log, console.error);
 ```
 
-### `fn.bind()`
+### `fn.lift()`
+
+**DEPRECATED ALIAS:** `fn.bind()`
 
 ```js
-var promiseFunction = fn.bind(normalFunction, arg1, arg2/* ...more args */);
+var promiseFunction = fn.lift(normalFunction, arg1, arg2/* ...more args */);
 ```
 
-When the same function will be called through `fn.call()` or `fn.apply()` multiple times, it can be more efficient to create a wrapper function that has promise-awareness and exposes the same behavior as the original function. That's what `fn.bind()` does: It takes a normal function and returns a new, promise-aware version of it. As `Function.prototype.bind`, it makes partial application of any additional arguments.
+When the same function will be called through `fn.call()` or `fn.apply()` multiple times, it can be more efficient to create a wrapper function that has promise-awareness and exposes the same behavior as the original function. That's what `fn.lift()` does: It takes a normal function and returns a new, promise-aware version of it. As `Function.prototype.bind`, it makes partial application of any additional arguments.
 
 ```js
 var fn, when;
@@ -941,12 +943,12 @@ getMessage().then(function(message) {
 // Using fn.call()
 fn.call(setText, element, getMessage());
 
-// Creating a new function using fn.bind()
-var promiseSetText = fn.bind(setText);
+// Creating a new function using fn.lift()
+var promiseSetText = fn.lift(setText);
 promiseSetText(element, getMessage());
 
 // Leveraging the partial application
-var setElementMessage = fn.bind(setText, element);
+var setElementMessage = fn.lift(setText, element);
 setElementMessage(geMessage());
 ```
 
@@ -959,7 +961,7 @@ var composedFunc = fn.compose(func1, func2 /* ...more functions */);
 Composes multiple functions by piping their return values. It is transparent to whether the functions return 'regular' values or promises: the piped argument is always a resolved value. If one of the functions throws or returns a rejected promise, the promise returned by `composedFunc` will be rejected.
 
 ```js
-// Reusing the same functions from the fn.bind() example
+// Reusing the same functions from the fn.lift() example
 
 // Gets the message from the server every 1s, then sets it on the 'element'
 var refreshMessage = fn.compose(getMessage, setElementMessage);
@@ -1006,7 +1008,7 @@ The array-taking analog to `callbacks.call`, as `Function.prototype.apply` is to
 // two remote resources, and then waiting for all that to finish before going
 // forward. The APIs are all callback-based, but only promises are manipulated.
 
-// .bind is needed because the context is lost
+// Function.prototype.bind is needed to preserve the context
 var oldHidden = callbacks.apply($old.fadeOut.bind($old), ["slow"]);
 
 var transitionedScreens = oldHidden.then(function() {
@@ -1024,13 +1026,15 @@ when.join(venuesLoaded, artistsLoaded, transitionedScreens).then(function() {
 });
 ```
 
-### `callbacks.bind()`
+### `callbacks.lift()`
+
+**DEPRECATED ALIAS:** `callbacks.bind()`
 
 ```js
-var promiseFunc = callbacks.bind(callbackTakingFunc, arg1, arg2/* ...more args */);
+var promiseFunc = callbacks.lift(callbackTakingFunc, arg1, arg2/* ...more args */);
 ```
 
-Much like [`fn.bind()`](#fnbind), `callbacks.bind` creates a promise-friendly function, based on an existing function, but following the asynchronous resolution patters from [`callbacks.call()`](#callbackscall) and [`callbacks.apply()`](#callbacksapply). It can be useful when a particular function needs no be called on multiple places, or for creating an alternative API for a library.
+Much like [`fn.lift()`](#fnlift), `callbacks.lift` creates a promise-friendly function, based on an existing function, but following the asynchronous resolution patters from [`callbacks.call()`](#callbackscall) and [`callbacks.apply()`](#callbacksapply). It can be useful when a particular function needs no be called on multiple places, or for creating an alternative API for a library.
 
 Like `Function.prototype.bind`, additional arguments will be partially applied to the new function.
 
@@ -1052,7 +1056,7 @@ var myLib = {
 	ajax: traditionalAjax,
 
 	// Promise API: returns a promise, and may take promises as arguments
-	promiseAjax: callbacks.bind(traditionalAjax)
+	promiseAjax: callbacks.lift(traditionalAjax)
 };
 ```
 
@@ -1148,13 +1152,15 @@ getCats.then(function(cats) {
 });
 ```
 
-### `nodefn.bind()`
+### `nodefn.lift()`
+
+**DEPRECATED ALIAS:** `nodefn.bind()`
 
 ```js
-var promiseFunc = nodefn.bind(nodeStyleFunction, arg1, arg2/*...more args*/);
+var promiseFunc = nodefn.lift(nodeStyleFunction, arg1, arg2/*...more args*/);
 ```
 
-Function based on the same principles from [`fn.bind()`](#fnbind) and [`callbacks.bind()`](#callbacksbind), but tuned to handle nodejs-style async functions.
+Function based on the same principles from [`fn.lift()`](#fnlift) and [`callbacks.lift()`](#callbackslift), but tuned to handle nodejs-style async functions.
 
 ```js
 var dns, when, nodefn;
@@ -1163,7 +1169,7 @@ dns    = require("dns");
 when   = require("when");
 nodefn = require("when/node/function");
 
-var resolveAddress = nodefn.bind(dns.resolve);
+var resolveAddress = nodefn.lift(dns.resolve);
 
 when.join(
 	resolveAddress("twitter.com"),
