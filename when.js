@@ -237,17 +237,15 @@ define(function () {
 		 * @return {Promise} new Promise
 		 */
 		function then(onFulfilled, onRejected, onProgress) {
-			return handlers
-			? promise(function(resolve, reject, notify) {
+			return promise(function(resolve, reject, notify) {
+				handlers
 				// Call handlers later, after resolution
-				handlers.push(function(value) {
+				? handlers.push(function(value) {
 					value.then(onFulfilled, onRejected, onProgress)
 						.then(resolve, reject, notify);
-				});
-			})
-			: promise(function(resolve, reject, notify) {
+				})
 				// Call handlers soon, but not in the current stack
-				enqueue(function() {
+				: enqueue(function() {
 					value.then(onFulfilled, onRejected, onProgress)
 						.then(resolve, reject, notify);
 				});
