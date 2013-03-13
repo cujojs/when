@@ -211,67 +211,13 @@ define(function () {
 	}
 
 	/**
-	 * Creates a new promise whose fate is determined by resolver
+	 * Creates a new promise whose fate is determined by resolver.
+	 * @private (for now)
 	 * @param {function} resolver function(resolve, reject, notify)
 	 * @returns {Promise} promise whose fate is determine by resolver
 	 */
 	function promise(resolver) {
-		var self, handlers, _then, _notify, _resolve;
-
-		self = new Promise(then);
-
-		handlers = [];
-
-		/**
-		 * Register handlers for this promise.
-		 * @param [onFulfilled] {Function} fulfillment handler
-		 * @param [onRejected] {Function} rejection handler
-		 * @param [onProgress] {Function} progress handler
-		 * @return {Promise} new Promise
-		 */
-		_then = function(onFulfilled, onRejected, onProgress) {
-			return promise(function(resolve, reject, notify) {
-				handlers.push(function(nearer) {
-					nearer.then(onFulfilled, onRejected, onProgress)
-						.then(resolve, reject, notify);
-				});
-			});
-		};
-
-		/**
-		 * Transition from pre-resolution state to post-resolution state, notifying
-		 * all listeners of the ultimate fulfillment or rejection
-		 * @private
-		 * @param {Promise} nearer trusted promise nearer to the ultimate result
-		 */
-		_resolve = function(nearer) {
-
-			scheduleHandlers(handlers, nearer);
-
-			// Optimize post-resolution methods
-			handlers = undef;
-			_resolve = resolve;
-			_notify = identity;
-			_then = function(onFulfilled, onRejected, onProgress) {
-				return promise(function(resolve, reject, notify) {
-					// Invoke callbacks as soon as possible, but not in the current stack
-					enqueue(function() {
-						nearer.then(onFulfilled, onRejected, onProgress)
-							.then(resolve, reject, notify);
-					});
-				});
-			};
-		};
-
-		/**
-		 * Issue a progress event, notifying all progress listeners
-		 * @private
-		 * @param {*} update progress event payload to pass to all listeners
-		 */
-		_notify = function(update) {
-			scheduleHandlers(handlers, progressing(update));
-			return update;
-		};
+		var value, handlers = [];
 
 		// Call the provider resolver to seal the promise's fate
 		try {
@@ -281,34 +227,65 @@ define(function () {
 		}
 
 		// Return the promise
-		return self;
+		return new Promise(then);
 
 		/**
-		 * Wrapper to allow _then to be replaced safely
+		 * Register handlers for this promise.
+		 * @param [onFulfilled] {Function} fulfillment handler
+		 * @param [onRejected] {Function} rejection handler
+		 * @param [onProgress] {Function} progress handler
+		 * @return {Promise} new Promise
 		 */
 		function then(onFulfilled, onRejected, onProgress) {
-			return _then(onFulfilled, onRejected, onProgress);
+			return handlers
+			? promise(function(resolve, reject, notify) {
+				// Call handlers later, after resolution
+				handlers.push(function(value) {
+					value.then(onFulfilled, onRejected, onProgress)
+						.then(resolve, reject, notify);
+				});
+			})
+			: promise(function(resolve, reject, notify) {
+				// Call handlers soon, but not in the current stack
+				enqueue(function() {
+					value.then(onFulfilled, onRejected, onProgress)
+						.then(resolve, reject, notify);
+				});
+			});
 		}
 
 		/**
-		 * Wrapper to allow _resolve to be replaced
+		 * Transition from pre-resolution state to post-resolution state, notifying
+		 * all listeners of the ultimate fulfillment or rejection
+		 * @param {*|Promise} val resolution value
 		 */
-		function promiseResolve(value) {
-			_resolve(coerce(value));
+		function promiseResolve(val) {
+			if(!handlers) {
+				return;
+			}
+
+			value = coerce(val);
+			scheduleHandlers(handlers, value);
+
+			handlers = undef;
 		}
 
 		/**
-		 * Wrapper to allow _resolve to be replaced
+		 * Reject this promise with the supplied reason, which will be used verbatim.
+		 * @param {*} reason reason for the rejection
 		 */
 		function promiseReject(reason) {
-			_resolve(rejected(reason));
+			promiseResolve(rejected(reason));
 		}
 
 		/**
-		 * Wrapper to allow _notify to be replaced
+		 * Issue a progress event, notifying all progress listeners
+		 * @param {*} update progress event payload to pass to all listeners
 		 */
 		function promiseNotify(update) {
-			_notify(update);
+			if(handlers) {
+				scheduleHandlers(handlers, progressing(update));
+			}
 		}
 	}
 
