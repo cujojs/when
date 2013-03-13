@@ -12,9 +12,11 @@
  */
 
 (function(define) {
-define(['./when'], function(when) {
+define(function(require) {
 
-    var undef;
+    var when, undef;
+
+	when = require('./when');
 
     /**
      * Returns a new promise that will automatically reject after msec if
@@ -64,13 +66,9 @@ define(['./when'], function(when) {
     };
 
 });
-})(typeof define == 'function'
-    ? define
-    : function (deps, factory) { typeof module != 'undefined'
-        ? (module.exports = factory(require('./when')))
-        : (this.when_timeout = factory(this.when));
-    }
-    // Boilerplate for AMD, Node, and browser global
+})(
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
+	// Boilerplate for AMD and Node
 );
 
 

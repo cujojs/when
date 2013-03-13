@@ -16,7 +16,9 @@
  */
 
 (function(define) {
-define(['./when'], function(when) {
+define(function(require) {
+
+	var when = require('./when');
 
     /**
      * Makes deferred cancelable, adding a cancel() method.
@@ -56,13 +58,9 @@ define(['./when'], function(when) {
     };
 
 });
-})(typeof define == 'function'
-    ? define
-    : function (deps, factory) { typeof module != 'undefined'
-        ? (module.exports = factory(require('./when')))
-        : (this.when_cancelable = factory(this.when));
-    }
-    // Boilerplate for AMD, Node, and browser global
+})(
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
+	// Boilerplate for AMD and Node
 );
 
 

@@ -8,8 +8,10 @@
  * @author John Hann
  */
 (function(define) { 'use strict';
-define(['./when'], function(when) {
-	var keys, eachKey, owns;
+define(function(require) {
+	var when, keys, eachKey, owns;
+
+	when = require('./when');
 
 	// Public API
 
@@ -84,11 +86,7 @@ define(['./when'], function(when) {
 	function identity(x) { return x; }
 
 });
-})(typeof define == 'function'
-	? define
-	: function (deps, factory) { typeof module != 'undefined'
-		? (module.exports = factory(require('./when')))
-		: (this.when_keys = factory(this.when));
-	}
-		// Boilerplate for AMD, Node, and browser global
+})(
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
+	// Boilerplate for AMD and Node
 );

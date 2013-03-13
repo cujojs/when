@@ -2,4 +2,3 @@ node_modules/
 .git/
 .idea/
 experiments/
-test/isPromise.js

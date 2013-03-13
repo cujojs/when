@@ -29,7 +29,8 @@
 	"devDependencies": {
 		"buster": "~0.6",
 		"jshint": "~1.1",
-		"promises-aplus-tests": "~1"
+		"promises-aplus-tests": "~1",
+		"curl": "https://github.com/cujojs/curl/tarball/0.7.3"
 	},
 	"main": "when",
 	"directories": {
