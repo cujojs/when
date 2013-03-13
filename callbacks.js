@@ -7,6 +7,7 @@
  * callback-taking functions using a promise interface.
  *
  * @author Renato Zannon <renato.riccieri@gmail.com>
+ * @contributor Brian Cavalier
  */
 
 (function(define) {
@@ -84,7 +85,7 @@ define(['./when'], function(when) {
 	 *    sumPromise.then(console.log);
 	 *
 	 * @param {function} asyncFunction function to be called
-	 * @param {...*} [args] arguments that will be forwarded to the function
+	 * @param {...*} args arguments that will be forwarded to the function
 	 * @returns {Promise} promise for the callback value of asyncFunction
 	 */
 	function call(asyncFunction/*, arg1, arg2...*/) {

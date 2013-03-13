@@ -157,18 +157,24 @@ buster.testCase('when/callbacks', {
 	},
 
 	'bind': {
+		'should be an alias for lift': function() {
+			assert.same(callbacks.bind, callbacks.lift);
+		}
+	},
+
+	'lift': {
 		'should return a function': function() {
-			assert.isFunction(callbacks.bind(function() {}));
+			assert.isFunction(callbacks.lift(function() {}));
 		},
 
 		'the returned function': {
 			'should return a promise': function() {
-				var result = callbacks.bind(function() {});
+				var result = callbacks.lift(function() {});
 				assertIsPromise(result());
 			},
 
 			'should resolve the promise with the callback value': function(done) {
-				var result = callbacks.bind(function(cb) {
+				var result = callbacks.lift(function(cb) {
 					cb(10);
 				});
 
@@ -178,7 +184,7 @@ buster.testCase('when/callbacks', {
 			},
 
 			'should forward arguments to the original function': function(done) {
-				var result = callbacks.bind(function(a, b, cb) {
+				var result = callbacks.lift(function(a, b, cb) {
 					cb(a + b);
 				});
 
@@ -189,7 +195,7 @@ buster.testCase('when/callbacks', {
 
 			'should reject the promise with the errback value': function(done) {
 				var error = new Error();
-				var result = callbacks.bind(function(cb, eb) {
+				var result = callbacks.lift(function(cb, eb) {
 					eb(error);
 				});
 
@@ -200,7 +206,7 @@ buster.testCase('when/callbacks', {
 
 			'should turn exceptions into rejections': function(done) {
 				var error = new Error();
-				var result = callbacks.bind(function(){
+				var result = callbacks.lift(function(){
 					throw error;
 				});
 
@@ -210,7 +216,7 @@ buster.testCase('when/callbacks', {
 			},
 
 			'should turn multiple callback values into an array': function(done) {
-				var result = callbacks.bind(function(a, b, cb/*, eb*/) {
+				var result = callbacks.lift(function(a, b, cb/*, eb*/) {
 					cb(a * 10, b * 20);
 				});
 
@@ -220,7 +226,7 @@ buster.testCase('when/callbacks', {
 			},
 
 			'should accept promises as arguments': function(done) {
-				var result = callbacks.bind(function(a, b, cb/*, eb*/) {
+				var result = callbacks.lift(function(a, b, cb/*, eb*/) {
 					cb(a + b);
 				});
 
@@ -235,7 +241,7 @@ buster.testCase('when/callbacks', {
 				callback(x + y);
 			}
 
-			var partiallyApplied = callbacks.bind(fancySum, 5);
+			var partiallyApplied = callbacks.lift(fancySum, 5);
 
 			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
@@ -247,7 +253,7 @@ buster.testCase('when/callbacks', {
 				callback(x + y);
 			}
 
-			var partiallyApplied = callbacks.bind(fancySum, when(5));
+			var partiallyApplied = callbacks.lift(fancySum, when(5));
 
 			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);

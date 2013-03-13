@@ -67,7 +67,7 @@ buster.testCase('when/function', {
 			fn.apply(returnsPromise, [5]).then(function(value) {
 				assert.equals(value, 15);
 			}, fail).ensure(done);
-		},
+		}
 	},
 
 	'call': {
@@ -117,29 +117,35 @@ buster.testCase('when/function', {
 			fn.call(returnsPromise, 5).then(function(value) {
 				assert.equals(value, 15);
 			}, fail).ensure(done);
-		},
+		}
 	},
 
 	'bind': {
+		'should be an alias for lift': function() {
+			assert.same(fn.bind, fn.lift);
+		}
+	},
+
+	'lift': {
 		'should return a function': function() {
-			assert.isFunction(fn.bind(f, null));
+			assert.isFunction(fn.lift(f, null));
 		},
 
 		'the returned function': {
 			'should return a promise': function() {
-				var result = fn.bind(f);
+				var result = fn.lift(f);
 				assertIsPromise(result(1, 2));
 			},
 
 			'should resolve the promise to its return value': function(done) {
-				var result = fn.bind(f);
+				var result = fn.lift(f);
 				result(1, 2).then(function(value) {
 					assert.equals(value, 3);
 				}, fail).ensure(done);
 			},
 
 			'should accept promises for arguments': function(done) {
-				var result = fn.bind(f);
+				var result = fn.lift(f);
 
 				result(1, when(2)).then(function(value) {
 					assert.equals(value, 3);
@@ -150,7 +156,7 @@ buster.testCase('when/function', {
 				var error = new Error();
 				var throwingFn = functionThatThrows(error);
 
-				var result = fn.bind(throwingFn);
+				var result = fn.lift(throwingFn);
 				result().then(fail, function(reason) {
 					assert.same(reason, error);
 				}).ensure(done);
@@ -158,7 +164,7 @@ buster.testCase('when/function', {
 		},
 
 		'should accept leading arguments': function(done) {
-			var partiallyApplied = fn.bind(f, 5);
+			var partiallyApplied = fn.lift(f, 5);
 
 			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
@@ -166,12 +172,12 @@ buster.testCase('when/function', {
 		},
 
 		'should accept promises as leading arguments': function(done) {
-			var partiallyApplied = fn.bind(f, when(5));
+			var partiallyApplied = fn.lift(f, when(5));
 
 			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
 			}, fail).ensure(done);
-		},
+		}
 	},
 
 	'compose': {
@@ -270,7 +276,7 @@ buster.testCase('when/function', {
 				assert.equals(value, 'when.js is really awesome!');
 			}, fail).ensure(done);
 		}
-	},
+	}
 });
 
 })(

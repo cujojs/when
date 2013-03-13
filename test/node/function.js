@@ -139,18 +139,24 @@ buster.testCase('when/node/function', {
 	},
 
 	'bind': {
+		'should be an alias for lift': function() {
+			assert.same(nodefn.bind, nodefn.lift);
+		}
+	},
+
+	'lift': {
 		'should return a function': function() {
-			assert.isFunction(nodefn.bind(function() {}));
+			assert.isFunction(nodefn.lift(function() {}));
 		},
 
 		'the returned function': {
 			'should return a promise': function() {
-				var result = nodefn.bind(function() {});
+				var result = nodefn.lift(function() {});
 				assertIsPromise(result());
 			},
 
 			'should resolve the promise with the callback value': function(done) {
-				var result = nodefn.bind(function(callback) {
+				var result = nodefn.lift(function(callback) {
 					callback(null, 10);
 				});
 
@@ -161,7 +167,7 @@ buster.testCase('when/node/function', {
 			},
 
 			'should handle promises as arguments': function(done) {
-				var result = nodefn.bind(function(x, callback) {
+				var result = nodefn.lift(function(x, callback) {
 					callback(null, x + 10);
 				});
 
@@ -172,7 +178,7 @@ buster.testCase('when/node/function', {
 
 			'should reject the promise with the error argument': function(done) {
 				var error = new Error();
-				var result = nodefn.bind(function(callback) {
+				var result = nodefn.lift(function(callback) {
 					callback(error);
 				});
 
@@ -183,7 +189,7 @@ buster.testCase('when/node/function', {
 			},
 
 			'should resolve the promise to an array for mult-args': function(done) {
-				var result = nodefn.bind(function(callback) {
+				var result = nodefn.lift(function(callback) {
 					callback(null, 10, 20, 30);
 				});
 
@@ -198,7 +204,7 @@ buster.testCase('when/node/function', {
 				callback(null, x + y);
 			}
 
-			var partiallyApplied = nodefn.bind(fancySum, 5);
+			var partiallyApplied = nodefn.lift(fancySum, 5);
 
 			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
@@ -210,12 +216,12 @@ buster.testCase('when/node/function', {
 				callback(null, x + y);
 			}
 
-			var partiallyApplied = nodefn.bind(fancySum, when(5));
+			var partiallyApplied = nodefn.lift(fancySum, when(5));
 
 			partiallyApplied(10).then(function(value) {
 				assert.equals(value, 15);
 			}, fail).ensure(done);
-		},
+		}
 	},
 
 	'createCallback': {
