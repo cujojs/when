@@ -280,7 +280,7 @@ buster.testCase('when/function', {
 });
 
 })(
-	this.buster  || require('buster'),
-	this.when_fn || require('../function'),
-	this.when    || require('../when')
+	this.buster        || require('buster'),
+	this.when_function || require('../function'),
+	this.when          || require('../when')
 );

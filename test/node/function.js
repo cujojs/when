@@ -268,4 +268,8 @@ buster.testCase('when/node/function', {
 		}
 	}
 });
-})(require('buster'), require('../../node/function'), require('../../when'));
+})(
+	this.buster             || require('buster'),
+	this.when_node_function || require('../../node/function'),
+	this.when               || require('../../when')
+);

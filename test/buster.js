@@ -15,7 +15,23 @@ config.browser = {
 	environment: 'browser',
 	rootPath: '../',
 	tests: tests,
-	sources: [ 'when.js', 'apply.js', 'delay.js', 'timeout.js', 'cancelable.js', 'sequence.js', 'pipeline.js', 'parallel.js' ]
+	sources: [
+		'when.js',
+		'apply.js',
+		'delay.js',
+		'timeout.js',
+		'cancelable.js',
+		'sequence.js',
+		'pipeline.js',
+		'parallel.js',
+		'callbacks.js',
+		'function.js',
+		'keys.js',
+		'poll.js',
+		'unfold.js',
+		'unfold/list.js',
+		'node/function.js'
+	]
 };
 
 if(typeof module != 'undefined') {

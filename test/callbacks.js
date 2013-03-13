@@ -379,7 +379,7 @@ buster.testCase('when/callbacks', {
 });
 
 })(
-	this.buster    || require('buster'),
-	this.when      || require('..'),
-	this.callbacks || require('../callbacks')
+	this.buster        || require('buster'),
+	this.when          || require('..'),
+	this.when_callback || require('../callbacks')
 );
