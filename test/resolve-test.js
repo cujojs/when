@@ -151,7 +151,7 @@ define('when.resolve-test', function (require) {
 				}).ensure(done);
 			},
 
-			'=>should reject if accessing thenable.then throws': function(done) {
+			'should reject if accessing thenable.then throws': function(done) {
 				if(typeof Object.defineProperty == 'function') {
 					var thenable = {};
 					Object.defineProperty(thenable, 'then', {
