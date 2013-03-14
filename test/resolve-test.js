@@ -169,34 +169,15 @@ define('when.resolve-test', function (require) {
 						}
 					});
 
-					try {
-						// IE 9 incorrectly reports "unknown" for typeof thenable.then
-						// instead of throwing.  Thus, it IS NOT a thenable in IE9,
-						// it is a fulfillment value.
-						typeof thenable.then;
-
-						// IE 9 insanity
-						result = when.resolve(thenable).then(
-							function(val) {
-								assert.same(val, thenable);
-							}
-						);
-					} catch(e) {
-						// Sane ES5 environment
-						result = when.resolve(thenable).then(
-							fail,
-							function(e) {
-								assert.same(e, sentinel);
-							}
-						);
-
-					}
-
-					result.ensure(done);
-
+					result = when.resolve(thenable).then(
+						fail,
+						function(e) {
+							assert.same(e, sentinel);
+						}
+					).ensure(done);
 
 				} else {
-					// Non-ES5 env
+					// Non-ES5 env, no need to test pathological getters/proxies
 					assert(true);
 					done();
 				}

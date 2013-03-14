@@ -13,7 +13,7 @@
  */
 (function(define) { 'use strict';
 define(function () {
-	var reduceArray, slice, nextTick, handlerQueue, undef;
+	var reduceArray, slice, call, fcall, nextTick, handlerQueue, undef;
 
 	//
 	// Public API
@@ -297,65 +297,48 @@ define(function () {
 	}
 
 	/**
-	 * Returns promiseOrValue if promiseOrValue is a {@link Promise}, a new Promise if
-	 * promiseOrValue is a foreign promise, or a new, already-fulfilled {@link Promise}
-	 * whose value is promiseOrValue if promiseOrValue is an immediate value.
+	 * Coerces x to a trusted Promise
 	 *
-	 * @param {*} promiseOrValue
-	 * @returns {Promise} Guaranteed to return a trusted Promise.  If promiseOrValue
-	 *   is trusted, returns promiseOrValue, otherwise, returns a new, already-resolved
-	 *   when.js promise whose resolution value is:
-	 *   * the resolution value of promiseOrValue if it's a foreign promise, or
-	 *   * promiseOrValue if it's a value
+	 * @private
+	 * @param {*} x
+	 * @returns {Promise} Guaranteed to return a trusted Promise.  If x
+	 *   is trusted, returns x, otherwise, returns a new, trusted, already-resolved
+	 *   Promise whose resolution value is:
+	 *   * the resolution value of x if it's a foreign promise, or
+	 *   * x if it's a value
 	 */
-	function coerce(promiseOrValue) {
+	function coerce(x) {
+		if(x instanceof Promise) {
+			return x; // trusted Promise
+		}
 
-		if(promiseOrValue instanceof Promise) {
-			// It's a trusted Promise
-			return promiseOrValue;
+		try {
+			// We must check and assimilate in the same tick, being careful
+			// only to access promiseOrValue.then once.
+			if(x) {
+				var untrustedThen = x.then;
 
-		} else {
-			try {
-				// We must check isPromise and assimilate in the same tick
-				if(isPromise(promiseOrValue)) {
-					return assimilate(promiseOrValue);
+				if(typeof untrustedThen === 'function') {
+					return promise(function(resolve, reject, notify) {
+						enqueue(function() {
+							try {
+								fcall(untrustedThen, x, resolve, reject, notify);
+							} catch(e) {
+								reject(e);
+							}
+						});
+					});
 				}
-
-				// It's a value, create a fulfilled wrapper
-				return fulfilled(promiseOrValue);
-
-			} catch(e) {
-				return rejected(e);
 			}
+
+			// It's a value, create a fulfilled wrapper
+			return fulfilled(x);
+
+		} catch(e) {
+			// Something went wrong, reject
+			return rejected(e);
 		}
 	}
-
-	/**
-	 * Assimilate an untrusted thenable by introducing a trusted middle man.
-	 * Not a perfect strategy, but possibly the best we can do.
-	 * IMPORTANT: This is the only place when.js should ever call an untrusted
-	 * thenable's then().
-	 *
-	 * @param {*} thenable
-	 * @param {function} thenable.then
-	 * @returns {Promise}
-	 */
-	function assimilate(thenable) {
-		// We MUST get a reference to this specific then() synchronously.
-		// Otherwise, interleaving code might switch/remove it.
-		var untrustedThen = thenable.then;
-
-		return promise(function(resolve, reject, notify) {
-			enqueue(function() {
-				try {
-					untrustedThen.call(thenable, resolve, reject, notify);
-				} catch(e) {
-					reject(e);
-				}
-			});
-		});
-	}
-
 
 	/**
 	 * Create an already-fulfilled promise for the supplied value
@@ -488,7 +471,7 @@ define(function () {
 						reasons.push(reason);
 						if(!--toReject) {
 							fulfillOne = rejectOne = noop;
-							reject(slice.call(reasons));
+							reject(fcall(slice, reasons));
 						}
 					};
 
@@ -498,7 +481,7 @@ define(function () {
 
 						if (!--toResolve) {
 							fulfillOne = rejectOne = noop;
-							resolve(slice.call(values));
+							resolve(fcall(slice, values));
 						}
 					};
 
@@ -635,7 +618,7 @@ define(function () {
 	 * @returns {Promise} that will resolve to the final reduced value
 	 */
 	function reduce(promise, reduceFunc /*, initialValue */) {
-		var args = slice.call(arguments, 1);
+		var args = fcall(slice, arguments, 1);
 
 		return when(promise, function(array) {
 			var total;
@@ -739,6 +722,12 @@ define(function () {
 	}
 
 	slice = [].slice;
+	call = Function.prototype.call;
+	fcall = Function.prototype.bind
+		? call.bind(call)
+		: function(f, context) {
+			return f.apply(context, slice.call(arguments, 2));
+		};
 
 	// ES5 reduce implementation if native not available
 	// See: http://es5.github.com/#x15.4.4.21 as there are many
