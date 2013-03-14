@@ -18,20 +18,20 @@ define(function () {
 	//
 	// Public API
 
-	when.defer     = defer;     // Create a deferred
-	when.resolve   = resolve;   // Create a resolved promise
-	when.reject    = reject;    // Create a rejected promise
+	when.defer     = defer;      // Create a deferred
+	when.resolve   = resolve;    // Create a resolved promise
+	when.reject    = reject;     // Create a rejected promise
 
-	when.join      = join;      // Join 2 or more promises
+	when.join      = join;       // Join 2 or more promises
 
-	when.all       = all;       // Resolve a list of promises
-	when.map       = map;       // Array.map() for promises
-	when.reduce    = reduce;    // Array.reduce() for promises
+	when.all       = all;        // Resolve a list of promises
+	when.map       = map;        // Array.map() for promises
+	when.reduce    = reduce;     // Array.reduce() for promises
 
-	when.any       = any;       // One-winner race
-	when.some      = some;      // Multi-winner race
+	when.any       = any;        // One-winner race
+	when.some      = some;       // Multi-winner race
 
-	when.isPromise = isPromise; // Determine if a thing is a promise
+	when.isPromise = isThenable; // Determine if a thing is a promise
 
 	/**
 	 * Register an observer for a promise or immediate value.
@@ -300,29 +300,32 @@ define(function () {
 	 *   * promiseOrValue if it's a value
 	 */
 	function coerce(promiseOrValue) {
-		var promise;
 
 		if(promiseOrValue instanceof Promise) {
-			// It's a when.js promise, so we trust it
-			promise = promiseOrValue;
+			// It's a trusted Promise
+			return promiseOrValue;
 
-		} else if(isPromise(promiseOrValue)) {
-			// Assimilate foreign promises
-			promise = assimilate(promiseOrValue);
 		} else {
-			// It's a value, create a fulfilled promise for it.
-			promise = fulfilled(promiseOrValue);
-		}
+			try {
+				// We must check isPromise and assimilate in the same tick
+				if(isThenable(promiseOrValue)) {
+					return assimilate(promiseOrValue);
+				}
 
-		return promise;
+				// It's a value, create a fulfilled wrapper
+				return fulfilled(promiseOrValue);
+
+			} catch(e) {
+				return rejected(e);
+			}
+		}
 	}
 
 	/**
 	 * Assimilate an untrusted thenable by introducing a trusted middle man.
 	 * Not a perfect strategy, but possibly the best we can do.
 	 * IMPORTANT: This is the only place when.js should ever call an untrusted
-	 * thenable's then(). Don't expose the return value to the
-	 * untrusted thenable
+	 * thenable's then().
 	 *
 	 * @param {*} thenable
 	 * @param {function} thenable.then
@@ -428,7 +431,7 @@ define(function () {
 	 * @param {*} promiseOrValue anything
 	 * @returns {boolean} true if promiseOrValue is a {@link Promise}
 	 */
-	function isPromise(promiseOrValue) {
+	function isThenable(promiseOrValue) {
 		return promiseOrValue && typeof promiseOrValue.then === 'function';
 	}
 
