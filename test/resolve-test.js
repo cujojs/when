@@ -149,6 +149,28 @@ define('when.resolve-test', function (require) {
 				}).then(function(value) {
 					assert.same(value, sentinel);
 				}).ensure(done);
+			},
+
+			'=>should reject if accessing thenable.then throws': function(done) {
+				if(typeof Object.defineProperty == 'function') {
+					var thenable = {};
+					Object.defineProperty(thenable, 'then', {
+						get: function() {
+							throw sentinel;
+						}
+					});
+
+					when.resolve(thenable).then(
+						fail,
+						function(e) {
+							assert.same(e, sentinel);
+						}
+					).ensure(done);
+
+				} else {
+					assert(true);
+					done();
+				}
 			}
 
 		}
