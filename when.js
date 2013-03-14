@@ -169,42 +169,51 @@ define(function () {
 	/**
 	 * Creates a new Deferred with fully isolated resolver and promise parts,
 	 * either or both of which may be given out safely to consumers.
-	 * The Deferred itself has the full API: resolve, reject, progress, and
-	 * then. The resolver has resolve, reject, and progress.  The promise
+	 * The resolver has resolve, reject, and progress.  The promise
 	 * only has then.
 	 *
-	 * @return {object} deferred object with {promise, resolver}
+	 * @return {{
+	 * promise: Promise,
+	 * resolver: {
+	 *	resolve: function:Promise,
+	 *	reject: function:Promise,
+	 *	notify: function:Promise
+	 * }}} deferred object
 	 */
 	function defer() {
-		var pending, deferred, resolved;
+		var deferred, pending, resolved;
 
+		// Optimize object shape
 		deferred = {
-			resolver: {}
+			promise: undef, resolve: undef, reject: undef, notify: undef,
+			resolver: { resolve: undef, reject: undef, notify: undef }
 		};
 
 		deferred.promise = pending = promise(makeDeferred);
 
 		return deferred;
 
-		function makeDeferred(resolveDefer, rejectDefer, notifyDefer) {
+		function makeDeferred(resolvePending, rejectPending, notifyPending) {
 			deferred.resolve = deferred.resolver.resolve = function(value) {
 				if(resolved) {
 					return resolve(value);
 				}
 				resolved = true;
-				resolveDefer(value);
+				resolvePending(value);
 				return pending;
 			};
+
 			deferred.reject  = deferred.resolver.reject  = function(reason) {
 				if(resolved) {
 					return resolve(rejected(reason));
 				}
 				resolved = true;
-				rejectDefer(reason);
+				rejectPending(reason);
 				return pending;
 			};
+
 			deferred.notify  = deferred.resolver.notify  = function(update) {
-				notifyDefer(update);
+				notifyPending(update);
 				return update;
 			};
 		}
