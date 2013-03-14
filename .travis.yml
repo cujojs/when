@@ -6,7 +6,6 @@ branches:
   only:
     - dev
     - master
-    - sauce-tests
 env:
   global:
     - SELENIUM_USERNAME="cujojs-when"
