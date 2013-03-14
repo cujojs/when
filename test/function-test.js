@@ -2,6 +2,7 @@
 
 var assert = buster.assert;
 var fail   = buster.fail;
+var slice  = [].slice;
 
 define('when/function-test', function (require) {
 
@@ -23,6 +24,15 @@ define('when/function-test', function (require) {
 
 	function f(x, y) {
 		return x + y;
+	}
+
+	// Use instead of Function.prototype.bind, since we need to
+// test in envs that don't support it
+	function partial(f) {
+		var partialArgs = slice.call(arguments, 1);
+		return function() {
+			return f.apply(null, partialArgs.concat(slice.call(arguments)));
+		};
 	}
 
 	buster.testCase('when/function', {
@@ -202,8 +212,8 @@ define('when/function-test', function (require) {
 				},
 
 				'should be composed from the passed functions': function(done) {
-					var sumWithFive = f.bind(null, 5);
-					var sumWithTen  = f.bind(null, 10);
+					var sumWithFive = partial(f, 5);
+					var sumWithTen  = partial(f, 10);
 
 					var composed = fn.compose(sumWithFive, sumWithTen);
 					composed(15).then(function(value) {
@@ -212,7 +222,7 @@ define('when/function-test', function (require) {
 				},
 
 				'should pass all its arguments to the first function': function(done) {
-					var sumWithFive = f.bind(null, 5);
+					var sumWithFive = partial(f, 5);
 
 					var composed = fn.compose(f, sumWithFive);
 					composed(10, 15).then(function(value) {
@@ -221,7 +231,7 @@ define('when/function-test', function (require) {
 				},
 
 				'should accept promises for arguments': function(done) {
-					var sumWithFive = f.bind(null, 5);
+					var sumWithFive = partial(f, 5);
 
 					var composed = fn.compose(f, sumWithFive);
 					composed(when(10), 15).then(function(value) {
@@ -230,7 +240,7 @@ define('when/function-test', function (require) {
 				},
 
 				'should be transparent to returned promises': function(done) {
-					var sumWithTen = f.bind(null, 10);
+					var sumWithTen = partial(f, 10);
 
 					var promisingSumWithTen = function(arg) {
 						return when.resolve(sumWithTen(arg));

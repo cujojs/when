@@ -30,9 +30,7 @@ define('when/parallel-test', function (require) {
 		'should execute all tasks': function() {
 			return parallel([createTask(1), createTask(2), createTask(3)]).then(
 				function(result) {
-					assert(result.indexOf(1) >= 0);
-					assert(result.indexOf(2) >= 0);
-					assert(result.indexOf(3) >= 0);
+					assert.equals(result, [1, 2, 3]);
 				}
 			);
 		},

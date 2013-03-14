@@ -187,67 +187,50 @@ define(function(require) {
 	 *  @returns {function} promisified function that accepts
 	 */
 	function promisify(asyncFunction, positions) {
+
 		return function() {
-			var finalArgs = fillableArray();
-			var deferred = when.defer();
-
-			if('callback' in positions) {
-				finalArgs.add(positions.callback, alwaysUnary(deferred.resolve));
-			}
-
-			if('errback' in positions) {
-				finalArgs.add(positions.errback, alwaysUnary(deferred.reject));
-			}
-
 			return when.all(arguments).then(function(args) {
-				finalArgs.fillHolesWith(args);
-				asyncFunction.apply(null, finalArgs.toArray());
+
+				var deferred, callbackPos, errbackPos;
+
+				if('callback' in positions) {
+					callbackPos = normalizePosition(args, positions.callback);
+				}
+
+				if('errback' in positions) {
+					errbackPos = normalizePosition(args, positions.errback);
+				}
+
+				deferred = when.defer();
+
+				if(errbackPos < callbackPos) {
+					insertCallback(args, errbackPos, deferred.reject);
+					insertCallback(args, callbackPos, deferred.resolve);
+				} else {
+					insertCallback(args, callbackPos, deferred.resolve);
+					insertCallback(args, errbackPos, deferred.reject);
+				}
+
+				asyncFunction.apply(null, args);
 
 				return deferred.promise;
 			});
 		};
 	}
 
-	function fillableArray() {
-		var beginningArgs = [], endArgs = [];
+	function normalizePosition(args, pos) {
+		return pos < 0 ? (args.length + pos + 2) : pos;
+	}
 
-		return {
-			add: function(index, value) {
-				if(index >= 0) {
-					beginningArgs[index] = value;
-				} else {
-					// Since we can't know how many arguments at the end there'll be
-					// (there might be -1, -2, -3...), we fill the array containing them
-					// in reverse order: from the element that will be the last argument
-					// (-1), following to the penultimate (-2) etc.
-					var offsetFromEnd = Math.abs(index) - 1;
-					endArgs[offsetFromEnd] = value;
-				}
-			},
-
-			fillHolesWith: function(arrayLike) {
-				var i, j;
-
-				for(i = 0, j = 0; i < arrayLike.length; i++, j++) {
-					while(j in beginningArgs) { j++; }
-					beginningArgs[j] = arrayLike[i];
-				}
-			},
-
-			toArray: function() {
-				var result = slice.call(beginningArgs, 0);
-
-				// Now, the 'endArgs' array is supposedly finished, and we can traverse
-				// it to get the elements that should be appended to the array. Since
-				// the elements are in reversed order, we traverse it from back to
-				// front.
-				for(var i = endArgs.length - 1; i >= 0; i--) {
-					result.push(endArgs[i]);
-				}
-
-				return result;
+	function insertCallback(args, pos, callback) {
+		if(pos != null) {
+			callback = alwaysUnary(callback);
+			if(pos < 0) {
+				pos = args.length + pos + 2;
 			}
-		};
+			args.splice(pos, 0, callback);
+		}
+
 	}
 
 	function alwaysUnary(fn) {

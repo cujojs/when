@@ -338,38 +338,26 @@ define('when/callbacks-test', function (require) {
 			},
 
 			'should understand -1 as "the last argument"': function(done) {
-				function asyncSum(/*n1, n2, n3...callback*/) {
-					var args = [].slice.call(arguments, 0);
-
-					var callback = args.pop();
-
-					var result = args.reduce(function(prev, n) {
-						return prev + n;
-					});
-					callback(result);
+				function asyncSum(/*n1, n2, n3...errback, callback*/) {
+					arguments[arguments.length - 1](sentinel);
 				}
 
 				var promisified = callbacks.promisify(asyncSum, {
+					errback: -2,
 					callback: -1
 				});
 
-				promisified(5, 10, 15).then(function(result) {
-					assert.equals(result, 30);
-				}, fail).ensure(done);
+				promisified(0, 1, 2).then(
+					function(val) {
+						assert.same(val, sentinel);
+					},
+					fail
+				).ensure(done);
 			},
 
 			'should understand -2 as "the penultimate argument"': function(done) {
 				function asyncConcat(/*str1, str2, str3...errback, callback*/) {
-					var args = [].slice.call(arguments, 0);
-
-					/*var callback =*/ args.pop();
-					var errback = args.pop();
-
-					var result = args.reduce(function(prev, n) {
-						return prev + ' ' + n;
-					});
-
-					errback(result);
+					arguments[arguments.length - 2](sentinel);
 				}
 
 				var promisified = callbacks.promisify(asyncConcat, {
@@ -377,10 +365,12 @@ define('when/callbacks-test', function (require) {
 					callback: -1
 				});
 
-				var promise = promisified('That\'s', 'an', 'extreme', 'example');
-				promise.then(fail, function(reason) {
-					assert.equals(reason, 'That\'s an extreme example');
-				}).ensure(done);
+				promisified(0, 1, 2).then(
+					fail,
+					function(val) {
+						assert.same(val, sentinel);
+					}
+				).ensure(done);
 			}
 		}
 	});
