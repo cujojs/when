@@ -9,6 +9,13 @@ fail = buster.assertions.fail;
 sentinel = {};
 other = {};
 
+function hasObjectDefineProperty() {
+	try {
+		Object.defineProperty({}, 'a', { value: 1 });
+		return true;
+	} catch (ex) {}
+}
+
 define('when.resolve-test', function (require) {
 
 	var when;
@@ -152,7 +159,7 @@ define('when.resolve-test', function (require) {
 			},
 
 			'should reject if accessing thenable.then throws': function(done) {
-				if(typeof Object.defineProperty == 'function') {
+				if(hasObjectDefineProperty()) {
 					var thenable = {};
 					Object.defineProperty(thenable, 'then', {
 						get: function() {
