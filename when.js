@@ -315,7 +315,7 @@ define(function () {
 		try {
 			// We must check and assimilate in the same tick, being careful
 			// only to access promiseOrValue.then once.
-			if(x) {
+			if(x === Object(x)) {
 				var untrustedThen = x.then;
 
 				if(typeof untrustedThen === 'function') {
