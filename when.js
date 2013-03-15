@@ -31,7 +31,7 @@ define(function () {
 	when.any       = any;        // One-winner race
 	when.some      = some;       // Multi-winner race
 
-	when.isPromise = isThenable; // Determine if a thing is a promise
+	when.isPromise = isPromise; // Determine if a thing is a promise
 
 	/**
 	 * Register an observer for a promise or immediate value.
@@ -317,7 +317,7 @@ define(function () {
 		} else {
 			try {
 				// We must check isPromise and assimilate in the same tick
-				if(isThenable(promiseOrValue)) {
+				if(isPromise(promiseOrValue)) {
 					return assimilate(promiseOrValue);
 				}
 
@@ -440,7 +440,7 @@ define(function () {
 	 * @param {*} promiseOrValue anything
 	 * @returns {boolean} true if promiseOrValue is a {@link Promise}
 	 */
-	function isThenable(promiseOrValue) {
+	function isPromise(promiseOrValue) {
 		return promiseOrValue && typeof promiseOrValue.then === 'function';
 	}
 
