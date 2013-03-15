@@ -309,35 +309,32 @@ define(function () {
 	 */
 	function coerce(x) {
 		if(x instanceof Promise) {
-			return x; // trusted Promise
-		}
-
-		try {
-			// We must check and assimilate in the same tick, being careful
-			// only to access promiseOrValue.then once.
-			if(x === Object(x)) {
-				var untrustedThen = x.then;
-
-				if(typeof untrustedThen === 'function') {
-					return promise(function(resolve, reject, notify) {
-						enqueue(function() {
-							try {
-								fcall(untrustedThen, x, resolve, reject, notify);
-							} catch(e) {
-								reject(e);
-							}
-						});
-					});
-				}
-			}
-
-			// It's a value, create a fulfilled wrapper
+			return x;
+		} else if (x !== Object(x)) {
 			return fulfilled(x);
-
-		} catch(e) {
-			// Something went wrong, reject
-			return rejected(e);
 		}
+
+		return promise(function(resolve, reject, notify) {
+			enqueue(function() {
+				try {
+					// We must check and assimilate in the same tick, but not the
+					// current tick, careful only to access promiseOrValue.then once.
+					var untrustedThen = x.then;
+
+					if(typeof untrustedThen === 'function') {
+						fcall(untrustedThen, x, resolve, reject, notify);
+					} else {
+						// It's a value, create a fulfilled wrapper
+						resolve(fulfilled(x));
+					}
+
+				} catch(e) {
+					// Something went wrong, reject
+					reject(e);
+				}
+			});
+
+		});
 	}
 
 	/**
