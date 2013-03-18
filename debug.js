@@ -137,10 +137,24 @@ define(function(require) {
 	 * @return {Deferred} a Deferred with debug logging
 	 */
 	function deferDebug(/* id */) {
-		var d, status, value, origResolve, origReject, origNotify, origThen, origAlways, id;
+		var d, err, status, value, origResolve, origReject, origNotify, origThen, origAlways, id;
 
 		// Delegate to create a Deferred;
 		d = when.defer();
+
+		// TODO: Remove in >= 2.1
+		// Add a noisy, failing then() to deferred to help people track
+		// down leftover deferred.then() calls in 2.0
+		try {
+			throw new Error('deferred.then was removed, use deferred.promise.then');
+		} catch (e) {
+			err = e;
+		}
+
+		d.then = function deferredThenIsDeprecated() {
+			throwUncatchable(err);
+		};
+		// End Remove 2.1
 
 		status = 'pending';
 		value = pending;
