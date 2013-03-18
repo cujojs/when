@@ -625,7 +625,12 @@ define(function () {
 		});
 	}
 
-	var reduceArray, slice, fcall, nextTick, handlerQueue, undef;
+	//
+	// Utilities, etc.
+	//
+
+	var reduceArray, slice, fcall, nextTick, handlerQueue,
+		timeout, funcProto, call, arrayProto, undef;
 
 	//
 	// Shared handler queue processing
@@ -669,83 +674,83 @@ define(function () {
 		handlerQueue = [];
 	}
 
+	//
 	// Capture function and array utils
-	// Exports: nextTick, fcall, slice, reduceArray
-	(function () {
-		/*global setImmediate:true*/
-		var timeout, funcProto, call, arrayProto;
+	//
+	/*global setImmediate:true*/
 
-		// capture setTimeout to avoid being caught by fake timers used in time based tests
-		timeout = setTimeout;
-		nextTick = typeof setImmediate === 'function'
-			? typeof window === 'undefined'
-				? setImmediate
-				: setImmediate.bind(window)
-			: typeof process === 'object'
-				? process.nextTick
-				: function(task) { timeout(task, 0); };
+	// capture setTimeout to avoid being caught by fake timers used in time based tests
+	timeout = setTimeout;
+	nextTick = typeof setImmediate === 'function'
+		? typeof window === 'undefined'
+			? setImmediate
+			: setImmediate.bind(window)
+		: typeof process === 'object'
+			? process.nextTick
+			: function(task) { timeout(task, 0); };
 
-		// Safe function calls
-		funcProto = Function.prototype;
-		call = funcProto.call;
-		fcall = funcProto.bind
-			? call.bind(call)
-			: function(f, context) {
-				return f.apply(context, slice.call(arguments, 2));
-			};
+	// Safe function calls
+	funcProto = Function.prototype;
+	call = funcProto.call;
+	fcall = funcProto.bind
+		? call.bind(call)
+		: function(f, context) {
+			return f.apply(context, slice.call(arguments, 2));
+		};
 
-		// Safe array ops
-		arrayProto = [];
-		slice = arrayProto.slice;
+	// Safe array ops
+	arrayProto = [];
+	slice = arrayProto.slice;
 
-		// ES5 reduce implementation if native not available
-		// See: http://es5.github.com/#x15.4.4.21 as there are many
-		// specifics and edge cases.  ES5 dictates that reduce.length === 1
-		// This implementation deviates from ES5 spec in the following ways:
-		// 1. It does not check if reduceFunc is a Callable
-		reduceArray = arrayProto.reduce ||
-			function(reduceFunc /*, initialValue */) {
-				/*jshint maxcomplexity: 7*/
-				var arr, args, reduced, len, i;
+	// ES5 reduce implementation if native not available
+	// See: http://es5.github.com/#x15.4.4.21 as there are many
+	// specifics and edge cases.  ES5 dictates that reduce.length === 1
+	// This implementation deviates from ES5 spec in the following ways:
+	// 1. It does not check if reduceFunc is a Callable
+	reduceArray = arrayProto.reduce ||
+		function(reduceFunc /*, initialValue */) {
+			/*jshint maxcomplexity: 7*/
+			var arr, args, reduced, len, i;
 
-				i = 0;
-				arr = Object(this);
-				len = arr.length >>> 0;
-				args = arguments;
+			i = 0;
+			arr = Object(this);
+			len = arr.length >>> 0;
+			args = arguments;
 
-				// If no initialValue, use first item of array (we know length !== 0 here)
-				// and adjust i to start at second item
-				if(args.length <= 1) {
-					// Skip to the first real element in the array
-					for(;;) {
-						if(i in arr) {
-							reduced = arr[i++];
-							break;
-						}
-
-						// If we reached the end of the array without finding any real
-						// elements, it's a TypeError
-						if(++i >= len) {
-							throw new TypeError();
-						}
-					}
-				} else {
-					// If initialValue provided, use it
-					reduced = args[1];
-				}
-
-				// Do the actual reduce
-				for(;i < len; ++i) {
+			// If no initialValue, use first item of array (we know length !== 0 here)
+			// and adjust i to start at second item
+			if(args.length <= 1) {
+				// Skip to the first real element in the array
+				for(;;) {
 					if(i in arr) {
-						reduced = reduceFunc(reduced, arr[i], i, arr);
+						reduced = arr[i++];
+						break;
+					}
+
+					// If we reached the end of the array without finding any real
+					// elements, it's a TypeError
+					if(++i >= len) {
+						throw new TypeError();
 					}
 				}
+			} else {
+				// If initialValue provided, use it
+				reduced = args[1];
+			}
 
-				return reduced;
-			};
-	}());
+			// Do the actual reduce
+			for(;i < len; ++i) {
+				if(i in arr) {
+					reduced = reduceFunc(reduced, arr[i], i, arr);
+				}
+			}
 
+			return reduced;
+		};
+
+	//
 	// Utility functions
+	//
 
 	/**
 	 * Helper that checks arrayOfCallbacks to ensure that each element is either
