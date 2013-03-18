@@ -13,9 +13,7 @@
  */
 (function(define) { 'use strict';
 define(function () {
-	var reduceArray, slice, call, fcall, nextTick, handlerQueue, undef;
 
-	//
 	// Public API
 
 	when.defer     = defer;      // Create a deferred
@@ -31,7 +29,7 @@ define(function () {
 	when.any       = any;        // One-winner race
 	when.some      = some;       // Multi-winner race
 
-	when.isPromise = isPromise; // Determine if a thing is a promise
+	when.isPromise = isPromise;  // Determine if a thing is a promise
 
 	/**
 	 * Register an observer for a promise or immediate value.
@@ -128,9 +126,6 @@ define(function () {
 		/**
 		 * Shortcut for .then(onFulfilledOrRejected, onFulfilledOrRejected)
 		 * @deprecated
-		 * @param {function} onFulfilledOrRejected
-		 * @param {function?} onProgress
-		 * @returns {Promise}
 		 */
 		always: function(onFulfilledOrRejected, onProgress) {
 			return this.then(onFulfilledOrRejected, onFulfilledOrRejected, onProgress);
@@ -178,7 +173,7 @@ define(function () {
 	 *	resolve: function:Promise,
 	 *	reject: function:Promise,
 	 *	notify: function:Promise
-	 * }}} deferred object
+	 * }}}
 	 */
 	function defer() {
 		var deferred, pending, resolved;
@@ -300,7 +295,7 @@ define(function () {
 	 * Coerces x to a trusted Promise
 	 *
 	 * @private
-	 * @param {*} x
+	 * @param {*} x thing to coerce
 	 * @returns {Promise} Guaranteed to return a trusted Promise.  If x
 	 *   is trusted, returns x, otherwise, returns a new, trusted, already-resolved
 	 *   Promise whose resolution value is:
@@ -333,14 +328,12 @@ define(function () {
 					reject(e);
 				}
 			});
-
 		});
 	}
 
 	/**
 	 * Create an already-fulfilled promise for the supplied value
 	 * @private
-	 *
 	 * @param {*} value
 	 * @return {Promise} fulfilled promise
 	 */
@@ -360,7 +353,6 @@ define(function () {
 	/**
 	 * Create an already-rejected promise with the supplied rejection reason.
 	 * @private
-	 *
 	 * @param {*} reason
 	 * @return {Promise} rejected promise
 	 */
@@ -380,7 +372,6 @@ define(function () {
 	/**
 	 * Create a progress promise with the supplied update.
 	 * @private
-	 *
 	 * @param {*} update
 	 * @return {Promise} progress promise
 	 */
@@ -400,6 +391,7 @@ define(function () {
 	/**
 	 * Schedule a task that will process a list of handlers
 	 * in the next queue drain run.
+	 * @private
 	 * @param {Array} handlers queue of handlers to execute
 	 * @param {*} value passed as the only arg to each handler
 	 */
@@ -413,9 +405,7 @@ define(function () {
 	}
 
 	/**
-	 * Determines if promiseOrValue is a promise or not.  Uses the feature
-	 * test from http://wiki.commonjs.org/wiki/Promises/A to determine if
-	 * promiseOrValue is a promise.
+	 * Determines if promiseOrValue is a promise or not
 	 *
 	 * @param {*} promiseOrValue anything
 	 * @returns {boolean} true if promiseOrValue is a {@link Promise}
@@ -468,17 +458,16 @@ define(function () {
 						reasons.push(reason);
 						if(!--toReject) {
 							fulfillOne = rejectOne = noop;
-							reject(fcall(slice, reasons));
+							reject(reasons);
 						}
 					};
 
 					fulfillOne = function(val) {
 						// This orders the values based on promise resolution order
 						values.push(val);
-
 						if (!--toResolve) {
 							fulfillOne = rejectOne = noop;
-							resolve(fcall(slice, values));
+							resolve(values);
 						}
 					};
 
@@ -636,25 +625,14 @@ define(function () {
 		});
 	}
 
+	var reduceArray, slice, fcall, nextTick, handlerQueue, undef;
+
 	//
 	// Shared handler queue processing
 	//
 	// Credit to Twisol (https://github.com/Twisol) for suggesting
 	// this type of extensible queue + trampoline approach for
 	// next-tick conflation.
-
-	nextTick = (function () {
-		// hoist setTimeout to avoid being caught by fake timers commonly used in time based tests
-		var timeout = setTimeout;
-		/*global setImmediate:true */
-		return typeof setImmediate === 'function'
-			? typeof window === 'undefined'
-				? setImmediate
-				: setImmediate.bind(window)
-			: typeof process === 'object'
-				? process.nextTick
-				: function(task) { timeout(task, 0); };
-	}());
 
 	handlerQueue = [];
 
@@ -684,7 +662,6 @@ define(function () {
 	function drainQueue() {
 		var task, i = 0;
 
-		// Drain up to queueProcessLimit items to avoid starving the tick/timer queue
 		while(task = handlerQueue[i++]) {
 			task();
 		}
@@ -692,9 +669,83 @@ define(function () {
 		handlerQueue = [];
 	}
 
-	//
+	// Capture function and array utils
+	// Exports: nextTick, fcall, slice, reduceArray
+	(function () {
+		/*global setImmediate:true*/
+		var timeout, funcProto, call, arrayProto;
+
+		// capture setTimeout to avoid being caught by fake timers used in time based tests
+		timeout = setTimeout;
+		nextTick = typeof setImmediate === 'function'
+			? typeof window === 'undefined'
+				? setImmediate
+				: setImmediate.bind(window)
+			: typeof process === 'object'
+				? process.nextTick
+				: function(task) { timeout(task, 0); };
+
+		// Safe function calls
+		funcProto = Function.prototype;
+		call = funcProto.call;
+		fcall = funcProto.bind
+			? call.bind(call)
+			: function(f, context) {
+				return f.apply(context, slice.call(arguments, 2));
+			};
+
+		// Safe array ops
+		arrayProto = [];
+		slice = arrayProto.slice;
+
+		// ES5 reduce implementation if native not available
+		// See: http://es5.github.com/#x15.4.4.21 as there are many
+		// specifics and edge cases.  ES5 dictates that reduce.length === 1
+		// This implementation deviates from ES5 spec in the following ways:
+		// 1. It does not check if reduceFunc is a Callable
+		reduceArray = arrayProto.reduce ||
+			function(reduceFunc /*, initialValue */) {
+				/*jshint maxcomplexity: 7*/
+				var arr, args, reduced, len, i;
+
+				i = 0;
+				arr = Object(this);
+				len = arr.length >>> 0;
+				args = arguments;
+
+				// If no initialValue, use first item of array (we know length !== 0 here)
+				// and adjust i to start at second item
+				if(args.length <= 1) {
+					// Skip to the first real element in the array
+					for(;;) {
+						if(i in arr) {
+							reduced = arr[i++];
+							break;
+						}
+
+						// If we reached the end of the array without finding any real
+						// elements, it's a TypeError
+						if(++i >= len) {
+							throw new TypeError();
+						}
+					}
+				} else {
+					// If initialValue provided, use it
+					reduced = args[1];
+				}
+
+				// Do the actual reduce
+				for(;i < len; ++i) {
+					if(i in arr) {
+						reduced = reduceFunc(reduced, arr[i], i, arr);
+					}
+				}
+
+				return reduced;
+			};
+	}());
+
 	// Utility functions
-	//
 
 	/**
 	 * Helper that checks arrayOfCallbacks to ensure that each element is either
@@ -718,68 +769,6 @@ define(function () {
 		}
 	}
 
-	slice = [].slice;
-	call = Function.prototype.call;
-	fcall = Function.prototype.bind
-		? call.bind(call)
-		: function(f, context) {
-			return f.apply(context, slice.call(arguments, 2));
-		};
-
-	// ES5 reduce implementation if native not available
-	// See: http://es5.github.com/#x15.4.4.21 as there are many
-	// specifics and edge cases.
-	reduceArray = [].reduce ||
-		function(reduceFunc /*, initialValue */) {
-			/*jshint maxcomplexity: 7*/
-
-			// ES5 dictates that reduce.length === 1
-
-			// This implementation deviates from ES5 spec in the following ways:
-			// 1. It does not check if reduceFunc is a Callable
-
-			var arr, args, reduced, len, i;
-
-			i = 0;
-			// This generates a jshint warning, despite being valid
-			// "Missing 'new' prefix when invoking a constructor."
-			// See https://github.com/jshint/jshint/issues/392
-			arr = Object(this);
-			len = arr.length >>> 0;
-			args = arguments;
-
-			// If no initialValue, use first item of array (we know length !== 0 here)
-			// and adjust i to start at second item
-			if(args.length <= 1) {
-				// Skip to the first real element in the array
-				for(;;) {
-					if(i in arr) {
-						reduced = arr[i++];
-						break;
-					}
-
-					// If we reached the end of the array without finding any real
-					// elements, it's a TypeError
-					if(++i >= len) {
-						throw new TypeError();
-					}
-				}
-			} else {
-				// If initialValue provided, use it
-				reduced = args[1];
-			}
-
-			// Do the actual reduce
-			for(;i < len; ++i) {
-				// Skip holes
-				if(i in arr) {
-					reduced = reduceFunc(reduced, arr[i], i, arr);
-				}
-			}
-
-			return reduced;
-		};
-
 	function noop() {}
 
 	function identity(x) {
@@ -789,6 +778,5 @@ define(function () {
 	return when;
 });
 })(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
-	// Boilerplate for AMD and Node
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(); }
 );
