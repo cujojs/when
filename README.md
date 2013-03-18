@@ -11,7 +11,7 @@ When.js is cujojs's lightweight [Promises/A+](http://promises-aplus.github.com/p
 * Executing tasks in parallel and sequence
 * Transforming Node-style and other callback-based APIs into promise-based APIs
 
-It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promises-tests), is [very fast](https://github.com/cujojs/promise-perf-tests#test-results), is **around 1.4k** when compiled with Google Closure + gzip, and has no external dependencies.
+It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promises-tests), is [very fast](https://github.com/cujojs/promise-perf-tests#test-results), is under 1.5k when compiled with Google Closure + gzip, and has no external dependencies.
 
 # What's New?
 
