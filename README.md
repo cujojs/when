@@ -4,7 +4,7 @@
 
 # when.js
 
-When.js is cujojs's lightweight [Promises/A+](http://promises-aplus.github.com/promises-spec) and `when()` implementation, derived from the async core of [wire.js](https://github.com/cujojs/wire), cujojs's IOC Container.  It features:
+When.js is cujojs's lightweight [Promises/A+](http://promises-aplus.github.com/promises-spec) and `when()` implementation that powers the async core of [wire.js](https://github.com/cujojs/wire), cujojs's IOC Container.  It features:
 
 * A rock solid, battle-tested Promise implementation
 * Resolving, mapping, and reducing arrays of promises
