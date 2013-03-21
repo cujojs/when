@@ -11,7 +11,7 @@
  * @author John Hann
  * @version 2.0.0
  */
-(function(define) { 'use strict';
+(function(define, global) { 'use strict';
 define(function () {
 
 	// Public API
@@ -630,7 +630,7 @@ define(function () {
 	//
 
 	var reduceArray, slice, fcall, nextTick, handlerQueue,
-		timeout, funcProto, call, arrayProto, undef;
+		setTimeout, funcProto, call, arrayProto, undef;
 
 	//
 	// Shared handler queue processing
@@ -677,17 +677,15 @@ define(function () {
 	//
 	// Capture function and array utils
 	//
-	/*global setImmediate:true*/
+	/*global setImmediate,process,vertx*/
 
 	// capture setTimeout to avoid being caught by fake timers used in time based tests
-	timeout = setTimeout;
-	nextTick = typeof setImmediate === 'function'
-		? typeof window === 'undefined'
-			? setImmediate
-			: setImmediate.bind(window)
-		: typeof process === 'object'
-			? process.nextTick
-			: function(task) { timeout(task, 0); };
+	setTimeout = global.setTimeout;
+	// Prefer setImmediate, cascade to node, vertx and finally setTimeout
+	nextTick = typeof setImmediate === 'function' ? setImmediate.bind(global)
+		: typeof process === 'object' ? process.nextTick // Node
+		: typeof vertx === 'object' ? vertx.runOnLoop // vert.x
+			: function(task) { setTimeout(task, 0); }; // fallback
 
 	// Safe function calls
 	funcProto = Function.prototype;
@@ -783,5 +781,6 @@ define(function () {
 	return when;
 });
 })(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(); }
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(); },
+	this
 );

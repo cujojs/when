@@ -1,7 +1,5 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
-/*global setTimeout:true*/
-
 /**
  * delay.js
  *
@@ -12,10 +10,15 @@
 
 (function(define) {
 define(function(require) {
-
-	var when, undef;
+	/*global vertx,setTimeout*/
+	var when, setTimer, undef;
 
 	when = require('./when');
+
+	setTimer = typeof vertx === 'object'
+		? function (f, ms) { return vertx.setTimer(ms, f); }
+		: setTimeout;
+
 
     /**
      * Creates a new promise that will resolve after a msec delay.  If promise
@@ -45,7 +48,7 @@ define(function(require) {
 
 		when(promise,
 			function(val) {
-				setTimeout(function() {
+				setTimer(function() {
 					deferred.resolve(val);
 				}, msec);
 			},
@@ -59,7 +62,6 @@ define(function(require) {
 });
 })(
 	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
-	// Boilerplate for AMD and Node
 );
 
 

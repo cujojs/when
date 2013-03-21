@@ -1,7 +1,5 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
-/*global setTimeout:true, clearTimeout:true*/
-
 /**
  * timeout.js
  *
@@ -13,10 +11,18 @@
 
 (function(define) {
 define(function(require) {
-
-    var when, undef;
+	/*global vertx,setTimeout,clearTimeout*/
+    var when, setTimer, cancelTimer, undef;
 
 	when = require('./when');
+
+	if(typeof vertx === 'object') {
+		setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
+		cancelTimer = vertx.cancelTimer;
+	} else {
+		setTimer = setTimeout;
+		cancelTimer = clearTimeout;
+	}
 
     /**
      * Returns a new promise that will automatically reject after msec if
@@ -41,12 +47,12 @@ define(function(require) {
 
         deferred = when.defer();
 
-        timeoutRef = setTimeout(function onTimeout() {
+        timeoutRef = setTimer(function onTimeout() {
             timeoutRef && deferred.reject(new Error('timed out'));
         }, msec);
 
         function cancelTimeout() {
-            clearTimeout(timeoutRef);
+            cancelTimer(timeoutRef);
             timeoutRef = undef;
         }
 

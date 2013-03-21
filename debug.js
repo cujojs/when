@@ -35,8 +35,8 @@
  */
 (function(define) {
 define(function(require) {
-
-	var when, promiseId, pending, exceptionsToRethrow, own, warn, undef;
+	/*global vertx,setTimeout*/
+	var when, promiseId, pending, exceptionsToRethrow, own, warn, setTimer, undef;
 
 	when = require('./when');
 	promiseId = 0;
@@ -46,6 +46,10 @@ define(function(require) {
 	warn = (typeof console !== 'undefined' && typeof console.warn === 'function')
 		? function(x) { console.warn(x); }
 		: function() {};
+
+	setTimer = typeof vertx === 'object'
+		? function (f, ms) { return vertx.setTimer(ms, f); }
+		: setTimeout;
 
 	exceptionsToRethrow = {
 		RangeError: 1,
@@ -319,7 +323,7 @@ define(function(require) {
 	}
 
 	function throwUncatchable(err) {
-		setTimeout(function() {
+		setTimer(function() {
 			throw err;
 		}, 0);
 	}
