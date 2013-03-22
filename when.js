@@ -171,6 +171,9 @@ define(function () {
 	 *
 	 * @return {{
 	 * promise: Promise,
+	 * resolve: function:Promise,
+	 * reject: function:Promise,
+	 * notify: function:Promise
 	 * resolver: {
 	 *	resolve: function:Promise,
 	 *	reject: function:Promise,
