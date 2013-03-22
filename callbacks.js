@@ -13,9 +13,10 @@
 (function(define) {
 define(function(require) {
 
-	var when, slice;
+	var when, promise, slice;
 
 	when = require('./when');
+	promise = when.promise;
 	slice = [].slice;
 
 	return {
@@ -58,16 +59,14 @@ define(function(require) {
 	 */
 	function apply(asyncFunction, extraAsyncArgs) {
 		return when.all(extraAsyncArgs || []).then(function(args) {
-			var deferred = when.defer();
+			return promise(function(resolve, reject) {
+				var asyncArgs = args.concat(
+					alwaysUnary(resolve),
+					alwaysUnary(reject)
+				);
 
-			var asyncArgs = args.concat(
-				alwaysUnary(deferred.resolve),
-				alwaysUnary(deferred.reject)
-			);
-
-			asyncFunction.apply(null, asyncArgs);
-
-			return deferred.promise;
+				asyncFunction.apply(null, asyncArgs);
+			});
 		});
 	}
 
@@ -190,30 +189,30 @@ define(function(require) {
 
 		return function() {
 			return when.all(arguments).then(function(args) {
+				return promise(applyPromisified);
 
-				var deferred, callbackPos, errbackPos;
+				function applyPromisified(resolve, reject) {
+					var callbackPos, errbackPos;
 
-				if('callback' in positions) {
-					callbackPos = normalizePosition(args, positions.callback);
+					if('callback' in positions) {
+						callbackPos = normalizePosition(args, positions.callback);
+					}
+
+					if('errback' in positions) {
+						errbackPos = normalizePosition(args, positions.errback);
+					}
+
+					if(errbackPos < callbackPos) {
+						insertCallback(args, errbackPos, reject);
+						insertCallback(args, callbackPos, resolve);
+					} else {
+						insertCallback(args, callbackPos, resolve);
+						insertCallback(args, errbackPos, reject);
+					}
+
+					asyncFunction.apply(null, args);
 				}
 
-				if('errback' in positions) {
-					errbackPos = normalizePosition(args, positions.errback);
-				}
-
-				deferred = when.defer();
-
-				if(errbackPos < callbackPos) {
-					insertCallback(args, errbackPos, deferred.reject);
-					insertCallback(args, callbackPos, deferred.resolve);
-				} else {
-					insertCallback(args, callbackPos, deferred.resolve);
-					insertCallback(args, errbackPos, deferred.reject);
-				}
-
-				asyncFunction.apply(null, args);
-
-				return deferred.promise;
 			});
 		};
 	}

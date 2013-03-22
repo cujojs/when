@@ -31,6 +31,8 @@ define(function () {
 
 	when.isPromise = isPromise;  // Determine if a thing is a promise
 
+	when.promise   = promise;    // EXPERIMENTAL: May change. Use at your own risk
+
 	/**
 	 * Register an observer for a promise or immediate value.
 	 *

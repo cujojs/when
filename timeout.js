@@ -1,4 +1,4 @@
-/** @license MIT License (c) copyright B Cavalier & J Hann */
+/** @license MIT License (c) copyright 2011-2013 original author or authors */
 
 /**
  * timeout.js
@@ -6,15 +6,16 @@
  * Helper that returns a promise that rejects after a specified timeout,
  * if not explicitly resolved or rejected before that.
  *
- * @author brian@hovercraftstudios.com
+ * @author Brian Cavalier
  */
 
 (function(define) {
 define(function(require) {
 	/*global vertx,setTimeout,clearTimeout*/
-    var when, setTimer, cancelTimer, undef;
+    var when, makePromise, setTimer, cancelTimer;
 
 	when = require('./when');
+	makePromise =  when.promise;
 
 	if(typeof vertx === 'object') {
 		setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
@@ -43,34 +44,28 @@ define(function(require) {
      * @returns {Promise}
      */
     return function timeout(promise, msec) {
-        var deferred, timeoutRef;
+        var timeoutRef, rejectTimeout;
 
-        deferred = when.defer();
-
-        timeoutRef = setTimer(function onTimeout() {
-            timeoutRef && deferred.reject(new Error('timed out'));
+		timeoutRef = setTimer(function onTimeout() {
+            rejectTimeout(new Error('timed out after ' + msec + 'ms'));
         }, msec);
 
-        function cancelTimeout() {
-            cancelTimer(timeoutRef);
-            timeoutRef = undef;
-        }
+		return makePromise(function(resolve, reject, notify) {
+			rejectTimeout = reject; // capture, tricky
 
-        when(promise,
-            function(value) {
-                cancelTimeout();
-                deferred.resolve(value);
-            },
-            function(reason) {
-                cancelTimeout();
-                deferred.reject(reason);
-            },
-			deferred.notify
-        );
-
-        return deferred.promise;
+			when(promise,
+				function onFulfill(value) {
+					cancelTimer(timeoutRef);
+					resolve(value);
+				},
+				function onReject(reason) {
+					cancelTimer(timeoutRef);
+					reject(reason);
+				},
+				notify
+			);
+		});
     };
-
 });
 })(
 	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }

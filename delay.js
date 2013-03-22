@@ -1,24 +1,24 @@
-/** @license MIT License (c) copyright B Cavalier & J Hann */
+/** @license MIT License (c) copyright 2011-2013 original author or authors */
 
 /**
  * delay.js
  *
  * Helper that returns a promise that resolves after a delay.
  *
- * @author brian@hovercraftstudios.com
+ * @author Brian Cavalier
  */
 
 (function(define) {
 define(function(require) {
 	/*global vertx,setTimeout*/
-	var when, setTimer, undef;
+	var when, makePromise, setTimer, undef;
 
 	when = require('./when');
+	makePromise = when.promise;
 
 	setTimer = typeof vertx === 'object'
 		? function (f, ms) { return vertx.setTimer(ms, f); }
 		: setTimeout;
-
 
     /**
      * Creates a new promise that will resolve after a msec delay.  If promise
@@ -44,19 +44,17 @@ define(function(require) {
             promise = undef;
         }
 
-        var deferred = when.defer();
-
-		when(promise,
-			function(val) {
-				setTimer(function() {
-					deferred.resolve(val);
-				}, msec);
-			},
-			deferred.reject,
-			deferred.notify
-		);
-
-        return deferred.promise;
+		return makePromise(function(resolve, reject, notify) {
+			when(promise,
+				function(val) {
+					setTimeout(function() {
+						resolve(val);
+					}, msec);
+				},
+				reject,
+				notify
+			);
+		});
     };
 
 });
