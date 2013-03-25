@@ -231,6 +231,10 @@ define(function(require) {
 	whenDebug.defer = deferDebug;
 	whenDebug.isPromise = when.isPromise;
 
+	makeDebugWithHandlers('all', when.all);
+	makeDebugWithHandlers('any', when.any);
+	makeDebugWithHandlers('some', when.some, 2);
+
 	// For each method we haven't already replaced, replace it with
 	// one that sets up debug logging on the returned promise
 	for(var p in when) {
@@ -246,6 +250,16 @@ define(function(require) {
 		whenDebug[name] = function() {
 			return debugPromise(func.apply(when, arguments));
 		};
+	}
+
+	function makeDebugWithHandlers(name, func, offset) {
+		makeDebug(name, function() {
+			offset = offset || 1;
+			if(typeof arguments[offset] === 'function' || typeof arguments[offset+1] === 'function' || typeof arguments[offset+2] === 'function') {
+				warn(name + '() onFulfilled, onRejected, and onProgress are deprecated, use returnedPromise.then/otherwise/ensure instead');
+			}
+			return func.apply(when, arguments);
+		});
 	}
 
 	// Wrap a promise callback to catch exceptions and log or

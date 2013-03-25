@@ -15,6 +15,10 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 
 # What's New?
 
+### 2.1.0
+
+* **DEPRECATED**: `onFulfilled`, `onRejected`, `onProgress` handler arguments to `when.all`, `when.any`, `when.some`.  Use the returned promise's `then()` (or `otherwise()`, `ensure()`, etc) to register handlers instead.
+
 ### 2.0.0
 
 * Fully asynchronous resolutions.

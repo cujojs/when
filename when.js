@@ -428,9 +428,9 @@ define(function () {
 	 * @param {Array} promisesOrValues array of anything, may contain a mix
 	 *      of promises and values
 	 * @param howMany {number} number of promisesOrValues to resolve
-	 * @param {function?} [onFulfilled] resolution handler
-	 * @param {function?} [onRejected] rejection handler
-	 * @param {function?} [onProgress] progress handler
+	 * @param {function?} [onFulfilled] DEPRECATED, use returnedPromise.then()
+	 * @param {function?} [onRejected] DEPRECATED, use returnedPromise.then()
+	 * @param {function?} [onProgress] DEPRECATED, use returnedPromise.then()
 	 * @returns {Promise} promise that will resolve to an array of howMany values that
 	 *  resolved first, or will reject with an array of
 	 *  (promisesOrValues.length - howMany) + 1 rejection reasons.
@@ -501,9 +501,9 @@ define(function () {
 	 *
 	 * @param {Array|Promise} promisesOrValues array of anything, may contain a mix
 	 *      of {@link Promise}s and values
-	 * @param {function?} [onFulfilled] resolution handler
-	 * @param {function?} [onRejected] rejection handler
-	 * @param {function?} [onProgress] progress handler
+	 * @param {function?} [onFulfilled] DEPRECATED, use returnedPromise.then()
+	 * @param {function?} [onRejected] DEPRECATED, use returnedPromise.then()
+	 * @param {function?} [onProgress] DEPRECATED, use returnedPromise.then()
 	 * @returns {Promise} promise that will resolve to the value that resolved first, or
 	 * will reject with an array of all rejected inputs.
 	 */
@@ -524,9 +524,9 @@ define(function () {
 	 *
 	 * @param {Array|Promise} promisesOrValues array of anything, may contain a mix
 	 *      of {@link Promise}s and values
-	 * @param {function?} [onFulfilled] resolution handler
-	 * @param {function?} [onRejected] rejection handler
-	 * @param {function?} [onProgress] progress handler
+	 * @param {function?} [onFulfilled] DEPRECATED, use returnedPromise.then()
+	 * @param {function?} [onRejected] DEPRECATED, use returnedPromise.then()
+	 * @param {function?} [onProgress] DEPRECATED, use returnedPromise.then()
 	 * @returns {Promise}
 	 */
 	function all(promisesOrValues, onFulfilled, onRejected, onProgress) {
