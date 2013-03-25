@@ -25,13 +25,18 @@ define(function(require) {
 	 * to position of the task in the tasks array
 	 */
 	return function sequence(tasks /*, args... */) {
-		var args = Array.prototype.slice.call(arguments, 1);
-		return when.reduce(tasks, function(results, task) {
-			return when(task.apply(null, args), function(result) {
-				results.push(result);
-				return results;
-			});
-		}, []);
+		var results = [];
+
+		return when.all(Array.prototype.slice.call(arguments, 1)).then(function(args) {
+			return when.reduce(tasks, function(results, task) {
+				return when(task.apply(null, args), addResult);
+			}, results);
+		});
+
+		function addResult(result) {
+			results.push(result);
+			return results;
+		}
 	};
 
 });

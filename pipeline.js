@@ -13,9 +13,10 @@
 (function(define) {
 define(function(require) {
 
-	var when;
+	var when, fn;
 
 	when = require('./when');
+	fn = require('./function');
 
 	/**
 	 * Run array of tasks in a pipeline where the next
@@ -26,26 +27,19 @@ define(function(require) {
 	 * @return {Promise} promise for return value of the final task
 	 */
 	return function pipeline(tasks /* initialArgs... */) {
-		var initialArgs, runTask;
-
-		initialArgs = Array.prototype.slice.call(arguments, 1);
-
 		// Self-optimizing function to run first task with multiple
 		// args using apply, but subsequence tasks via direct invocation
-		runTask = function(task, args) {
+		var runTask = function(task, args) {
 			runTask = function(task, arg) {
 				return task(arg);
 			};
 
-			return task.apply(null, args);
+			return fn.apply(task, args);
 		};
 
-		return when.reduce(tasks,
-			function(args, task) {
-				return runTask(task, args);
-			},
-			initialArgs
-		);
+		return when.reduce(tasks, function(args, task) {
+			return runTask(task, args);
+		}, Array.prototype.slice.call(arguments, 1));
 	};
 
 });

@@ -25,9 +25,10 @@ define(function(require) {
 	 * to position of the task in the tasks array
 	 */
 	return function parallel(tasks /*, args... */) {
-		var args = Array.prototype.slice.call(arguments, 1);
-		return when.map(tasks, function(task) {
-			return task.apply(null, args);
+		return when.all(Array.prototype.slice.call(arguments, 1)).then(function(args) {
+			return when.map(tasks, function(task) {
+				return task.apply(null, args);
+			});
 		});
 	};
 
