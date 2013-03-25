@@ -21,8 +21,9 @@ function expectArgs(expected) {
 
 define('when/sequence-test', function (require) {
 
-	var sequence;
+	var when, sequence;
 
+	when = require('when');
 	sequence = require('when/sequence');
 
 	buster.testCase('when/sequence', {
@@ -49,6 +50,16 @@ define('when/sequence-test', function (require) {
 			expected = [1, 2, 3];
 			tasks = [expectArgs(expected), expectArgs(expected), expectArgs(expected)];
 
+			return sequence.apply(null, [tasks].concat(expected)).ensure(done);
+		},
+
+		'should accept promises for args': function(done) {
+			var expected, tasks;
+
+			expected = [1, 2, 3];
+			tasks = [expectArgs(expected), expectArgs(expected), expectArgs(expected)];
+
+			expected = [when(1), when(2), when(3)];
 			return sequence.apply(null, [tasks].concat(expected)).ensure(done);
 		}
 	});
