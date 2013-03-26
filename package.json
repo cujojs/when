@@ -36,7 +36,7 @@
 		"test": "test"
 	},
 	"scripts": {
-		"test": "jshint . && buster test -e node && promises-aplus-tests test/when-adapter.js",
+		"test": "jshint . && buster test -e node && promises-aplus-tests test/promises-aplus-adapter.js",
 		"ci": "npm test && sauceme",
 		"start": "buster static -e browser"
 	}
