@@ -570,25 +570,25 @@ define(function () {
 
 				if(!toResolve) {
 					resolve(results);
-				} else {
+					return;
+				}
 
-					resolveOne = function(item, i) {
-						when(item, mapFunc).then(function(mapped) {
-							results[i] = mapped;
+				resolveOne = function(item, i) {
+					when(item, mapFunc).then(function(mapped) {
+						results[i] = mapped;
 
-							if(!--toResolve) {
-								resolve(results);
-							}
-						}, reject, notify);
-					};
-
-					// Since mapFunc may be async, get all invocations of it into flight
-					for(i = 0; i < len; i++) {
-						if(i in array) {
-							resolveOne(array[i], i);
-						} else {
-							--toResolve;
+						if(!--toResolve) {
+							resolve(results);
 						}
+					}, reject, notify);
+				};
+
+				// Since mapFunc may be async, get all invocations of it into flight
+				for(i = 0; i < len; i++) {
+					if(i in array) {
+						resolveOne(array[i], i);
+					} else {
+						--toResolve;
 					}
 				}
 			}
