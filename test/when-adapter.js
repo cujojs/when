@@ -9,13 +9,14 @@
 		exports.rejected = when.reject;
 
 		exports.pending = function () {
-			var deferred = when.defer();
+			var pending = {};
 
-			return {
-				promise: deferred.promise,
-				fulfill: deferred.resolve,
-				reject: deferred.reject
-			};
+			pending.promise = when.promise(function(resolve, reject) {
+				pending.fulfill = resolve;
+				pending.reject = reject;
+			});
+
+			return pending;
 		};
 	}
 })();
