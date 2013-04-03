@@ -1,8 +1,9 @@
 {
     "name": "when",
-    "version": "2.0.0",
+    "version": "2.1.0",
 	"description": "A lightweight Promise and when() implementation, plus other async goodies.",
 	"keywords": ["promise", "promises", "deferred", "deferreds", "when", "async", "asynchronous", "cujo"],
+	"homepage": "http://cujojs.com",
 	"licenses": [
 		{
 			"type": "MIT",
@@ -24,6 +25,19 @@
 		{
 			"name": "John Hann",
 			"web": "http://unscriptable.com"
+		}
+	],
+	"contributors": [
+		{
+			"name": "Brian Cavalier",
+			"web": "http://hovercraftstudios.com"
+		},
+		{
+			"name": "John Hann",
+			"web": "http://unscriptable.com"
+		},
+		{
+			"name": "Scott Andrews"
 		}
 	],
 	"devDependencies": {

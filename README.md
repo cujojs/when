@@ -17,7 +17,9 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 
 ### 2.1.0
 
+* Runs in [vert.x](http://vertx.io)
 * **DEPRECATED**: `onFulfilled`, `onRejected`, `onProgress` handler arguments to `when.all`, `when.any`, `when.some`.  Use the returned promise's `then()` (or `otherwise()`, `ensure()`, etc) to register handlers instead.
+	* For example, do this: `when.all(array).then(onFulfilled, onRejected)` instead of this: `when.all(array, onFulfilled, onRejected)`.  The functionality is equivalent.
 
 ### 2.0.0
 
