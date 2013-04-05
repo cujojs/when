@@ -685,7 +685,7 @@ define(function () {
 		? typeof window === 'undefined'
 			? setImmediate
 			: setImmediate.bind(window)
-		: typeof process === 'object'
+		: typeof process === 'object' && process.nextTick
 			? process.nextTick
 			: function(task) { timeout(task, 0); };
 
