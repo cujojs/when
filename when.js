@@ -658,15 +658,15 @@ define(function () {
 	}
 
 	/**
-	 * Schedule the queue to be drained in the next tick.
+	 * Schedule the queue to be drained after the stack has cleared.
 	 */
 	function scheduleDrainQueue() {
 		nextTick(drainQueue);
 	}
 
 	/**
-	 * Drain the handler queue entirely or partially, being careful to allow
-	 * the queue to be extended while it is being processed, and to continue
+	 * Drain the handler queue entirely, being careful to allow the
+	 * queue to be extended while it is being processed, and to continue
 	 * processing until it is truly empty.
 	 */
 	function drainQueue() {
