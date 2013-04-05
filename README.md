@@ -21,6 +21,10 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 * **DEPRECATED**: `onFulfilled`, `onRejected`, `onProgress` handler arguments to `when.all`, `when.any`, `when.some`.  Use the returned promise's `then()` (or `otherwise()`, `ensure()`, etc) to register handlers instead.
 	* For example, do this: `when.all(array).then(onFulfilled, onRejected)` instead of this: `when.all(array, onFulfilled, onRejected)`.  The functionality is equivalent.
 
+### 2.0.1
+
+* Account for the fact that Mocha creates a global named `process`. Thanks [Narsul](https://github.com/cujojs/when/pull/136)
+
 ### 2.0.0
 
 * Fully asynchronous resolutions.

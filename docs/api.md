@@ -23,7 +23,6 @@ API
 1. [Object keys](#object-keys)
 	* [when/keys all](#whenkeys-all)
 	* [when/keys map](#whenkeys-map)
-	* [when/keys reduce](#whenkeys-reduce)
 1. [Unbounded lists](#unbounded-lists)
 	* [when/unfold](#whenunfold)
 	* [when/unfold/list](#whenunfoldlist)

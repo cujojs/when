@@ -9,7 +9,7 @@
  *
  * @author Brian Cavalier
  * @author John Hann
- * @version 2.0.0
+ * @version 2.0.1
  */
 (function(define, global) { 'use strict';
 define(function () {
@@ -688,7 +688,7 @@ define(function () {
 	setTimeout = global.setTimeout;
 	// Prefer setImmediate, cascade to node, vertx and finally setTimeout
 	nextTick = typeof setImmediate === 'function' ? setImmediate.bind(global)
-		: typeof process === 'object' ? process.nextTick // Node
+		: typeof process === 'object' && process.nextTick ? process.nextTick
 		: typeof vertx === 'object' ? vertx.runOnLoop // vert.x
 			: function(task) { setTimeout(task, 0); }; // fallback
 

@@ -1,8 +1,8 @@
 {
     "name": "when",
     "version": "2.1.0",
-	"description": "A lightweight Promise and when() implementation, plus other async goodies.",
-	"keywords": ["promise", "promises", "deferred", "deferreds", "when", "async", "asynchronous", "cujo"],
+	"description": "A lightweight Promises/A+ and when() implementation, plus other async goodies.",
+	"keywords": ["Promises/A+", "promises-aplus", "promise", "promises", "deferred", "deferreds", "when", "async", "asynchronous", "cujo"],
 	"homepage": "http://cujojs.com",
 	"licenses": [
 		{
