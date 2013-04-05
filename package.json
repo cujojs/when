@@ -1,8 +1,8 @@
 {
     "name": "when",
-    "version": "2.0.0",
-	"description": "A lightweight Promise and when() implementation, plus other async goodies.",
-	"keywords": ["promise", "promises", "deferred", "deferreds", "when", "async", "asynchronous", "cujo"],
+    "version": "2.0.1",
+	"description": "A lightweight Promises/A+ and when() implementation, plus other async goodies.",
+	"keywords": ["Promises/A+", "promises-aplus", "promise", "promises", "deferred", "deferreds", "when", "async", "asynchronous", "cujo"],
 	"licenses": [
 		{
 			"type": "MIT",
