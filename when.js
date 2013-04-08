@@ -22,7 +22,7 @@
  *
  * @author Brian Cavalier
  * @author John Hann
- * @version 2.0.0
+ * @version 2.0.1
  */
 (function(define, externalConfig) { 'use strict';
 define(function () {
@@ -706,7 +706,7 @@ define(function () {
 	//
 	// Capture function and array utils
 	//
-	/*global setImmediate:true*/
+	/*global setTimeout,setImmediate,window,process*/
 
 	// capture setTimeout to avoid being caught by fake timers used in time based tests
 	timeout = setTimeout;
@@ -714,7 +714,7 @@ define(function () {
 		? typeof window === 'undefined'
 			? setImmediate
 			: setImmediate.bind(window)
-		: typeof process === 'object'
+		: typeof process === 'object' && process.nextTick
 			? process.nextTick
 			: function(task) { timeout(task, 0); };
 

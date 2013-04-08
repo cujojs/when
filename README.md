@@ -15,6 +15,10 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 
 # What's New?
 
+### 2.0.1
+
+* Account for the fact that Mocha creates a global named `process`. Thanks [Narsul](https://github.com/cujojs/when/pull/136)
+
 ### 2.0.0
 
 * Fully asynchronous resolutions.
