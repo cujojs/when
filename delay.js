@@ -11,10 +11,9 @@
 (function(define) {
 define(function(require) {
 	/*global vertx,setTimeout*/
-	var when, makePromise, setTimer, undef;
+	var when, setTimer, undef;
 
 	when = require('./when');
-	makePromise = when.promise;
 
 	setTimer = typeof vertx === 'object'
 		? function (f, ms) { return vertx.setTimer(ms, f); }
@@ -35,25 +34,22 @@ define(function(require) {
      * // or
      * when(delay(triggeringPromise, 1000), doSomething, handleRejection);
      *
-     * @param [promise] anything - any promise or value after which the delay will start
+     * @param {*} [value] any promise or value after which the delay will start
      * @param msec {Number} delay in milliseconds
      */
-    return function delay(promise, msec) {
+    return function delay(result, msec) {
         if(arguments.length < 2) {
-            msec = promise >>> 0;
-            promise = undef;
+            msec = result >>> 0;
+            result = undef;
         }
 
-		return makePromise(function(resolve, reject, notify) {
-			when(promise,
-				function(val) {
-					setTimeout(function() {
-						resolve(val);
-					}, msec);
-				},
-				reject,
-				notify
-			);
+		return when.promise(function(resolve, reject, notify) {
+			when(result, function(val) {
+				setTimeout(function() {
+					resolve(val);
+				}, msec);
+			},
+			reject, notify);
 		});
     };
 

@@ -1,6 +1,11 @@
+/** @license MIT License (c) copyright 2011-2013 original author or authors */
+
 /**
- * guard
- * @author: brian@briancavalier.com
+ * General concurrency guard
+ * Adapted from original concept by Sakari Jokinen (Rocket Pack, Ltd.)
+ *
+ * @author Brian Cavalier
+ * @contributor Sakari Jokinen
  */
 (function(define) {
 define(function(require) {
@@ -25,7 +30,6 @@ define(function(require) {
 	 * @returns {function} guarded f
 	 */
 	function guard(condition, f) {
-
 		return function() {
 			var args = arguments;
 
@@ -45,10 +49,10 @@ define(function(require) {
 
 	/**
 	 * Condition that allows n simultaneous executions in a critical section
-	 * @param {number} n number allowed
+	 * @param {number} allowed number allowed
 	 * @returns {function}
 	 */
-	function n(n) {
+	function n(allowed) {
 		var count, waiting;
 
 		count = 0;
@@ -56,7 +60,7 @@ define(function(require) {
 
 		return function() {
 			return when.promise(function(resolve) {
-				if(++count <= n) {
+				if(++count <= allowed) {
 					resolve(notify);
 				} else {
 					waiting.push(function() {

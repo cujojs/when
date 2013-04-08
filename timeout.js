@@ -12,10 +12,9 @@
 (function(define) {
 define(function(require) {
 	/*global vertx,setTimeout,clearTimeout*/
-    var when, makePromise, setTimer, cancelTimer;
+    var when, setTimer, cancelTimer;
 
 	when = require('./when');
-	makePromise =  when.promise;
 
 	if(typeof vertx === 'object') {
 		setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
@@ -43,17 +42,17 @@ define(function(require) {
      *
      * @returns {Promise}
      */
-    return function timeout(promise, msec) {
+    return function timeout(trigger, msec) {
         var timeoutRef, rejectTimeout;
 
 		timeoutRef = setTimer(function onTimeout() {
             rejectTimeout(new Error('timed out after ' + msec + 'ms'));
         }, msec);
 
-		return makePromise(function(resolve, reject, notify) {
+		return when.promise(function(resolve, reject, notify) {
 			rejectTimeout = reject; // capture, tricky
 
-			when(promise,
+			when(trigger,
 				function onFulfill(value) {
 					cancelTimer(timeoutRef);
 					resolve(value);
