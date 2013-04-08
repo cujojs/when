@@ -1,5 +1,7 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
+/*global setTimeout:true*/
+
 /**
  * delay.js
  *
@@ -9,9 +11,11 @@
  */
 
 (function(define) {
-define(['./when'], function(when) {
+define(function(require) {
 
-    var undef;
+	var when, undef;
+
+	when = require('./when');
 
     /**
      * Creates a new promise that will resolve after a msec delay.  If promise
@@ -37,23 +41,25 @@ define(['./when'], function(when) {
             promise = undef;
         }
 
-        return when(promise, function(val) {
-            var deferred = when.defer();
-            setTimeout(function() {
-                deferred.resolve(val);
-            }, msec);
-            return deferred.promise;
-        });
+        var deferred = when.defer();
+
+		when(promise,
+			function(val) {
+				setTimeout(function() {
+					deferred.resolve(val);
+				}, msec);
+			},
+			deferred.reject,
+			deferred.notify
+		);
+
+        return deferred.promise;
     };
 
 });
-})(typeof define == 'function'
-    ? define
-    : function (deps, factory) { typeof module != 'undefined'
-        ? (module.exports = factory(require('./when')))
-        : (this.when_delay = factory(this.when));
-    }
-    // Boilerplate for AMD, Node, and browser global
+})(
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
+	// Boilerplate for AMD and Node
 );
 
 

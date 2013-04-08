@@ -12,7 +12,7 @@
 define(function() {
 
     var toString = Object.prototype.toString;
-    
+
     /**
      * Creates a function that accepts a function that takes individual
      * arguments (it can be variadic, too), and returns a new function that
@@ -49,20 +49,18 @@ define(function() {
          */
         return function(array) {
             // It better be an array
-            if(toString.call(array) != '[object Array]') throw new Error('apply called with non-array arg');
+            if(toString.call(array) != '[object Array]') {
+                throw new Error('apply called with non-array arg');
+            }
 
             return f.apply(null, array);
-        }
+        };
     };
 
 });
-})(typeof define == 'function'
-    ? define
-    : function (factory) { typeof module != 'undefined'
-        ? (module.exports  = factory())
-        : (this.when_apply = factory());
-    }
-    // Boilerplate for AMD, Node, and browser global
+})(
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
+	// Boilerplate for AMD and Node
 );
 
 

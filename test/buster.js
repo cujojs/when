@@ -1,16 +1,41 @@
-var tests = ['*.js'];
+(function() {
 
-exports['node'] = {
-    environment: 'node',
-	tests: tests
+var config = {};
+
+config.node = {
+	environment: 'node',
+	rootPath: '../',
+	tests: [
+		'test/**/*-test.js'
+	]
 };
 
-// FIXME: Something has changed with buster's browser testing, and either
-// it is not working at all, or this configuration is not valid
-//var browserTests = tests.map(function(t) { return './test/' + t; });
-//exports['browser'] = {
-//	environment: 'browser',
-//	rootPath: '../',
-//	tests: browserTests,
-//	sources: [ './when.js', './apply.js', './delay.js', './timeout.js', './cancelable.js' ]
-//};
+config.browser = {
+	environment: 'browser',
+	autoRun: false,
+	rootPath: '../',
+	resources: [
+		//'**', ** is busted in buster
+		'*.js',
+		'node/**/*.js',
+		'unfold/**/*.js',
+		'node_modules/curl/**/*.js'
+	],
+	libs: [
+		'test/curl-config.js',
+		'node_modules/curl/src/curl.js'
+	],
+	sources: [
+		// loaded as resources
+	],
+	tests: [
+		'test/**/*-test.js',
+		'test/run.js'
+	]
+};
+
+if(typeof module != 'undefined') {
+	module.exports = config;
+}
+
+})();
