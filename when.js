@@ -86,9 +86,7 @@ define(function () {
 		 * @returns {Promise}
 		 */
 		ensure: function(onFulfilledOrRejected) {
-			var self = this;
-
-			return this.then(injectHandler, injectHandler).yield(self);
+			return this.then(injectHandler, injectHandler).yield(this);
 
 			function injectHandler() {
 				return resolve(onFulfilledOrRejected());
