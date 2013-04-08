@@ -63,16 +63,14 @@ define(function(require) {
 				if(++count <= allowed) {
 					resolve(notify);
 				} else {
-					waiting.push(function() {
-						resolve(notify);
-					});
+					waiting.push(resolve);
 				}
 
 				function notify() {
 					count = Math.max(count-1, 0);
 
 					if(waiting.length) {
-						waiting.shift()();
+						waiting.shift()(notify);
 					}
 				}
 			});
