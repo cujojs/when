@@ -5,9 +5,10 @@
 (function(define) {
 define(function(require) {
 
-	var when, slice, undef;
+	var when, fn, slice;
 
 	when = require('./when');
+	fn = require('./function');
 	slice = [].slice;
 
 	guard.one = one;
@@ -26,14 +27,10 @@ define(function(require) {
 	function guard(condition, f) {
 
 		return function() {
-			var args = slice.call(arguments);
+			var args = arguments;
 
-			return when(condition(), function(exit) {
-				try {
-					return when(f.apply(undef, args)).always(exit);
-				} catch(e) {
-					return exit();
-				}
+			return when(condition(), function(notify) {
+				return fn.apply(f, args).ensure(notify);
 			});
 		};
 	}
@@ -58,32 +55,24 @@ define(function(require) {
 		waiting = [];
 
 		return function() {
-
-			var enter, exit;
-
-			enter = when.defer();
-			exit = when.defer();
-
-			count += 1;
-			if(count <= n) {
-				enter.resolve(exit.resolve);
-			} else {
-				waiting.push(enter.resolve.bind(enter, exit.resolve));
-			}
-
-			exit.promise.then(notify);
-
-			return enter.promise;
-
-			function notify() {
-				count = Math.max(count-1, 0);
-
-				if(waiting.length) {
-					waiting.shift()();
+			return when.promise(function(resolve) {
+				if(++count <= n) {
+					resolve(notify);
+				} else {
+					waiting.push(function() {
+						resolve(notify);
+					});
 				}
-			}
-		};
 
+				function notify() {
+					count = Math.max(count-1, 0);
+
+					if(waiting.length) {
+						waiting.shift()();
+					}
+				}
+			});
+		};
 	}
 
 });
