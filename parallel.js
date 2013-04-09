@@ -12,9 +12,10 @@
 (function(define) {
 define(function(require) {
 
-	var when;
+	var when, slice;
 
 	when = require('./when');
+	slice = Array.prototype.slice;
 
 	/**
 	 * Run array of tasks in parallel
@@ -25,7 +26,7 @@ define(function(require) {
 	 * to position of the task in the tasks array
 	 */
 	return function parallel(tasks /*, args... */) {
-		return when.all(Array.prototype.slice.call(arguments, 1)).then(function(args) {
+		return when.all(slice.call(arguments, 1)).then(function(args) {
 			return when.map(tasks, function(task) {
 				return task.apply(null, args);
 			});

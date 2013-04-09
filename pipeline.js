@@ -13,10 +13,11 @@
 (function(define) {
 define(function(require) {
 
-	var when, fn;
+	var when, fn, slice;
 
 	when = require('./when');
 	fn = require('./function');
+	slice = Array.prototype.slice;
 
 	/**
 	 * Run array of tasks in a pipeline where the next
@@ -39,7 +40,7 @@ define(function(require) {
 
 		return when.reduce(tasks, function(args, task) {
 			return runTask(task, args);
-		}, Array.prototype.slice.call(arguments, 1));
+		}, slice.call(arguments, 1));
 	};
 
 });
