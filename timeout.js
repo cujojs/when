@@ -38,8 +38,9 @@ define(function(require) {
 
 		// Support reversed, deprecated argument ordering
 		if(typeof trigger === 'number') {
-			trigger = arguments[0];
-			msec = arguments[1];
+			var tmp = trigger;
+			trigger = msec;
+			msec = tmp;
 		}
 
 		timeoutRef = setTimer(function onTimeout() {

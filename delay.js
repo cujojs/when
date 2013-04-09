@@ -30,8 +30,9 @@ define(function(require) {
     return function delay(msec, value) {
 		// Support reversed, deprecated argument ordering
 		if(typeof value === 'number') {
-			value = arguments[0];
-			msec = arguments[1];
+			var tmp = value;
+			value = msec;
+			msec = tmp;
 		}
 
 		return when.promise(function(resolve, reject, notify) {
