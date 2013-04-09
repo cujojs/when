@@ -10,10 +10,9 @@
 (function(define) {
 define(function(require) {
 
-	var when, fn, slice;
+	var when, slice;
 
 	when = require('./when');
-	fn = require('./function');
 	slice = [].slice;
 
 	guard.one = one;
@@ -31,17 +30,18 @@ define(function(require) {
 	 */
 	function guard(condition, f) {
 		return function() {
-			var args = arguments;
+			var self = this, args = arguments;
 
 			return when(condition(), function(notify) {
-				return fn.apply(f, args).ensure(notify);
+				return when(f.apply(self, args)).ensure(notify);
 			});
 		};
 	}
 
 	/**
 	 * Condition that allows only one execution in a critical section
-	 * @returns {function} condition with enter/exit methods
+	 * @returns {function} condition function that allows at most 1 execution
+	 *  in the critical section
 	 */
 	function one() {
 		return n(1);

@@ -11,7 +11,7 @@
 (function(define) {
 define(function(require) {
 	/*global vertx,setTimeout*/
-	var when, setTimer, undef;
+	var when, setTimer;
 
 	when = require('./when');
 
@@ -23,28 +23,19 @@ define(function(require) {
      * Creates a new promise that will resolve after a msec delay.  If promise
      * is supplied, the delay will start *after* the supplied promise is resolved.
      *
-     * Usage:
-     * // Do something after 1 second, similar to using setTimeout
-     * delay(1000).then(doSomething);
-     * // or
-     * when(delay(1000), doSomething);
-     *
-     * // Do something 1 second after triggeringPromise resolves
-     * delay(triggeringPromise, 1000).then(doSomething, handleRejection);
-     * // or
-     * when(delay(triggeringPromise, 1000), doSomething, handleRejection);
-     *
+	 * @param {number} msec delay in milliseconds
      * @param {*} [value] any promise or value after which the delay will start
-     * @param msec {Number} delay in milliseconds
+	 * @returns {Promise}
      */
-    return function delay(result, msec) {
-        if(arguments.length < 2) {
-            msec = result >>> 0;
-            result = undef;
-        }
+    return function delay(msec, value) {
+		// Support reversed, deprecated argument ordering
+		if(typeof value === 'number') {
+			value = arguments[0];
+			msec = arguments[1];
+		}
 
 		return when.promise(function(resolve, reject, notify) {
-			when(result, function(val) {
+			when(value, function(val) {
 				setTimeout(function() {
 					resolve(val);
 				}, msec);

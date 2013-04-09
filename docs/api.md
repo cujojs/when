@@ -728,6 +728,10 @@ unfoldList(unspool, condition, 0).then(console.log.bind(console));
 ## when/delay
 
 ```js
+var delayed = delay(milliseconds [, promiseOrValue]);
+var delayed = delay(milliseconds);
+
+// DEPRECATED, but currently works:
 var delayed = delay(promiseOrValue, milliseconds);
 ```
 
@@ -738,14 +742,25 @@ var delay, delayed;
 
 delay = require('when/delay');
 
-// delayed is an unresolved promise that will become resolved
-// in 1 second with the value 123
-delayed = delay(123, 1000)
+// delayed is a pending promise that will become fulfilled
+// in 1 second (with the value `undefined`)
+// Useful as a timed trigger when the value doesn't matter
+delayed = delay(1000);
 
-// delayed is an unresolved promise that will become resolved
+// delayed is a pending promise that will become fulfilled
+// in 1 second with the value "hello"
+delayed = delay(1000, "hello")
+
+// delayed is a pending promise that will become fulfilled
 // 1 second after anotherPromise resolves, or will become rejected
 // *immediately* after anotherPromise rejects.
-delayed = delay(anotherPromise, 1000);
+delayed = delay(1000, anotherPromise);
+
+// Do something after 1 second, similar to using setTimeout
+delay(1000).then(doSomething);
+
+// Do something 1 second after triggeringPromise resolves
+delay(1000, triggeringPromise).then(doSomething, handleRejection);
 ```
 
 More when/delay [examples on the wiki](https://github.com/cujojs/when/wiki/when-delay)
@@ -754,18 +769,27 @@ More when/delay [examples on the wiki](https://github.com/cujojs/when/wiki/when-
 ## when/timeout
 
 ```js
-var timed = timeout(promiseOrValue, milliseconds);
+var timed = timeout(milliseconds, promiseOrValue);
+
+// DEPRECATED, but currently works:
+var delayed = delay(promiseOrValue, milliseconds);
 ```
 
 Create a promise that will reject after a timeout if promiseOrValue does not resolved or rejected beforehand.  If promiseOrValue is a value, the returned promise will resolve immediately.  More interestingly, if promiseOrValue is a promise, if it resolved before the timeout period, the returned promise will resolve.  If it doesn't, the returned promise will reject.
 
 ```js
-var timeout, timed;
+var timeout, timed, d;
 
 timeout = require('when/timeout');
 
 // timed will reject after 5 seconds unless anotherPromise resolves beforehand.
-timed = timeout(anotherPromise, 5000);
+timed = timeout(5000, anotherPromise);
+
+d = when.defer();
+// Setup d however you need
+
+// return a new promise that will timeout if d doesn't resolve/reject first
+return timeout(1000, d.promise);
 ```
 
 More when/timeout [examples on the wiki](https://github.com/cujojs/when/wiki/when-timeout)

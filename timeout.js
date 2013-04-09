@@ -28,22 +28,19 @@ define(function(require) {
      * Returns a new promise that will automatically reject after msec if
      * the supplied promise doesn't resolve or reject before that.
      *
-     * Usage:
-     *
-     * var d = when.defer();
-     * // Setup d however you need
-     *
-     * // return a new promise that will timeout if d doesn't resolve/reject first
-     * return timeout(d.promise, 1000);
-     *
-     * @param promise anything - any promise or value that should trigger
-     *  the returned promise to resolve or reject before the msec timeout
-     * @param msec {Number} timeout in milliseconds
-     *
+	 * @param {number} msec timeout in milliseconds
+     * @param {*} trigger - any promise or value that should trigger the
+	 * returned promise to resolve or reject before the msec timeout
      * @returns {Promise}
      */
-    return function timeout(trigger, msec) {
+    return function timeout(msec, trigger) {
         var timeoutRef, rejectTimeout;
+
+		// Support reversed, deprecated argument ordering
+		if(typeof trigger === 'number') {
+			trigger = arguments[0];
+			msec = arguments[1];
+		}
 
 		timeoutRef = setTimer(function onTimeout() {
             rejectTimeout(new Error('timed out after ' + msec + 'ms'));
