@@ -1,4 +1,4 @@
-/** @license MIT License (c) copyright B Cavalier & J Hann */
+/** @license MIT License (c) copyright 2011-2013 original author or authors */
 
 /**
  * parallel.js
@@ -6,7 +6,8 @@
  * Run a set of task functions in parallel.  All tasks will
  * receive the same args
  *
- * @author brian@hovercraftstudios.com
+ * @author Brian Cavalier
+ * @author John Hann
  */
 
 (function(define) {

@@ -7,6 +7,7 @@
  * if not explicitly resolved or rejected before that.
  *
  * @author Brian Cavalier
+ * @author John Hann
  */
 
 (function(define) {

@@ -1,4 +1,4 @@
-/** @license MIT License (c) copyright B Cavalier & J Hann */
+/** @license MIT License (c) copyright 2011-2013 original author or authors */
 
 /**
  * pipeline.js
@@ -7,7 +7,8 @@
  * of the previous as an argument to the next.  Like a shell
  * pipeline, e.g. `cat file.txt | grep 'foo' | sed -e 's/foo/bar/g'
  *
- * @author brian@hovercraftstudios.com
+ * @author Brian Cavalier
+ * @author John Hann
  */
 
 (function(define) {

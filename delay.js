@@ -6,6 +6,7 @@
  * Helper that returns a promise that resolves after a delay.
  *
  * @author Brian Cavalier
+ * @author John Hann
  */
 
 (function(define) {
