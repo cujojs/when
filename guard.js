@@ -30,7 +30,10 @@ define(function(require) {
 	 */
 	function guard(condition, f) {
 		return function() {
-			var self = this, args = arguments;
+			var self, args;
+			
+			self = this;
+			args = arguments;
 
 			return when(condition(), function(notify) {
 				return when(f.apply(self, args)).ensure(notify);
@@ -60,15 +63,15 @@ define(function(require) {
 
 		return function() {
 			return when.promise(function(resolve) {
-				if(++count <= allowed) {
+				if(count < allowed) {
 					resolve(notify);
 				} else {
 					waiting.push(resolve);
 				}
+				count += 1;
 
 				function notify() {
-					count = Math.max(count-1, 0);
-
+					count = Math.max(count - 1, 0);
 					if(waiting.length) {
 						waiting.shift()(notify);
 					}
