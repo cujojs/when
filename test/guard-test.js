@@ -13,7 +13,10 @@ function noop() {}
 
 define('when/guard-test', function (require) {
 
-	var guard = require('when/guard');
+	var guard, delay;
+
+	guard = require('when/guard');
+	delay = require('when/delay');
 
 	buster.testCase('when/guard', {
 
@@ -45,7 +48,7 @@ define('when/guard-test', function (require) {
 					assert.same(f.firstCall.args[0], sentinel);
 				},
 				fail
-			).then(done, done);
+			).ensure(done);
 		},
 
 		'should notify condition once guarded function settles': function(done) {
@@ -60,7 +63,7 @@ define('when/guard-test', function (require) {
 					assert.calledOnce(notify);
 				},
 				fail
-			).then(done, done);
+			).ensure(done);
 		},
 
 		'should initiate next guarded call after notify': function(done) {
@@ -79,15 +82,86 @@ define('when/guard-test', function (require) {
 					});
 				},
 				fail
-			).then(done, done);
+			).ensure(done);
 		},
 
 		'n': {
-		},
+			'should create a function': function() {
+				assert.isFunction(guard.n(1));
+			},
 
-		'one': {
+			'should return a promise': function() {
+				var c = guard.n(1);
+				assert.isFunction(c().then);
+			},
 
+			'returned promise should resolve to a function': function(done) {
+				var enter = guard.n(1);
+				enter().then(
+					function(exit) {
+						assert.isFunction(exit);
+					},
+					fail
+				).ensure(done);
+			},
+
+			'should allow one execution': function(done) {
+				var enter, value, first, second;
+
+				enter = guard.n(1);
+				value = sentinel;
+
+				first = enter();
+				second = enter();
+
+				first.then(
+					function(exit) {
+						return delay(100).then(function() {
+							assert.same(value, sentinel);
+							exit();
+						});
+					},
+					fail
+				);
+
+				second.then(
+					function() { value = other; }
+				).ensure(done);
+			},
+
+			'should allow two executions': function(done) {
+				var one, value, first, second, third;
+
+				one = guard.n(2);
+				value = sentinel;
+
+				first = one();
+				second = one();
+				third = one();
+
+				first.then(
+					function() {
+						assert.same(value, sentinel);
+					},
+					fail
+				);
+
+				second.then(
+					function(exit) {
+						return delay(100).then(function() {
+							assert.same(value, sentinel);
+							exit();
+						});
+					},
+					fail
+				);
+
+				third.then(
+					function() { value = other; }
+				).ensure(done);
+			}
 		}
+
 	});
 
 });
