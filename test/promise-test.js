@@ -1,22 +1,34 @@
 (function(buster, define) {
 
-var assert, refute, fail;
+var assert, refute, fail, isFrozen, sentinel, other, slice, undef;
 
 assert = buster.assert;
 refute = buster.refute;
 fail = buster.assertions.fail;
-
-var isFrozen, undef, sentinel, other, slice;
 
 sentinel = {};
 other = {};
 
 slice = Array.prototype.slice;
 
-function f() {}
-
 // In case of testing in an environment without Object.isFrozen
 isFrozen = Object.isFrozen || function() { return true; };
+
+function f() {}
+
+function assertPending(s) {
+	assert.equals(s.state, 'pending');
+}
+
+function assertFulfilled(s, value) {
+	assert.equals(s.state, 'fulfilled');
+	assert.same(s.value, value);
+}
+
+function assertRejected(s, reason) {
+	assert.equals(s.state, 'rejected');
+	assert.same(s.reason, reason);
+}
 
 define('when/promise-test', function (require) {
 
@@ -29,7 +41,7 @@ define('when/promise-test', function (require) {
 
 		// TODO: Reinstate when v8 Object.freeze() performance is sane
 	//	'should be frozen': function() {
-	//		assert(Object.isFrozen(defer().promise));
+	//		assert(isFrozen(defer().promise));
 	//	},
 
 		'then': {
@@ -731,8 +743,58 @@ define('when/promise-test', function (require) {
 					).ensure(done);
 				}
 			}
-		}
+		},
 
+		'inspect': {
+
+			'when inspecting promises': {
+				'should return pending state for pending promise': function() {
+					var promise = when.promise(function() {});
+
+					assertPending(promise.inspect());
+				},
+
+				'should return fulfilled state for fulfilled promise': function() {
+					var promise = when.resolve(sentinel);
+
+					return promise.then(function() {
+						assertFulfilled(promise.inspect(), sentinel);
+					});
+				},
+
+				'should return rejected state for rejected promise': function() {
+					var promise = when.reject(sentinel);
+
+					return promise.then(fail, function() {
+						assertRejected(promise.inspect(), sentinel);
+					});
+				}
+			},
+
+			'when inspecting thenables': {
+				'should return pending state for pending thenable': function() {
+					var p = when({ then: function() {} });
+
+					assertPending(p.inspect());
+				},
+
+				'should return fulfilled state for fulfilled thenable': function() {
+					var p = when({ then: function(fulfill) { fulfill(sentinel); } });
+
+					return p.then(function() {
+						assertFulfilled(p.inspect(), sentinel);
+					});
+				},
+
+				'should return rejected state for rejected thenable': function() {
+					var p = when({ then: function(_, rejected) { rejected(sentinel); } });
+
+					return p.then(fail, function() {
+						assertRejected(p.inspect(), sentinel);
+					});
+				}
+			}
+		}
 	});
 
 });

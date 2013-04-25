@@ -25,6 +25,7 @@ define(function () {
 	when.all       = all;        // Resolve a list of promises
 	when.map       = map;        // Array.map() for promises
 	when.reduce    = reduce;     // Array.reduce() for promises
+	when.settle    = settle;     // Settle a list of promises
 
 	when.any       = any;        // One-winner race
 	when.some      = some;       // Multi-winner race
@@ -61,8 +62,9 @@ define(function () {
 	 * @constructor
 	 * @name Promise
 	 */
-	function Promise(then) {
+	function Promise(then, inspect) {
 		this.then = then;
+		this.inspect = inspect;
 	}
 
 	Promise.prototype = {
@@ -234,7 +236,7 @@ define(function () {
 		}
 
 		// Return the promise
-		return new Promise(then);
+		return new Promise(then, inspect);
 
 		/**
 		 * Register handlers for this promise.
@@ -257,6 +259,10 @@ define(function () {
 						.then(resolve, reject, notify);
 				});
 			});
+		}
+
+		function inspect() {
+			return value ? value.inspect() : toPendingState();
 		}
 
 		/**
@@ -348,6 +354,8 @@ define(function () {
 			} catch (e) {
 				return rejected(e);
 			}
+		}, function() {
+			return toFulfilledState(value);
 		});
 
 		return self;
@@ -367,6 +375,8 @@ define(function () {
 			} catch (e) {
 				return rejected(e);
 			}
+		}, function() {
+			return toRejectedState(reason);
 		});
 
 		return self;
@@ -526,7 +536,7 @@ define(function () {
 	 * @returns {Promise}
 	 */
 	function all(promisesOrValues, onFulfilled, onRejected, onProgress) {
-		return map(promisesOrValues, identity).then(onFulfilled, onRejected, onProgress);
+		return _map(promisesOrValues, identity).then(onFulfilled, onRejected, onProgress);
 	}
 
 	/**
@@ -535,22 +545,43 @@ define(function () {
 	 * have fulfilled, or will reject when *any one* of the input promises rejects.
 	 */
 	function join(/* ...promises */) {
-		return map(arguments, identity);
+		return _map(arguments, identity);
 	}
 
 	/**
-	 * Traditional map function, similar to `Array.prototype.map()`, but allows
-	 * input to contain {@link Promise}s and/or values, and mapFunc may return
-	 * either a value or a {@link Promise}
-	 *
-	 * @param {Array|Promise} array array of anything, may contain a mix
-	 *      of {@link Promise}s and values
-	 * @param {function} mapFunc mapping function mapFunc(value) which may return
-	 *      either a {@link Promise} or value
-	 * @returns {Promise} a {@link Promise} that will resolve to an array containing
-	 *      the mapped output values.
+	 * Settles all input promises such that they are guaranteed not to
+	 * be pending once the returned promise fulfills. The returned promise
+	 * will always fulfill, except in the case where `array` is a promise
+	 * that rejects.
+	 * @param {Array|Promise} array or promise for array of promises to settle
+	 * @returns {Promise} promise that always fulfills with an array of
+	 *  outcome snapshots for each input promise.
+	 */
+	function settle(array) {
+		return _map(array, toFulfilledState, toRejectedState);
+	}
+
+	/**
+	 * Promise-aware array map function, similar to `Array.prototype.map()`,
+	 * but input array may contain promises or values.
+	 * @param {Array|Promise} array array of anything, may contain promises and values
+	 * @param {function} mapFunc map function which may return a promise or value
+	 * @returns {Promise} promise that will fulfill with an array of mapped values
+	 *  or reject if any input promise rejects.
 	 */
 	function map(array, mapFunc) {
+		return _map(array, mapFunc);
+	}
+
+	/**
+	 * Internal map that allows a fallback to handle rejections
+	 * @param {Array|Promise} array array of anything, may contain promises and values
+	 * @param {function} mapFunc map function which may return a promise or value
+	 * @param {function?} fallback function to handle rejected promises
+	 * @returns {Promise} promise that will fulfill with an array of mapped values
+	 *  or reject if any input promise rejects.
+	 */
+	function _map(array, mapFunc, fallback) {
 		return when(array, function(array) {
 
 			return promise(resolveMap);
@@ -569,7 +600,7 @@ define(function () {
 				}
 
 				resolveOne = function(item, i) {
-					when(item, mapFunc).then(function(mapped) {
+					when(item, mapFunc, fallback).then(function(mapped) {
 						results[i] = mapped;
 
 						if(!--toResolve) {
@@ -623,6 +654,37 @@ define(function () {
 
 			return reduceArray.apply(array, args);
 		});
+	}
+
+	// Snapshot states
+
+	/**
+	 * Creates a fulfilled state snapshot
+	 * @private
+	 * @param {*} x any value
+	 * @returns {{state:'fulfilled',value:*}}
+	 */
+	function toFulfilledState(x) {
+		return { state: 'fulfilled', value: x };
+	}
+
+	/**
+	 * Creates a rejected state snapshot
+	 * @private
+	 * @param {*} x any reason
+	 * @returns {{state:'rejected',reason:*}}
+	 */
+	function toRejectedState(x) {
+		return { state: 'rejected', reason: x };
+	}
+
+	/**
+	 * Creates a pending state snapshot
+	 * @private
+	 * @returns {{state:'pending'}}
+	 */
+	function toPendingState() {
+		return { state: 'pending' };
 	}
 
 	//
