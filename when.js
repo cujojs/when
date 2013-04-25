@@ -9,7 +9,7 @@
  *
  * @author Brian Cavalier
  * @author John Hann
- * @version 2.0.1
+ * @version 2.1.0
  */
 (function(define, global) { 'use strict';
 define(function () {
@@ -435,8 +435,6 @@ define(function () {
 	 */
 	function some(promisesOrValues, howMany, onFulfilled, onRejected, onProgress) {
 
-		checkCallbacks(2, arguments);
-
 		return when(promisesOrValues, function(promisesOrValues) {
 
 			return promise(resolveSome).then(onFulfilled, onRejected, onProgress);
@@ -460,7 +458,7 @@ define(function () {
 					rejectOne = function(reason) {
 						reasons.push(reason);
 						if(!--toReject) {
-							fulfillOne = rejectOne = noop;
+							fulfillOne = rejectOne = identity;
 							reject(reasons);
 						}
 					};
@@ -469,7 +467,7 @@ define(function () {
 						// This orders the values based on promise resolution order
 						values.push(val);
 						if (!--toResolve) {
-							fulfillOne = rejectOne = noop;
+							fulfillOne = rejectOne = identity;
 							resolve(values);
 						}
 					};
@@ -528,7 +526,6 @@ define(function () {
 	 * @returns {Promise}
 	 */
 	function all(promisesOrValues, onFulfilled, onRejected, onProgress) {
-		checkCallbacks(1, arguments);
 		return map(promisesOrValues, identity).then(onFulfilled, onRejected, onProgress);
 	}
 
@@ -748,34 +745,6 @@ define(function () {
 
 			return reduced;
 		};
-
-	//
-	// Utility functions
-	//
-
-	/**
-	 * Helper that checks arrayOfCallbacks to ensure that each element is either
-	 * a function, or null or undefined.
-	 * @private
-	 * @param {number} start index at which to start checking items in arrayOfCallbacks
-	 * @param {Array} arrayOfCallbacks array to check
-	 * @throws {Error} if any element of arrayOfCallbacks is something other than
-	 * a functions, null, or undefined.
-	 */
-	function checkCallbacks(start, arrayOfCallbacks) {
-		// TODO: Promises/A+ update type checking and docs
-		var arg, i = arrayOfCallbacks.length;
-
-		while(i > start) {
-			arg = arrayOfCallbacks[--i];
-
-			if (arg != null && typeof arg != 'function') {
-				throw new Error('arg '+i+' must be a function');
-			}
-		}
-	}
-
-	function noop() {}
 
 	function identity(x) {
 		return x;
