@@ -35,6 +35,7 @@ API
 	* [when/pipeline](#whenpipeline)
 	* [when/parallel](#whenparallel)
 	* [when/guard](#whenguard)
+	* [Guard conditions](#guard-conditions)
 1. [Polling with promises](#polling-with-promises)
 	* [when/poll](#whenpoll)
 1. [Interacting with non-promise code](#interacting-with-non-promise-code)
@@ -904,30 +905,18 @@ Where:
 
 Limit the concurrency of a function.  Creates a new function whose concurrency is limited by `condition`.  This can be useful with operations such as [when.map](#whenmap), [when/parallel](#whenparallel), etc. that allow tasks to execute in "parallel", to limit the number which can be inflight simultanously.
 
-## Guard Conditions
-
-### `guard.n`
-
-```js
-var condition = guard.n(number);
-```
-
-Creates a condition that only allows `number` of simultaneous executions inflight.
-
 ```js
 // Using when/guard with when.map to limit concurrency
 // of the mapFunc
 
-var guard, guardedMapFunc, mapped;
+var guard, guardedAsyncOperation, mapped;
 
 guard = require('when/guard');
 
 // Allow only 1 inflight execution of guarded
-guardedMapFunc = guard(guard.n(1), function(item) {
-	return doAsyncOperation(item); // transform item asynchronously
-});
+guardedAsyncOperation = guard(guard.n(1), asyncOperation);
 
-mapped = when.map(array, guardedMapFunc);
+mapped = when.map(array, guardedAsyncOperation);
 mapped.then(function(results) {
 	// Handle results as usual
 });
@@ -951,11 +940,22 @@ guardTask = guard.bind(null, guard.n(2));
 // Use guardTask to guard all the tasks.
 tasks = tasks.map(guardTask);
 
+// Execute the tasks with concurrency/"parallelism" limited to 2
 taskResults = parallel(tasks);
 taskResults.then(function(results) {
 	// Handle results as usual
 });
 ```
+
+## Guard conditions
+
+### `guard.n`
+
+```js
+var condition = guard.n(number);
+```
+
+Creates a condition that allows at most `number` of simultaneous executions inflight.
 
 # Polling with promises
 
