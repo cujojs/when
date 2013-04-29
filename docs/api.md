@@ -17,6 +17,7 @@ API
 	* [when.all](#whenall)
 	* [when.map](#whenmap)
 	* [when.reduce](#whenreduce)
+	* [when.settle](#whensettle)
 1. [Competitive races](#competitive-races)
 	* [when.any](#whenany)
 	* [when.some](#whensome)
@@ -407,6 +408,7 @@ If any of the promises is rejected, the returned promise will be rejected with t
 
 ### See also:
 * [when.join()](#whenjoin) - joining multiple promises
+* [when.settle()](#whenall) - settling an Array of promises
 
 ## when.map()
 
@@ -418,7 +420,7 @@ Where:
 
 * array is an Array *or a promise for an array*, which may contain promises and/or values.
 
-Traditional map function, similar to `Array.prototype.map()`, but allows input to contain promises and/or values, and mapFunc may return either a value or a promise.
+Traditional array map function, similar to `Array.prototype.map()`, but allows input to contain promises and/or values, and mapFunc may return either a value or a promise.
 
 If any of the promises is rejected, the returned promise will be rejected with the rejection reason of the first promise that was rejected.
 
@@ -442,7 +444,7 @@ Where:
 
 * array is an Array *or a promise for an array*, which may contain promises and/or values.
 
-Traditional reduce function, similar to `Array.prototype.reduce()`, but input may contain promises and/or values, and reduceFunc may return either a value or a promise, *and* initialValue may be a promise for the starting value.
+Traditional array reduce function, similar to `Array.prototype.reduce()`, but input may contain promises and/or values, and reduceFunc may return either a value or a promise, *and* initialValue may be a promise for the starting value.
 
 The reduce function should have the signature:
 
@@ -465,6 +467,47 @@ var sumPromise = when.reduce(inputPromisesOrValues, function (sum, value) {
 ```
 
 If any of the promises is rejected, the returned promise will be rejected with the rejection reason of the first promise that was rejected.
+
+## when.settle()
+
+```js
+var promise = when.settle(array);
+```
+
+Where:
+
+* array is an Array *or a promise for an array*, which may contain promises and/or values.
+
+Returns a promise for an array containing the same number of elements as the input array.  Each element is a descriptor object describing of the outcome of the corresponding element in the input.  The returned promise will only reject if `array` itself is a rejected promise.  Otherwise, it will always fulfill with an array of descriptors.  This is in contrast to `when.all()`, which will reject if any element of `array` rejects.
+
+If the corresponding input promise is:
+
+* fulfilled, the descriptor will be: `{ state: 'fulfilled', value: <fulfillmentValue> }`
+* rejected, the descriptor will be: `{ state: 'rejected', value: <rejectionReason> }`
+
+```js
+// Process all successful results, and also log all errors
+
+// Input array
+var array = [when.reject(1), 2, when.resolve(3), when.reject(4)];
+
+// Settle all inputs
+var settled = when.settle(array);
+
+// Logs 1 & 4 and processes 2 & 3
+settled.then(function(descriptors) {
+	descriptors.forEach(function(d) {
+		if(d.state === 'rejected') {
+			logError(d.reason);
+		} else {
+			processSuccessfulResult(d.value);
+		}
+	});
+});
+```
+
+### See also:
+* [when.all()](#whenall) - resolving an Array of promises
 
 # Object Keys
 
