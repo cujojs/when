@@ -34,6 +34,7 @@ API
 	* [when/sequence](#whensequence)
 	* [when/pipeline](#whenpipeline)
 	* [when/parallel](#whenparallel)
+	* [when/guard](#whenguard)
 1. [Polling with promises](#polling-with-promises)
 	* [when/poll](#whenpoll)
 1. [Interacting with non-promise code](#interacting-with-non-promise-code)
@@ -478,7 +479,7 @@ Where:
 
 * array is an Array *or a promise for an array*, which may contain promises and/or values.
 
-Returns a promise for an array containing the same number of elements as the input array.  Each element is a descriptor object describing of the outcome of the corresponding element in the input.  The returned promise will only reject if `array` itself is a rejected promise.  Otherwise, it will always fulfill with an array of descriptors.  This is in contrast to `when.all()`, which will reject if any element of `array` rejects.
+Returns a promise for an array containing the same number of elements as the input array.  Each element is a descriptor object describing of the outcome of the corresponding element in the input.  The returned promise will only reject if `array` itself is a rejected promise.  Otherwise, it will always fulfill with an array of descriptors.  This is in contrast to [when.all](#whenall), which will reject if any element of `array` rejects.
 
 If the corresponding input promise is:
 
@@ -884,6 +885,76 @@ resultsPromise = parallel(arrayOfTasks, arg1, arg2 /*, ... */);
 Run an array of tasks in "parallel".  The tasks are allowed to execute in any order, and may interleave if they are asynchronous. Each task will be called with the arguments passed to `when.parallel()`, and each may return a promise or a value.
 
 When all tasks have completed, the returned promise will resolve to an array containing the result of each task at the corresponding array position.  The returned promise will reject when any task throws or returns a rejection.
+
+## when/guard
+
+```js
+var guard, guarded;
+
+guard = require('when/guard');
+
+guarded = guard(condition, function() {
+	// .. Do important stuff
+});
+```
+
+Where:
+
+* `condition` is a concurrency limiting condition, such as [guard.n](#guardn)
+
+Limit the concurrency of a function.  Creates a new function whose concurrency is limited by `condition`.  This can be useful with operations such as [when.map](#whenmap), [when/parallel](#whenparallel), etc. that allow tasks to execute in "parallel", to limit the number which can be inflight simultanously.
+
+## Guard Conditions
+
+### `guard.n`
+
+```js
+var condition = guard.n(number);
+```
+
+Creates a condition that only allows `number` of simultaneous executions inflight.
+
+```js
+// Using when/guard with when.map to limit concurrency
+// of the mapFunc
+
+var guard, guardedMapFunc, mapped;
+
+guard = require('when/guard');
+
+// Allow only 1 inflight execution of guarded
+guardedMapFunc = guard(guard.n(1), function(item) {
+	return doAsyncOperation(item); // transform item asynchronously
+});
+
+mapped = when.map(array, guardedMapFunc);
+mapped.then(function(results) {
+	// Handle results as usual
+});
+```
+
+```js
+// Using when/guard with when/parallel to limit concurrency
+// across *all tasks*
+
+var guard, parallel, guardTask, tasks, taskResults;
+
+guard = require('when/guard');
+parallel = require('when/parallel');
+
+tasks = [/* Array of async functions to execute as tasks */];
+
+// Use bind() to create a guard that can be applied to any function
+// Only 2 tasks may execute simultaneously
+guardTask = guard.bind(null, guard.n(2));
+
+// Use guardTask to guard all the tasks.
+tasks = tasks.map(guardTask);
+
+taskResults = parallel(tasks);
+taskResults.then(function(results) {
+	// Handle results as usual
+});
 
 # Polling with promises
 
