@@ -955,6 +955,7 @@ taskResults = parallel(tasks);
 taskResults.then(function(results) {
 	// Handle results as usual
 });
+```
 
 # Polling with promises
 
