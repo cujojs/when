@@ -14,10 +14,9 @@
 (function(define) {
 define(function(require) {
 
-	var when, fn, slice;
+	var when, slice;
 
 	when = require('./when');
-	fn = require('./function');
 	slice = Array.prototype.slice;
 
 	/**
@@ -31,17 +30,19 @@ define(function(require) {
 	return function pipeline(tasks /* initialArgs... */) {
 		// Self-optimizing function to run first task with multiple
 		// args using apply, but subsequence tasks via direct invocation
-		var runTask = function(task, args) {
-			runTask = function(task, arg) {
+		var runTask = function(args, task) {
+			runTask = function(arg, task) {
 				return task(arg);
 			};
 
-			return fn.apply(task, args);
+			return task.apply(null, args);
 		};
 
-		return when.reduce(tasks, function(args, task) {
-			return runTask(task, args);
-		}, slice.call(arguments, 1));
+		return when.all(slice.call(arguments, 1)).then(function(args) {
+			return when.reduce(tasks, function(arg, task) {
+				return runTask(arg, task);
+			}, args);
+		});
 	};
 
 });
