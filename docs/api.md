@@ -483,7 +483,7 @@ Returns a promise for an array containing the same number of elements as the inp
 If the corresponding input promise is:
 
 * fulfilled, the descriptor will be: `{ state: 'fulfilled', value: <fulfillmentValue> }`
-* rejected, the descriptor will be: `{ state: 'rejected', value: <rejectionReason> }`
+* rejected, the descriptor will be: `{ state: 'rejected', reason: <rejectionReason> }`
 
 ```js
 // Process all successful results, and also log all errors
