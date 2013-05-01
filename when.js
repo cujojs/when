@@ -600,7 +600,11 @@ define(function () {
 				}
 
 				resolveOne = function(item, i) {
-					when(item, mapFunc, fallback).then(function(mapped) {
+					function indexedMapFunc(item) {
+						return mapFunc(item, i);
+					}
+
+					when(item, indexedMapFunc, fallback).then(function(mapped) {
 						results[i] = mapped;
 
 						if(!--toResolve) {

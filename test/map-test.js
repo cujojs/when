@@ -117,6 +117,18 @@ define('when.map-test', function (require) {
 					assert.equals(update, input.shift());
 				}
 			).ensure(done);
+		},
+
+		'should pass the index as the second parameter to the callback': function(done) {
+			var input = [3,4,5,6];
+			when.map(input, function(value, i) {
+				return i;
+			}).then(
+				function(results) {
+					assert.equals(results, [0, 1, 2, 3]);
+				},
+				fail
+			).ensure(done);
 		}
 	});
 
