@@ -81,6 +81,11 @@ define(function(require) {
 						}
 					}, reject, notify);
 				});
+
+				// If there are no keys, resolve immediately
+				if(!toResolve) {
+					resolve(results);
+				}
 			}
 		});
 	}
