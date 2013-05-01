@@ -241,6 +241,23 @@ promise.then(function(array) {
 promise.then(apply(variadicOnFulfilled));
 ```
 
+### inspect()
+
+```js
+var status = promise.inspect();
+```
+
+Returns a snapshot descriptor of the current state of `promise`.  This descriptor is *not live* and will not update when `promise`'s state changes.  The descriptor is an object with the following properties.  When promise is:
+
+* pending: `{ state: 'pending' }`
+* fulfilled: `{ state: 'fulfilled', value: <promise's fulfillment value> }`
+* rejected: `{ state: 'rejected', reason: <promise's rejection reason> }`
+
+While there are use cases where synchronously inspecting a promise's state can be helpful, the use of `inspect` is discouraged.  It is almost always preferable to simply use `when()` or `promise.then` to be notified when the promise fulfills or rejects.
+
+#### See also:
+* [when.settle()](#whenall) - settling an Array of promises
+
 ### always()
 
 **DEPRECATED:** Will be removed in an upcoming version
@@ -510,6 +527,7 @@ settled.then(function(descriptors) {
 
 ### See also:
 * [when.all()](#whenall) - resolving an Array of promises
+* [promise.inspect()](#inspect) - inspecting a promise's state
 
 # Object Keys
 

@@ -1,3 +1,16 @@
+### 2.1.0
+
+* New `when.settle` that settles an array of promises, regardless of whether the fulfill or reject.
+* New `when/guard` generalized concurrency guarding and limiting.
+* New `promise.inspect` for synchronously getting a snapshot of a promise's state at a particular instant.
+* Runs in [vert.x](http://vertx.io)
+* **DEPRECATED**: `onFulfilled`, `onRejected`, `onProgress` handler arguments to `when.all`, `when.any`, `when.some`.  Use the returned promise's `then()` (or `otherwise()`, `ensure()`, etc) to register handlers instead.
+	* For example, do this: `when.all(array).then(onFulfilled, onRejected)` instead of this: `when.all(array, onFulfilled, onRejected)`.  The functionality is equivalent.
+
+### 2.0.1
+
+* Account for the fact that Mocha creates a global named `process`. Thanks [Narsul](https://github.com/cujojs/when/pull/136)
+
 ### 2.0.0
 
 * Fully asynchronous resolutions.
