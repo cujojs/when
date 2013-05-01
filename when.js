@@ -600,7 +600,7 @@ define(function () {
 				}
 
 				resolveOne = function(item, i) {
-					var indexedMapFunc = function(item) {
+					function indexedMapFunc(item) {
 						return mapFunc(item, i);
 					}
 
