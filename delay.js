@@ -38,7 +38,7 @@ define(function(require) {
 
 		return when.promise(function(resolve, reject, notify) {
 			when(value, function(val) {
-				setTimeout(function() {
+				setTimer(function() {
 					resolve(val);
 				}, msec);
 			},
