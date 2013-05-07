@@ -305,7 +305,7 @@ define(function () {
 	function coerce(x) {
 		if(x instanceof Promise) {
 			return x;
-		} else if (x !== Object(x)) {
+		} else if (x !== Object(x) || !x.then) {
 			return fulfilled(x);
 		}
 
