@@ -314,7 +314,9 @@ define(function () {
 	function coerce(x) {
 		if(x instanceof Promise) {
 			return x;
-		} else if (x !== Object(x)) {
+		}
+
+		if (!(x === Object(x) && 'then' in x)) {
 			return fulfilled(x);
 		}
 
