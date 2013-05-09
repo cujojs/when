@@ -17,10 +17,10 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 
 ### 2.1.0
 
-* New [`when.settle`](docs/api.md#whensettle) that settles an array of promises, regardless of whether the fulfill or reject.
+* New [`when.settle`](docs/api.md#whensettle) that settles an array of promises
 * New [`when/guard`](docs/api.md#whenguard) generalized concurrency guarding and limiting
 * New [`promise.inspect`](docs/api.md#inspect) for synchronously getting a snapshot of a promise's state at a particular instant.
-* Significant performance improvements when resolving promises with non-primitives (Arrays, Objects, etc.)
+* Significant performance improvements when resolving promises with non-primitives (e.g. with Arrays, Objects, etc.)
 * Experimental [vert.x](http://vertx.io) support
 * **DEPRECATED**: `onFulfilled`, `onRejected`, `onProgress` handler arguments to `when.all`, `when.any`, `when.some`.  Use the returned promise's `then()` (or `otherwise()`, `ensure()`, etc) to register handlers instead.
 	* For example, do this: `when.all(array).then(onFulfilled, onRejected)` instead of this: `when.all(array, onFulfilled, onRejected)`.  The functionality is equivalent.
