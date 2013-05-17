@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/curl/0.7.3/curl-for-jQuery/curl.js"></script>
+    <script type="text/javascript">
+        curl.config({
+            packages: {
+                when: { location: '../..', main: 'when' }
+            },
+            preloads: ['when/monitor']
+        });
+
+        curl(['./unhandled-handled-later']);
+    </script>
+</head>
+<body>
+
+</body>
+</html>

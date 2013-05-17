@@ -226,7 +226,9 @@ define(function () {
 	 * @returns {Promise} promise whose fate is determine by resolver
 	 */
 	function promise(resolver) {
-		var value, handlers = [];
+		var self, value, handled, handlers = [];
+
+		self = new Promise(then, inspect);
 
 		// Call the provider resolver to seal the promise's fate
 		try {
@@ -236,7 +238,7 @@ define(function () {
 		}
 
 		// Return the promise
-		return new Promise(then, inspect);
+		return self;
 
 		/**
 		 * Register handlers for this promise.
@@ -246,6 +248,11 @@ define(function () {
 		 * @return {Promise} new Promise
 		 */
 		function then(onFulfilled, onRejected, onProgress) {
+			if (!handled && console.handledRejection) {
+				handled = true;
+				console.handledRejection(self);
+			}
+
 			return promise(function(resolve, reject, notify) {
 				handlers
 				// Call handlers later, after resolution
@@ -275,10 +282,7 @@ define(function () {
 				return;
 			}
 
-			value = coerce(val);
-			scheduleHandlers(handlers, value);
-
-			handlers = undef;
+			resolveSelf(val);
 		}
 
 		/**
@@ -286,7 +290,21 @@ define(function () {
 		 * @param {*} reason reason for the rejection
 		 */
 		function promiseReject(reason) {
-			promiseResolve(rejected(reason));
+			if(!handlers) {
+				return;
+			}
+
+			if(!handled && console.unhandledRejection) {
+				console.unhandledRejection(self, reason);
+			}
+
+			resolveSelf(rejected(reason));
+		}
+
+		function resolveSelf(x) {
+			value = coerce(x);
+			scheduleHandlers(handlers, value);
+			handlers = undef;
 		}
 
 		/**
