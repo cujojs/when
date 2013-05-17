@@ -230,6 +230,10 @@ define(function () {
 
 		self = new Promise(then, inspect);
 
+		if(console.promisePending) {
+			console.promisePending(self);
+		}
+
 		// Call the provider resolver to seal the promise's fate
 		try {
 			resolver(promiseResolve, promiseReject, promiseNotify);
@@ -280,6 +284,10 @@ define(function () {
 		function promiseResolve(val) {
 			if(!handlers) {
 				return;
+			}
+
+			if(console.promiseResolved) {
+				console.promiseResolved(self);
 			}
 
 			resolveSelf(val);

@@ -10,52 +10,80 @@
 (function(define) { 'use strict';
 define(function() {
 
-	var unhandled, interval;
+	var pending, unhandled, interval;
 
 	if(console) {
+		pending = [];
+
 		console.unhandledRejections = unhandled = [];
-		console.logUnhandled = logUnhandled;
-		console.clearUnhandled = clearUnhandled;
+		console.logUnhandledRejections = logUnhandledRejections;
+		console.clearUnhandledRejections = clearUnhandledRejections;
+
+		console.promisePending = function(promise) {
+			var err;
+			try {
+				throw new Error();
+			} catch(e) {
+				err = e;
+			}
+
+			pending.push({ promise: promise, origin: err });
+		}
+
+		console.promiseResolved = function(promise) {
+			removePromise(pending, promise);
+		}
 
 		console.unhandledRejection = function(promise, reason) {
-			unhandled.push({ timestamp: +(new Date()), promise: promise, reason: reason});
-		};
-
-		console.handledRejection = function(promise) {
-			unhandled.some(function(rec, i) {
-				if(rec.promise === promise) {
-					unhandled.splice(i, 1);
+			var rec = { timestamp: +(new Date()), promise: promise, reason: reason};
+			pending.some(function(prec, i) {
+				if(promise === prec.promise) {
+					rec.origin = prec.origin;
+					pending.splice(i, 1);
 					return true;
 				}
 			});
+
+			unhandled.push(rec);
+		};
+
+		console.handledRejection = function(promise) {
+			removePromise(unhandled, promise);
+			removePromise(pending, promise);
 		}
 
-		clearUnhandled();
+		clearUnhandledRejections();
 		start();
 
 		if (typeof process !== "undefined" && process.on) {
-			process.on("exit", logUnhandled);
+			process.on("exit", logUnhandledRejectionsIfNonEmpty);
 		}
 	}
 
 	return {
 		start: start,
 		stop: stop,
-		clearUnhandled: clearUnhandled,
-		logUnhandled: logUnhandled
+		clearUnhandled: clearUnhandledRejections,
+		logUnhandled: logUnhandledRejections
 	}
 
-	function logUnhandled() {
+	function logUnhandledRejectionsIfNonEmpty() {
+		if(unhandled.length) {
+			logUnhandledRejections();
+		}
+	}
+
+	function logUnhandledRejections() {
 		console.log(unhandled);
 	}
 
-	function clearUnhandled() {
+	function clearUnhandledRejections() {
 		unhandled.length = 0;
 	}
 
 	function start() {
 		stop();
-		interval = setInterval(logUnhandled, 1000);
+		interval = setInterval(logUnhandledRejectionsIfNonEmpty, 1000);
 	}
 
 	function stop() {
@@ -65,6 +93,15 @@ define(function() {
 
 		clearInterval(interval);
 		interval = null;
+	}
+
+	function removePromise(list, promise) {
+		list.some(function(rec, i) {
+			if(rec.promise === promise) {
+				list.splice(i, 1);
+				return true;
+			}
+		});
 	}
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
