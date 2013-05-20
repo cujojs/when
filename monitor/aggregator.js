@@ -40,7 +40,7 @@ define(function() {
 		console.unhandledRejection = function(promise, reason) {
 			var stackHolder;
 			try {
-				throw new Error();
+				throw new Error(reason && reason.message || reason);
 			} catch(e) {
 				stackHolder = e;
 			}

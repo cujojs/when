@@ -27,26 +27,59 @@ define(function(require) {
 	return aggregator;
 
 	function format(rec) {
-		var cause;
+		var cause, formatted;
+
+		formatted = {
+			promise: rec.promise,
+			reason: rec.reason,
+			createdAt: rec.createdAt,
+			rejectedAt: rec.rejectedAt
+		};
 
 		if(hasStackTraces) {
-			cause = (rec.reason && rec.reason.stack) || rec.rejectedAt.stack;
-			rec.stack = stitch(rec.createdAt.stack, cause);
+			cause = rec.reason && rec.reason.stack;
+			if(!cause) {
+				cause = rec.rejectedAt.stack;
+			}
+			formatted.stack = stitch(rec.createdAt.stack, cause);
 		}
-		return rec;
+
+		return formatted;
 	}
 
 	function stitch(s1, s2) {
-		s1 = filterStack(s1);
-		s2 = filterStack(s2);
+		var filter = aggregator.filterStack || filterStack;
+		s1 = filter(s1);
+		s2 = filter(s2);
 		return ['Unhandled rejection escaped at'].concat(s1.slice(1),'Caused by rejection at:', s2);
 	}
 
 	function filterStack(s) {
-		return s.split('\n').filter(function(line) {
-			return !/when\.js|when\/monitor\//i.test(line);
-		});
+		var conflating, stack;
+
+		conflating = false;
+		stack = s.split('\n');
+
+		return stack.slice(1).reduce(function(filtered, line) {
+			var match = /when\.js|when\/monitor\//i.test(line);
+			if(match) {
+				if(!conflating) {
+					conflating = true;
+					if(filtered.length > 1) {
+						filtered.push('\t...[promise internals]...');
+					}
+				}
+			} else {
+				if(conflating) {
+					conflating = false;
+				}
+				filtered.push(line);
+			}
+
+			return filtered;
+		}, stack.slice(0, 1));
 	}
+
 
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

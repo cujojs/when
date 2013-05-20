@@ -20,7 +20,7 @@ define(function(require) {
 	setTimeout(function() {
 		console.log('***Handling error now***');
 		p.otherwise(function() { /* handled by squelching */ });
-	}, 5000);
+	}, 1000);
 
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
