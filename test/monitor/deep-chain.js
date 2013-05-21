@@ -23,18 +23,25 @@
 
 		p = p.then(ok);
 
+		// Cause an unhandled rejection deep in the promise chain
+		// It's unhandled because after this statement, p is a
+		// rejected promise but has no onRejected handler
+		// This should be logged
 		p = p.then(reject);
 
-//		p.otherwise(ok);
+		// Some time later, handle the rejection
+		// When this happens, p suddenly becomes handled (obviously!),
+		// and this will be logged as well.
 		setTimeout(function() {
 			p.otherwise(ok);
 		}, 1100);
+
 		function ok(x) {
 			return x;
 		}
 
 		function reject(x) {
-			return when.reject(new Error('error here'));
+			return when.reject(new Error('error originates here'));
 		}
 	});
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
