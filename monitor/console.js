@@ -7,79 +7,46 @@
  * @author: Brian Cavalier
  * @author: John Hann
  */
-
 (function(define) { 'use strict';
 define(function(require) {
 
-	var aggregator, reporter, hasStackTraces;
+	var createAggregator, createReporter, aggregator, formatter, stackFilter,
+		excludeRx, filter, reporter;
 
-	aggregator = require('./aggregator');
-	reporter = require('./simpleConsoleReporter');
+	createAggregator = require('./aggregator');
+	createReporter = require('./simpleReporter');
+	formatter = require('./simpleFormatter');
+	stackFilter = require('./stackFilter');
 
-	try {
-		throw new Error();
-	} catch (e) {
-		hasStackTraces = !!e.stack;
-	}
+	excludeRx = /when\.js|when\/monitor\//i;
+	filter = stackFilter(exclude, mergePromiseFrames);
+	reporter = createReporter(formatter(filter), log);
 
-	aggregator.reporter = reporter(format);
+	aggregator = createAggregator(reporter);
+
+	publish(aggregator, console);
 
 	return aggregator;
 
-	function format(rec) {
-		var cause, formatted;
-
-		formatted = {
-			promise: rec.promise,
-			reason: rec.reason,
-			createdAt: rec.createdAt,
-			rejectedAt: rec.rejectedAt
-		};
-
-		if(hasStackTraces) {
-			cause = rec.reason && rec.reason.stack;
-			if(!cause) {
-				cause = rec.rejectedAt.stack;
-			}
-			formatted.stack = stitch(rec.createdAt.stack, cause);
-		}
-
-		return formatted;
+	function log(message, promises) {
+		console.warn(message+'\n', promises);
 	}
 
-	function stitch(s1, s2) {
-		var filter = aggregator.filterStack || filterStack;
-		s1 = filter(s1);
-		s2 = filter(s2);
-		return ['Unhandled rejection escaped at'].concat(s1.slice(1),'Caused by rejection at:', s2);
+	function mergePromiseFrames(frames) {
+		return '\t...[promise implementation]...';
 	}
 
-	function filterStack(s) {
-		var conflating, stack;
-
-		conflating = false;
-		stack = s.split('\n');
-
-		return stack.slice(1).reduce(function(filtered, line) {
-			var match = /when\.js|when\/monitor\//i.test(line);
-			if(match) {
-				if(!conflating) {
-					conflating = true;
-					if(filtered.length > 1) {
-						filtered.push('\t...[promise internals]...');
-					}
-				}
-			} else {
-				if(conflating) {
-					conflating = false;
-				}
-				filtered.push(line);
-			}
-
-			return filtered;
-		}, stack.slice(0, 1));
+	function exclude(line) {
+		return excludeRx.test(line);
 	}
 
+	function publish(aggregator, target) {
+		target.promisePending = aggregator.promisePending;
+		target.promiseResolved = aggregator.promiseResolved;
+		target.unhandledRejection = aggregator.unhandledRejection;
+		target.handledRejection = aggregator.handledRejection;
+		return target;
+	}
 
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

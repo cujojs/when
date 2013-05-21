@@ -10,18 +10,23 @@
 (function(define) { 'use strict';
 define(function() {
 
-	var promises, aggregator;
+	return function createAggregator(reporter) {
+		var promises, aggregator;
 
-	if(console) {
-		promises = [];
-
-		console.promises = {
-			report: report,
+		aggregator = {
 			reset: reset,
-			get: function() { return promises; }
-		};
+			report: report,
+			promisePending: promisePending,
+			promiseResolved: promiseResolved,
+			unhandledRejection: unhandledRejection,
+			handledRejection: handledRejection
+		}
 
-		console.promisePending = function(promise) {
+		reset();
+
+		return aggregator;
+
+		function promisePending(promise) {
 			var stackHolder;
 			try {
 				throw new Error();
@@ -32,12 +37,12 @@ define(function() {
 			promises.push({ promise: promise, timestamp: +(new Date()), createdAt: stackHolder });
 		}
 
-		console.promiseResolved = function(promise) {
+		function promiseResolved(promise) {
 			removeFromList(promises, promise);
 			report();
 		}
 
-		console.unhandledRejection = function(promise, reason) {
+		function unhandledRejection(promise, reason) {
 			var stackHolder;
 			try {
 				throw new Error(reason && reason.message || reason);
@@ -56,30 +61,17 @@ define(function() {
 			report();
 		};
 
-		console.handledRejection = function(promise) {
+		function handledRejection(promise) {
 			removeFromList(promises, promise);
 		}
 
-		reset();
-
-		if (typeof process !== "undefined" && process.on) {
-			process.on("exit", report);
+		function report() {
+			reporter(promises);
 		}
-	}
 
-	aggregator = {
-		reset: reset,
-		report: report
-	}
-
-	return aggregator;
-
-	function report() {
-		aggregator.reporter && aggregator.reporter(promises);
-	}
-
-	function reset() {
-		promises = [];
+		function reset() {
+			promises = [];
+		}
 	}
 
 	function removeFromList(list, promise) {

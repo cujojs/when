@@ -7,11 +7,10 @@
  * @author: Brian Cavalier
  * @author: John Hann
  */
-
 (function(define) { 'use strict';
 define(function() {
 
-	return function simpleReporter(format) {
+	return function simpleReporter(format, log) {
 		var timeout;
 
 		return function(promises) {
@@ -24,24 +23,15 @@ define(function() {
 		};
 
 		function logPromises(promises) {
-			var pending, rejected;
-
-			pending = [];
-
 			var rejected = promises.reduce(function(rejected, rec) {
-				var formatted = format(rec);
-
 				if(rec.rejectedAt) {
-					rejected.push(formatted);
-				} else {
-					pending.push(formatted);
+					rejected.push(format(rec));
 				}
 
 				return rejected;
 			}, []);
 
-			console.warn('[when] Pending, unobserved promises', pending);
-			console.warn('[when] Unhandled, rejected promises', rejected);
+			log('[when] Unhandled, rejected promises', rejected);
 		}
 	}
 
