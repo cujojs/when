@@ -34,7 +34,11 @@ define(function() {
 				stackHolder = e;
 			}
 
-			promises.push({ promise: promise, timestamp: +(new Date()), createdAt: stackHolder });
+			promises.push({
+				promise: promise,
+				timestamp: Date.now(),
+				createdAt: stackHolder
+			});
 		}
 
 		function promiseResolved(promise) {

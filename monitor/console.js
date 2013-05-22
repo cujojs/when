@@ -28,8 +28,8 @@ define(function(require) {
 
 	return aggregator;
 
-	function log(message, promises) {
-		console.warn(message+'\n', promises);
+	function log(promises) {
+		console.warn('[promises] Unhandled, rejected promises\n', promises);
 	}
 
 	function mergePromiseFrames(frames) {

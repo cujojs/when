@@ -17,22 +17,20 @@ define(function() {
 			if(timeout == null) {
 				timeout = setTimeout(function() {
 					timeout = null;
-					logPromises(promises);
+					log(filterAndFormat(format, promises));
 				}, 250);
 			}
 		};
+	}
 
-		function logPromises(promises) {
-			var rejected = promises.reduce(function(rejected, rec) {
-				if(rec.rejectedAt) {
-					rejected.push(format(rec));
-				}
+	function filterAndFormat(format, promises) {
+		return promises.reduce(function(rejected, rec) {
+			if(rec.rejectedAt) {
+				rejected.push(format(rec));
+			}
 
-				return rejected;
-			}, []);
-
-			log('[when] Unhandled, rejected promises', rejected);
-		}
+			return rejected;
+		}, []);
 	}
 
 });
