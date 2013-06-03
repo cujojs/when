@@ -254,7 +254,7 @@ define(function () {
 		function then(onFulfilled, onRejected, onProgress) {
 			if (!handled && console.handledRejection) {
 				handled = true;
-				console.handledRejection(self);
+				console.promiseObserved(self);
 			}
 
 			return promise(function(resolve, reject, notify) {

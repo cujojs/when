@@ -44,7 +44,7 @@ define(function(require) {
 		target.promisePending = aggregator.promisePending;
 		target.promiseResolved = aggregator.promiseResolved;
 		target.unhandledRejection = aggregator.unhandledRejection;
-		target.handledRejection = aggregator.handledRejection;
+		target.promiseObserved = aggregator.promiseObserved;
 		return target;
 	}
 

@@ -19,7 +19,7 @@ define(function() {
 			promisePending: promisePending,
 			promiseResolved: promiseResolved,
 			unhandledRejection: unhandledRejection,
-			handledRejection: handledRejection
+			promiseObserved: promiseObserved
 		}
 
 		reset();
@@ -65,7 +65,7 @@ define(function() {
 			report();
 		};
 
-		function handledRejection(promise) {
+		function promiseObserved(promise) {
 			removeFromList(promises, promise);
 		}
 
