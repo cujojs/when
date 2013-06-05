@@ -252,7 +252,7 @@ define(function () {
 		 * @return {Promise} new Promise
 		 */
 		function then(onFulfilled, onRejected, onProgress) {
-			if (!handled && console.handledRejection) {
+			if (!handled && console.promiseObserved) {
 				handled = true;
 				console.promiseObserved(self);
 			}
@@ -286,11 +286,7 @@ define(function () {
 				return;
 			}
 
-			if(console.promiseResolved) {
-				console.promiseResolved(self);
-			}
-
-			resolveSelf(val);
+			resolveSelf(coerce, val);
 		}
 
 		/**
@@ -302,17 +298,24 @@ define(function () {
 				return;
 			}
 
-			if(!handled && console.unhandledRejection) {
-				console.unhandledRejection(self, reason);
-			}
-
-			resolveSelf(rejected(reason));
+			resolveSelf(rejected, reason);
 		}
 
-		function resolveSelf(x) {
+		function resolveSelf(coerce, x) {
 			value = coerce(x);
 			scheduleHandlers(handlers, value);
 			handlers = undef;
+
+			if(!handled && console.unhandledRejection) {
+				value.then(
+					function() {
+						console.promiseResolved(self);
+					},
+					function () {
+						console.unhandledRejection(self, x);
+					}
+				);
+			}
 		}
 
 		/**

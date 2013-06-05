@@ -32,7 +32,7 @@ define(function(require) {
 		console.warn('[promises] Unhandled, rejected promises\n', promises);
 	}
 
-	function mergePromiseFrames(frames) {
+	function mergePromiseFrames(/* frames */) {
 		return '\t...[promise implementation]...';
 	}
 

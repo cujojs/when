@@ -38,7 +38,7 @@ define(function() {
 			}
 
 			return formatted;
-		}
+		};
 
 		function stitch(escaped, rejected) {
 			escaped = filterStack(escaped.split('\n').slice(1));
@@ -46,6 +46,6 @@ define(function() {
 			return ['Unhandled rejection escaped at']
 				.concat(escaped, 'Caused by rejection at:', rejected);
 		}
-	}
+	};
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));

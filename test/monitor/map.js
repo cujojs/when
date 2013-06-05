@@ -13,7 +13,9 @@
 
 		var when = require('../../when');
 
-		when.map([1, when.reject(new Error('fail1'))], function(x){return x;});
+		var p = when.reject(new Error('fail1'))
+
+		when.map([p], function(x){return x;});
 
 	});
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

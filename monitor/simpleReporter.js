@@ -21,7 +21,7 @@ define(function() {
 				}, 250);
 			}
 		};
-	}
+	};
 
 	function filterAndFormat(format, promises) {
 		return promises.reduce(function(rejected, rec) {

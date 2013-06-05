@@ -20,7 +20,7 @@ define(function() {
 			promiseResolved: promiseResolved,
 			unhandledRejection: unhandledRejection,
 			promiseObserved: promiseObserved
-		}
+		};
 
 		reset();
 
@@ -54,7 +54,7 @@ define(function() {
 				stackHolder = e;
 			}
 
-			promises.some(function(rec, i) {
+			promises.some(function(rec) {
 				if(promise === rec.promise) {
 					rec.reason = reason;
 					rec.rejectedAt = stackHolder;
@@ -63,7 +63,7 @@ define(function() {
 			});
 
 			report();
-		};
+		}
 
 		function promiseObserved(promise) {
 			removeFromList(promises, promise);
@@ -76,7 +76,7 @@ define(function() {
 		function reset() {
 			promises = [];
 		}
-	}
+	};
 
 	function removeFromList(list, promise) {
 		list.some(function(rec, i) {
