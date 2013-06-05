@@ -24,7 +24,7 @@ define(function() {
 
 			formatted = {
 				promise: rec.promise,
-				reason: (rec.reason).toString()
+				reason: rec.reason && rec.reason.toString()
 			};
 
 			if(hasStackTraces) {
@@ -39,10 +39,14 @@ define(function() {
 		};
 
 		function stitch(escaped, rejected) {
-			escaped = filterStack(escaped.split('\n').slice(1));
-			rejected = filterStack(rejected.split('\n'));
+			escaped = filterStack(toArray(escaped).slice(1));
+			rejected = filterStack(toArray(rejected));
 			return [unhandledMsg]
 				.concat(escaped, reasonMsg, rejected);
+		}
+
+		function toArray(stack) {
+			return stack.split('\n');
 		}
 	};
 });

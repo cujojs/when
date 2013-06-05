@@ -36,7 +36,7 @@ define(function() {
 							excluded = null;
 						}
 					}
-					filtered.push('\t' + line);
+					filtered.push(line);
 				}
 
 				return filtered;

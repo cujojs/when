@@ -18,8 +18,8 @@ define(function(require) {
 	formatter = require('./simpleFormatter');
 	stackFilter = require('./stackFilter');
 
-	rejectionMsg = 'Unhandled rejection escaped at:';
-	reasonMsg = 'Caused by reason:';
+	rejectionMsg = '--- Unhandled rejection escaped at ---';
+	reasonMsg = '--- Caused by reason ---';
 
 	excludeRx = /when\.js|when\/monitor\//i;
 	filter = stackFilter(exclude, mergePromiseFrames);
@@ -36,7 +36,7 @@ define(function(require) {
 	}
 
 	function mergePromiseFrames(/* frames */) {
-		return '\t...[promise implementation]...';
+		return '  ...[promise implementation]...';
 	}
 
 	function exclude(line) {

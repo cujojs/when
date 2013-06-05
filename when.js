@@ -230,8 +230,8 @@ define(function () {
 
 		self = new Promise(then, inspect);
 
-		if(console.promisePending) {
-			console.promisePending(self);
+		if(monitor.promisePending) {
+			monitor.promisePending(self);
 		}
 
 		// Call the provider resolver to seal the promise's fate
@@ -252,9 +252,9 @@ define(function () {
 		 * @return {Promise} new Promise
 		 */
 		function then(onFulfilled, onRejected, onProgress) {
-			if (!handled && console.promiseObserved) {
+			if (!handled && monitor.promiseObserved) {
 				handled = true;
-				console.promiseObserved(self);
+				monitor.promiseObserved(self);
 			}
 
 			return promise(function(resolve, reject, notify) {
@@ -306,13 +306,13 @@ define(function () {
 			scheduleHandlers(handlers, value);
 			handlers = undef;
 
-			if(!handled && console.unhandledRejection) {
+			if(!handled && monitor.unhandledRejection) {
 				value.then(
 					function() {
-						console.promiseResolved(self);
+						monitor.promiseResolved(self);
 					},
 					function () {
-						console.unhandledRejection(self, x);
+						monitor.unhandledRejection(self, x);
 					}
 				);
 			}
@@ -723,7 +723,7 @@ define(function () {
 	//
 
 	var reduceArray, slice, fcall, nextTick, handlerQueue,
-		setTimeout, funcProto, call, arrayProto, undef;
+		setTimeout, funcProto, call, arrayProto, monitor, undef;
 
 	//
 	// Shared handler queue processing
@@ -771,6 +771,7 @@ define(function () {
 	// Capture function and array utils
 	//
 	/*global setImmediate,process,vertx*/
+	monitor = typeof console != 'undefined' ? console : {};
 
 	// capture setTimeout to avoid being caught by fake timers used in time based tests
 	setTimeout = global.setTimeout;
