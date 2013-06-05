@@ -34,7 +34,7 @@
 		// and this will be logged as well.
 		setTimeout(function() {
 			p.otherwise(ok);
-		}, 1100);
+		}, 1337);
 
 		function ok(x) {
 			return x;

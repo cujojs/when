@@ -32,22 +32,28 @@ define(function(require) {
 	return aggregator;
 
 	function log(promises) {
-		console.warn('[promises] Unhandled, rejected promises\n', promises);
+		if(promises.length) {
+			console.warn('[promises] Unhandled rejections\n', promises);
+		} else {
+			console.warn('[promises] All unhandled rejections have been handled');
+		}
 	}
 
 	function mergePromiseFrames(/* frames */) {
-		return '  ...[promise implementation]...';
+		return '  ...[filtered frames]...';
 	}
 
 	function exclude(line) {
-		return excludeRx.test(line);
+		var rx = console.promiseStackFilter || excludeRx;
+		return rx.test(line);
 	}
 
 	function publish(aggregator, target) {
-		target.promisePending = aggregator.promisePending;
-		target.promiseResolved = aggregator.promiseResolved;
-		target.unhandledRejection = aggregator.unhandledRejection;
+		target.reportUnhandled = aggregator.report;
 		target.promiseObserved = aggregator.promiseObserved;
+		target.promisePending = aggregator.promisePending;
+		target.promiseFulfilled = aggregator.promiseFulfilled;
+		target.unhandledRejection = aggregator.unhandledRejection;
 		return target;
 	}
 

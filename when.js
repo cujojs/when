@@ -219,19 +219,23 @@ define(function () {
 		}
 	}
 
+	function promise(resolver) {
+		return _promise(resolver);
+	}
+
 	/**
 	 * Creates a new promise whose fate is determined by resolver.
 	 * @private (for now)
 	 * @param {function} resolver function(resolve, reject, notify)
 	 * @returns {Promise} promise whose fate is determine by resolver
 	 */
-	function promise(resolver) {
+	function _promise(resolver, parent) {
 		var self, value, handled, handlers = [];
 
 		self = new Promise(then, inspect);
 
 		if(monitor.promisePending) {
-			monitor.promisePending(self);
+			monitor.promisePending(self, parent);
 		}
 
 		// Call the provider resolver to seal the promise's fate
@@ -252,12 +256,7 @@ define(function () {
 		 * @return {Promise} new Promise
 		 */
 		function then(onFulfilled, onRejected, onProgress) {
-			if (!handled && monitor.promiseObserved) {
-				handled = true;
-				monitor.promiseObserved(self);
-			}
-
-			return promise(function(resolve, reject, notify) {
+			var next = _promise(function(resolve, reject, notify) {
 				handlers
 				// Call handlers later, after resolution
 				? handlers.push(function(value) {
@@ -269,7 +268,14 @@ define(function () {
 					value.then(onFulfilled, onRejected, onProgress)
 						.then(resolve, reject, notify);
 				});
-			});
+			}, self);
+
+			if (!handled && monitor.promiseObserved) {
+				handled = true;
+				monitor.promiseObserved(self);
+			}
+
+			return next;
 		}
 
 		function inspect() {
@@ -308,12 +314,8 @@ define(function () {
 
 			if(!handled && monitor.unhandledRejection) {
 				value.then(
-					function() {
-						monitor.promiseResolved(self);
-					},
-					function () {
-						monitor.unhandledRejection(self, x);
-					}
+					function() { monitor.promiseFulfilled(self); },
+					function() { monitor.unhandledRejection(self, x); }
 				);
 			}
 		}
