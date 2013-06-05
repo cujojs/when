@@ -9,6 +9,7 @@
  */
 (function(define) { 'use strict';
 define(function() {
+	/*global setTimeout*/
 
 	return function simpleReporter(format, log) {
 		var timeout;
