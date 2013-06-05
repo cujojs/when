@@ -55,7 +55,7 @@ define(function() {
 		}
 
 		function stitch(escaped, jumps, rejected) {
-			escaped = filterStack(toArray(escaped).slice(1));
+			escaped = filterStack(toArray(escaped)).slice(1);
 			rejected = filterStack(toArray(rejected));
 			return [unhandledMsg]
 				.concat(escaped, jumps, reasonMsg, rejected);

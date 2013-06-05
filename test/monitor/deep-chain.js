@@ -17,6 +17,7 @@
 			return when.resolve(123);
 		}
 
+		console.log('*** Creating deep promise rejection chain ***');
 		var p = f1();
 
 		p = p.then(ok);
@@ -33,6 +34,7 @@
 		// When this happens, p suddenly becomes handled (obviously!),
 		// and this will be logged as well.
 		setTimeout(function() {
+			console.log('*** handling rejection ***');
 			p.otherwise(ok);
 		}, 1337);
 
