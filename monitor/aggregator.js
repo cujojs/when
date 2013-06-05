@@ -71,6 +71,7 @@ define(function() {
 
 		function report() {
 			reporter(promises);
+			return promises;
 		}
 
 		function reset() {

@@ -18,15 +18,13 @@ define(function() {
 		hasStackTraces = !!e.stack;
 	}
 
-	return function(filterStack) {
+	return function(filterStack, unhandledMsg, reasonMsg) {
 		return function format(rec) {
 			var cause, formatted;
 
 			formatted = {
 				promise: rec.promise,
-				reason: rec.reason,
-				createdAt: rec.createdAt,
-				rejectedAt: rec.rejectedAt
+				reason: (rec.reason).toString()
 			};
 
 			if(hasStackTraces) {
@@ -43,8 +41,8 @@ define(function() {
 		function stitch(escaped, rejected) {
 			escaped = filterStack(escaped.split('\n').slice(1));
 			rejected = filterStack(rejected.split('\n'));
-			return ['Unhandled rejection escaped at']
-				.concat(escaped, 'Caused by rejection at:', rejected);
+			return [unhandledMsg]
+				.concat(escaped, reasonMsg, rejected);
 		}
 	};
 });

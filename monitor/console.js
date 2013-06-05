@@ -11,16 +11,19 @@
 define(function(require) {
 
 	var createAggregator, createReporter, aggregator, formatter, stackFilter,
-		excludeRx, filter, reporter;
+		excludeRx, filter, reporter, rejectionMsg, reasonMsg;
 
 	createAggregator = require('./aggregator');
 	createReporter = require('./simpleReporter');
 	formatter = require('./simpleFormatter');
 	stackFilter = require('./stackFilter');
 
+	rejectionMsg = 'Unhandled rejection escaped at:';
+	reasonMsg = 'Caused by reason:';
+
 	excludeRx = /when\.js|when\/monitor\//i;
 	filter = stackFilter(exclude, mergePromiseFrames);
-	reporter = createReporter(formatter(filter), log);
+	reporter = createReporter(formatter(filter, rejectionMsg, reasonMsg), log);
 
 	aggregator = createAggregator(reporter);
 
