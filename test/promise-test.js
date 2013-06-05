@@ -660,6 +660,38 @@ define('when/promise-test', function (require) {
 			}
 		},
 
+		'both': {
+			'should return a promise': function () {
+				assert.isFunction(defer().promise.both().then);
+			},
+
+			'should register callback as callback': function (done) {
+				var d = when.defer();
+
+				d.promise.both(
+					function(err, val) {
+						assert.equals(val, 1);
+						done();
+					}
+				);
+
+				d.resolve(1);
+			},
+
+			'should register callback as errback': function (done) {
+				var d = when.defer();
+
+				d.promise.both(
+					function(err) {
+						assert.equals(err, 1);
+						done();
+					}
+				);
+
+				d.reject(1);
+			}
+		},
+
 		'yield': {
 			'should return a promise': function() {
 				assert.isFunction(defer().promise.yield().then);

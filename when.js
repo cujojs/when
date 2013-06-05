@@ -96,6 +96,21 @@ define(function () {
 		},
 
 		/**
+		 * Calls combinedCallback with (reason, value) on either fulfillment or
+		 * rejection.
+		 * @param  {function} combinedCallback handler to be called on either
+		 * fulfillment or rejection.
+		 * @return {Promise}
+		 */
+		both: function (combinedCallback) {
+			return this.then(success, combinedCallback);
+
+			function success(value) {
+				return combinedCallback(null, value);
+			}
+		},
+
+		/**
 		 * Shortcut for .then(function() { return value; })
 		 * @param  {*} value
 		 * @return {Promise} a promise that:
