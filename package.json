@@ -51,7 +51,7 @@
 	},
 	"scripts": {
 		"test": "jshint . && buster test -e node && promises-aplus-tests test/promises-aplus-adapter.js",
-		"ci": "npm test && sauceme",
+		"ci": "npm test",
 		"start": "buster static -e browser"
 	}
 }
