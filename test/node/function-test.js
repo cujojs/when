@@ -273,6 +273,270 @@ define('when/node/function-test', function (require) {
 					}, fail).ensure(done);
 				}
 			}
+		},
+
+		'bindCallback': {
+			'should return a promise': function () {
+				var deferred = when.defer();
+
+				function callback() {}
+
+				assert.isFunction(nodefn.bindCallback(deferred.promise, callback).then);
+			},
+
+			'should register callback as callback': function (done) {
+				var deferred = when.defer();
+
+				function callback(err, val) {
+					assert.equals(val, 1);
+				}
+
+				nodefn.bindCallback(
+					deferred.promise,
+					callback
+				).ensure(done);
+
+				deferred.resolve(1);
+			},
+
+			'should register callback as errback': function (done) {
+				var deferred = when.defer();
+
+				function callback(err) {
+					assert.equals(err, 1);
+				}
+
+				nodefn.bindCallback(
+					deferred.promise,
+					callback
+				).ensure(done);
+
+				deferred.reject(1);
+			},
+
+			'should handle null values': function (done) {
+				var deferred = when.defer();
+
+				nodefn.bindCallback(
+					deferred.promise,
+					null
+				).then(function (value) {
+					assert.equals(value, 1);
+				}, fail).ensure(done);
+
+				deferred.resolve(1);
+			},
+
+			'returned promise': {
+				'should be fulfilled with the callback return value': {
+					'when the original is fulfilled': function (done) {
+						var deferred = when.defer();
+
+						function callback(err, val) {
+							assert.equals(val, 1);
+							return 2;
+						}
+
+						nodefn.bindCallback(
+							deferred.promise,
+							callback
+						).then(function (value) {
+							assert.equals(value, 2);
+						}, fail).ensure(done);
+
+						deferred.resolve(1);
+					},
+
+					'when the original is rejected': function (done) {
+						var deferred = when.defer();
+
+						function callback(err) {
+							assert.equals(err, 1);
+							return 2;
+						}
+
+						nodefn.bindCallback(
+							deferred.promise,
+							callback
+						).then(function (value) {
+							assert.equals(value, 2);
+						}, fail).ensure(done);
+
+						deferred.reject(1);
+					}
+				},
+
+				'should be rejected with any error thrown in the callback': {
+					'when the original is fulfilled': function (done) {
+						var deferred = when.defer();
+
+						function callback(err, val) {
+							assert.equals(val, 1);
+							throw 2;
+						}
+
+						nodefn.bindCallback(
+							deferred.promise,
+							callback
+						).then(fail, function (reason) {
+							assert.equals(reason, 2);
+						}).ensure(done);
+
+						deferred.resolve(1);
+					},
+
+					'when the original is rejected': function (done) {
+						var deferred = when.defer();
+
+						function callback(err) {
+							assert.equals(err, 1);
+							throw 2;
+						}
+
+						nodefn.bindCallback(
+							deferred.promise,
+							callback
+						).then(fail, function (reason) {
+							assert.equals(reason, 2);
+						}).ensure(done);
+
+						deferred.reject(1);
+					}
+				}
+			}
+		},
+
+		'liftCallback': {
+			'should return a function': function () {
+				function callback() {}
+
+				assert.isFunction(nodefn.liftCallback(callback));
+			},
+
+			'wrapped callback': {
+				'should return a promise': function () {
+					var deferred = when.defer();
+
+					function callback() {}
+
+					var wrapped = nodefn.liftCallback(callback);
+
+					assert.isFunction(wrapped(deferred.promise).then);
+				},
+
+				'should register callback as callback': function (done) {
+					var deferred = when.defer();
+
+					function callback(err, val) {
+						assert.equals(val, 1);
+					}
+
+					var wrapped = nodefn.liftCallback(callback);
+
+					wrapped(deferred.promise).ensure(done);
+
+					deferred.resolve(1);
+				},
+
+				'should register callback as errback': function (done) {
+					var deferred = when.defer();
+
+					function callback(err) {
+						assert.equals(err, 1);
+					}
+
+					var wrapped = nodefn.liftCallback(callback);
+
+					wrapped(deferred.promise).ensure(done);
+
+					deferred.reject(1);
+				},
+
+				'should handle null values': function (done) {
+					var deferred = when.defer();
+					var wrapped = nodefn.liftCallback(null);
+
+					wrapped(deferred.promise).then(function (value) {
+						assert.equals(value, 1);
+					}, fail).ensure(done);
+
+					deferred.resolve(1);
+				},
+
+				'returned promise': {
+					'should be fulfilled with the callback return value': {
+						'when the original is fulfilled': function (done) {
+							var deferred = when.defer();
+
+							function callback(err, val) {
+								assert.equals(val, 1);
+								return 2;
+							}
+
+							var wrapped = nodefn.liftCallback(callback);
+
+							wrapped(deferred.promise).then(function (value) {
+								assert.equals(value, 2);
+							}, fail).ensure(done);
+
+							deferred.resolve(1);
+						},
+
+						'when the original is rejected': function (done) {
+							var deferred = when.defer();
+
+							function callback(err) {
+								assert.equals(err, 1);
+								return 2;
+							}
+
+							var wrapped = nodefn.liftCallback(callback);
+
+							wrapped(deferred.promise).then(function (value) {
+								assert.equals(value, 2);
+							}, fail).ensure(done);
+
+							deferred.reject(1);
+						}
+					},
+
+					'should be rejected with any error thrown in the callback': {
+						'when the original is fulfilled': function (done) {
+							var deferred = when.defer();
+
+							function callback(err, val) {
+								assert.equals(val, 1);
+								throw 2;
+							}
+
+							var wrapped = nodefn.liftCallback(callback);
+
+							wrapped(deferred.promise).then(fail, function (reason) {
+								assert.equals(reason, 2);
+							}).ensure(done);
+
+							deferred.resolve(1);
+						},
+
+						'when the original is rejected': function (done) {
+							var deferred = when.defer();
+
+							function callback(err) {
+								assert.equals(err, 1);
+								throw 2;
+							}
+
+							var wrapped = nodefn.liftCallback(callback);
+
+							wrapped(deferred.promise).then(fail, function (reason) {
+								assert.equals(reason, 2);
+							}).ensure(done);
+
+							deferred.reject(1);
+						}
+					}
+				}
+			}
 		}
 	});
 
