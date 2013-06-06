@@ -58,6 +58,8 @@ define(function(require) {
 		TypeError: 1
 	};
 
+	warn('when/debug is deprecated and will be removed. Use when/monitor/console instead');
+
 	/**
 	 * Replacement for when() that sets up debug logging on the
 	 * returned promise.
