@@ -11,7 +11,7 @@
 define(function(require) {
 
 	var createAggregator, throttleReporter, simpleReporter, aggregator,
-		formatter, stackFilter, excludeRx, filter, reporter,
+		formatter, stackFilter, excludeRx, filter, reporter, logger,
 		rejectionMsg, reasonMsg;
 
 	createAggregator = require('./aggregator');
@@ -19,27 +19,20 @@ define(function(require) {
 	simpleReporter = require('./simpleReporter');
 	formatter = require('./simpleFormatter');
 	stackFilter = require('./stackFilter');
+	logger = require('./consoleGroupLogger');
 
 	rejectionMsg = '--- Unhandled rejection escaped at ---';
 	reasonMsg = '--- Caused by reason ---';
 
 	excludeRx = /when\.js|when\/monitor\//i;
 	filter = stackFilter(exclude, mergePromiseFrames);
-	reporter = simpleReporter(formatter(filter, rejectionMsg, reasonMsg), log);
+	reporter = simpleReporter(formatter(filter, rejectionMsg, reasonMsg), logger);
 
 	aggregator = createAggregator(throttleReporter(250, reporter));
 
 	publish(aggregator, console);
 
 	return aggregator;
-
-	function log(promises) {
-		if(promises.length) {
-			console.warn('[promises] Unhandled rejections\n', promises);
-		} else {
-			console.warn('[promises] All unhandled rejections have been handled');
-		}
-	}
 
 	function mergePromiseFrames(/* frames */) {
 		return '  ...[filtered frames]...';
