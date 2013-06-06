@@ -9,17 +9,32 @@
  */
 (function(define) { 'use strict';
 define(function() {
-	/*global setTimeout*/
 
+	/**
+	 * Creates a simple promise monitor reporter that filters out all
+	 * but unhandled rejections, formats them using the supplied
+	 * formatter, and then sends the results to the supplied log
+	 * functions
+	 * @param {function} format formats a single promise monitor
+	 *  record for output
+	 * @param {function} log logging function to which all unhandled
+	 *  rejections will be passed.
+	 * @return reporter functions
+	 */
 	return function simpleReporter(format, log) {
-		var timeout;
+		var len = 0;
 
 		return function(promises) {
-			if(timeout == null) {
-				timeout = setTimeout(function() {
-					timeout = null;
-					log(filterAndFormat(format, promises));
-				}, 250);
+			promises = filterAndFormat(format, promises);
+
+			if (len === 0 && promises.length === 0) {
+				return;
+			}
+
+			try {
+				log(promises);
+			} finally {
+				len = promises.length;
 			}
 		};
 	};

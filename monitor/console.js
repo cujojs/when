@@ -10,11 +10,13 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	var createAggregator, createReporter, aggregator, formatter, stackFilter,
-		excludeRx, filter, reporter, rejectionMsg, reasonMsg;
+	var createAggregator, throttleReporter, simpleReporter, aggregator,
+		formatter, stackFilter, excludeRx, filter, reporter,
+		rejectionMsg, reasonMsg;
 
 	createAggregator = require('./aggregator');
-	createReporter = require('./simpleReporter');
+	throttleReporter = require('./throttledReporter');
+	simpleReporter = require('./simpleReporter');
 	formatter = require('./simpleFormatter');
 	stackFilter = require('./stackFilter');
 
@@ -23,9 +25,9 @@ define(function(require) {
 
 	excludeRx = /when\.js|when\/monitor\//i;
 	filter = stackFilter(exclude, mergePromiseFrames);
-	reporter = createReporter(formatter(filter, rejectionMsg, reasonMsg), log);
+	reporter = simpleReporter(formatter(filter, rejectionMsg, reasonMsg), log);
 
-	aggregator = createAggregator(reporter);
+	aggregator = createAggregator(throttleReporter(250, reporter));
 
 	publish(aggregator, console);
 
