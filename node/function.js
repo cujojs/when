@@ -23,7 +23,9 @@ define(function(require) {
 		call: call,
 		lift: lift,
 		bind: lift, // DEPRECATED alias for lift
-		createCallback: createCallback
+		createCallback: createCallback,
+		bindCallback: bindCallback,
+		liftCallback: liftCallback
 	};
 
 	/**
@@ -167,6 +169,63 @@ define(function(require) {
 			} else {
 				resolver.resolve(value);
 			}
+		};
+	}
+
+	/**
+	 * Attaches a node-style callback to a promise, ensuring the callback is
+	 * called for either fulfillment or rejection. Returns a new Promise that is
+	 * fulfilled with the return value of the callback and rejected with any error
+	 * thrown inside the callback.
+	 *
+	 * @example
+	 *	var deferred = when.defer();
+	 *
+	 *	function callback(err, value) {
+	 *		// Handle err or use value
+	 *	}
+	 *
+	 *	bindCallback(deferred.promise, callback);
+	 *
+	 *	deferred.resolve('interesting value');
+	 *
+	 * @param {Promise} promise The promise to be attached to.
+	 * @param {Function} callback The node-style callback to attach.
+	 * @returns {Promise} new Promise
+	 */
+	function bindCallback(promise, callback) {
+		return when(promise, callback && success, callback);
+
+		function success(value) {
+			return callback(null, value);
+		}
+	}
+
+	/**
+	 * Takes a node-style callback and returns new function that accepts a
+	 * promise, calling the original callback when the promise is either
+	 * fulfilled or rejected with the appropriate arguments.
+	 *
+	 * @example
+	 *	var deferred = when.defer();
+	 *
+	 *	function callback(err, value) {
+	 *		// Handle err or use value
+	 *	}
+	 *
+	 *	var wrapped = liftCallback(callback);
+	 *
+	 *	// `wrapped` can now be passed around at will
+	 *	wrapped(deferred.promise);
+	 *
+	 *	deferred.resolve('interesting value');
+	 *
+	 * @param {Function} callback The node-style callback to wrap.
+	 * @returns {Function} The wrapped function.
+	 */
+	function liftCallback(callback) {
+		return function(promise) {
+			return bindCallback(promise, callback);
 		};
 	}
 });
