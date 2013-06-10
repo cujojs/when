@@ -16,6 +16,8 @@ define(function () {
 
 	// Public API
 
+	when.promise   = promise;    // Create a pending promise
+
 	when.defer     = defer;      // Create a deferred
 	when.resolve   = resolve;    // Create a resolved promise
 	when.reject    = reject;     // Create a rejected promise
@@ -32,7 +34,6 @@ define(function () {
 
 	when.isPromise = isPromise;  // Determine if a thing is a promise
 
-	when.promise   = promise;    // EXPERIMENTAL: May change. Use at your own risk
 
 	/**
 	 * Register an observer for a promise or immediate value.
@@ -219,18 +220,25 @@ define(function () {
 		}
 	}
 
+	/**
+	 * Creates a new promise whose fate is determined by resolver.
+	 * @param {function} resolver function(resolve, reject, notify)
+	 * @returns {Promise} promise whose fate is determine by resolver
+	 */
 	function promise(resolver) {
 		return _promise(resolver);
 	}
 
 	/**
-	 * Creates a new promise whose fate is determined by resolver.
-	 * @private (for now)
+	 * Creates a new promise, linked to parent, whose fate is determined
+	 * by resolver.
 	 * @param {function} resolver function(resolve, reject, notify)
+	 * @param {Promise} parent promise from which this new promise is begotten
 	 * @returns {Promise} promise whose fate is determine by resolver
+	 * @private
 	 */
 	function _promise(resolver, parent) {
-		var self, value, handled, handlers = [];
+		var self, value, observed, handlers = [];
 
 		self = new Promise(then, inspect);
 
@@ -257,21 +265,19 @@ define(function () {
 		 */
 		function then(onFulfilled, onRejected, onProgress) {
 			var next = _promise(function(resolve, reject, notify) {
-				handlers
-				// Call handlers later, after resolution
-				? handlers.push(function(value) {
-					value.then(onFulfilled, onRejected, onProgress)
+				// if not resolved, push onto handlers, otherwise execute asap
+				// but not in the current stack
+				handlers ? handlers.push(run) : enqueue(function() { run(value); });
+
+				function run(p) {
+					p.then(onFulfilled, onRejected, onProgress)
 						.then(resolve, reject, notify);
-				})
-				// Call handlers soon, but not in the current stack
-				: enqueue(function() {
-					value.then(onFulfilled, onRejected, onProgress)
-						.then(resolve, reject, notify);
-				});
+				}
+
 			}, self);
 
-			if (!handled && monitor.promiseObserved) {
-				handled = true;
+			if (!observed && monitor.promiseObserved) {
+				observed = true;
 				monitor.promiseObserved(self);
 			}
 
@@ -312,7 +318,7 @@ define(function () {
 			scheduleHandlers(handlers, value);
 			handlers = undef;
 
-			if(!handled && monitor.unhandledRejection) {
+			if(!observed && monitor.unhandledRejection) {
 				value.then(
 					function() { monitor.promiseFulfilled(self); },
 					function() { monitor.unhandledRejection(self, x); }
