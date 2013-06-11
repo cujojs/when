@@ -23,6 +23,7 @@ define(function() {
 			var cause, formatted;
 
 			formatted = {
+				reason: rec.reason,
 				message: rec.reason && rec.reason.toString()
 			};
 

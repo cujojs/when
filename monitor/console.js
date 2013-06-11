@@ -19,7 +19,7 @@ define(function(require) {
 	simpleReporter = require('./simpleReporter');
 	formatter = require('./simpleFormatter');
 	stackFilter = require('./stackFilter');
-	logger = require('./consoleGroupLogger');
+	logger = require('./logger/consoleGroup');
 
 	rejectionMsg = '--- Unhandled rejection escaped at ---';
 	reasonMsg = '--- Caused by reason ---';
