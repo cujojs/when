@@ -298,7 +298,16 @@ define(function () {
 				return;
 			}
 
-			resolveSelf(coerce, val);
+			value = coerce(val);
+			scheduleHandlers(handlers, value);
+			handlers = undef;
+
+			if (!observed && monitor.unhandledRejection) {
+				value.then(
+					function () { monitor.promiseFulfilled(self); },
+					function (r) { monitor.unhandledRejection(self, r); }
+				);
+			}
 		}
 
 		/**
@@ -306,24 +315,7 @@ define(function () {
 		 * @param {*} reason reason for the rejection
 		 */
 		function promiseReject(reason) {
-			if(!handlers) {
-				return;
-			}
-
-			resolveSelf(rejected, reason);
-		}
-
-		function resolveSelf(coerce, x) {
-			value = coerce(x);
-			scheduleHandlers(handlers, value);
-			handlers = undef;
-
-			if(!observed && monitor.unhandledRejection) {
-				value.then(
-					function() { monitor.promiseFulfilled(self); },
-					function() { monitor.unhandledRejection(self, x); }
-				);
-			}
+			promiseResolve(rejected(reason));
 		}
 
 		/**
