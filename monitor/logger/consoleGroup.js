@@ -10,13 +10,18 @@
 (function(define) { 'use strict';
 define(function() {
 
+	var console = window.console;
 	var warn, warnAll;
 
-	warn = console.warn ? function(x) { console.warn(x); }
-		: console.log ? function(x) { console.log(x); }
-			: noop;
+	if(console) {
+		warn = console.warn ? function(x) { console.warn(x); }
+			: console.log ? function(x) { console.log(x); }
+				: noop;
+	} else {
+		warn = noop;
+	}
 
-	if(console.groupCollapsed) {
+	if(console && console.groupCollapsed) {
 		warnAll = function(msg, list) {
 			console.groupCollapsed(msg);
 			try {
