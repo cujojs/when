@@ -15,7 +15,7 @@
 
 		function f1() {
 			return when.promise(function(_, reject) {
-				reject(new Error('unhandled-handled-later'));
+				reject(new Error('unhandled-forever'));
 			});
 		}
 

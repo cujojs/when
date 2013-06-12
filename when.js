@@ -17,10 +17,9 @@ define(function () {
 	// Public API
 
 	when.promise   = promise;    // Create a pending promise
-
-	when.defer     = defer;      // Create a deferred
 	when.resolve   = resolve;    // Create a resolved promise
 	when.reject    = reject;     // Create a rejected promise
+	when.defer     = defer;      // Create a {promise, resolver} pair
 
 	when.join      = join;       // Join 2 or more promises
 
@@ -165,10 +164,10 @@ define(function () {
 	}
 
 	/**
-	 * Creates a new Deferred with fully isolated resolver and promise parts,
-	 * either or both of which may be given out safely to consumers.
+	 * Creates a {promise, resolver} pair, either or both of which
+	 * may be given out safely to consumers.
 	 * The resolver has resolve, reject, and progress.  The promise
-	 * only has then.
+	 * has then plus extended promise API.
 	 *
 	 * @return {{
 	 * promise: Promise,
@@ -190,7 +189,7 @@ define(function () {
 			resolver: { resolve: undef, reject: undef, notify: undef }
 		};
 
-		deferred.promise = pending = promise(makeDeferred);
+		deferred.promise = pending = _promise(makeDeferred);
 
 		return deferred;
 
@@ -233,7 +232,7 @@ define(function () {
 	 * Creates a new promise, linked to parent, whose fate is determined
 	 * by resolver.
 	 * @param {function} resolver function(resolve, reject, notify)
-	 * @param {Promise} parent promise from which this new promise is begotten
+	 * @param {Promise?} parent promise from which the new promise is begotten
 	 * @returns {Promise} promise whose fate is determine by resolver
 	 * @private
 	 */

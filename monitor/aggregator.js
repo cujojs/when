@@ -11,20 +11,11 @@
 define(function() {
 
 	return function createAggregator(reporter) {
-		var promises, aggregator;
-
-		aggregator = {
-			reset: reset,
-			report: report,
-			promisePending: promisePending,
-			promiseFulfilled: promiseFulfilled,
-			unhandledRejection: unhandledRejection,
-			promiseObserved: promiseObserved
-		};
+		var promises;
 
 		reset();
 
-		return aggregator;
+		return publish({ publish: publish });
 
 		function promisePending(promise, parent) {
 			var stackHolder, rec;
@@ -84,6 +75,16 @@ define(function() {
 
 		function reset() {
 			promises = [];
+		}
+
+		function publish(target) {
+			target.reportUnhandled = report;
+			target.resetUnhandled = reset;
+			target.promiseObserved = promiseObserved;
+			target.promisePending = promisePending;
+			target.promiseFulfilled = promiseFulfilled;
+			target.unhandledRejection = unhandledRejection;
+			return target;
 		}
 	};
 
