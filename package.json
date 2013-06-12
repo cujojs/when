@@ -10,12 +10,10 @@
 			"url": "http://www.opensource.org/licenses/mit-license.php"
 		}
 	],
-	"repositories": [
-		{
-			"type": "git",
-			"url": "https://github.com/cujojs/when"
-		}
-	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/cujojs/when"
+	},
 	"bugs": "https://github.com/cujojs/when/issues",
 	"maintainers": [
 		{
