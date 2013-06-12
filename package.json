@@ -41,7 +41,9 @@
 	"devDependencies": {
 		"curl": "https://github.com/cujojs/curl/tarball/0.7.3",
 		"test-support": "~0.2",
-		"promises-aplus-tests": "~1"
+		"promises-aplus-tests": "~1",
+		"benchmark": "~1",
+		"microtime": "~0"
 	},
 	"main": "when",
 	"directories": {
@@ -50,6 +52,7 @@
 	"scripts": {
 		"test": "jshint . && buster test -e node && promises-aplus-tests test/promises-aplus-adapter.js",
 		"ci": "npm test && sauceme",
-		"start": "buster static -e browser"
+		"start": "buster static -e browser",
+		"bench": "node benchmark/promise"
 	}
 }
