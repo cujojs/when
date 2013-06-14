@@ -10,38 +10,45 @@
 (function(define) { 'use strict';
 define(function() {
 
-	var warn, warnAll;
+	var warn, warnAll, log;
 
-	warn = console.warn ? function(x) { console.warn(x); }
-		: console.log ? function(x) { console.log(x); }
-			: noop;
-
-	if(console.groupCollapsed) {
-		warnAll = function(msg, list) {
-			console.groupCollapsed(msg);
-			try {
-				list.forEach(warn);
-			} finally {
-				console.groupEnd();
-			}
-		};
+	if(typeof console === 'undefined') {
+		// No console, give up, but at least don't break;
+		log = consoleNotAvailable;
 	} else {
-		warnAll = function(msg, list) {
-			warn(msg);
-			warn(list);
+		warn = console.warn ? function(x) { console.warn(x); }
+			: console.log ? function(x) { console.log(x); }
+				: consoleNotAvailable;
+
+		if(console.groupCollapsed) {
+			warnAll = function(msg, list) {
+				console.groupCollapsed(msg);
+				try {
+					list.forEach(warn);
+				} finally {
+					console.groupEnd();
+				}
+			};
+		} else {
+			warnAll = function(msg, list) {
+				warn(msg);
+				warn(list);
+			};
+		}
+
+		log = function(rejections) {
+			if(rejections.length) {
+				warnAll('[promises] Unhandled rejections: '
+					+ rejections.length, rejections);
+			} else {
+				warn('[promises] All unhandled rejections have been handled');
+			}
 		};
 	}
 
-	return function log(rejections) {
-		if(rejections.length) {
-			warnAll('[promises] Unhandled rejections: ' + rejections.length,
-				rejections);
-		} else {
-			warn('[promises] All unhandled rejections have been handled');
-		}
-	};
+	return log;
 
-	function noop() {}
+	function consoleNotAvailable() {}
 
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));

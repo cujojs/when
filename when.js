@@ -770,7 +770,9 @@ define(function () {
 	// Capture function and array utils
 	//
 	/*global setImmediate,process,vertx*/
-	monitor = typeof console != 'undefined' ? console : {};
+
+	// Allow attaching the monitor to when() if env has no console
+	monitor = typeof console != 'undefined' ? console : when;
 
 	// capture setTimeout to avoid being caught by fake timers used in time based tests
 	setTimeout = global.setTimeout;

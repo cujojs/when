@@ -12,7 +12,7 @@ define(function(require) {
 
 	var createAggregator, throttleReporter, simpleReporter, aggregator,
 		formatter, stackFilter, excludeRx, filter, reporter, logger,
-		rejectionMsg, reasonMsg, filteredFramesMsg;
+		rejectionMsg, reasonMsg, filteredFramesMsg, attachPoint;
 
 	createAggregator = require('./aggregator');
 	throttleReporter = require('./throttledReporter');
@@ -31,7 +31,9 @@ define(function(require) {
 
 	aggregator = createAggregator(throttleReporter(250, reporter));
 
-	aggregator.publish(console);
+	attachPoint = typeof console !== 'undefined'
+		? aggregator.publish(console)
+		: aggregator;
 
 	return aggregator;
 
@@ -40,7 +42,7 @@ define(function(require) {
 	}
 
 	function exclude(line) {
-		var rx = console.promiseStackFilter || excludeRx;
+		var rx = attachPoint.promiseStackFilter || excludeRx;
 		return rx.test(line);
 	}
 
