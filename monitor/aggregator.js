@@ -8,7 +8,9 @@
  * @author: John Hann
  */
 (function(define) { 'use strict';
-define(function() {
+define(function(require) {
+
+	var array = require('./array');
 
 	return function createAggregator(reporter) {
 		var promises;
@@ -27,11 +29,11 @@ define(function() {
 
 			rec = {
 				promise: promise,
-				timestamp: Date.now(),
+				timestamp: +(new Date()),
 				createdAt: stackHolder
 			};
 
-			promises.some(function(p) {
+			array.some(promises, function(p) {
 				if(p.promise === parent) {
 					rec.parent = p;
 					return true;
@@ -54,7 +56,7 @@ define(function() {
 				stackHolder = e;
 			}
 
-			promises.some(function(rec) {
+			array.some(promises, function(rec) {
 				if(promise === rec.promise) {
 					rec.reason = reason;
 					rec.rejectedAt = stackHolder;
@@ -89,7 +91,7 @@ define(function() {
 	};
 
 	function removeFromList(list, promise) {
-		list.some(function(rec, i) {
+		array.some(list, function(rec, i) {
 			if(rec.promise === promise) {
 				list.splice(i, 1);
 				return true;
@@ -98,4 +100,4 @@ define(function() {
 	}
 
 });
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

@@ -8,7 +8,9 @@
  * @author: John Hann
  */
 (function(define) { 'use strict';
-define(function() {
+define(function(require) {
+
+	var array = require('./array');
 
 	return function(isExcluded, replace) {
 		return function filterStack(stack) {
@@ -20,7 +22,7 @@ define(function() {
 
 			excluded = [];
 
-			return stack.reduce(function(filtered, line) {
+			return array.reduce(stack, [], function(filtered, line) {
 				var match;
 
 				match = isExcluded(line);
@@ -40,9 +42,9 @@ define(function() {
 				}
 
 				return filtered;
-			}, []);
+			});
 		};
 	};
 
 });
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

@@ -9,8 +9,10 @@
  */
 
 (function(define) { 'use strict';
-define(function() {
+define(function(require) {
 	/*global setTimeout*/
+
+	var array = require('../array');
 
 	var rethrow = {
 		RangeError: 1,
@@ -29,7 +31,7 @@ define(function() {
 	return function(exceptionsToRethrow) {
 		exceptionsToRethrow || (exceptionsToRethrow = rethrow);
 		return function(rejections) {
-			rejections.forEach(function(r) {
+			array.forEach(rejections, function(r) {
 				if(r.reason && exceptionsToRethrow[r.reason.name]) {
 					throwUncatchable(r.reason);
 				}
@@ -44,4 +46,4 @@ define(function() {
 	}
 
 });
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

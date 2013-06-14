@@ -60,7 +60,7 @@ define(function(require) {
 				log('------------------------------------------------');
 			}).run();
 
-	}
+	};
 
 	function shouldSkip(test) {
 		return typeof test.condition === 'function'

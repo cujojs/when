@@ -8,7 +8,9 @@
  * @author: John Hann
  */
 (function(define) { 'use strict';
-define(function() {
+define(function(require) {
+
+	var array = require('./array');
 
 	/**
 	 * Creates a simple promise monitor reporter that filters out all
@@ -40,14 +42,14 @@ define(function() {
 	};
 
 	function filterAndFormat(format, promises) {
-		return promises.reduce(function(rejected, rec) {
+		return array.reduce(promises, [], function(rejected, rec) {
 			if(rec.rejectedAt) {
 				rejected.push(format(rec));
 			}
 
 			return rejected;
-		}, []);
+		});
 	}
 
 });
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

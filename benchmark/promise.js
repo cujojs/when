@@ -29,14 +29,20 @@ define(function(require) {
 		{ name: 'reject promise',     fn: rejectPromise, defer: true },
 		{ name: 'reject then resolve', fn: rejectThenResolve, defer: true },
 		{ name: 'resolve chain 100',  fn: resolveChain(100), defer: true },
-		{ name: 'resolve chain 1k', fn: resolveChain(1000), defer: true },
-		{ name: 'resolve chain 10k', fn: resolveChain(10000), defer: true },
-		{ name: 'sparse resolve chain 1k', fn: resolveChainSparse(1000), defer: true },
-		{ name: 'sparse resolve chain 10k', fn: resolveChainSparse(10000), defer: true },
-		{ name: 'reject chain 1k', fn: rejectChain(1000), defer: true },
-		{ name: 'reject chain 10k', fn: rejectChain(1000), defer: true },
-		{ name: 'sparse reject chain 1k', fn: rejectChainSparse(1000), defer: true },
-		{ name: 'sparse reject chain 10k', fn: rejectChainSparse(10000), defer: true }
+		{ name: 'resolve chain 1k', fn: resolveChain(1e3), defer: true },
+		{ name: 'sparse resolve chain 1k', fn: resolveChainSparse(1e3), defer: true },
+		{ name: 'reject chain 100',  fn: rejectChain(100), defer: true },
+		{ name: 'reject chain 1k', fn: rejectChain(1e3), defer: true },
+		{ name: 'sparse reject chain 1k', fn: rejectChainSparse(1e3), defer: true },
+		// These 10k tests seem to cause significant garbage collection
+		// hits that skew results of other tests.  So, they are disabled
+		// for now, but we need to figure out how to reduce the memory
+		// thrashing these cause.
+		// Leaving one enabled for now.
+		{ name: 'resolve chain 10k', fn: resolveChain(1e4), defer: true }
+//		{ name: 'sparse resolve chain 10k', fn: resolveChainSparse(1e4), defer: true },
+//		{ name: 'reject chain 10k', fn: rejectChain(1e4), defer: true },
+//		{ name: 'sparse reject chain 10k', fn: rejectChainSparse(1e4), defer: true }
 	];
 
 	run(tests);

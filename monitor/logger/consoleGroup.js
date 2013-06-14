@@ -8,9 +8,11 @@
  * @author: John Hann
  */
 (function(define) { 'use strict';
-define(function() {
+define(function(require) {
 
-	var warn, warnAll, log;
+	var array, warn, warnAll, log;
+
+	array = require('../array');
 
 	if(typeof console === 'undefined') {
 		// No console, give up, but at least don't break;
@@ -24,7 +26,7 @@ define(function() {
 			warnAll = function(msg, list) {
 				console.groupCollapsed(msg);
 				try {
-					list.forEach(warn);
+					array.forEach(list, warn);
 				} finally {
 					console.groupEnd();
 				}
@@ -51,4 +53,4 @@ define(function() {
 	function consoleNotAvailable() {}
 
 });
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
