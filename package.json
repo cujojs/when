@@ -53,6 +53,6 @@
 		"test": "jshint . && buster test -e node && promises-aplus-tests test/promises-aplus-adapter.js",
 		"ci": "npm test && sauceme",
 		"start": "buster static -e browser",
-		"bench": "node benchmark/promise"
+		"bench": "node benchmark/promise && node benchmark/map"
 	}
 }

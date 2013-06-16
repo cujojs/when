@@ -617,7 +617,7 @@ define(function () {
 			return promise(resolveMap);
 
 			function resolveMap(resolve, reject, notify) {
-				var results, len, toResolve, resolveOne, i;
+				var results, len, toResolve, i;
 
 				// Since we know the resulting length, we can preallocate the results
 				// array to avoid array expansions.
@@ -629,16 +629,6 @@ define(function () {
 					return;
 				}
 
-				resolveOne = function(item, i) {
-					when(item, mapFunc, fallback).then(function(mapped) {
-						results[i] = mapped;
-
-						if(!--toResolve) {
-							resolve(results);
-						}
-					}, reject, notify);
-				};
-
 				// Since mapFunc may be async, get all invocations of it into flight
 				for(i = 0; i < len; i++) {
 					if(i in array) {
@@ -646,6 +636,16 @@ define(function () {
 					} else {
 						--toResolve;
 					}
+				}
+
+				function resolveOne(item, i) {
+					when(item, mapFunc, fallback).then(function(mapped) {
+						results[i] = mapped;
+
+						if(!--toResolve) {
+							resolve(results);
+						}
+					}, reject, notify);
 				}
 			}
 		});
