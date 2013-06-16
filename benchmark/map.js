@@ -11,7 +11,7 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	var when, tests, run, input;
+	var when, tests, run;
 
 	when = require('../when');
 	run = require('./run');
@@ -35,7 +35,7 @@ define(function(require) {
 				input.push(when(i));
 			}
 
-			when.map(input, addOne).then(function(r) {
+			when.map(input, addOne).then(function() {
 				deferred.resolve();
 			});
 
