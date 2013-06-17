@@ -15,6 +15,10 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 
 # What's New?
 
+### 2.1.1
+
+* Quote internal usages of `promise.yield` to workaround .NET minifier tools that don't yet understand ES5 identifier-as-property rules.  See [#157](https://github.com/cujojs/when/issues/157)
+
 ### 2.1.0
 
 * New [`when.settle`](docs/api.md#whensettle) that settles an array of promises

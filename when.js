@@ -9,7 +9,7 @@
  *
  * @author Brian Cavalier
  * @author John Hann
- * @version 2.1.0
+ * @version 2.1.1
  */
 (function(define, global) { 'use strict';
 define(function () {

@@ -1,6 +1,6 @@
 {
     "name": "when",
-    "version": "2.1.0",
+    "version": "2.1.1",
 	"description": "A lightweight Promises/A+ and when() implementation, plus other async goodies.",
 	"keywords": ["Promises/A+", "promises-aplus", "promise", "promises", "deferred", "deferreds", "when", "async", "asynchronous", "cujo"],
 	"homepage": "http://cujojs.com",
@@ -10,12 +10,10 @@
 			"url": "http://www.opensource.org/licenses/mit-license.php"
 		}
 	],
-	"repositories": [
-		{
-			"type": "git",
-			"url": "https://github.com/cujojs/when"
-		}
-	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/cujojs/when"
+	},
 	"bugs": "https://github.com/cujojs/when/issues",
 	"maintainers": [
 		{
