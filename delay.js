@@ -21,12 +21,15 @@ define(function(require) {
 		: setTimeout;
 
     /**
-     * Creates a new promise that will resolve after a msec delay.  If promise
-     * is supplied, the delay will start *after* the supplied promise is resolved.
+     * Creates a new promise that will resolve after a msec delay.  If
+	 * value is supplied, the delay will start *after* the supplied
+	 * value is resolved.
      *
 	 * @param {number} msec delay in milliseconds
-     * @param {*} [value] any promise or value after which the delay will start
-	 * @returns {Promise}
+     * @param {*|Promise?} value any promise or value after which
+	 *  the delay will start
+	 * @returns {Promise} promise that is equivalent to value, only delayed
+	 *  by msec
      */
     return function delay(msec, value) {
 		// Support reversed, deprecated argument ordering
@@ -48,7 +51,6 @@ define(function(require) {
 
 });
 })(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
-);
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
 
 

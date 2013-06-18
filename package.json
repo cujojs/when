@@ -39,7 +39,7 @@
 		}
 	],
 	"devDependencies": {
-		"curl": "https://github.com/cujojs/curl/tarball/0.7.3",
+		"curl": "https://github.com/cujojs/curl/tarball/0.7.4",
 		"test-support": "~0.2",
 		"promises-aplus-tests": "~1",
 		"benchmark": "~1",
