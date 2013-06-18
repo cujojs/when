@@ -1368,6 +1368,83 @@ deferred.promise.then(function(interestingValue) {
 });
 ```
 
+### `nodefn.liftCallback()`
+
+```js
+var promiseAcceptingFunction = nodefn.liftCallback(nodeback);
+```
+
+Transforms a node-style callback function into a function that accepts a
+promise.  This allows you to bridge promises and node-style in "the other
+direction".  For example, if you have a node-style callback,
+and a function that returns promises, you can lift the former to allow the
+two functions to be composed.
+
+The lifted function returns a promise that will resolve once the nodeback has finished:
+
+* if the nodeback returns without throwing, the returned promise will fulfill.
+* if the nodeback throws, the returned promise will reject.
+
+Note that since node-style callbacks *typically do not return a useful result*, the fulfillment value of the returned promise will most likely be `undefined`.  On the off-chance that the node-style callback *does* return a result, it will be used as the returned promise's fulfillment value.
+
+```js
+var nodefn, handlePromisedData, dataPromise;
+
+nodefn = require('when/node/function');
+
+function fetchData(key) {
+	// go get the data and,
+	return promise;
+}
+
+function handleData(err, result) {
+	if(err) {
+		// handle the error
+	} else {
+		// Use the result
+	}
+}
+
+// Lift handleData
+handlePromisedData = nodefn.liftCallback(handleData);
+
+dataPromise = fetchData(123);
+
+handlePromisedData(dataPromise);
+```
+
+### `nodefn.bindCallback()`
+
+```js
+var resultPromise = nodefn.bindCallback(nodeback, promise);
+```
+
+Lifts and then calls the node-style callback on the provided promise.  This is a one-shot version of [nodefn.liftCallback](nodefn-liftcallback), and the `resultPromise` will behave as described there.
+
+```js
+var nodefn, handlePromisedData, dataPromise;
+
+nodefn = require('when/node/function');
+
+function fetchData(key) {
+	// go get the data and,
+	return promise;
+}
+
+function handleData(err, result) {
+	if(err) {
+		// handle the error
+	} else {
+		// Use the result
+	}
+}
+
+// Lift handleData
+dataPromise = fetchData(123);
+
+nodefn.bindCallback(handleData, dataPromise);
+```
+
 # Helpers
 
 ## when/apply
