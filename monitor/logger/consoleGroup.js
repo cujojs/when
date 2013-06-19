@@ -15,37 +15,56 @@ define(function(require) {
 	array = require('../array');
 
 	if(typeof console === 'undefined') {
-		// No console, give up, but at least don't break;
+		// No console, give up, but at least don't break
 		log = consoleNotAvailable;
 	} else {
-		warn = console.warn ? function(x) { console.warn(x); }
-			: console.log ? function(x) { console.log(x); }
-				: consoleNotAvailable;
-
-		if(console.groupCollapsed) {
-			warnAll = function(msg, list) {
-				console.groupCollapsed(msg);
-				try {
-					array.forEach(list, warn);
-				} finally {
-					console.groupEnd();
-				}
+		if (console.warn && console.dir) {
+			// Sensible console found, use it
+			warn = function (x) {
+				console.warn(x);
 			};
 		} else {
-			warnAll = function(msg, list) {
-				warn(msg);
-				warn(list);
+			// IE8 has console.log and JSON, so we can make a
+			// reasonably useful warn() from those.
+			// Credit to webpro (https://github.com/webpro) for this idea
+			if (console.log && typeof JSON != 'undefined') {
+				warn = function (x) {
+					console.log(typeof x === 'string' ? x : JSON.stringify(x));
+				};
+			}
+		}
+
+		if(!warn) {
+			// Couldn't find a suitable console logging function
+			// Give up and just be silent
+			log = consoleNotAvailable;
+		} else {
+			if(console.groupCollapsed) {
+				warnAll = function(msg, list) {
+					console.groupCollapsed(msg);
+					try {
+						array.forEach(list, warn);
+					} finally {
+						console.groupEnd();
+					}
+				};
+			} else {
+				warnAll = function(msg, list) {
+					warn(msg);
+					warn(list);
+				};
+			}
+
+			log = function(rejections) {
+				if(rejections.length) {
+					warnAll('[promises] Unhandled rejections: '
+						+ rejections.length, rejections);
+				} else {
+					warn('[promises] All previously unhandled rejections have now been handled');
+				}
 			};
 		}
 
-		log = function(rejections) {
-			if(rejections.length) {
-				warnAll('[promises] Unhandled rejections: '
-					+ rejections.length, rejections);
-			} else {
-				warn('[promises] All unhandled rejections have been handled');
-			}
-		};
 	}
 
 	return log;

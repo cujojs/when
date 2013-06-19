@@ -63,7 +63,7 @@ define(function() {
 		}
 
 		function toArray(stack) {
-			return stack.split('\n');
+			return stack ? stack.split('\n') : [];
 		}
 	};
 
