@@ -221,7 +221,7 @@ define(function(require) {
 	 *	deferred.resolve('interesting value');
 	 *
 	 * @param {Function} callback The node-style callback to wrap.
-	 * @returns {Function} The wrapped function.
+	 * @returns {Function} The lifted, promise-accepting function.
 	 */
 	function liftCallback(callback) {
 		return function(promise) {
