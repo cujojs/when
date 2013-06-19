@@ -1416,13 +1416,13 @@ handlePromisedData(dataPromise);
 ### `nodefn.bindCallback()`
 
 ```js
-var resultPromise = nodefn.bindCallback(nodeback, promise);
+var resultPromise = nodefn.bindCallback(promise, nodeback);
 ```
 
 Lifts and then calls the node-style callback on the provided promise.  This is a one-shot version of [nodefn.liftCallback](nodefn-liftcallback), and the `resultPromise` will behave as described there.
 
 ```js
-var nodefn, handlePromisedData, dataPromise;
+var nodefn, dataPromise;
 
 nodefn = require('when/node/function');
 
@@ -1442,7 +1442,7 @@ function handleData(err, result) {
 // Lift handleData
 dataPromise = fetchData(123);
 
-nodefn.bindCallback(handleData, dataPromise);
+nodefn.bindCallback(dataPromise, handleData);
 ```
 
 # Helpers
