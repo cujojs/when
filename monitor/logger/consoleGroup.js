@@ -9,6 +9,7 @@
  */
 (function(define) { 'use strict';
 define(function(require) {
+	/*jshint maxcomplexity:7*/
 
 	var array, warn, warnAll, log;
 
