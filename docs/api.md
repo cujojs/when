@@ -2,12 +2,12 @@ API
 ===
 
 1. [when](#when)
-1. [Deferred](#deferred)
-1. [Resolver](#resolver)
 1. [Promise](#promise)
 	* [Extended Promise API](#extended-promise-api)
 	* [Progress events](#progress-events)
+1. [Deferred](#deferred)
 1. [Creating promises](#creating-promises)
+	* [when.promise](#whenpromise)
 	* [when.defer](#whendefer)
 	* [when.resolve](#whenresolve)
 	* [when.reject](#whenreject)
@@ -89,34 +89,6 @@ In either case, `when()` will *always* return a trusted when.js promise, which w
 
 ### See Also
 * [Read more about when() here](https://github.com/cujojs/when/wiki/when)
-
-## Deferred
-
-A deferred represents an operation whose resolution is *pending*.  It has separate `promise` and `resolver` parts that can be *safely* given out to separate groups of consumers and producers, respectively, to allow safe, one-way communication.
-
-```js
-var promise = deferred.promise;
-var resolver = deferred.resolver;
-```
-
-**Note:** Although a deferred has the full `resolver` API, this should used *for convenience only, by the creator of the deferred*.  Only the `resolver` should be given to consumers and producers.
-
-```js
-deferred.resolve(promiseOrValue);
-deferred.reject(reason);
-deferred.notify(update);
-```
-
-## Resolver
-
-The resolver represents *responsibility*--the responsibility of fulfilling or rejecting the associated promise.  This responsibility may be given out separately from the promise itself.
-
-```js
-var resolver = deferred.resolver;
-resolver.resolve(promiseOrValue);
-resolver.reject(reason);
-resolver.notify(update);
-```
 
 ## Promise
 
@@ -332,9 +304,61 @@ d.notify(update);
 // logProgress(2);
 ```
 
+## Deferred
+
+A deferred is a convenience `{promise, resolver}` pair.  Its `promise` and `resolver` parts can be given out to separate groups of consumers and producers, respectively, to allow safe, one-way communication.
+
+```js
+var promise = deferred.promise;
+var resolver = deferred.resolver;
+```
+
+**Note:** Although a deferred has the full `resolver` API, this should used *for convenience only, by the creator of the deferred*.  Only the `resolver` should be given to consumers and producers.
+
+```js
+deferred.resolve(promiseOrValue);
+deferred.reject(reason);
+deferred.notify(update);
+```
+
+### Resolver
+
+The resolver represents *responsibility*--the responsibility of fulfilling or rejecting the associated promise.  This responsibility may be given out separately from the promise itself.
+
+```js
+var resolver = deferred.resolver;
+resolver.resolve(promiseOrValue);
+resolver.reject(reason);
+resolver.notify(update);
+```
+
 # Creating promises
 
-Typically, promises are created as part of a [Deferred](#deferred) operation.  However, there are occasions when the fate of a promise is already known.
+## when.promise()
+
+```js
+var promise = when.promise(resolver);
+```
+
+Create a [Promise](#promise), whose fate is determined by the supplied resolver function.  The resolver function will be called synchronously, with 3 arguments:
+
+```js
+var promise = when.promise(function(resolve, reject, notify) {
+	// Do some work, possibly asynchronously, and then
+	// resolve or reject.  You can notify of progress events
+	// along the way if you want/need.
+
+	resolve(awesomeResult);
+	// or resolve(anotherPromise);
+	// or reject(nastyError);
+});
+```
+
+* `resolve(promiseOrValue)` - Primary function that seals the fate of the returned promise. Accepts either a non-promise value, or another promise.
+	* When called with a non-promise value, fulfills `promise` with that value.
+	* When called with another promise, e.g. `resolve(otherPromise)`, `promise`'s fate will be equivalent to that that of `otherPromise`.
+* `reject(reason)` - function that rejects `promise`.
+* `notify(update)` - function that issues progress events for `promise`.
 
 ## when.defer()
 
@@ -343,7 +367,7 @@ var deferred = when.defer();
 var promise = deferred.promise;
 ```
 
-Create a new [Deferred](#deferred) that can be used to resolve or reject its associated promise at a later time.
+Create a `{promise, resolver}` pair, aka [Deferred](#deferred).  In some scenarios it can be convenient to have access to both the `promise` and it's associated resolving functions, for example, to give each out to a separate party.  In such cases it can be convenient to use `when.defer()`.
 
 ## when.resolve()
 
