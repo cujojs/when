@@ -15,6 +15,12 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 
 # What's New?
 
+### 2.2.0
+
+* New experimental [promise monitoring debugging](docs.md#debugging-promises) via `when/monitor/console`.
+* New `bindCallback` and `liftCallback` in `when/node/function` for more integration options with node-style callbacks.
+* Docs for the lighter [`when.promise(resolver)` promise creation API](docs/api.md#whenpromise). A nice alternative to the heavier `when.defer()`
+
 ### 2.1.1
 
 * Quote internal usages of `promise.yield` to workaround .NET minifier tools that don't yet understand ES5 identifier-as-property rules.  See [#157](https://github.com/cujojs/when/issues/157)
