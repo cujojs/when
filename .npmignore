@@ -1,0 +1,13 @@
+.idea/
+.idea/.name
+.gitignore/
+test/
+projectFilesBackup/
+experiments/
+docs
+jsdoc
+jsdoc3
+.npmignore
+.gitmodules
+.travis.yml
+*.globalized.js
