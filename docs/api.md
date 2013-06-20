@@ -1536,4 +1536,4 @@ require('when/monitor/console');
 
 ## Roll your own!
 
-The monitor modules are building blocks.  The [when/monitor/console](../console.js) module is one particular, and fairly simple, monitor built using the monitoring APIs and tools.  Using when/monitor/console as an example, you can build your own promise monitoring tools that look for specific types of errors, or patterns and log or display them in whatever way you need.
+The monitor modules are building blocks.  The [when/monitor/console](../monitor/console.js) module is one particular, and fairly simple, monitor built using the monitoring APIs and tools.  Using when/monitor/console as an example, you can build your own promise monitoring tools that look for specific types of errors, or patterns and log or display them in whatever way you need.
