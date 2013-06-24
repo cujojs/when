@@ -54,6 +54,6 @@
 		"ci": "npm test && sauceme",
 		"tunnel": "sauceme -m",
 		"start": "buster static -e browser",
-		"bench": "node benchmark/promise && node benchmark/map"
+		"benchmark": "node benchmark/promise && node benchmark/map"
 	}
 }
