@@ -740,15 +740,8 @@ define(function () {
 	 */
 	function enqueue(task) {
 		if(handlerQueue.push(task) === 1) {
-			scheduleDrainQueue();
+			nextTick(drainQueue);
 		}
-	}
-
-	/**
-	 * Schedule the queue to be drained after the stack has cleared.
-	 */
-	function scheduleDrainQueue() {
-		nextTick(drainQueue);
 	}
 
 	/**
