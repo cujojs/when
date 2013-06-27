@@ -16,7 +16,7 @@ define(function() {
 		nextKey = 0;
 
 		function Monitor(key) {
-			this.key = key
+			this.key = key;
 		}
 
 		Monitor.prototype = {
