@@ -17,9 +17,9 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 
 ### 2.2.0
 
-* New experimental [promise monitoring debugging](docs.md#debugging-promises) via `when/monitor/console`.
+* New experimental [promise monitoring and debugging](docs.md#debugging-promises) via `when/monitor/console`.
+* New [`when.promise(resolver)`](docs/api.md#whenpromise) promise creation API. A lighter alternative to the heavier `when.defer()`
 * New `bindCallback` and `liftCallback` in `when/node/function` for more integration options with node-style callbacks.
-* Docs for the lighter [`when.promise(resolver)` promise creation API](docs/api.md#whenpromise). A nice alternative to the heavier `when.defer()`
 
 ### 2.1.1
 
