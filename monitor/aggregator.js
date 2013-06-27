@@ -8,67 +8,75 @@
  * @author: John Hann
  */
 (function(define) { 'use strict';
-define(function(require) {
-
-	var array = require('./array');
+define(function() {
 
 	return function createAggregator(reporter) {
-		var promises;
+		var promises, nextKey;
+
+		nextKey = 0;
+
+		function Monitor(key) {
+			this.key = key
+		}
+
+		Monitor.prototype = {
+			observed: function () {
+				delete promises[this.key];
+			},
+			fulfilled: function () {
+				delete promises[this.key];
+				report();
+			},
+			rejected: function (reason) {
+				var stackHolder, rec;
+
+				rec = promises[this.key];
+
+				if (rec) {
+					try {
+						throw new Error(reason && reason.message || reason);
+					} catch (e) {
+						stackHolder = e;
+					}
+
+					rec.reason = reason;
+					rec.rejectedAt = stackHolder;
+
+					report();
+				}
+			}
+		};
 
 		reset();
 
 		return publish({ publish: publish });
 
-		function promisePending(promise, parent) {
-			var stackHolder, rec;
+		function publish(target) {
+			target.monitorPromise = promisePending;
+			target.reportUnhandled = report;
+			target.resetUnhandled = reset;
+			return target;
+		}
+
+		function promisePending(parentKey) {
+			var stackHolder, key;
+
 			try {
 				throw new Error();
 			} catch(e) {
 				stackHolder = e;
 			}
 
-			rec = {
-				promise: promise,
+			key = nextKey++;
+
+			promises[key] = {
+				key: key,
 				timestamp: +(new Date()),
-				createdAt: stackHolder
+				createdAt: stackHolder,
+				parent: promises[parentKey]
 			};
 
-			array.some(promises, function(p) {
-				if(p.promise === parent) {
-					rec.parent = p;
-					return true;
-				}
-			});
-
-			promises.push(rec);
-		}
-
-		function promiseFulfilled(promise) {
-			removeFromList(promises, promise);
-			report();
-		}
-
-		function unhandledRejection(promise, reason) {
-			var stackHolder;
-			try {
-				throw new Error(reason && reason.message || reason);
-			} catch(e) {
-				stackHolder = e;
-			}
-
-			array.some(promises, function(rec) {
-				if(promise === rec.promise) {
-					rec.reason = reason;
-					rec.rejectedAt = stackHolder;
-					return true;
-				}
-			});
-
-			report();
-		}
-
-		function promiseObserved(promise) {
-			removeFromList(promises, promise);
+			return new Monitor(key);
 		}
 
 		function report() {
@@ -76,28 +84,9 @@ define(function(require) {
 		}
 
 		function reset() {
-			promises = [];
-		}
-
-		function publish(target) {
-			target.reportUnhandled = report;
-			target.resetUnhandled = reset;
-			target.promiseObserved = promiseObserved;
-			target.promisePending = promisePending;
-			target.promiseFulfilled = promiseFulfilled;
-			target.unhandledRejection = unhandledRejection;
-			return target;
+			promises = {};
 		}
 	};
 
-	function removeFromList(list, promise) {
-		array.some(list, function(rec, i) {
-			if(rec.promise === promise) {
-				list.splice(i, 1);
-				return true;
-			}
-		});
-	}
-
 });
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));

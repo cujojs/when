@@ -16,8 +16,7 @@ define(function() {
 
 	return {
 		forEach: forEach,
-		reduce: reduce,
-		some: some
+		reduce: reduce
 	};
 
 	function forEach(array, f) {
@@ -51,25 +50,6 @@ define(function() {
 		}
 
 		return result;
-	}
-
-
-	function some(array, f) {
-		if(typeof array.some === 'function') {
-			return array.some(f);
-		}
-
-		var i, len, done;
-
-		i = -1;
-		len = array.length;
-		done = false;
-
-		while(!done && ++i < len) {
-			done = f(array[i], i);
-		}
-
-		return done;
 	}
 
 });

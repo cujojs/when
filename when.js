@@ -237,16 +237,16 @@ define(function () {
 	 * @private
 	 */
 	function _promise(resolver, parent) {
-		var self, value, observed, handlers = [];
+		var self, value, monitor, handlers = [];
 
 		self = new Promise(then, inspect);
 
-		if(monitor.promisePending) {
-			monitor.promisePending(self, parent);
-		}
-
 		// Call the provider resolver to seal the promise's fate
 		try {
+			if(monitorApi.monitorPromise) {
+				monitor = monitorApi.monitorPromise(parent);
+			}
+
 			resolver(promiseResolve, promiseReject, promiseNotify);
 		} catch(e) {
 			promiseReject(e);
@@ -273,11 +273,10 @@ define(function () {
 						.then(resolve, reject, notify);
 				}
 
-			}, self);
+			}, monitor && monitor.key);
 
-			if (!observed && monitor.promiseObserved) {
-				observed = true;
-				monitor.promiseObserved(self);
+			if (monitor) {
+				monitor.observed();
 			}
 
 			return next;
@@ -301,10 +300,10 @@ define(function () {
 			scheduleHandlers(handlers, value);
 			handlers = undef;
 
-			if (!observed && monitor.unhandledRejection) {
+			if (monitor) {
 				value.then(
-					function () { monitor.promiseFulfilled(self); },
-					function (r) { monitor.unhandledRejection(self, r); }
+					function () { monitor.fulfilled(); },
+					function(r) { monitor.rejected(r); }
 				);
 			}
 		}
@@ -722,7 +721,7 @@ define(function () {
 	//
 
 	var reduceArray, slice, fcall, nextTick, handlerQueue,
-		setTimeout, funcProto, call, arrayProto, monitor, undef;
+		setTimeout, funcProto, call, arrayProto, monitorApi, undef;
 
 	//
 	// Shared handler queue processing
@@ -765,7 +764,7 @@ define(function () {
 	/*global setImmediate,process,vertx*/
 
 	// Allow attaching the monitor to when() if env has no console
-	monitor = typeof console != 'undefined' ? console : when;
+	monitorApi = typeof console != 'undefined' ? console : when;
 
 	// capture setTimeout to avoid being caught by fake timers used in time based tests
 	setTimeout = global.setTimeout;
