@@ -52,13 +52,13 @@ define(function() {
 		return publish({ publish: publish });
 
 		function publish(target) {
-			target.monitorPromise = promisePending;
+			target.monitorPromise = monitorPromise;
 			target.reportUnhandled = report;
 			target.resetUnhandled = reset;
 			return target;
 		}
 
-		function promisePending(parentKey) {
+		function monitorPromise(parentKey) {
 			var stackHolder, key;
 
 			try {
