@@ -225,28 +225,24 @@ define(function () {
 	 * @returns {Promise} promise whose fate is determine by resolver
 	 */
 	function promise(resolver) {
-		return _promise(resolver);
+		return _promise(resolver, monitorApi.PromiseStatus && monitorApi.PromiseStatus());
 	}
 
 	/**
 	 * Creates a new promise, linked to parent, whose fate is determined
 	 * by resolver.
 	 * @param {function} resolver function(resolve, reject, notify)
-	 * @param {Promise?} parent promise from which the new promise is begotten
+	 * @param {Promise?} status promise from which the new promise is begotten
 	 * @returns {Promise} promise whose fate is determine by resolver
 	 * @private
 	 */
-	function _promise(resolver, parent) {
-		var self, value, monitor, handlers = [];
+	function _promise(resolver, status) {
+		var self, value, handlers = [];
 
 		self = new Promise(then, inspect);
 
 		// Call the provider resolver to seal the promise's fate
 		try {
-			if(monitorApi.monitorPromise) {
-				monitor = monitorApi.monitorPromise(parent);
-			}
-
 			resolver(promiseResolve, promiseReject, promiseNotify);
 		} catch(e) {
 			promiseReject(e);
@@ -273,11 +269,7 @@ define(function () {
 						.then(resolve, reject, notify);
 				}
 
-			}, monitor && monitor.key);
-
-			if (monitor) {
-				monitor.observed();
-			}
+			}, status && status.observed());
 
 			return next;
 		}
@@ -300,10 +292,10 @@ define(function () {
 			scheduleHandlers(handlers, value);
 			handlers = undef;
 
-			if (monitor) {
+			if (status) {
 				value.then(
-					function () { monitor.fulfilled(); },
-					function(r) { monitor.rejected(r); }
+					function () { status.fulfilled(); },
+					function(r) { status.rejected(r); }
 				);
 			}
 		}
