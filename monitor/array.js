@@ -11,7 +11,7 @@
 (function(define) { 'use strict';
 define(function() {
 
-	// Silly Array polyfills, since when.js needs to be
+	// Silly Array helpers, since when.js needs to be
 	// backward compatible to ES3
 
 	return {
@@ -30,7 +30,7 @@ define(function() {
 		len = array.length;
 
 		while(++i < len) {
-			f(array[i], i);
+			f(array[i], i, array);
 		}
 	}
 
@@ -46,7 +46,7 @@ define(function() {
 		result = initial;
 
 		while(++i < len) {
-			result = f(result, array[i], i);
+			result = f(result, array[i], i, array);
 		}
 
 		return result;
