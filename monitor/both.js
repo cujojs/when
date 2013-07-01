@@ -12,14 +12,15 @@
 define(function() {
 
 	/**
-	 * Logger that simply forwards to two other loggers
-	 * @param {function} log1 first logger to forward to
-	 * @param {function} log2 second logger to forward to
+	 * Function that forwards its arg to 2 other functions
+	 * @param {function} f1 first function to which to forward
+	 * @param {function} f2 second function to which to forward
+	 * @return {function}
 	 */
-	return function(log1, log2) {
-		return function(rejections) {
-			log1(rejections);
-			log2(rejections);
+	return function(f1, f2) {
+		return function(x) {
+			f1(x);
+			f2(x);
 		};
 	};
 

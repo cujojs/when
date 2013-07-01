@@ -27,6 +27,8 @@ define(function() {
 			}
 
 			this.key = nextKey++;
+			promises[this.key] = this;
+
 			this.parent = parent;
 			this.timestamp = +(new Date());
 			this.createdAt = stackHolder;
@@ -34,8 +36,6 @@ define(function() {
 
 		Monitor.prototype = {
 			observed: function () {
-				this._observed = true;
-
 				if(this.key in promises) {
 					delete promises[this.key];
 					report();
@@ -45,27 +45,26 @@ define(function() {
 			},
 			fulfilled: function () {
 				if(this.key in promises) {
+					delete promises[this.key];
 					report();
 				}
 			},
 			rejected: function (reason) {
 				var stackHolder;
 
-				if(this._observed) {
-					return;
+				if(this.key in promises) {
+
+					try {
+						throw new Error(reason && reason.message || reason);
+					} catch (e) {
+						stackHolder = e;
+					}
+
+					this.reason = reason;
+					this.rejectedAt = stackHolder;
+					report();
+
 				}
-
-				promises[this.key] = this;
-
-				try {
-					throw new Error(reason && reason.message || reason);
-				} catch (e) {
-					stackHolder = e;
-				}
-
-				this.reason = reason;
-				this.rejectedAt = stackHolder;
-				report();
 			}
 		};
 
