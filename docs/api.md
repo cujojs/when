@@ -178,20 +178,22 @@ return doSomething()
 ### yield()
 
 ```js
-promise.yield(promiseOrValue);
+originalPromise.yield(promiseOrValue);
 ```
 
-Returns a promise:
+Returns a new promise:
 
-1. If `promiseOrValue` is a value, the returned promise will be fulfilled with `promiseOrValue`
-2. If `promiseOrValue` is a promise, the returned promise will be:
-	1. fulfilled with the fulfillment value of `promiseOrValue`, or
-	1. rejected with the rejection reason of `promiseOrValue`
+1. If `originalPromise` is rejected, the returned promise will be rejected with the same reason
+2. If `originalPromise` is fulfilled, then it "yields" the resolution of the returned promise to promiseOrValue, namely:
+    1. If `promiseOrValue` is a value, the returned promise will be fulfilled with `promiseOrValue`
+    2. If `promiseOrValue` is a promise, the returned promise will be:
+	    - fulfilled with the fulfillment value of `promiseOrValue`, or
+	    - rejected with the rejection reason of `promiseOrValue`
 
 In other words, it's much like:
 
 ```js
-promise.then(function() {
+originalPromise.then(function() {
 	return promiseOrValue;
 });
 ```
