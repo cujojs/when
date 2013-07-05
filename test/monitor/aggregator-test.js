@@ -9,15 +9,16 @@ sentinel = { value: 'sentinel' };
 
 define('when/monitor/aggregator-test', function (require) {
 
-	var when, aggregator;
+	var when, aggregator, monitor;
 
 	when = require('when');
 	aggregator = require('when/monitor/aggregator');
+	monitor = typeof console != 'undefined' ? console : when;
 
 	buster.testCase('when/monitor/aggregator', {
 		'tearDown': function() {
-			if(typeof console.PromiseStatus === 'function') {
-				delete console.PromiseStatus;
+			if(typeof monitor.PromiseStatus === 'function') {
+				delete monitor.PromiseStatus;
 			}
 		},
 
@@ -32,7 +33,7 @@ define('when/monitor/aggregator-test', function (require) {
 						assert.same(promises[key].reason, sentinel);
 					}
 					done();
-				}).publish(console);
+				}).publish(monitor);
 
 				when.promise(function(_, reject) {
 					reject(sentinel);
@@ -47,7 +48,7 @@ define('when/monitor/aggregator-test', function (require) {
 						assert.same(promises[key].reason, sentinel);
 					}
 					done();
-				}).publish(console);
+				}).publish(monitor);
 
 				when.defer().reject(sentinel);
 			}
