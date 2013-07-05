@@ -51,11 +51,18 @@ define(function(require) {
 	 * @returns {Promise} promise for the return value of func
 	 */
 	function apply(func, promisedArgs) {
-		return when.all(promisedArgs || [], function(args) {
-			return func.apply(null, args);
-		});
+		return _apply(func, this, promisedArgs);
 	}
 
+	/**
+	 * Apply helper that allows specifying thisArg
+	 * @private
+	 */
+	function _apply(func, thisArg, promisedArgs) {
+		return when.all(promisedArgs || [], function(args) {
+			return func.apply(thisArg, args);
+		});
+	}
 	/**
 	 * Has the same behavior that {@link apply} has, with the difference that the
 	 * arguments to the function are provided individually, while {@link apply} accepts
@@ -82,7 +89,7 @@ define(function(require) {
 	 * @returns {Promise} promise for the return value of func
 	 */
 	function call(func /*, args... */) {
-		return apply(func, slice.call(arguments, 1));
+		return _apply(func, this, slice.call(arguments, 1));
 	}
 
 	/**
@@ -128,7 +135,7 @@ define(function(require) {
 	function lift(func /*, args... */) {
 		var args = slice.call(arguments, 1);
 		return function() {
-			return apply(func, args.concat(slice.call(arguments)));
+			return _apply(func, this, args.concat(slice.call(arguments)));
 		};
 	}
 
@@ -184,11 +191,14 @@ define(function(require) {
 		var funcs = slice.call(arguments, 1);
 
 		return function() {
-			var args = slice.call(arguments);
-			var firstPromise = apply(f, args);
+			var thisArg, args, firstPromise;
+
+			thisArg = this;
+			args = slice.call(arguments);
+			firstPromise = _apply(f, thisArg, args);
 
 			return when.reduce(funcs, function(arg, func) {
-				return func(arg);
+				return func.call(thisArg, arg);
 			}, firstPromise);
 		};
 	}

@@ -24,6 +24,13 @@ define('when/node/function-test', function (require) {
 				assertIsPromise(nodefn.apply(function() {}));
 			},
 
+			'should preserve thisArg': function() {
+				return nodefn.apply.call(sentinel, function(cb) {
+					assert.same(this, sentinel);
+					cb(null);
+				});
+			},
+
 			'the returned promise': {
 				'should be resolved with the 2nd arg to the callback': function() {
 					function async(cb) {
@@ -85,6 +92,13 @@ define('when/node/function-test', function (require) {
 		'call': {
 			'should return promise': function() {
 				assertIsPromise(nodefn.call(function() {}));
+			},
+
+			'should preserve thisArg': function() {
+				return nodefn.call.call(sentinel, function(cb) {
+					assert.same(this, sentinel);
+					cb(null);
+				});
 			},
 
 			'the returned promise': {
@@ -154,6 +168,13 @@ define('when/node/function-test', function (require) {
 		'lift': {
 			'should return a function': function() {
 				assert.isFunction(nodefn.lift(function() {}));
+			},
+
+			'should preserve thisArg': function() {
+				return nodefn.lift(function(cb) {
+					assert.same(this, sentinel);
+					cb(null);
+				}).call(sentinel);
 			},
 
 			'the returned function': {

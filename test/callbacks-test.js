@@ -5,7 +5,7 @@ var assert, fail, sentinel;
 assert = buster.assert;
 fail = buster.fail;
 
-sentinel = {};
+sentinel = { value: 'sentinel' };
 
 define('when/callbacks-test', function (require) {
 
@@ -22,6 +22,13 @@ define('when/callbacks-test', function (require) {
 		'apply': {
 			'should return a promise': function() {
 				assertIsPromise(callbacks.apply(function() {}));
+			},
+
+			'should preserve thisArg': function() {
+				return callbacks.apply.call(sentinel, function(cb) {
+					assert.same(this, sentinel);
+					cb();
+				});
 			},
 
 			'should resolve with the callback arguments': function(done) {
@@ -94,6 +101,13 @@ define('when/callbacks-test', function (require) {
 		'call': {
 			'should return a promise': function() {
 				assertIsPromise(callbacks.call(function() {}));
+			},
+
+			'should preserve thisArg': function() {
+				return callbacks.call.call(sentinel, function(cb) {
+					assert.same(this, sentinel);
+					cb();
+				});
 			},
 
 			'should resolve with the callback arguments': function(done) {
@@ -178,6 +192,13 @@ define('when/callbacks-test', function (require) {
 				'should return a promise': function() {
 					var result = callbacks.lift(function() {});
 					assertIsPromise(result());
+				},
+
+				'should preserve thisArg': function() {
+					return callbacks.lift(function(cb) {
+						assert.same(this, sentinel);
+						cb();
+					}).call(sentinel);
 				},
 
 				'should resolve the promise with the callback value': function(done) {
@@ -269,6 +290,13 @@ define('when/callbacks-test', function (require) {
 		},
 
 		'promisify': {
+			'should preserve thisArg': function() {
+				return callbacks.promisify(function(cb) {
+					assert.same(this, sentinel);
+					cb();
+				}, { callback: 0 }).call(sentinel);
+			},
+
 			'should support callbacks in any position': function(done) {
 				function weirdAsync(a, callback, b) {
 					callback(a + b);
