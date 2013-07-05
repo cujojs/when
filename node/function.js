@@ -59,11 +59,19 @@ define(function(require) {
 	 * @returns {Promise} promise for the value func passes to its callback
 	 */
 	function apply(func, args) {
+		return _apply(func, this, args);
+	}
+
+	/**
+	 * Apply helper that allows specifying thisArg
+	 * @private
+	 */
+	function _apply(func, thisArg, args) {
 		return when.all(args || []).then(function(resolvedArgs) {
 			var d = when.defer();
 			var callback = createCallback(d.resolver);
 
-			func.apply(null, resolvedArgs.concat(callback));
+			func.apply(thisArg, resolvedArgs.concat(callback));
 
 			return d.promise;
 		});
@@ -95,7 +103,7 @@ define(function(require) {
 	 * @returns {Promise} promise for the value func passes to its callback
 	 */
 	function call(func /*, args... */) {
-		return apply(func, slice.call(arguments, 1));
+		return _apply(func, this, slice.call(arguments, 1));
 	}
 
 	/**
@@ -131,7 +139,7 @@ define(function(require) {
 	function lift(func /*, args... */) {
 		var args = slice.call(arguments, 1);
 		return function() {
-			return apply(func, args.concat(slice.call(arguments)));
+			return _apply(func, this, args.concat(slice.call(arguments)));
 		};
 	}
 

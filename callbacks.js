@@ -58,6 +58,14 @@ define(function(require) {
 	 * @returns {Promise} promise for the callback value of asyncFunction
 	 */
 	function apply(asyncFunction, extraAsyncArgs) {
+		return _apply(asyncFunction, this, extraAsyncArgs);
+	}
+
+	/**
+	 * Apply helper that allows specifying thisArg
+	 * @private
+	 */
+	function _apply(asyncFunction, thisArg, extraAsyncArgs) {
 		return when.all(extraAsyncArgs || []).then(function(args) {
 			return promise(function(resolve, reject) {
 				var asyncArgs = args.concat(
@@ -65,7 +73,7 @@ define(function(require) {
 					alwaysUnary(reject)
 				);
 
-				asyncFunction.apply(null, asyncArgs);
+				asyncFunction.apply(thisArg, asyncArgs);
 			});
 		});
 	}
@@ -91,8 +99,7 @@ define(function(require) {
 	 * @returns {Promise} promise for the callback value of asyncFunction
 	 */
 	function call(asyncFunction/*, arg1, arg2...*/) {
-		var extraAsyncArgs = slice.call(arguments, 1);
-		return apply(asyncFunction, extraAsyncArgs);
+		return _apply(asyncFunction, this, slice.call(arguments, 1));
 	}
 
 	/**
@@ -124,16 +131,14 @@ define(function(require) {
 	 *    var promiseAjaxGet = callbacks.bind(traditionalAjax, "GET");
 	 *    promiseAjaxGet("/movies.json").then(console.log, console.error);
 	 *
-	 * @param {Function} asyncFunction traditional function to be decorated
+	 * @param {Function} f traditional async function to be decorated
 	 * @param {...*} [args] arguments to be prepended for the new function
 	 * @returns {Function} a promise-returning function
 	 */
-	function lift(asyncFunction/*, args...*/) {
-		var leadingArgs = slice.call(arguments, 1);
-
+	function lift(f/*, args...*/) {
+		var args = slice.call(arguments, 1);
 		return function() {
-			var trailingArgs = slice.call(arguments, 0);
-			return apply(asyncFunction, leadingArgs.concat(trailingArgs));
+			return _apply(f, this, args.concat(slice.call(arguments)));
 		};
 	}
 
@@ -188,6 +193,7 @@ define(function(require) {
 	function promisify(asyncFunction, positions) {
 
 		return function() {
+			var thisArg = this;
 			return when.all(arguments).then(function(args) {
 				return promise(applyPromisified);
 
@@ -210,7 +216,7 @@ define(function(require) {
 						insertCallback(args, errbackPos, reject);
 					}
 
-					asyncFunction.apply(null, args);
+					asyncFunction.apply(thisArg, args);
 				}
 
 			});
@@ -235,9 +241,9 @@ define(function(require) {
 	function alwaysUnary(fn) {
 		return function() {
 			if(arguments.length <= 1) {
-				fn.apply(null, arguments);
+				fn.apply(this, arguments);
 			} else {
-				fn.call(null, slice.call(arguments, 0));
+				fn.call(this, slice.call(arguments));
 			}
 		};
 	}
