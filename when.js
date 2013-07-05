@@ -189,7 +189,7 @@ define(function () {
 			resolver: { resolve: undef, reject: undef, notify: undef }
 		};
 
-		deferred.promise = pending = _promise(makeDeferred);
+		deferred.promise = pending = promise(makeDeferred);
 
 		return deferred;
 
