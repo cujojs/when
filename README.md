@@ -15,6 +15,12 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 
 # What's New?
 
+### 2.2.1
+
+* Fix for `when.defer().reject()` bypassing the unhandled rejection monitor. (#166)
+* Fix for `when/function`, `when/callbacks`, and `when/node/function` not preserving `thisArg`. (#162)
+* Doc clarifications for [`promise.yield`](docs/api.md#yield). (#164)
+
 ### 2.2.0
 
 * New experimental [promise monitoring and debugging](docs/api.md#debugging-promises) via `when/monitor/console`.
