@@ -17,6 +17,7 @@ config.browser = {
 	resources: [
 		//'**', ** is busted in buster
 		'*.js',
+		'monitor/**/*.js',
 		'node/**/*.js',
 		'unfold/**/*.js',
 		'node_modules/curl/**/*.js'
