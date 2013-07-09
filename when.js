@@ -709,7 +709,7 @@ define(function () {
 	}
 
 	//
-	// Utilities, etc.
+	// Internals, utilities, etc.
 	//
 
 	var reduceArray, slice, fcall, nextTick, handlerQueue,
@@ -750,21 +750,33 @@ define(function () {
 		handlerQueue = [];
 	}
 
-	//
-	// Capture function and array utils
-	//
-	/*global setImmediate,process,vertx*/
+	// capture setTimeout to avoid being caught by fake timers
+	// used in time based tests
+	setTimeout = global.setTimeout;
 
 	// Allow attaching the monitor to when() if env has no console
 	monitorApi = typeof console != 'undefined' ? console : when;
 
-	// capture setTimeout to avoid being caught by fake timers used in time based tests
-	setTimeout = global.setTimeout;
-	// Prefer setImmediate, cascade to node, vertx and finally setTimeout
-	nextTick = typeof setImmediate === 'function' ? setImmediate.bind(global)
-		: typeof process === 'object' && process.nextTick ? process.nextTick
-		: typeof vertx === 'object' ? vertx.runOnLoop // vert.x
-			: function(task) { setTimeout(task, 0); }; // fallback
+	// Prefer setImmediate or MessageChannel, cascade to node,
+	// vertx and finally setTimeout
+	/*global setImmediate,MessageChannel,process,vertx*/
+	if (typeof setImmediate === 'function') {
+		nextTick = setImmediate.bind(global);
+	} else if(typeof MessageChannel !== 'undefined') {
+		var channel = new MessageChannel();
+		channel.port1.onmessage = drainQueue;
+		nextTick = function() { channel.port2.postMessage(0); };
+	} else if (typeof process === 'object' && process.nextTick) {
+		nextTick = process.nextTick;
+	} else if (typeof vertx === 'object') {
+		nextTick = vertx.runOnLoop;
+	} else {
+		nextTick = function(t) { setTimeout(t, 0); };
+	}
+
+	//
+	// Capture/polyfill function and array utils
+	//
 
 	// Safe function calls
 	funcProto = Function.prototype;
@@ -831,7 +843,4 @@ define(function () {
 
 	return when;
 });
-})(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(); },
-	this
-);
+})(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(); }, this);
