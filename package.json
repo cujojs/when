@@ -50,7 +50,7 @@
 		"test": "test"
 	},
 	"scripts": {
-		"test": "jshint . && buster test -e node && promises-aplus-tests test/promises-aplus-adapter.js",
+		"test": "jshint . && buster test -e node -r specification && promises-aplus-tests test/promises-aplus-adapter.js",
 		"ci": "npm test",
 		"tunnel": "sauceme -m",
 		"start": "buster static -e browser",
