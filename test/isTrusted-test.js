@@ -8,22 +8,24 @@ fakePromise = {
 
 define('when.isPromise-test', function (require) {
 
-	var when;
+	var when = require('when');
 
-	when = require('when');
-
-	function assertIsPromise(it) {
-		buster.assert(when.isPromise(it));
+	function assertIsTrusted(it) {
+		buster.assert(when.isTrusted(it));
 	}
 
-	function assertIsNotPromise(it) {
-		buster.refute(when.isPromise(it));
+	function refuteIsTrusted(it) {
+		buster.refute(when.isTrusted(it));
 	}
 
-	buster.testCase('when.isPromise', {
+	buster.testCase('when.isTrusted', {
 
-		'should return true for promise': function() {
-			assertIsPromise(fakePromise);
+		'should return true for trusted': function() {
+			assertIsTrusted(when.resolve());
+		},
+
+		'should return false for fake promise': function() {
+			refuteIsTrusted(fakePromise);
 		},
 
 		'should return false for non-promise': function() {
@@ -48,20 +50,12 @@ define('when.isPromise-test', function (require) {
 			];
 
 			for(var i = inputs.length - 1; i >= 0; --i) {
-				assertIsNotPromise(inputs[i]);
+				refuteIsTrusted(inputs[i]);
 			}
-		},
-
-		'should return true for delegated promise': function() {
-			function T() {}
-
-			T.prototype = fakePromise;
-			assertIsPromise(new T());
 		}
 	});
 
 });
-
 }(
 	this.buster || require('buster'),
 	typeof define === 'function' && define.amd ? define : function (id, factory) {
