@@ -13,9 +13,9 @@ define(function() {
 	return function createAggregator(reporter) {
 		var promises, nextKey;
 
-		function Monitor(parent) {
-			if(!(this instanceof Monitor)) {
-				return new Monitor(parent);
+		function PromiseStatus(parent) {
+			if(!(this instanceof PromiseStatus)) {
+				return new PromiseStatus(parent);
 			}
 
 			var stackHolder;
@@ -34,14 +34,14 @@ define(function() {
 			this.createdAt = stackHolder;
 		}
 
-		Monitor.prototype = {
+		PromiseStatus.prototype = {
 			observed: function () {
 				if(this.key in promises) {
 					delete promises[this.key];
 					report();
 				}
 
-				return new Monitor(this);
+				return new PromiseStatus(this);
 			},
 			fulfilled: function () {
 				if(this.key in promises) {
@@ -73,7 +73,7 @@ define(function() {
 		return publish({ publish: publish });
 
 		function publish(target) {
-			target.PromiseStatus = Monitor;
+			target.PromiseStatus = PromiseStatus;
 			target.reportUnhandled = report;
 			target.resetUnhandled = reset;
 			return target;
