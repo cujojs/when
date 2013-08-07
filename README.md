@@ -15,6 +15,10 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 
 # What's New?
 
+### 2.3.0
+
+* New [`promise.tap`]docs/api.md#tap) for adding side effects to a promise chain.
+
 ### 2.2.1
 
 * Fix for `when.defer().reject()` bypassing the unhandled rejection monitor. (#166)
