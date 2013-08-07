@@ -4,6 +4,19 @@
  * A lightweight CommonJS Promises/A and when() implementation
  * when is part of the cujo.js family of libraries (http://cujojs.com/)
  *
+ * External/global configuration object with name 'when' (e.g. window.when) can be used to configure behavior of when.
+ * Fields of the object determine values of configuration settings.
+ * <p>
+ * The following configuration settings are supported (name - type - description):
+ * <ul>
+ * <li>customize - Function - function that should be called before returning module definition;
+ *      the module definition is passed as an argument; for example, can be used to change public API
+ *      or clear/delete global config. 
+ * <li>execute - Function - function that should be used to call/execute any handler/callback instead of
+ *          default implementation; a handler is passed as the first argument, 
+ *          the resolution/rejection/progress value is passed as the second argument. 
+ * </ul>
+ *
  * Licensed under the MIT License at:
  * http://www.opensource.org/licenses/mit-license.php
  *
@@ -33,6 +46,21 @@ define(function () {
 
 	when.isPromise = isPromise;  // Determine if a thing is a promise
 
+	var config = when.config = (global['when'] && Object(global['when'])) || {};   // Configuration
+
+	/**
+	 * Calls/executes the given handler.
+	 * 
+	 * @param {Function} handler the handler that should be executed.
+	 * @param {*} value the value that should be passed to the handler.
+	 * @returns {*} the handler's call result.
+	 */
+	var execute = when.execute = 
+			typeof config.execute === "function" 
+			? config.execute  
+			: function(handler, value) {
+				return handler(value);
+			};
 
 	/**
 	 * Register an observer for a promise or immediate value.
@@ -370,8 +398,8 @@ define(function () {
 	function fulfilled(value) {
 		var self = new Promise(function (onFulfilled) {
 			try {
-				return typeof onFulfilled == 'function'
-					? coerce(onFulfilled(value)) : self;
+				return onFulfilled && (typeof onFulfilled == 'function' || typeof onFulfilled == 'object')
+					? coerce(execute(onFulfilled, value)) : self;
 			} catch (e) {
 				return rejected(e);
 			}
@@ -391,8 +419,8 @@ define(function () {
 	function rejected(reason) {
 		var self = new Promise(function (_, onRejected) {
 			try {
-				return typeof onRejected == 'function'
-					? coerce(onRejected(reason)) : self;
+				return onRejected && (typeof onRejected == 'function' || typeof onRejected == 'object')
+					? coerce(execute(onRejected, reason)) : self;
 			} catch (e) {
 				return rejected(e);
 			}
@@ -412,8 +440,8 @@ define(function () {
 	function progressing(update) {
 		var self = new Promise(function (_, __, onProgress) {
 			try {
-				return typeof onProgress == 'function'
-					? progressing(onProgress(update)) : self;
+				return onProgress && (typeof onProgress == 'function' || typeof onProgress == 'object')
+					? progressing(execute(onProgress, update)) : self;
 			} catch (e) {
 				return progressing(e);
 			}
@@ -433,7 +461,7 @@ define(function () {
 		enqueue(function() {
 			var handler, i = 0;
 			while (handler = handlers[i++]) {
-				handler(value);
+				execute(handler, value);
 			}
 		});
 	}
@@ -827,6 +855,11 @@ define(function () {
 
 	function identity(x) {
 		return x;
+	}
+
+
+	if (config.customize) {
+		execute(config.customize, when);
 	}
 
 	return when;
