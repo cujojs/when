@@ -23,7 +23,9 @@ define(function(require) {
 		call: call,
 		lift: lift,
 		bind: lift, // DEPRECATED alias for lift
-		createCallback: createCallback
+		createCallback: createCallback,
+		bindCallback: bindCallback,
+		liftCallback: liftCallback
 	};
 
 	/**
@@ -57,11 +59,19 @@ define(function(require) {
 	 * @returns {Promise} promise for the value func passes to its callback
 	 */
 	function apply(func, args) {
+		return _apply(func, this, args);
+	}
+
+	/**
+	 * Apply helper that allows specifying thisArg
+	 * @private
+	 */
+	function _apply(func, thisArg, args) {
 		return when.all(args || []).then(function(resolvedArgs) {
 			var d = when.defer();
 			var callback = createCallback(d.resolver);
 
-			func.apply(null, resolvedArgs.concat(callback));
+			func.apply(thisArg, resolvedArgs.concat(callback));
 
 			return d.promise;
 		});
@@ -93,7 +103,7 @@ define(function(require) {
 	 * @returns {Promise} promise for the value func passes to its callback
 	 */
 	function call(func /*, args... */) {
-		return apply(func, slice.call(arguments, 1));
+		return _apply(func, this, slice.call(arguments, 1));
 	}
 
 	/**
@@ -129,7 +139,7 @@ define(function(require) {
 	function lift(func /*, args... */) {
 		var args = slice.call(arguments, 1);
 		return function() {
-			return apply(func, args.concat(slice.call(arguments)));
+			return _apply(func, this, args.concat(slice.call(arguments)));
 		};
 	}
 
@@ -167,6 +177,63 @@ define(function(require) {
 			} else {
 				resolver.resolve(value);
 			}
+		};
+	}
+
+	/**
+	 * Attaches a node-style callback to a promise, ensuring the callback is
+	 * called for either fulfillment or rejection. Returns a new Promise that is
+	 * fulfilled with the return value of the callback and rejected with any error
+	 * thrown inside the callback.
+	 *
+	 * @example
+	 *	var deferred = when.defer();
+	 *
+	 *	function callback(err, value) {
+	 *		// Handle err or use value
+	 *	}
+	 *
+	 *	bindCallback(deferred.promise, callback);
+	 *
+	 *	deferred.resolve('interesting value');
+	 *
+	 * @param {Promise} promise The promise to be attached to.
+	 * @param {Function} callback The node-style callback to attach.
+	 * @returns {Promise} new Promise
+	 */
+	function bindCallback(promise, callback) {
+		return when(promise, callback && success, callback);
+
+		function success(value) {
+			return callback(null, value);
+		}
+	}
+
+	/**
+	 * Takes a node-style callback and returns new function that accepts a
+	 * promise, calling the original callback when the promise is either
+	 * fulfilled or rejected with the appropriate arguments.
+	 *
+	 * @example
+	 *	var deferred = when.defer();
+	 *
+	 *	function callback(err, value) {
+	 *		// Handle err or use value
+	 *	}
+	 *
+	 *	var wrapped = liftCallback(callback);
+	 *
+	 *	// `wrapped` can now be passed around at will
+	 *	wrapped(deferred.promise);
+	 *
+	 *	deferred.resolve('interesting value');
+	 *
+	 * @param {Function} callback The node-style callback to wrap.
+	 * @returns {Function} The lifted, promise-accepting function.
+	 */
+	function liftCallback(callback) {
+		return function(promise) {
+			return bindCallback(promise, callback);
 		};
 	}
 });

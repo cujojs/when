@@ -21,8 +21,9 @@ function expectArgs(expected) {
 
 define('when/parallel-test', function (require) {
 
-	var parallel;
+	var when, parallel;
 
+	when = require('when');
 	parallel = require('when/parallel');
 
 	buster.testCase('when/parallel', {
@@ -49,6 +50,16 @@ define('when/parallel-test', function (require) {
 			expected = [1, 2, 3];
 			tasks = [expectArgs(expected), expectArgs(expected), expectArgs(expected)];
 
+			return parallel.apply(null, [tasks].concat(expected)).ensure(done);
+		},
+
+		'should accept promises for args': function(done) {
+			var expected, tasks;
+
+			expected = [1, 2, 3];
+			tasks = [expectArgs(expected), expectArgs(expected), expectArgs(expected)];
+
+			expected = [when(1), when(2), when(3)];
 			return parallel.apply(null, [tasks].concat(expected)).ensure(done);
 		}
 	});

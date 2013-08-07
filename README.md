@@ -4,16 +4,42 @@
 
 # when.js
 
-When.js is cujojs's lightweight [Promises/A+](http://promises-aplus.github.com/promises-spec) and `when()` implementation that powers the async core of [wire.js](https://github.com/cujojs/wire), cujojs's IOC Container.  It features:
+When.js is cujoJS's lightweight [Promises/A+](http://promises-aplus.github.com/promises-spec) and `when()` implementation that powers the async core of [wire.js](https://github.com/cujojs/wire), cujoJS's IOC Container.  It features:
 
 * A rock solid, battle-tested Promise implementation
-* Resolving, mapping, and reducing arrays of promises
+* Resolving, settling, mapping, and reducing arrays of promises
 * Executing tasks in parallel and sequence
 * Transforming Node-style and other callback-based APIs into promise-based APIs
 
 It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promises-tests), is [very fast](https://github.com/cujojs/promise-perf-tests#test-results), is under 1.5k when compiled with Google Closure + gzip, and has no external dependencies.
 
 # What's New?
+
+### 2.2.1
+
+* Fix for `when.defer().reject()` bypassing the unhandled rejection monitor. (#166)
+* Fix for `when/function`, `when/callbacks`, and `when/node/function` not preserving `thisArg`. (#162)
+* Doc clarifications for [`promise.yield`](docs/api.md#yield). (#164)
+
+### 2.2.0
+
+* New experimental [promise monitoring and debugging](docs/api.md#debugging-promises) via `when/monitor/console`.
+* New [`when.promise(resolver)`](docs/api.md#whenpromise) promise creation API. A lighter alternative to the heavier `when.defer()`
+* New `bindCallback` and `liftCallback` in `when/node/function` for more integration options with node-style callbacks.
+
+### 2.1.1
+
+* Quote internal usages of `promise.yield` to workaround .NET minifier tools that don't yet understand ES5 identifier-as-property rules.  See [#157](https://github.com/cujojs/when/issues/157)
+
+### 2.1.0
+
+* New [`when.settle`](docs/api.md#whensettle) that settles an array of promises
+* New [`when/guard`](docs/api.md#whenguard) generalized concurrency guarding and limiting
+* New [`promise.inspect`](docs/api.md#inspect) for synchronously getting a snapshot of a promise's state at a particular instant.
+* Significant performance improvements when resolving promises with non-primitives (e.g. with Arrays, Objects, etc.)
+* Experimental [vert.x](http://vertx.io) support
+* **DEPRECATED**: `onFulfilled`, `onRejected`, `onProgress` handler arguments to `when.all`, `when.any`, `when.some`.  Use the returned promise's `then()` (or `otherwise()`, `ensure()`, etc) to register handlers instead.
+	* For example, do this: `when.all(array).then(onFulfilled, onRejected)` instead of this: `when.all(array, onFulfilled, onRejected)`.  The functionality is equivalent.
 
 ### 2.0.1
 

@@ -9,9 +9,10 @@
  */
 (function(define) { 'use strict';
 define(function(require) {
-	var when, keys, eachKey, owns;
+	var when, promise, keys, eachKey, owns;
 
 	when = require('./when');
+	promise = when.promise;
 
 	// Public API
 
@@ -62,24 +63,30 @@ define(function(require) {
 	 */
 	function map(object, mapFunc) {
 		return when(object, function(object) {
-			var results, d, toResolve;
+			return promise(resolveMap);
 
-			results = {};
-			d = when.defer();
-			toResolve = 0;
+			function resolveMap(resolve, reject, notify) {
+				var results, toResolve;
 
-			eachKey(object, function(value, key) {
-				++toResolve;
-				when(value, mapFunc).then(function(mapped) {
-					results[key] = mapped;
+				results = {};
+				toResolve = 0;
 
-					if(!--toResolve) {
-						d.resolve(results);
-					}
-				}, d.reject, d.notify);
-			});
+				eachKey(object, function(value, key) {
+					++toResolve;
+					when(value, mapFunc).then(function(mapped) {
+						results[key] = mapped;
 
-			return d.promise;
+						if(!--toResolve) {
+							resolve(results);
+						}
+					}, reject, notify);
+				});
+
+				// If there are no keys, resolve immediately
+				if(!toResolve) {
+					resolve(results);
+				}
+			}
 		});
 	}
 

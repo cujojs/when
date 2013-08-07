@@ -93,12 +93,6 @@ define('when.some-test', function (require) {
 			).ensure(done);
 		},
 
-		'should throw if called with something other than a valid input, count, and callbacks': function() {
-			assert.exception(function() {
-				when.some(1, 2, 3, 2);
-			});
-		},
-
 		'should accept a promise for an array': function(done) {
 			var expected, input;
 

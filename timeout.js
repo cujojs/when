@@ -1,6 +1,4 @@
-/** @license MIT License (c) copyright B Cavalier & J Hann */
-
-/*global setTimeout:true, clearTimeout:true*/
+/** @license MIT License (c) copyright 2011-2013 original author or authors */
 
 /**
  * timeout.js
@@ -8,67 +6,64 @@
  * Helper that returns a promise that rejects after a specified timeout,
  * if not explicitly resolved or rejected before that.
  *
- * @author brian@hovercraftstudios.com
+ * @author Brian Cavalier
+ * @author John Hann
  */
 
 (function(define) {
 define(function(require) {
-
-    var when, undef;
+	/*global vertx,setTimeout,clearTimeout*/
+    var when, setTimer, cancelTimer;
 
 	when = require('./when');
 
+	if(typeof vertx === 'object') {
+		setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
+		cancelTimer = vertx.cancelTimer;
+	} else {
+		setTimer = setTimeout;
+		cancelTimer = clearTimeout;
+	}
+
     /**
      * Returns a new promise that will automatically reject after msec if
-     * the supplied promise doesn't resolve or reject before that.
+     * the supplied trigger doesn't resolve or reject before that.
      *
-     * Usage:
-     *
-     * var d = when.defer();
-     * // Setup d however you need
-     *
-     * // return a new promise that will timeout if d doesn't resolve/reject first
-     * return timeout(d.promise, 1000);
-     *
-     * @param promise anything - any promise or value that should trigger
-     *  the returned promise to resolve or reject before the msec timeout
-     * @param msec {Number} timeout in milliseconds
-     *
-     * @returns {Promise}
+	 * @param {number} msec timeout in milliseconds
+     * @param {*|Promise} trigger any promise or value that should trigger the
+	 *  returned promise to resolve or reject before the msec timeout
+     * @returns {Promise} promise that will timeout after msec, or be
+	 *  equivalent to trigger if resolved/rejected before msec
      */
-    return function timeout(promise, msec) {
-        var deferred, timeoutRef;
+    return function timeout(msec, trigger) {
+		// Support reversed, deprecated argument ordering
+		if(typeof trigger === 'number') {
+			var tmp = trigger;
+			trigger = msec;
+			msec = tmp;
+		}
 
-        deferred = when.defer();
+		return when.promise(function(resolve, reject, notify) {
 
-        timeoutRef = setTimeout(function onTimeout() {
-            timeoutRef && deferred.reject(new Error('timed out'));
-        }, msec);
+			var timeoutRef = setTimer(function onTimeout() {
+				reject(new Error('timed out after ' + msec + 'ms'));
+			}, msec);
 
-        function cancelTimeout() {
-            clearTimeout(timeoutRef);
-            timeoutRef = undef;
-        }
-
-        when(promise,
-            function(value) {
-                cancelTimeout();
-                deferred.resolve(value);
-            },
-            function(reason) {
-                cancelTimeout();
-                deferred.reject(reason);
-            },
-			deferred.notify
-        );
-
-        return deferred.promise;
+			when(trigger,
+				function onFulfill(value) {
+					cancelTimer(timeoutRef);
+					resolve(value);
+				},
+				function onReject(reason) {
+					cancelTimer(timeoutRef);
+					reject(reason);
+				},
+				notify
+			);
+		});
     };
-
 });
 })(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
-	// Boilerplate for AMD and Node
-);
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
 
 

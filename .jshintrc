@@ -21,6 +21,7 @@
 	"nonew": true,
 	"quotmark": "single",
 	"strict": false,
+	"sub": true,
 	"trailing": true,
 	"undef": true,
 	"unused": true,

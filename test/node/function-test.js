@@ -1,6 +1,10 @@
 (function(buster, define) {
-var assert = buster.assert;
-var fail   = buster.fail;
+var assert, fail, sentinel, other;
+
+assert = buster.assert;
+fail   = buster.fail;
+sentinel = { value: 'sentinel' };
+other = { value: 'other' };
 
 define('when/node/function-test', function (require) {
 
@@ -17,131 +21,141 @@ define('when/node/function-test', function (require) {
 	buster.testCase('when/node/function', {
 		'apply': {
 			'should return promise': function() {
-				var result = nodefn.apply(function() {});
-				assertIsPromise(result);
+				assertIsPromise(nodefn.apply(function() {}));
+			},
+
+			'should preserve thisArg': function() {
+				return nodefn.apply.call(sentinel, function(cb) {
+					assert.same(this, sentinel);
+					cb(null);
+				});
 			},
 
 			'the returned promise': {
-				'should be resolved with the 2nd arg to the callback': function(done) {
+				'should be resolved with the 2nd arg to the callback': function() {
 					function async(cb) {
-						cb(null, 10);
+						cb(null, sentinel);
 					}
 
 					var promise = nodefn.apply(async);
-					promise.then(function(value) {
-						assert.equals(value, 10);
-					}, fail).ensure(done);
+					return promise.then(function(value) {
+						assert.same(value, sentinel);
+					});
 				},
 
-				'should be rejected with the 1st arg to the callback': function(done) {
-					var error = new Error('foobar');
+				'should be rejected with the 1st arg to the callback': function() {
 					function async(cb) {
-						cb(error);
+						cb(other);
 					}
 
 					var promise = nodefn.apply(async);
-					promise.then(fail, function(reason) {
-						assert.same(reason, error);
-					}).ensure(done);
+					return promise.then(fail, function(reason) {
+						assert.same(reason, other);
+					});
 				},
 
-				'should be resolved to an array for multi-arg callbacks': function(done) {
+				'should be resolved to an array for multi-arg callbacks': function() {
 					function async(cb) {
 						cb(null, 10, 20, 30);
 					}
 
 					var promise = nodefn.apply(async);
-					promise.then(function(values) {
+					return promise.then(function(values) {
 						assert.equals(values, [10, 20, 30]);
-					}).ensure(done);
+					});
 				}
 			},
 
-			'should forward an array of args to the function': function(done) {
+			'should forward an array of args to the function': function() {
 				function async(x, y, cb) {
 					cb(null, x + y);
 				}
 
 				var promise = nodefn.apply(async, [10, 20]);
-				promise.then(function(value) {
+				return promise.then(function(value) {
 					assert.equals(value, 30);
-				}).ensure(done);
+				});
 			},
 
-			'should handle promises on the args array': function(done) {
+			'should handle promises on the args array': function() {
 				function async(x, y, cb) {
 					cb(null, x + y);
 				}
 
 				var promise = nodefn.apply(async, [when(10), 20]);
-				promise.then(function(value) {
+				return promise.then(function(value) {
 					assert.equals(value, 30);
-				}).ensure(done);
+				});
 			}
 		},
 
 		'call': {
 			'should return promise': function() {
-				var result = nodefn.call(function() {});
-				assertIsPromise(result);
+				assertIsPromise(nodefn.call(function() {}));
+			},
+
+			'should preserve thisArg': function() {
+				return nodefn.call.call(sentinel, function(cb) {
+					assert.same(this, sentinel);
+					cb(null);
+				});
 			},
 
 			'the returned promise': {
-				'should be resolved with the 2nd arg to the callback': function(done) {
+				'should be resolved with the 2nd arg to the callback': function() {
 					function async(cb) {
-						cb(null, 10);
+						cb(null, sentinel);
 					}
 
 					var promise = nodefn.call(async);
-					promise.then(function(value) {
-						assert.equals(value, 10);
-					}, fail).ensure(done);
+					return promise.then(function(value) {
+						assert.same(value, sentinel);
+					});
 				},
 
-				'should be rejected with the 1st arg to the callback': function(done) {
-					var error = new Error('foobar');
+				'should be rejected with the 1st arg to the callback': function() {
 					function async(cb) {
-						cb(error);
+						cb(sentinel);
 					}
 
 					var promise = nodefn.call(async);
-					promise.then(fail, function(reason) {
-						assert.same(reason, error);
-					}).ensure(done);
+					return promise.then(fail, function(reason) {
+						assert.same(reason, sentinel);
+					});
 				},
 
-				'should be resolved to an array for multi-arg callbacks': function(done) {
+				'should be resolved to an array for multi-arg callbacks': function() {
 					function async(cb) {
 						cb(null, 10, 20, 30);
 					}
 
 					var promise = nodefn.call(async);
-					promise.then(function(values) {
+					return promise.then(function(values) {
 						assert.equals(values, [10, 20, 30]);
-					}).ensure(done);
+					});
 				}
 			},
 
-			'should forward extra arguments to the function': function(done) {
+			'should forward extra arguments to the function': function() {
 				function async(x, y, cb) {
 					cb(null, x + y);
 				}
 
 				var promise = nodefn.call(async, 10, 20);
-				promise.then(function(value) {
+				return promise.then(function(value) {
 					assert.equals(value, 30);
-				}).ensure(done);
+				});
 			},
 
-			'should handle promises on the args array': function(done) {
+			'should handle promises on the args array': function() {
 				function async(x, y, cb) {
 					cb(null, x + y);
 				}
 
 				var promise = nodefn.call(async, when(10), 20);
-				promise.then(function(value) {
+				return promise.then(function(value) {
 					assert.equals(value, 30);
-				}).ensure(done);
+				});
 			}
 		},
 
@@ -156,121 +170,323 @@ define('when/node/function-test', function (require) {
 				assert.isFunction(nodefn.lift(function() {}));
 			},
 
+			'should preserve thisArg': function() {
+				return nodefn.lift(function(cb) {
+					assert.same(this, sentinel);
+					cb(null);
+				}).call(sentinel);
+			},
+
 			'the returned function': {
 				'should return a promise': function() {
 					var result = nodefn.lift(function() {});
 					assertIsPromise(result());
 				},
 
-				'should resolve the promise with the callback value': function(done) {
+				'should resolve the promise with the callback value': function() {
 					var result = nodefn.lift(function(callback) {
-						callback(null, 10);
+						callback(null, sentinel);
 					});
 
 
-					result().then(function(value) {
-						assert.equals(value, 10);
-					}, fail).ensure(done);
+					return result().then(function(value) {
+						assert.same(value, sentinel);
+					});
 				},
 
-				'should handle promises as arguments': function(done) {
+				'should handle promises as arguments': function() {
 					var result = nodefn.lift(function(x, callback) {
-						callback(null, x + 10);
+						callback(null, x);
 					});
 
-					result(when(10)).then(function(value) {
-						assert.equals(value, 20);
-					}, fail).ensure(done);
+					return result(when(sentinel)).then(function(value) {
+						assert.same(value, sentinel);
+					});
 				},
 
-				'should reject the promise with the error argument': function(done) {
-					var error = new Error();
+				'should reject the promise with the error argument': function() {
 					var result = nodefn.lift(function(callback) {
-						callback(error);
+						callback(sentinel);
 					});
 
 
-					result().then(fail, function(reason) {
-						assert.same(reason, error);
-					}).ensure(done);
+					return result().then(fail, function(reason) {
+						assert.same(reason, sentinel);
+					});
 				},
 
-				'should resolve the promise to an array for mult-args': function(done) {
+				'should resolve the promise to an array for mult-args': function() {
 					var result = nodefn.lift(function(callback) {
 						callback(null, 10, 20, 30);
 					});
 
-					result().then(function(values) {
+					return result().then(function(values) {
 						assert.equals(values, [10, 20, 30]);
-					}).ensure(done);
+					});
 				}
 			},
 
-			'should accept leading arguments': function(done) {
+			'should accept leading arguments': function() {
 				function fancySum(x, y, callback) {
 					callback(null, x + y);
 				}
 
 				var partiallyApplied = nodefn.lift(fancySum, 5);
 
-				partiallyApplied(10).then(function(value) {
+				return partiallyApplied(10).then(function(value) {
 					assert.equals(value, 15);
-				}, fail).ensure(done);
+				}, fail);
 			},
 
-			'should accept promises as leading arguments': function(done) {
+			'should accept promises as leading arguments': function() {
 				function fancySum(x, y, callback) {
 					callback(null, x + y);
 				}
 
 				var partiallyApplied = nodefn.lift(fancySum, when(5));
 
-				partiallyApplied(10).then(function(value) {
+				return partiallyApplied(10).then(function(value) {
 					assert.equals(value, 15);
-				}, fail).ensure(done);
+				});
 			}
 		},
 
 		'createCallback': {
 			'should return a function': function() {
-				var result = nodefn.createCallback();
-				assert.isFunction(result);
+				assert.isFunction(nodefn.createCallback());
 			},
 
 			'the returned function': {
-				'should resolve the resolver when called without errors': function(done) {
+				'should resolve the resolver when called without errors': function() {
 					var deferred = when.defer();
 					var callback = nodefn.createCallback(deferred.resolver);
 
 					callback(null, 10);
 
-					deferred.promise.then(function(value) {
+					return deferred.promise.then(function(value) {
 						assert.equals(value, 10);
-					}, fail).ensure(done);
+					}, fail);
 				},
 
-				'should reject the resolver when called with errors': function(done) {
+				'should reject the resolver when called with errors': function() {
 					var deferred = when.defer();
 					var callback = nodefn.createCallback(deferred.resolver);
 
-					var error = new Error();
+					callback(sentinel);
 
-					callback(error);
-
-					deferred.promise.then(fail, function(reason) {
-						assert.same(reason, error);
-					}).ensure(done);
+					return deferred.promise.then(fail, function(reason) {
+						assert.same(reason, sentinel);
+					});
 				},
 
-				'should pass multiple arguments as an array': function(done) {
+				'should pass multiple arguments as an array': function() {
 					var deferred = when.defer();
 					var callback = nodefn.createCallback(deferred.resolver);
 
 					callback(null, 10, 20, 30);
 
-					deferred.promise.then(function(value) {
+					return deferred.promise.then(function(value) {
 						assert.equals(value, [10, 20, 30]);
-					}, fail).ensure(done);
+					});
+				}
+			}
+		},
+
+		'bindCallback': {
+			'should return a promise': function () {
+				assert.isFunction(nodefn.bindCallback({}, function(){}).then);
+			},
+
+			'should register callback as callback': function () {
+				function callback(_, val) {
+					assert.same(val, sentinel);
+				}
+
+				return nodefn.bindCallback(
+					when.resolve(sentinel),
+					callback
+				);
+			},
+
+			'should register callback as errback': function () {
+				function callback(err) {
+					assert.same(err, sentinel);
+				}
+
+				return nodefn.bindCallback(
+					when.reject(sentinel),
+					callback
+				);
+			},
+
+			'should handle null values': function () {
+				return nodefn.bindCallback(
+					when.resolve(sentinel),
+					null
+				).then(function (value) {
+					assert.same(value, sentinel);
+				});
+			},
+
+			'returned promise': {
+				'should be fulfilled with the callback return value': {
+					'when the original is fulfilled': function () {
+						function callback(_, val) {
+							assert.same(val, other);
+							return sentinel;
+						}
+
+						return nodefn.bindCallback(
+							when.resolve(other),
+							callback
+						).then(function (value) {
+							assert.same(value, sentinel);
+						});
+					},
+
+					'when the original is rejected': function () {
+						function callback(err) {
+							assert.same(err, other);
+							return sentinel;
+						}
+
+						return nodefn.bindCallback(
+							when.reject(other),
+							callback
+						).then(function (value) {
+							assert.same(value, sentinel);
+						});
+					}
+				},
+
+				'should be rejected with any error thrown in the callback': {
+					'when the original is fulfilled': function () {
+						function callback(_, val) {
+							assert.same(val, other);
+							throw sentinel;
+						}
+
+						return nodefn.bindCallback(
+							when.resolve(other),
+							callback
+						).then(fail, function (reason) {
+							assert.same(reason, sentinel);
+						});
+					},
+
+					'when the original is rejected': function () {
+						function callback(err) {
+							assert.same(err, other);
+							throw sentinel;
+						}
+
+						return nodefn.bindCallback(
+							when.reject(other),
+							callback
+						).then(fail, function (reason) {
+							assert.same(reason, sentinel);
+						});
+					}
+				}
+			}
+		},
+
+		'liftCallback': {
+			'should return a function': function () {
+				assert.isFunction(nodefn.liftCallback(function(){}));
+			},
+
+			'wrapped callback': {
+				'should return a promise': function () {
+					var lifted = nodefn.liftCallback(function(){});
+
+					assert.isFunction(lifted({}).then);
+				},
+
+				'should register callback as callback': function () {
+					function callback(_, val) {
+						assert.same(val, sentinel);
+					}
+
+					var lifted = nodefn.liftCallback(callback);
+
+					return lifted(when.resolve(sentinel));
+				},
+
+				'should register callback as errback': function () {
+					function callback(err) {
+						assert.same(err, sentinel);
+					}
+
+					var lifted = nodefn.liftCallback(callback);
+
+					return lifted(when.reject(sentinel));
+				},
+
+				'should handle null values': function () {
+					var lifted = nodefn.liftCallback(null);
+
+					return lifted(when.resolve(sentinel)).then(function (value) {
+						assert.same(value, sentinel);
+					});
+				},
+
+				'returned promise': {
+					'should be fulfilled with the callback return value': {
+						'when the original is fulfilled': function () {
+							function callback(_, val) {
+								assert.same(val, other);
+								return sentinel;
+							}
+
+							var lifted = nodefn.liftCallback(callback);
+
+							return lifted(when.resolve(other)).then(function (value) {
+								assert.same(value, sentinel);
+							});
+						},
+
+						'when the original is rejected': function () {
+							function callback(err) {
+								assert.same(err, other);
+								return sentinel;
+							}
+
+							var lifted = nodefn.liftCallback(callback);
+
+							return lifted(when.reject(other)).then(function (value) {
+								assert.same(value, sentinel);
+							});
+						}
+					},
+
+					'should be rejected with any error thrown in the callback': {
+						'when the original is fulfilled': function () {
+							function callback(_, val) {
+								assert.same(val, other);
+								throw sentinel;
+							}
+
+							var lifted = nodefn.liftCallback(callback);
+
+							return lifted(when.resolve(other)).then(fail, function (reason) {
+								assert.same(reason, sentinel);
+							});
+						},
+
+						'when the original is rejected': function () {
+							function callback(err) {
+								assert.same(err, other);
+								throw sentinel;
+							}
+
+							var lifted = nodefn.liftCallback(callback);
+
+							return lifted(when.reject(other)).then(fail, function (reason) {
+								assert.same(reason, sentinel);
+							});
+						}
+					}
 				}
 			}
 		}

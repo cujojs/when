@@ -7,6 +7,16 @@ fail = buster.assertions.fail;
 
 sentinel = {};
 
+function assertNoKeys(object) {
+	var key, count = 0;
+	for(key in object) {
+		if(object.hasOwnProperty(key)) {
+			count++;
+		}
+	}
+	assert.equals(count, 0);
+}
+
 define('when/keys-test', function (require) {
 
 	var keys, when, resolve, reject;
@@ -19,6 +29,10 @@ define('when/keys-test', function (require) {
 	buster.testCase('when/keys', {
 
 		'all': {
+			'should resolve empty input': function() {
+				return keys.all({}).then(assertNoKeys);
+			},
+
 			'should resolve input values': function(done) {
 				var input = { a: 1, b: 2, c: 3 };
 				keys.all(input).then(
@@ -71,6 +85,10 @@ define('when/keys-test', function (require) {
 		},
 
 		'map': {
+			'should resolve empty input': function() {
+				return keys.map({}).then(assertNoKeys);
+			},
+
 			'should map keys': function(done) {
 				var input = { a: 1, b: 2, c: 3 };
 				keys.map(input, function(x) {

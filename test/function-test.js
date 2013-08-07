@@ -1,8 +1,12 @@
 (function(buster, define) {
 
-var assert = buster.assert;
-var fail   = buster.fail;
-var slice  = [].slice;
+var assert, fail, slice, sentinel;
+
+assert = buster.assert;
+fail   = buster.fail;
+slice  = [].slice;
+
+sentinel = { value: 'sentinel' };
 
 define('when/function-test', function (require) {
 
@@ -41,6 +45,12 @@ define('when/function-test', function (require) {
 			'should return a promise': function() {
 				var result = fn.apply(f, [1, 2]);
 				assertIsPromise(result);
+			},
+
+			'should preserve thisArg': function() {
+				return fn.apply.call(sentinel, function() {
+					assert.same(this, sentinel);
+				});
 			},
 
 			'should accept values for arguments': function(done) {
@@ -91,6 +101,12 @@ define('when/function-test', function (require) {
 			'should return a promise': function() {
 				var result = fn.call(f, 1, 2);
 				assertIsPromise(result);
+			},
+
+			'should preserve thisArg': function() {
+				return fn.call.call(sentinel, function() {
+					assert.same(this, sentinel);
+				});
 			},
 
 			'should accept values for arguments': function(done) {
@@ -152,6 +168,12 @@ define('when/function-test', function (require) {
 				'should return a promise': function() {
 					var result = fn.lift(f);
 					assertIsPromise(result(1, 2));
+				},
+
+				'should preserve thisArg': function() {
+					return fn.lift(function() {
+						assert.same(this, sentinel);
+					}).call(sentinel);
 				},
 
 				'should resolve the promise to its return value': function(done) {

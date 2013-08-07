@@ -13,9 +13,10 @@
 (function(define) {
 define(function(require) {
 
-	var when, slice;
+	var when, promise, slice;
 
 	when = require('./when');
+	promise = when.promise;
 	slice = [].slice;
 
 	return {
@@ -57,17 +58,23 @@ define(function(require) {
 	 * @returns {Promise} promise for the callback value of asyncFunction
 	 */
 	function apply(asyncFunction, extraAsyncArgs) {
+		return _apply(asyncFunction, this, extraAsyncArgs);
+	}
+
+	/**
+	 * Apply helper that allows specifying thisArg
+	 * @private
+	 */
+	function _apply(asyncFunction, thisArg, extraAsyncArgs) {
 		return when.all(extraAsyncArgs || []).then(function(args) {
-			var deferred = when.defer();
+			return promise(function(resolve, reject) {
+				var asyncArgs = args.concat(
+					alwaysUnary(resolve),
+					alwaysUnary(reject)
+				);
 
-			var asyncArgs = args.concat(
-				alwaysUnary(deferred.resolve),
-				alwaysUnary(deferred.reject)
-			);
-
-			asyncFunction.apply(null, asyncArgs);
-
-			return deferred.promise;
+				asyncFunction.apply(thisArg, asyncArgs);
+			});
 		});
 	}
 
@@ -92,8 +99,7 @@ define(function(require) {
 	 * @returns {Promise} promise for the callback value of asyncFunction
 	 */
 	function call(asyncFunction/*, arg1, arg2...*/) {
-		var extraAsyncArgs = slice.call(arguments, 1);
-		return apply(asyncFunction, extraAsyncArgs);
+		return _apply(asyncFunction, this, slice.call(arguments, 1));
 	}
 
 	/**
@@ -125,16 +131,14 @@ define(function(require) {
 	 *    var promiseAjaxGet = callbacks.bind(traditionalAjax, "GET");
 	 *    promiseAjaxGet("/movies.json").then(console.log, console.error);
 	 *
-	 * @param {Function} asyncFunction traditional function to be decorated
+	 * @param {Function} f traditional async function to be decorated
 	 * @param {...*} [args] arguments to be prepended for the new function
 	 * @returns {Function} a promise-returning function
 	 */
-	function lift(asyncFunction/*, args...*/) {
-		var leadingArgs = slice.call(arguments, 1);
-
+	function lift(f/*, args...*/) {
+		var args = slice.call(arguments, 1);
 		return function() {
-			var trailingArgs = slice.call(arguments, 0);
-			return apply(asyncFunction, leadingArgs.concat(trailingArgs));
+			return _apply(f, this, args.concat(slice.call(arguments)));
 		};
 	}
 
@@ -189,31 +193,32 @@ define(function(require) {
 	function promisify(asyncFunction, positions) {
 
 		return function() {
+			var thisArg = this;
 			return when.all(arguments).then(function(args) {
+				return promise(applyPromisified);
 
-				var deferred, callbackPos, errbackPos;
+				function applyPromisified(resolve, reject) {
+					var callbackPos, errbackPos;
 
-				if('callback' in positions) {
-					callbackPos = normalizePosition(args, positions.callback);
+					if('callback' in positions) {
+						callbackPos = normalizePosition(args, positions.callback);
+					}
+
+					if('errback' in positions) {
+						errbackPos = normalizePosition(args, positions.errback);
+					}
+
+					if(errbackPos < callbackPos) {
+						insertCallback(args, errbackPos, reject);
+						insertCallback(args, callbackPos, resolve);
+					} else {
+						insertCallback(args, callbackPos, resolve);
+						insertCallback(args, errbackPos, reject);
+					}
+
+					asyncFunction.apply(thisArg, args);
 				}
 
-				if('errback' in positions) {
-					errbackPos = normalizePosition(args, positions.errback);
-				}
-
-				deferred = when.defer();
-
-				if(errbackPos < callbackPos) {
-					insertCallback(args, errbackPos, deferred.reject);
-					insertCallback(args, callbackPos, deferred.resolve);
-				} else {
-					insertCallback(args, callbackPos, deferred.resolve);
-					insertCallback(args, errbackPos, deferred.reject);
-				}
-
-				asyncFunction.apply(null, args);
-
-				return deferred.promise;
 			});
 		};
 	}
@@ -236,9 +241,9 @@ define(function(require) {
 	function alwaysUnary(fn) {
 		return function() {
 			if(arguments.length <= 1) {
-				fn.apply(null, arguments);
+				fn.apply(this, arguments);
 			} else {
-				fn.call(null, slice.call(arguments, 0));
+				fn.call(this, slice.call(arguments));
 			}
 		};
 	}

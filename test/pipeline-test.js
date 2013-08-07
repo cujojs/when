@@ -14,8 +14,9 @@ function createTask(y) {
 
 define('when/pipeline-test', function (require) {
 
-	var pipeline;
+	var when, pipeline;
 
+	when = require('when');
 	pipeline = require('when/pipeline');
 
 	buster.testCase('when/pipeline', {
@@ -55,7 +56,21 @@ define('when/pipeline-test', function (require) {
 					assert.calledOnceWith.apply(assert, tasks.concat(expected));
 				}
 			);
+		},
+
+		'should allow initial args to be promises': function() {
+			var expected, tasks;
+
+			expected = [1, 2, 3];
+			tasks = [this.spy()];
+
+			return pipeline.apply(null, [tasks].concat([when(1), when(2), when(3)])).then(
+				function() {
+					assert.calledOnceWith.apply(assert, tasks.concat(expected));
+				}
+			);
 		}
+
 	});
 
 });

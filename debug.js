@@ -35,8 +35,8 @@
  */
 (function(define) {
 define(function(require) {
-
-	var when, promiseId, pending, exceptionsToRethrow, own, warn, undef;
+	/*global vertx,setTimeout*/
+	var when, promiseId, pending, exceptionsToRethrow, own, warn, setTimer, undef;
 
 	when = require('./when');
 	promiseId = 0;
@@ -47,12 +47,18 @@ define(function(require) {
 		? function(x) { console.warn(x); }
 		: function() {};
 
+	setTimer = typeof vertx === 'object'
+		? function (f, ms) { return vertx.setTimer(ms, f); }
+		: setTimeout;
+
 	exceptionsToRethrow = {
 		RangeError: 1,
 		ReferenceError: 1,
 		SyntaxError: 1,
 		TypeError: 1
 	};
+
+	warn('when/debug is deprecated and will be removed. Use when/monitor/console instead');
 
 	/**
 	 * Replacement for when() that sets up debug logging on the
@@ -227,6 +233,10 @@ define(function(require) {
 	whenDebug.defer = deferDebug;
 	whenDebug.isPromise = when.isPromise;
 
+	makeDebugWithHandlers('all', when.all);
+	makeDebugWithHandlers('any', when.any);
+	makeDebugWithHandlers('some', when.some, 2);
+
 	// For each method we haven't already replaced, replace it with
 	// one that sets up debug logging on the returned promise
 	for(var p in when) {
@@ -242,6 +252,16 @@ define(function(require) {
 		whenDebug[name] = function() {
 			return debugPromise(func.apply(when, arguments));
 		};
+	}
+
+	function makeDebugWithHandlers(name, func, offset) {
+		makeDebug(name, function() {
+			offset = offset || 1;
+			if(typeof arguments[offset] === 'function' || typeof arguments[offset+1] === 'function' || typeof arguments[offset+2] === 'function') {
+				warn(name + '() onFulfilled, onRejected, and onProgress are deprecated, use returnedPromise.then/otherwise/ensure instead');
+			}
+			return func.apply(when, arguments);
+		});
 	}
 
 	// Wrap a promise callback to catch exceptions and log or
@@ -319,7 +339,7 @@ define(function(require) {
 	}
 
 	function throwUncatchable(err) {
-		setTimeout(function() {
+		setTimer(function() {
 			throw err;
 		}, 0);
 	}
