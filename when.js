@@ -110,6 +110,16 @@ define(function () {
 		},
 
 		/**
+		 * Runs a side effect when this promise fulfills, without changing the
+		 * fulfillment value.
+		 * @param {function} onFulfilledSideEffect
+		 * @returns {Promise}
+		 */
+		tap: function(onFulfilledSideEffect) {
+			return this.then(onFulfilledSideEffect)['yield'](this);
+		},
+
+		/**
 		 * Assumes that this promise will fulfill with an array, and arranges
 		 * for the onFulfilled to be called with the array as its argument list
 		 * i.e. onFulfilled.apply(undefined, array).

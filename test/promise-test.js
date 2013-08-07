@@ -6,8 +6,8 @@ assert = buster.assert;
 refute = buster.refute;
 fail = buster.assertions.fail;
 
-sentinel = {};
-other = {};
+sentinel = { value: 'sentinel' };
+other = { value: 'other' };
 
 slice = Array.prototype.slice;
 
@@ -646,17 +646,9 @@ define('when/promise-test', function (require) {
 				assert.isFunction(defer().promise.otherwise().then);
 			},
 
-			'should register errback': function(done) {
-				var d = when.defer();
-
-				d.promise.otherwise(
-					function(val) {
-						assert.equals(val, 1);
-						done();
-					}
-				);
-
-				d.reject(1);
+			'should register errback': function() {
+				return when.reject(sentinel).otherwise(
+					function(val) { assert.same(val, sentinel); });
 			}
 		},
 
@@ -665,23 +657,47 @@ define('when/promise-test', function (require) {
 				assert.isFunction(defer().promise.yield().then);
 			},
 
-			'should fulfill with the supplied value': function(done) {
-				when.resolve(other).yield(sentinel).then(
+			'should fulfill with the supplied value': function() {
+				return when.resolve(other).yield(sentinel).then(
 					function(value) { assert.same(value, sentinel); }
-				).ensure(done);
+				);
 			},
 
-			'should fulfill with the value of a fulfilled promise': function(done) {
-				when.resolve(other).yield(when.resolve(sentinel)).then(
+			'should fulfill with the value of a fulfilled promise': function() {
+				return when.resolve(other).yield(when.resolve(sentinel)).then(
 					function(value) { assert.same(value, sentinel); }
-				).ensure(done);
+				);
 			},
 
-			'should reject with the reason of a rejected promise': function(done) {
-				when.resolve(other).yield(when.reject(sentinel)).then(
+			'should reject with the reason of a rejected promise': function() {
+				return when.resolve(other).yield(when.reject(sentinel)).then(
 					fail,
 					function(reason) { assert.same(reason, sentinel); }
-				).ensure(done);
+				);
+			}
+		},
+
+		'tap': {
+			'should return a promise': function() {
+				assert.isFunction(defer().promise.tap().then);
+			},
+
+			'should fulfill with the original value': function() {
+				return when.resolve(sentinel).tap(function() {
+					return other;
+				}).then(function(value) { assert.same(value, sentinel); });
+			},
+
+			'should reject with thrown exception if tap function throws': function() {
+				return when.resolve(other).tap(function() {
+					throw sentinel;
+				}).then(fail, function(value) { assert.same(value, sentinel); });
+			},
+
+			'should reject with rejection reason if tap function rejects': function() {
+				return when.resolve(other).tap(function() {
+					return when.reject(sentinel);
+				}).then(fail, function(value) { assert.same(value, sentinel); });
 			}
 		},
 
@@ -690,57 +706,47 @@ define('when/promise-test', function (require) {
 				assert.isFunction(defer().promise.spread().then);
 			},
 
-			'should apply onFulfilled with array as argument list': function(done) {
+			'should apply onFulfilled with array as argument list': function() {
 				var expected = [1, 2, 3];
-				when.resolve(expected).spread(function() {
+				return when.resolve(expected).spread(function() {
 					assert.equals(slice.call(arguments), expected);
-				}).ensure(done);
+				});
 			},
 
-			'should resolve array contents': function(done) {
+			'should resolve array contents': function() {
 				var expected = [when.resolve(1), 2, when.resolve(3)];
-				when.resolve(expected).spread(function() {
+				return when.resolve(expected).spread(function() {
 					assert.equals(slice.call(arguments), [1, 2, 3]);
-				}).ensure(done);
+				});
 			},
 
-			'should reject if any item in array rejects': function(done) {
+			'should reject if any item in array rejects': function() {
 				var expected = [when.resolve(1), 2, when.reject(3)];
-				when.resolve(expected)
+				return when.resolve(expected)
 					.spread(fail)
-					.then(
-						fail,
-						function() {
-							assert(true);
-						}
-					).ensure(done);
+					.then(fail, function() { assert(true); });
 			},
 
 			'when input is a promise': {
-				'should apply onFulfilled with array as argument list': function(done) {
+				'should apply onFulfilled with array as argument list': function() {
 					var expected = [1, 2, 3];
-					when.resolve(when.resolve(expected)).spread(function() {
+					return when.resolve(when.resolve(expected)).spread(function() {
 						assert.equals(slice.call(arguments), expected);
-					}).ensure(done);
+					});
 				},
 
-				'should resolve array contents': function(done) {
+				'should resolve array contents': function() {
 					var expected = [when.resolve(1), 2, when.resolve(3)];
-					when.resolve(when.resolve(expected)).spread(function() {
+					return when.resolve(when.resolve(expected)).spread(function() {
 						assert.equals(slice.call(arguments), [1, 2, 3]);
-					}).ensure(done);
+					});
 				},
 
-				'should reject if input is a rejected promise': function(done) {
+				'should reject if input is a rejected promise': function() {
 					var expected = when.reject([1, 2, 3]);
-					when.resolve(expected)
+					return when.resolve(expected)
 						.spread(fail)
-						.then(
-						fail,
-						function() {
-							assert(true);
-						}
-					).ensure(done);
+						.then(fail, function() { assert(true); });
 				}
 			}
 		},

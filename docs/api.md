@@ -198,6 +198,34 @@ originalPromise.then(function() {
 });
 ```
 
+### tap()
+
+```js
+promise.tap(onFulfilledSideEffect);
+```
+
+Executes a function as a side effect when `promise` fulfills.
+
+Returns a new promise:
+
+1. If `promise` fulfills, `onFulfilledSideEffect` is executed:
+	- If `onFulfilledSideEffect` returns successfully, the promise returned by `tap` fulfills with `promise`'s original fulfillment value.  That is, `onfulfilledSideEffect`'s result is discarded.
+	- If `onFulfilledSideEffect` throws or returns a rejected promise, the promise returned by `tap` rejects with the same reason.
+2. If `promise` rejects, `onFulfilledSideEffect` is *not* executed, and the promise returned by `tap` rejects with `promise`'s rejection reason.
+
+These are equivalent:
+
+```js
+// Using only .then()
+promise.then(function(x) {
+	doSideEffectsHere(x);
+	return x;
+});
+
+// Using .tap()
+promise.tap(doSideEffectsHere);
+```
+
 ### spread()
 
 ```js
