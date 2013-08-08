@@ -282,30 +282,33 @@ define('when.defer-test', function (require) {
 
 				d.promise.then(
 					function() {
-						return d2.promise;
+						return when.promise(function(resolve, reject, notify) {
+							setTimeout(function() {
+								notify(sentinel);
+							}, 0);
+						});
 					}
-				).then(fail, fail,
-					function(update) {
+				).then(null, null,
+					function onProgress(update) {
 						assert.same(update, sentinel);
 						done();
 					}
 				);
-
-				d2.notify(sentinel);
 			},
 
 			'should forward progress events when intermediary callback (tied to an unresovled promise) returns a promise': function(done) {
-				var d, d2;
-
-				d = when.defer();
-				d2 = when.defer();
+				var d = when.defer();
 
 				d.promise.then(
 					function() {
-						return d2.promise;
+						return when.promise(function(resolve, reject, notify) {
+							setTimeout(function() {
+								notify(sentinel);
+							}, 0);
+						});
 					}
-				).then(fail, fail,
-					function(update) {
+				).then(null, null,
+					function onProgress(update) {
 						assert.same(update, sentinel);
 						done();
 					}
@@ -313,7 +316,6 @@ define('when.defer-test', function (require) {
 
 				// resolve d AFTER calling attaching progress handler
 				d.resolve();
-				d2.notify(sentinel);
 			},
 
 			'should forward progress when resolved with another promise': function(done) {

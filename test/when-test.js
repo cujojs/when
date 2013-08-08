@@ -47,63 +47,68 @@ define('when-test', function (require) {
 			refute.same(result, fakePromise);
 		},
 
-		'should return a promise that forwards for a value': function(done) {
+		'should return a promise that forwards for a value': function() {
 			var result = when(1, constant(2));
 
 			assert(typeof result.then == 'function');
 
-			result.then(
+			return result.then(
 				function(val) {
 					assert.equals(val, 2);
 				},
 				fail
-			).ensure(done);
+			);
 		},
 
-		'should invoke fulfilled handler asynchronously for value': function(done) {
+		'should invoke fulfilled handler asynchronously for value': function() {
 			var val = other;
 
-			when({}, function() {
-				assert.same(val, sentinel);
-			}).ensure(done);
-
-			val = sentinel;
-		},
-
-		'should invoke fulfilled handler asynchronously for fake promise': function(done) {
-			var val = other;
-
-			when(fakePromise, function() {
-				assert.same(val, sentinel);
-			}).ensure(done);
-
-			val = sentinel;
-		},
-
-		'should invoke fulfilled handler asynchronously for resolved promise': function(done) {
-			var val = other;
-
-			when(when.resolve(), function() {
-				assert.same(val, sentinel);
-			}).ensure(done);
-
-			val = sentinel;
-		},
-
-		'should invoke fulfilled handler asynchronously for rejected promise': function(done) {
-			var val = other;
-
-			when(when.reject(),
-				fail,
-				function() {
+			try {
+				return when({}, function() {
 					assert.same(val, sentinel);
-				}
-			).ensure(done);
-
-			val = sentinel;
+				});
+			} finally {
+				val = sentinel;
+			}
 		},
 
-		'should support deep nesting in promise chains': function(done) {
+		'should invoke fulfilled handler asynchronously for fake promise': function() {
+			var val = other;
+
+			try {
+				return when(fakePromise, function() {
+					assert.same(val, sentinel);
+				});
+			} finally {
+				val = sentinel;
+			}
+		},
+
+		'should invoke fulfilled handler asynchronously for resolved promise': function() {
+			var val = other;
+
+			try {
+				return when(when.resolve(), function() {
+					assert.same(val, sentinel);
+				});
+			} finally {
+				val = sentinel;
+			}
+		},
+
+		'should invoke rejected handler asynchronously for rejected promise': function() {
+			var val = other;
+
+			try {
+				return when(when.reject(),
+					fail, function() { assert.same(val, sentinel); }
+				);
+			} finally {
+				val = sentinel;
+			}
+		},
+
+		'should support deep nesting in promise chains': function() {
 			var d, result;
 
 			d = when.defer();
@@ -119,21 +124,21 @@ define('when-test', function (require) {
 				);
 			})));
 
-			result.then(
+			return result.then(
 				function(val) {
 					assert(val);
 				},
 				fail
-			).ensure(done);
+			);
 		},
 
-		'should return a resolved promise for a resolved input promise': function(done) {
-			when(when.resolve(true)).then(
+		'should return a resolved promise for a resolved input promise': function() {
+			return when(when.resolve(true)).then(
 				function(val) {
 					assert(val);
 				},
 				fail
-			).ensure(done);
+			);
 		},
 
 		'should assimilate untrusted promises':function () {
@@ -147,7 +152,7 @@ define('when-test', function (require) {
 			refute(result instanceof FakePromise);
 		},
 
-		'should assimilate intermediate promises returned by callbacks':function (done) {
+		'should assimilate intermediate promises returned by callbacks':function () {
 			var result;
 
 			// untrusted promise returned by an intermediate
@@ -161,12 +166,14 @@ define('when-test', function (require) {
 					assert.equals(val, 2);
 				},
 				fail
-			).ensure(done);
+			);
 
 			refute(result instanceof FakePromise);
+
+			return result;
 		},
 
-		'should assimilate intermediate promises and forward results':function (done) {
+		'should assimilate intermediate promises and forward results':function () {
 			var untrusted, result;
 
 			untrusted = new FakePromise(1);
@@ -178,7 +185,7 @@ define('when-test', function (require) {
 			refute.equals(result, untrusted);
 			refute(result instanceof FakePromise);
 
-			when(result,
+			return when(result,
 				function (val) {
 					assert.equals(val, 2);
 					return new FakePromise(val + 1);
@@ -188,7 +195,7 @@ define('when-test', function (require) {
 					assert.equals(val, 3);
 				},
 				fail
-			).ensure(done);
+			);
 		}
 
 	});

@@ -33,7 +33,6 @@ define(function () {
 
 	when.isPromise = isPromise;  // Determine if a thing is a promise
 
-
 	/**
 	 * Register an observer for a promise or immediate value.
 	 *
@@ -60,10 +59,12 @@ define(function () {
 	 * a trusted when.js promise.  Any other duck-typed promise is considered
 	 * untrusted.
 	 * @constructor
+	 * @param {function} sendMessage function to deliver messages to the promise's handler
+	 * @param {function?} inspect function that reports the promise's state
 	 * @name Promise
 	 */
-	function Promise(then, inspect) {
-		this.then = then;
+	function Promise(sendMessage, inspect) {
+		this._message = sendMessage;
 		this.inspect = inspect;
 	}
 
@@ -247,9 +248,10 @@ define(function () {
 	 * @private
 	 */
 	function _promise(resolver, status) {
-		var self, value, handlers = [];
+		var self, value, consumers = [];
 
-		self = new Promise(then, inspect);
+		self = new Promise(_message, inspect);
+		self.then = then;
 
 		// Call the provider resolver to seal the promise's fate
 		try {
@@ -261,6 +263,25 @@ define(function () {
 		// Return the promise
 		return self;
 
+		function _message(type, args, resolve, notify) {
+			consumers ? consumers.push(deliver) : enqueue(function() { deliver(value); });
+
+			function deliver(p) {
+				p._message(type, args, resolve, notify);
+			}
+		}
+
+		/**
+		 * Returns a snapshot of the promise's state at the instant inspect()
+		 * is called. The returned object is not live and will not update as
+		 * the promise's state changes.
+		 * @returns {{ state:String, value?:*, reason?:* }} status snapshot
+		 *  of the promise.
+		 */
+		function inspect() {
+			return value ? value.inspect() : toPendingState();
+		}
+
 		/**
 		 * Register handlers for this promise.
 		 * @param [onFulfilled] {Function} fulfillment handler
@@ -269,23 +290,11 @@ define(function () {
 		 * @return {Promise} new Promise
 		 */
 		function then(onFulfilled, onRejected, onProgress) {
-			var next = _promise(function(resolve, reject, notify) {
-				// if not resolved, push onto handlers, otherwise execute asap
-				// but not in the current stack
-				handlers ? handlers.push(run) : enqueue(function() { run(value); });
-
-				function run(p) {
-					p.then(onFulfilled, onRejected, onProgress)
-						.then(resolve, reject, notify);
-				}
-
+			/*jshint unused:false*/
+			var args = arguments;
+			return _promise(function(resolve, reject, notify) {
+				_message('when', args, resolve, notify);
 			}, status && status.observed());
-
-			return next;
-		}
-
-		function inspect() {
-			return value ? value.inspect() : toPendingState();
 		}
 
 		/**
@@ -294,19 +303,16 @@ define(function () {
 		 * @param {*|Promise} val resolution value
 		 */
 		function promiseResolve(val) {
-			if(!handlers) {
+			if(!consumers) {
 				return;
 			}
 
 			value = coerce(val);
-			scheduleHandlers(handlers, value);
-			handlers = undef;
+			scheduleConsumers(consumers, value);
+			consumers = undef;
 
-			if (status) {
-				value.then(
-					function () { status.fulfilled(); },
-					function(r) { status.rejected(r); }
-				);
+			if(status) {
+				updateStatus(value, status);
 			}
 		}
 
@@ -323,10 +329,71 @@ define(function () {
 		 * @param {*} update progress event payload to pass to all listeners
 		 */
 		function promiseNotify(update) {
-			if(handlers) {
-				scheduleHandlers(handlers, progressing(update));
+			if(consumers) {
+				scheduleConsumers(consumers, progressed(update));
 			}
 		}
+	}
+
+	/**
+	 * Creates a fulfilled, local promise as a proxy for a value
+	 * NOTE: must never be exposed
+	 * @param {*} value fulfillment value
+	 * @returns {Promise}
+	 */
+	function fulfilled(value) {
+		return near(
+			new NearFulfilledProxy(value),
+			function() { return toFulfilledState(value); }
+		);
+	}
+
+	/**
+	 * Creates a rejected, local promise with the supplied reason
+	 * NOTE: must never be exposed
+	 * @param {*} reason rejection reason
+	 * @returns {Promise}
+	 */
+	function rejected(reason) {
+		return near(
+			new NearRejectedProxy(reason),
+			function() { return toRejectedState(reason); }
+		);
+	}
+
+	/**
+	 * Creates a near promise using the provided proxy
+	 * NOTE: must never be exposed
+	 * @param {object} proxy proxy for the promise's ultimate value or reason
+	 * @param {function} inspect function that returns a snapshot of the
+	 *  returned near promise's state
+	 * @returns {Promise}
+	 */
+	function near(proxy, inspect) {
+		return new Promise(function(type, args, resolve) {
+			try {
+				resolve(proxy[type].apply(proxy, args));
+			} catch(e) {
+				resolve(rejected(e));
+			}
+		}, inspect);
+	}
+
+	/**
+	 * Create a progress promise with the supplied update.
+	 * @private
+	 * @param {*} update
+	 * @return {Promise} progress promise
+	 */
+	function progressed(update) {
+		return new Promise(function (type, args, _, notify) {
+			var onProgress = args[2];
+			try {
+				notify(typeof onProgress === 'function' ? onProgress(update) : update);
+			} catch(e) {
+				notify(e);
+			}
+		});
 	}
 
 	/**
@@ -334,7 +401,7 @@ define(function () {
 	 *
 	 * @private
 	 * @param {*} x thing to coerce
-	 * @returns {Promise} Guaranteed to return a trusted Promise.  If x
+	 * @returns {*} Guaranteed to return a trusted Promise.  If x
 	 *   is trusted, returns x, otherwise, returns a new, trusted, already-resolved
 	 *   Promise whose resolution value is:
 	 *   * the resolution value of x if it's a foreign promise, or
@@ -371,66 +438,25 @@ define(function () {
 		});
 	}
 
-	/**
-	 * Create an already-fulfilled promise for the supplied value
-	 * @private
-	 * @param {*} value
-	 * @return {Promise} fulfilled promise
-	 */
-	function fulfilled(value) {
-		var self = new Promise(function (onFulfilled) {
-			try {
-				return typeof onFulfilled == 'function'
-					? coerce(onFulfilled(value)) : self;
-			} catch (e) {
-				return rejected(e);
-			}
-		}, function() {
-			return toFulfilledState(value);
-		});
-
-		return self;
+	function NearFulfilledProxy(value) {
+		this.v = value;
 	}
 
-	/**
-	 * Create an already-rejected promise with the supplied rejection reason.
-	 * @private
-	 * @param {*} reason
-	 * @return {Promise} rejected promise
-	 */
-	function rejected(reason) {
-		var self = new Promise(function (_, onRejected) {
-			try {
-				return typeof onRejected == 'function'
-					? coerce(onRejected(reason)) : self;
-			} catch (e) {
-				return rejected(e);
-			}
-		}, function() {
-			return toRejectedState(reason);
-		});
+	NearFulfilledProxy.prototype.when = function(onResult) {
+		return typeof onResult === 'function' ? onResult(this.v) : this.v;
+	};
 
-		return self;
+	function NearRejectedProxy(reason) {
+		this.r = reason;
 	}
 
-	/**
-	 * Create a progress promise with the supplied update.
-	 * @private
-	 * @param {*} update
-	 * @return {Promise} progress promise
-	 */
-	function progressing(update) {
-		var self = new Promise(function (_, __, onProgress) {
-			try {
-				return typeof onProgress == 'function'
-					? progressing(onProgress(update)) : self;
-			} catch (e) {
-				return progressing(e);
-			}
-		});
-
-		return self;
-	}
+	NearRejectedProxy.prototype.when = function(_, onError) {
+		if(typeof onError === 'function') {
+			return onError(this.r);
+		} else {
+			throw this.r;
+		}
+	};
 
 	/**
 	 * Schedule a task that will process a list of handlers
@@ -439,13 +465,20 @@ define(function () {
 	 * @param {Array} handlers queue of handlers to execute
 	 * @param {*} value passed as the only arg to each handler
 	 */
-	function scheduleHandlers(handlers, value) {
+	function scheduleConsumers(handlers, value) {
 		enqueue(function() {
 			var handler, i = 0;
 			while (handler = handlers[i++]) {
 				handler(value);
 			}
 		});
+	}
+
+	function updateStatus(value, status) {
+		value._message('when', [
+			function ()  { status.fulfilled(); },
+			function (r) { status.rejected(r); }
+		], identity, identity);
 	}
 
 	/**
@@ -642,11 +675,12 @@ define(function () {
 				function resolveOne(item, i) {
 					when(item, mapFunc, fallback).then(function(mapped) {
 						results[i] = mapped;
+						notify(mapped);
 
 						if(!--toResolve) {
 							resolve(results);
 						}
-					}, reject, notify);
+					}, reject);
 				}
 			}
 		});
