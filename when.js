@@ -438,23 +438,33 @@ define(function () {
 		});
 	}
 
+	/**
+	 * Proxy for a near, fulfilled value
+	 * @param {*} value
+	 * @constructor
+	 */
 	function NearFulfilledProxy(value) {
-		this.v = value;
+		this.value = value;
 	}
 
 	NearFulfilledProxy.prototype.when = function(onResult) {
-		return typeof onResult === 'function' ? onResult(this.v) : this.v;
+		return typeof onResult === 'function' ? onResult(this.value) : this.value;
 	};
 
+	/**
+	 * Proxy for a near rejection
+	 * @param {*} value
+	 * @constructor
+	 */
 	function NearRejectedProxy(reason) {
-		this.r = reason;
+		this.reason = reason;
 	}
 
 	NearRejectedProxy.prototype.when = function(_, onError) {
 		if(typeof onError === 'function') {
-			return onError(this.r);
+			return onError(this.reason);
 		} else {
-			throw this.r;
+			throw this.reason;
 		}
 	};
 

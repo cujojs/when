@@ -11,13 +11,16 @@ When.js is cujoJS's lightweight [Promises/A+](http://promises-aplus.github.com/p
 * Executing tasks in parallel and sequence
 * Transforming Node-style and other callback-based APIs into promise-based APIs
 
-It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promises-tests), is [very fast](https://github.com/cujojs/promise-perf-tests#test-results), is under 1.5k when compiled with Google Closure + gzip, and has no external dependencies.
+It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promises-tests), is [very fast](https://github.com/cujojs/promise-perf-tests#test-results) and compact, and has no external dependencies.
 
 # What's New?
 
 ### 2.3.0
 
 * New [`promise.tap`]docs/api.md#tap) for adding side effects to a promise chain.
+* New `MessageChannel` scheduler reduces "time-to-first" handler, in environments that support it.
+* Performance optimizations for promise resolution.
+* Internal architecture improvements to pave the way for when.js 3.0.0.
 
 ### 2.2.1
 

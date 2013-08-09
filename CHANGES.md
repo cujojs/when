@@ -1,6 +1,9 @@
 ### 2.3.0
 
 * New [`promise.tap`]docs/api.md#tap) for adding side effects to a promise chain.
+* New `MessageChannel` scheduler reduces "time-to-first" handler, in environments that support it.
+* Performance optimizations for promise resolution.
+* Internal architecture improvements to pave the way for when.js 3.0.0.
 
 ### 2.2.1
 
