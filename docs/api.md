@@ -887,13 +887,13 @@ More when/delay [examples on the wiki](https://github.com/cujojs/when/wiki/when-
 ## when/timeout
 
 ```js
-var timed = timeout(milliseconds, promiseOrValue);
+var timed = timeout(milliseconds, promiseOrValue, garbageCollect);
 
 // DEPRECATED, but currently works:
 var delayed = delay(promiseOrValue, milliseconds);
 ```
 
-Create a promise that will reject after a timeout if promiseOrValue does not resolved or rejected beforehand.  If promiseOrValue is a value, the returned promise will resolve immediately.  More interestingly, if promiseOrValue is a promise, if it resolved before the timeout period, the returned promise will resolve.  If it doesn't, the returned promise will reject.
+Create a promise that will reject after a timeout if promiseOrValue does not resolved or rejected beforehand.  If promiseOrValue is a value, the returned promise will resolve immediately.  More interestingly, if promiseOrValue is a promise, if it resolved before the timeout period, the returned promise will resolve.  If it doesn't, the returned promise will reject. If a optional garbageCollect function is passed it will be called when a timeout occurs before the promise is rejected.
 
 ```js
 var timeout, timed, d;
@@ -901,7 +901,9 @@ var timeout, timed, d;
 timeout = require('when/timeout');
 
 // timed will reject after 5 seconds unless anotherPromise resolves beforehand.
-timed = timeout(5000, anotherPromise);
+timed = timeout(5000, anotherPromise, function() {
+	// Optional cleanup before timeout
+});
 
 d = when.defer();
 // Setup d however you need
