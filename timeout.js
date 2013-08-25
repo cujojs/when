@@ -32,10 +32,11 @@ define(function(require) {
 	 * @param {number} msec timeout in milliseconds
      * @param {*|Promise} trigger any promise or value that should trigger the
 	 *  returned promise to resolve or reject before the msec timeout
+     * @param {Function} [garbageCollect] Optional function called before a timeout reject is called for cleanup or other tasks.
      * @returns {Promise} promise that will timeout after msec, or be
 	 *  equivalent to trigger if resolved/rejected before msec
      */
-    return function timeout(msec, trigger) {
+    return function timeout(msec, trigger, cb) {
 		// Support reversed, deprecated argument ordering
 		if(typeof trigger === 'number') {
 			var tmp = trigger;
@@ -46,6 +47,7 @@ define(function(require) {
 		return when.promise(function(resolve, reject, notify) {
 
 			var timeoutRef = setTimer(function onTimeout() {
+				if (cb) { cb(); }
 				reject(new Error('timed out after ' + msec + 'ms'));
 			}, msec);
 
