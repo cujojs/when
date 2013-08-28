@@ -610,7 +610,7 @@ If any of the promises is rejected, the returned promise will be rejected with t
 ## when/keys map
 
 ```js
-var promise = keys.map(array, mapFunc)
+var promise = keys.map(object, mapFunc)
 ```
 
 Where:
