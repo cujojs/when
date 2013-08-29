@@ -658,7 +658,7 @@ define(function () {
 	function _map(array, mapFunc, fallback) {
 		return when(array, function(array) {
 
-			return promise(resolveMap);
+			return _promise(resolveMap);
 
 			function resolveMap(resolve, reject, notify) {
 				var results, len, toResolve, i;
