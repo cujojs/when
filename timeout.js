@@ -12,15 +12,16 @@
 
 (function(define) {
 define(function(require) {
-	/*global vertx,setTimeout,clearTimeout*/
-    var when, setTimer, cancelTimer;
+	/*global setTimeout,clearTimeout*/
+    var when, setTimer, cancelTimer, vertx;
 
 	when = require('./when');
 
-	if(typeof vertx === 'object') {
+	try {
+		vertx = require('vertx');
 		setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
 		cancelTimer = vertx.cancelTimer;
-	} else {
+	} catch (e) {
 		setTimer = setTimeout;
 		cancelTimer = clearTimeout;
 	}

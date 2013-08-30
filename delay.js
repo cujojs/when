@@ -11,14 +11,17 @@
 
 (function(define) {
 define(function(require) {
-	/*global vertx,setTimeout*/
-	var when, setTimer;
+	/*global setTimeout*/
+	var when, setTimer, vertxSetTimer;
 
 	when = require('./when');
 
-	setTimer = typeof vertx === 'object'
-		? function (f, ms) { return vertx.setTimer(ms, f); }
-		: setTimeout;
+	try {
+		vertxSetTimer = require('vertx').setTimer;
+		setTimer = function (f, ms) { return vertxSetTimer(ms, f); };
+	} catch(e) {
+		setTimer = setTimeout;
+	}
 
     /**
      * Creates a new promise that will resolve after a msec delay.  If

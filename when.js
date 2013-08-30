@@ -813,7 +813,7 @@ define(function () {
 
 	// Prefer setImmediate or MessageChannel, cascade to node,
 	// vertx and finally setTimeout
-	/*global setImmediate,MessageChannel,process,vertx*/
+	/*global setImmediate,MessageChannel,process*/
 	if (typeof setImmediate === 'function') {
 		nextTick = setImmediate.bind(global);
 	} else if(typeof MessageChannel !== 'undefined') {
@@ -822,10 +822,13 @@ define(function () {
 		nextTick = function() { channel.port2.postMessage(0); };
 	} else if (typeof process === 'object' && process.nextTick) {
 		nextTick = process.nextTick;
-	} else if (typeof vertx === 'object') {
-		nextTick = vertx.runOnLoop;
 	} else {
-		nextTick = function(t) { setTimeout(t, 0); };
+		try {
+			// vert.x 1.x || 2.x
+			nextTick = require('vertx').runOnLoop || require('vertx').runOnContext;
+		} catch(ignore) {
+			nextTick = function(t) { setTimeout(t, 0); };
+		}
 	}
 
 	//
