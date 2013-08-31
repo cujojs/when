@@ -15,6 +15,11 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 
 # What's New?
 
+### 2.4.0
+
+* Experimental support for [vert.x 2.x](http://vertx.io). Should now run in vert.x >= 1.1.0.
+* Fix for promise monitor reporting extra unhandled rejections for `when.all` and `when.map`.
+
 ### 2.3.0
 
 * New [`promise.tap`](docs/api.md#tap) for adding side effects to a promise chain.
