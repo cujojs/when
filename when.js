@@ -272,17 +272,6 @@ define(function (require) {
 		}
 
 		/**
-		 * Returns a snapshot of the promise's state at the instant inspect()
-		 * is called. The returned object is not live and will not update as
-		 * the promise's state changes.
-		 * @returns {{ state:String, value?:*, reason?:* }} status snapshot
-		 *  of the promise.
-		 */
-		function inspect() {
-			return value ? value.inspect() : toPendingState();
-		}
-
-		/**
 		 * Register handlers for this promise.
 		 * @param [onFulfilled] {Function} fulfillment handler
 		 * @param [onRejected] {Function} rejection handler
@@ -295,6 +284,17 @@ define(function (require) {
 			return _promise(function(resolve, reject, notify) {
 				_message('when', args, resolve, notify);
 			}, status && status.observed());
+		}
+
+		/**
+		 * Returns a snapshot of the promise's state at the instant inspect()
+		 * is called. The returned object is not live and will not update as
+		 * the promise's state changes.
+		 * @returns {{ state:String, value?:*, reason?:* }} status snapshot
+		 *  of the promise.
+		 */
+		function inspect() {
+			return value ? value.inspect() : toPendingState();
 		}
 
 		/**
@@ -370,7 +370,7 @@ define(function (require) {
 	 * @returns {Promise}
 	 */
 	function near(proxy, inspect) {
-		return new Promise(function(type, args, resolve) {
+		return new Promise(function (type, args, resolve) {
 			try {
 				resolve(proxy[type].apply(proxy, args));
 			} catch(e) {
@@ -485,18 +485,14 @@ define(function (require) {
 	}
 
 	function updateStatus(value, status) {
-		if(typeof value.then === 'function') {
-			value.then(
-				function ()  { status.fulfilled(); },
-				function (r) { status.rejected(r); }
-			);
-		} else {
-			value._message('when', [
-				function ()  { status.fulfilled(); },
-				function (r) { status.rejected(r); }
-			], identity, identity);
-		}
+		// FIXME: So ugly, but necessary to call then() if it's available
+		// since it will beget a new PromiseStatus to the child.
+		typeof value.then === 'function'
+			? value.then(statusFulfilled, statusRejected)
+			: value._message('when', [statusFulfilled, statusRejected], identity, identity);
 
+		function statusFulfilled() { status.fulfilled(); }
+		function statusRejected(r) { status.rejected(r); }
 	}
 
 	/**
