@@ -12,12 +12,13 @@
 (function(define) {
 define(function(require) {
 	/*global setTimeout*/
-	var when, setTimer, vertxSetTimer;
+	var when, setTimer, cjsRequire, vertxSetTimer;
 
 	when = require('./when');
+	cjsRequire = require;
 
 	try {
-		vertxSetTimer = require('vertx').setTimer;
+		vertxSetTimer = cjsRequire('vertx').setTimer;
 		setTimer = function (f, ms) { return vertxSetTimer(ms, f); };
 	} catch(e) {
 		setTimer = setTimeout;

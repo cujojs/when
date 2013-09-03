@@ -12,7 +12,7 @@
  * @version 2.4.0
  */
 (function(define, global) { 'use strict';
-define(function () {
+define(function (require) {
 
 	// Public API
 
@@ -767,7 +767,10 @@ define(function () {
 	//
 
 	var reduceArray, slice, fcall, nextTick, handlerQueue,
-		setTimeout, funcProto, call, arrayProto, monitorApi, undef;
+		setTimeout, funcProto, call, arrayProto, monitorApi,
+		cjsRequire, undef;
+
+	cjsRequire = require;
 
 	//
 	// Shared handler queue processing
@@ -825,7 +828,7 @@ define(function () {
 	} else {
 		try {
 			// vert.x 1.x || 2.x
-			nextTick = require('vertx').runOnLoop || require('vertx').runOnContext;
+			nextTick = cjsRequire('vertx').runOnLoop || cjsRequire('vertx').runOnContext;
 		} catch(ignore) {
 			nextTick = function(t) { setTimeout(t, 0); };
 		}
@@ -900,4 +903,4 @@ define(function () {
 
 	return when;
 });
-})(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(); }, this);
+})(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }, this);

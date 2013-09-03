@@ -13,12 +13,13 @@
 (function(define) {
 define(function(require) {
 	/*global setTimeout,clearTimeout*/
-    var when, setTimer, cancelTimer, vertx;
+    var when, setTimer, cancelTimer, cjsRequire, vertx;
 
 	when = require('./when');
+	cjsRequire = require;
 
 	try {
-		vertx = require('vertx');
+		vertx = cjsRequire('vertx');
 		setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
 		cancelTimer = vertx.cancelTimer;
 	} catch (e) {
