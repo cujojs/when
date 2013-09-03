@@ -485,10 +485,18 @@ define(function (require) {
 	}
 
 	function updateStatus(value, status) {
-		value._message('when', [
-			function ()  { status.fulfilled(); },
-			function (r) { status.rejected(r); }
-		], identity, identity);
+		if(typeof value.then === 'function') {
+			value.then(
+				function ()  { status.fulfilled(); },
+				function (r) { status.rejected(r); }
+			);
+		} else {
+			value._message('when', [
+				function ()  { status.fulfilled(); },
+				function (r) { status.rejected(r); }
+			], identity, identity);
+		}
+
 	}
 
 	/**
