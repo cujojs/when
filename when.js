@@ -70,6 +70,25 @@ define(function (require) {
 
 	Promise.prototype = {
 		/**
+		 * Register handlers for this promise.
+		 * @param [onFulfilled] {Function} fulfillment handler
+		 * @param [onRejected] {Function} rejection handler
+		 * @param [onProgress] {Function} progress handler
+		 * @return {Promise} new Promise
+		 */
+		then: function(onFulfilled, onRejected, onProgress) {
+			/*jshint unused:false*/
+			var args, sendMessage;
+
+			args = arguments;
+			sendMessage = this._message;
+
+			return _promise(function(resolve, reject, notify) {
+				sendMessage('when', args, resolve, notify);
+			}, this._status && this._status.observed());
+		},
+
+		/**
 		 * Register a rejection handler.  Shortcut for .then(undefined, onRejected)
 		 * @param {function?} onRejected
 		 * @return {Promise}
@@ -251,7 +270,7 @@ define(function (require) {
 		var self, value, consumers = [];
 
 		self = new Promise(_message, inspect);
-		self.then = then;
+		self._status = status;
 
 		// Call the provider resolver to seal the promise's fate
 		try {
@@ -263,27 +282,21 @@ define(function (require) {
 		// Return the promise
 		return self;
 
+		/**
+		 * Private message delivery. Queues and delivers messages to
+		 * the promise's ultimate fulfillment value or rejection reason.
+		 * @private
+		 * @param {String} type
+		 * @param {Array} args
+		 * @param {Function} resolve
+		 * @param {Function} notify
+		 */
 		function _message(type, args, resolve, notify) {
 			consumers ? consumers.push(deliver) : enqueue(function() { deliver(value); });
 
 			function deliver(p) {
 				p._message(type, args, resolve, notify);
 			}
-		}
-
-		/**
-		 * Register handlers for this promise.
-		 * @param [onFulfilled] {Function} fulfillment handler
-		 * @param [onRejected] {Function} rejection handler
-		 * @param [onProgress] {Function} progress handler
-		 * @return {Promise} new Promise
-		 */
-		function then(onFulfilled, onRejected, onProgress) {
-			/*jshint unused:false*/
-			var args = arguments;
-			return _promise(function(resolve, reject, notify) {
-				_message('when', args, resolve, notify);
-			}, status && status.observed());
 		}
 
 		/**
@@ -453,7 +466,7 @@ define(function (require) {
 
 	/**
 	 * Proxy for a near rejection
-	 * @param {*} value
+	 * @param {*} reason
 	 * @constructor
 	 */
 	function NearRejectedProxy(reason) {
@@ -485,11 +498,7 @@ define(function (require) {
 	}
 
 	function updateStatus(value, status) {
-		// FIXME: So ugly, but necessary to call then() if it's available
-		// since it will beget a new PromiseStatus to the child.
-		typeof value.then === 'function'
-			? value.then(statusFulfilled, statusRejected)
-			: value._message('when', [statusFulfilled, statusRejected], identity, identity);
+		value.then(statusFulfilled, statusRejected);
 
 		function statusFulfilled() { status.fulfilled(); }
 		function statusRejected(r) { status.rejected(r); }
