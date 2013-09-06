@@ -31,7 +31,6 @@ define(function (require) {
 	when.any       = any;        // One-winner race
 	when.some      = some;       // Multi-winner race
 
-	when.isTrusted = isTrusted;  // Is something a when.js promise
 	when.isPromise = isPromiseLike;  // DEPRECATED: use isPromiseLike
 	when.isPromiseLike = isPromiseLike; // Is something promise-like, aka thenable
 
@@ -423,7 +422,7 @@ define(function (require) {
 	 *   * x if it's a value
 	 */
 	function coerce(x) {
-		if(isTrusted(x)) {
+		if (x instanceof Promise) {
 			return x;
 		}
 
@@ -516,15 +515,6 @@ define(function (require) {
 	 */
 	function isPromiseLike(x) {
 		return x && typeof x.then === 'function';
-	}
-
-	/**
-	 * Determines if x is a when.js promise
-	 * @param {*} x
-	 * @returns {boolean} true iff x is a when.js promise
-	 */
-	function isTrusted(x) {
-		return x instanceof Promise;
 	}
 
 	/**
