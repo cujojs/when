@@ -31,7 +31,8 @@ define(function (require) {
 	when.any       = any;        // One-winner race
 	when.some      = some;       // Multi-winner race
 
-	when.isPromise = isPromise;  // Determine if a thing is a promise
+	when.isPromise = isPromiseLike;  // DEPRECATED: use isPromiseLike
+	when.isPromiseLike = isPromiseLike; // Is something promise-like, aka thenable
 
 	/**
 	 * Register an observer for a promise or immediate value.
@@ -421,7 +422,7 @@ define(function (require) {
 	 *   * x if it's a value
 	 */
 	function coerce(x) {
-		if(x instanceof Promise) {
+		if (x instanceof Promise) {
 			return x;
 		}
 
@@ -505,13 +506,15 @@ define(function (require) {
 	}
 
 	/**
-	 * Determines if promiseOrValue is a promise or not
-	 *
-	 * @param {*} promiseOrValue anything
-	 * @returns {boolean} true if promiseOrValue is a {@link Promise}
+	 * Determines if x is promise-like, i.e. a thenable object
+	 * NOTE: Will return true for *any thenable object*, and isn't truly
+	 * safe, since it may attempt to access the `then` property of x (i.e.
+	 *  clever/malicious getters may do weird things)
+	 * @param {*} x anything
+	 * @returns {boolean} true if x is promise-like
 	 */
-	function isPromise(promiseOrValue) {
-		return promiseOrValue && typeof promiseOrValue.then === 'function';
+	function isPromiseLike(x) {
+		return x && typeof x.then === 'function';
 	}
 
 	/**

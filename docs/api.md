@@ -430,13 +430,15 @@ when(doSomething(),
 );
 ```
 
-## when.isPromise()
+## when.isPromiseLike()
+
+**DEPRECATED ALIAS:** when.isPromise()
 
 ```js
-var is = when.isPromise(anything);
+var is = when.isPromiseLike(anything);
 ```
 
-Return true if `anything` is truthy and implements the then() promise API.  Note that this will return true for both a deferred (i.e. `when.defer()`), and a `deferred.promise` since both implement the promise API.
+Return true if `anything` is an object or function with a `then` method.  It does not distinguish trusted when.js promises from other "thenables" (e.g. from some other promise implementation).
 
 # Joining promises
 

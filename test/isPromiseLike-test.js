@@ -8,22 +8,24 @@ fakePromise = {
 
 define('when.isPromise-test', function (require) {
 
-	var when;
+	var when = require('when');
 
-	when = require('when');
-
-	function assertIsPromise(it) {
-		buster.assert(when.isPromise(it));
+	function assertIsPromiseLike(it) {
+		buster.assert(when.isPromiseLike(it));
 	}
 
-	function assertIsNotPromise(it) {
-		buster.refute(when.isPromise(it));
+	function refuteIsPromiseLike(it) {
+		buster.refute(when.isPromiseLike(it));
 	}
 
-	buster.testCase('when.isPromise', {
+	buster.testCase('when.isPromiseLike', {
+
+		'should return true for trusted': function() {
+			assertIsPromiseLike(when.resolve());
+		},
 
 		'should return true for promise': function() {
-			assertIsPromise(fakePromise);
+			assertIsPromiseLike(fakePromise);
 		},
 
 		'should return false for non-promise': function() {
@@ -48,7 +50,7 @@ define('when.isPromise-test', function (require) {
 			];
 
 			for(var i = inputs.length - 1; i >= 0; --i) {
-				assertIsNotPromise(inputs[i]);
+				refuteIsPromiseLike(inputs[i]);
 			}
 		},
 
@@ -56,7 +58,7 @@ define('when.isPromise-test', function (require) {
 			function T() {}
 
 			T.prototype = fakePromise;
-			assertIsPromise(new T());
+			assertIsPromiseLike(new T());
 		}
 	});
 
