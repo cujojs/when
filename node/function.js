@@ -121,7 +121,7 @@ define(function(require) {
 	 * @example
 	 *    var fs = require("fs"), nodefn = require("when/node/function");
 	 *
-	 *    var promiseRead = nodefn.bind(fs.readFile);
+	 *    var promiseRead = nodefn.lift(fs.readFile);
 	 *
 	 *    // The promise is resolved with the contents of the file if everything
 	 *    // goes ok

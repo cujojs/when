@@ -108,7 +108,7 @@ define(function(require) {
 	 * depends on whether the original function will call its callback or its
 	 * errback.
 	 *
-	 * If additional arguments are passed to the `bind` call, they will be prepended
+	 * If additional arguments are passed to the `lift` call, they will be prepended
 	 * on the calls to the original function, much like `Function.prototype.bind`.
 	 *
 	 * The resulting function is also "promise-aware", in the sense that, if given
@@ -125,10 +125,10 @@ define(function(require) {
 	 *		xhr.send();
 	 *	}
 	 *
-	 *    var promiseAjax = callbacks.bind(traditionalAjax);
+	 *    var promiseAjax = callbacks.lift(traditionalAjax);
 	 *    promiseAjax("GET", "/movies.json").then(console.log, console.error);
 	 *
-	 *    var promiseAjaxGet = callbacks.bind(traditionalAjax, "GET");
+	 *    var promiseAjaxGet = callbacks.lift(traditionalAjax, "GET");
 	 *    promiseAjaxGet("/movies.json").then(console.log, console.error);
 	 *
 	 * @param {Function} f traditional async function to be decorated
@@ -143,7 +143,7 @@ define(function(require) {
 	}
 
 	/**
-	 * `promisify` is a version of `bind` that allows fine-grained control over the
+	 * `promisify` is a version of `lift` that allows fine-grained control over the
 	 * arguments that passed to the underlying function. It is intended to handle
 	 * functions that don't follow the common callback and errback positions.
 	 *
