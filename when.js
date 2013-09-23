@@ -838,17 +838,8 @@ define(function (require) {
 		nextTick = process.nextTick;
 	} else if(MutationObserver = global.MutationObserver || global.WebKitMutationObserver) {
 		nextTick = (function(document, MutationObserver, drainQueue) {
-			var mo, el;
-
-			mo = new MutationObserver(drainQueue);
-			el = document.createElement('div');
-			mo.observe(el, { attributes: true });
-
-			// Ensure mo is disconnected to free memory, based on RSVP.js, see:
-			// https://bugs.webkit.org/show_bug.cgi?id=93661
-			global.addEventListener('unload', function() {
-				mo = mo.disconnect(); // set mo to undefined
-			}, false);
+			var el = document.createElement('div');
+			new MutationObserver(drainQueue).observe(el, { attributes: true });
 
 			return function() {
 				el.setAttribute('x', 'x');
