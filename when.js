@@ -784,7 +784,7 @@ define(function (require) {
 
 	var reduceArray, slice, fcall, nextTick, handlerQueue,
 		setTimeout, funcProto, call, arrayProto, monitorApi,
-		cjsRequire, undef;
+		cjsRequire, MutationObserver, undef;
 
 	cjsRequire = require;
 
@@ -830,17 +830,30 @@ define(function (require) {
 	// Allow attaching the monitor to when() if env has no console
 	monitorApi = typeof console != 'undefined' ? console : when;
 
-	// Prefer setImmediate or MessageChannel, cascade to node,
-	// vertx and finally setTimeout
-	/*global setImmediate,MessageChannel,process*/
-	if (typeof setImmediate === 'function') {
-		nextTick = setImmediate.bind(global);
-	} else if(typeof MessageChannel !== 'undefined') {
-		var channel = new MessageChannel();
-		channel.port1.onmessage = drainQueue;
-		nextTick = function() { channel.port2.postMessage(0); };
-	} else if (typeof process === 'object' && process.nextTick) {
+	// Sniff "best" async scheduling option
+	// Prefer process.nextTick or MutationObserver, then check for
+	// vertx and finally fall back to setTimeout
+	/*global process*/
+	if (typeof process === 'object' && process.nextTick) {
 		nextTick = process.nextTick;
+	} else if(MutationObserver = global.MutationObserver || global.WebKitMutationObserver) {
+		nextTick = (function(document, MutationObserver, drainQueue) {
+			var mo, el;
+
+			mo = new MutationObserver(drainQueue);
+			el = document.createElement('div');
+			mo.observe(el, { attributes: true });
+
+			// Ensure mo is disconnected to free memory, based on RSVP.js, see:
+			// https://bugs.webkit.org/show_bug.cgi?id=93661
+			global.addEventListener('unload', function() {
+				mo = mo.disconnect(); // set mo to undefined
+			}, false);
+
+			return function() {
+				el.setAttribute('x', 'x');
+			};
+		}(document, MutationObserver, drainQueue));
 	} else {
 		try {
 			// vert.x 1.x || 2.x
