@@ -1,3 +1,8 @@
+### 2.4.1
+
+* Add `MutationObserver` scheduler further reduces "time-to-first-handler" in modern browsers. (#198)
+	* Also, this works around a horrible IE10 bug (desktop and mobile) that renders `setImmediate`, `MessageChannel`, and `postMessage` unusable as fast task schedulers.  Many thanks to @plaa and @calvinmetcalf for their help in discovering the problem and working out a solution. (#197)
+
 ### 2.4.0
 
 * Experimental support for [vert.x 2.x](http://vertx.io). Should now run in vert.x >= 1.1.0.
