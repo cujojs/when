@@ -706,7 +706,7 @@ define(function (require) {
 						if(!--toResolve) {
 							resolve(results);
 						}
-					}, reject);
+					}, reject, notify);
 				}
 			}
 		});
