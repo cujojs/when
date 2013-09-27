@@ -104,22 +104,8 @@ define('when.map-test', function (require) {
 			).ensure(done);
 		},
 
-//		'should propagate progress': function(done) {
-//			var input = [1, 2, 3];
-//
-//			when.map(input, function(x) {
-//				var d = when.defer();
-//				d.notify(x);
-//				setTimeout(d.resolve.bind(d, x), 100);
-//				return d.promise;
-//			}).then(null, null,
-//				function(update) {
-//					assert.equals(update, input.shift());
-//				}
-//			).ensure(done);
-//		},
-
-		'should propagate progress2': function(done) {
+		'should propagate progress': function(done) {
+			// Thanks @depeele for this test
 			var input = [ _resolver(1), _resolver(2), _resolver(3) ],
 				ncall = 0;
 
