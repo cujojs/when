@@ -701,12 +701,11 @@ define(function (require) {
 				function resolveOne(item, i) {
 					when(item, mapFunc, fallback).then(function(mapped) {
 						results[i] = mapped;
-						notify(mapped);
 
 						if(!--toResolve) {
 							resolve(results);
 						}
-					}, reject);
+					}, reject, notify);
 				}
 			}
 		});
