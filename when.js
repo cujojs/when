@@ -833,7 +833,7 @@ define(function (require) {
 	// Sniff "best" async scheduling option
 	// Prefer process.nextTick or MutationObserver, then check for
 	// vertx and finally fall back to setTimeout
-	/*global process*/
+	/*global process,setImmediate,MutationObserver,WebKitMutationObserver*/
 	if (typeof process === 'object' && process.nextTick) {
 		nextTick = process.nextTick;
 	} else if(MutationObserver = global.MutationObserver || global.WebKitMutationObserver) {
