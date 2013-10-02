@@ -52,7 +52,11 @@ define(function (require) {
 	function when(promiseOrValue, onFulfilled, onRejected, onProgress) {
 		// Get a trusted promise for the input promiseOrValue, and then
 		// register promise handlers
-		return resolve(promiseOrValue).then(onFulfilled, onRejected, onProgress);
+		return cast(promiseOrValue).then(onFulfilled, onRejected, onProgress);
+	}
+
+	function cast(x) {
+		return x instanceof Promise ? x : resolve(x);
 	}
 
 	/**
@@ -259,6 +263,12 @@ define(function (require) {
 		return _promise(resolver, monitorApi.PromiseStatus && monitorApi.PromiseStatus());
 	}
 
+	function runHandlers(queue, value) {
+		for (var i = 0; i < queue.length; i++) {
+			queue[i](value);
+		}
+	}
+
 	/**
 	 * Creates a new promise, linked to parent, whose fate is determined
 	 * by resolver.
@@ -321,13 +331,17 @@ define(function (require) {
 				return;
 			}
 
-			value = coerce(self, val);
-			scheduleConsumers(consumers, value);
+			var queue = consumers;
 			consumers = undef;
 
-			if(status) {
-				updateStatus(value, status);
-			}
+			enqueue(function () {
+				value = coerce(self, val);
+				if(status) {
+					updateStatus(value, status);
+				}
+				runHandlers(queue, value);
+			});
+
 		}
 
 		/**
@@ -344,7 +358,10 @@ define(function (require) {
 		 */
 		function promiseNotify(update) {
 			if(consumers) {
-				scheduleConsumers(consumers, progressed(update));
+				var queue = consumers;
+				enqueue(function () {
+					runHandlers(queue, progressed(update));
+				});
 			}
 		}
 	}
@@ -430,30 +447,19 @@ define(function (require) {
 			return x;
 		}
 
-		if (!(x === Object(x) && 'then' in x)) {
-			return fulfilled(x);
+		try {
+			var untrustedThen = x === Object(x) && x.then;
+
+			if(typeof untrustedThen === 'function') {
+				return promise(function(resolve, reject) {
+					fcall(untrustedThen, x, resolve, reject);
+				});
+			} else {
+				return fulfilled(x);
+			}
+		} catch(e) {
+			return rejected(e);
 		}
-
-		return promise(function(resolve, reject, notify) {
-			enqueue(function() {
-				try {
-					// We must check and assimilate in the same tick, but not the
-					// current tick, careful only to access promiseOrValue.then once.
-					var untrustedThen = x.then;
-
-					if(typeof untrustedThen === 'function') {
-						fcall(untrustedThen, x, resolve, reject, notify);
-					} else {
-						// It's a value, create a fulfilled wrapper
-						resolve(fulfilled(x));
-					}
-
-				} catch(e) {
-					// Something went wrong, reject
-					reject(e);
-				}
-			});
-		});
 	}
 
 	/**
@@ -485,22 +491,6 @@ define(function (require) {
 			throw this.reason;
 		}
 	};
-
-	/**
-	 * Schedule a task that will process a list of handlers
-	 * in the next queue drain run.
-	 * @private
-	 * @param {Array} handlers queue of handlers to execute
-	 * @param {*} value passed as the only arg to each handler
-	 */
-	function scheduleConsumers(handlers, value) {
-		enqueue(function() {
-			var handler, i = 0;
-			while (handler = handlers[i++]) {
-				handler(value);
-			}
-		});
-	}
 
 	function updateStatus(value, status) {
 		value.then(statusFulfilled, statusRejected);
