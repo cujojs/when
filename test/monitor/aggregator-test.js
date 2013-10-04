@@ -34,7 +34,7 @@ define('when/monitor/aggregator-test', function (require) {
 							assert.same(promises[key].reason, sentinel);
 						}
 						done();
-					}, 350);
+					}, 100);
 				}).publish(monitor);
 
 				when.promise(function(_, reject) {
