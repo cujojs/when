@@ -450,16 +450,24 @@ define(function (require) {
 		try {
 			var untrustedThen = x === Object(x) && x.then;
 
-			if(typeof untrustedThen === 'function') {
-				return promise(function(resolve, reject) {
-					fcall(untrustedThen, x, resolve, reject);
-				});
-			} else {
-				return fulfilled(x);
-			}
+			return typeof untrustedThen === 'function'
+				? assimilate(untrustedThen, x)
+				: fulfilled(x);
 		} catch(e) {
 			return rejected(e);
 		}
+	}
+
+	/**
+	 * Safely assimilates a foreign thenable by wrapping it in a trusted promise
+	 * @param {function} untrustedThen x's then() method
+	 * @param {object|function} x thenable
+	 * @returns {Promise}
+	 */
+	function assimilate(untrustedThen, x) {
+		return promise(function (resolve, reject) {
+			fcall(untrustedThen, x, resolve, reject);
+		});
 	}
 
 	/**
