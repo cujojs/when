@@ -263,12 +263,6 @@ define(function (require) {
 		return _promise(resolver, monitorApi.PromiseStatus && monitorApi.PromiseStatus());
 	}
 
-	function runHandlers(queue, value) {
-		for (var i = 0; i < queue.length; i++) {
-			queue[i](value);
-		}
-	}
-
 	/**
 	 * Creates a new promise, linked to parent, whose fate is determined
 	 * by resolver.
@@ -363,6 +357,16 @@ define(function (require) {
 					runHandlers(queue, progressed(update));
 				});
 			}
+		}
+	}
+
+	/**
+	 * Run a queue of functions as quickly as possible, passing
+	 * value to each.
+	 */
+	function runHandlers(queue, value) {
+		for (var i = 0; i < queue.length; i++) {
+			queue[i](value);
 		}
 	}
 
