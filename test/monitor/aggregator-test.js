@@ -28,31 +28,39 @@ define('when/monitor/aggregator-test', function (require) {
 
 		'promise': {
 			'rejection should trigger report': function(done) {
+				var captured;
 				aggregator(function(promises) {
-					setTimeout(function() {
-						for(var key in promises) {
-							assert.same(promises[key].reason, sentinel);
-						}
-						done();
-					}, 100);
+					captured = promises;
 				}).publish(monitor);
 
 				when.promise(function(_, reject) {
 					reject(sentinel);
+				}).then(fail, function(e) {
+					setTimeout(function() {
+						for(var key in captured) {
+							assert.same(captured[key].reason, e);
+						}
+						done();
+					}, 0)
 				});
 			}
 		},
 
 		'defer': {
 			'rejection should trigger report': function(done) {
+				var captured;
 				aggregator(function(promises) {
-					for(var key in promises) {
-						assert.same(promises[key].reason, sentinel);
-					}
-					done();
+					captured = promises;
 				}).publish(monitor);
 
-				when.defer().reject(sentinel);
+				when.defer().reject(sentinel).then(fail, function(e) {
+					setTimeout(function() {
+						for(var key in captured) {
+							assert.same(captured[key].reason, e);
+						}
+						done();
+					}, 0)
+				});
 			}
 		}
 	});
