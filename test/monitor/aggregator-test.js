@@ -29,10 +29,12 @@ define('when/monitor/aggregator-test', function (require) {
 		'promise': {
 			'rejection should trigger report': function(done) {
 				aggregator(function(promises) {
-					for(var key in promises) {
-						assert.same(promises[key].reason, sentinel);
-					}
-					done();
+					setTimeout(function() {
+						for(var key in promises) {
+							assert.same(promises[key].reason, sentinel);
+						}
+						done();
+					}, 0);
 				}).publish(monitor);
 
 				when.promise(function(_, reject) {

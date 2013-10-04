@@ -429,8 +429,6 @@ define(function (require) {
 
 	/**
 	 * Coerces x to a trusted Promise
-	 *
-	 * @private
 	 * @param {*} x thing to coerce
 	 * @returns {*} Guaranteed to return a trusted Promise.  If x
 	 *   is trusted, returns x, otherwise, returns a new, trusted, already-resolved
