@@ -1,6 +1,6 @@
 {
     "name": "when",
-    "version": "2.4.1",
+    "version": "2.5.0",
 	"description": "A lightweight Promises/A+ and when() implementation, plus other async goodies.",
 	"keywords": ["Promises/A+", "promises-aplus", "promise", "promises", "deferred", "deferreds", "when", "async", "asynchronous", "cujo"],
 	"homepage": "http://cujojs.com",
@@ -41,7 +41,7 @@
 	"devDependencies": {
 		"curl": "https://github.com/cujojs/curl/tarball/0.7.3",
 		"test-support": "~0.3",
-		"promises-aplus-tests": "~1",
+		"promises-aplus-tests": "~2",
 		"benchmark": "~1",
 		"microtime": "~0"
 	},
@@ -50,7 +50,7 @@
 		"test": "test"
 	},
 	"scripts": {
-		"test": "jshint . && buster test -e node -r specification && promises-aplus-tests test/promises-aplus-adapter.js",
+		"test": "jshint . && buster test -e node -r specification && promises-aplus-tests test/promises-aplus-adapter.js --reporter spec",
 		"ci": "npm test && sauceme",
 		"tunnel": "sauceme -m",
 		"start": "buster static -e browser",

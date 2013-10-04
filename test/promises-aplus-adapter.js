@@ -5,18 +5,8 @@
 
 		var when = require('../when');
 
-		exports.fulfilled = when.resolve;
+		exports.resolved = when.resolve;
 		exports.rejected = when.reject;
-
-		exports.pending = function () {
-			var pending = {};
-
-			pending.promise = when.promise(function(resolve, reject) {
-				pending.fulfill = resolve;
-				pending.reject = reject;
-			});
-
-			return pending;
-		};
+		exports.deferred = when.defer;
 	}
 })();

@@ -9,7 +9,7 @@
  *
  * @author Brian Cavalier
  * @author John Hann
- * @version 2.4.1
+ * @version 2.5.0
  */
 (function(define, global) { 'use strict';
 define(function (require) {
@@ -321,7 +321,7 @@ define(function (require) {
 				return;
 			}
 
-			value = coerce(val);
+			value = coerce(self, val);
 			scheduleConsumers(consumers, value);
 			consumers = undef;
 
@@ -421,7 +421,11 @@ define(function (require) {
 	 *   * the resolution value of x if it's a foreign promise, or
 	 *   * x if it's a value
 	 */
-	function coerce(x) {
+	function coerce(self, x) {
+		if (x === self) {
+			return rejected(new TypeError());
+		}
+
 		if (x instanceof Promise) {
 			return x;
 		}
