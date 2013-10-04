@@ -26,41 +26,43 @@ define('when/monitor/aggregator-test', function (require) {
 			assert.isFunction(aggregator(function(){}).PromiseStatus);
 		},
 
+		'PromiseStatus': {
+			'rejection should trigger report': function(done) {
+				aggregator(function(promises) {
+					for (var key in promises) {
+						assert.same(promises[key].reason, sentinel);
+					}
+					done();
+				}).publish(monitor);
+
+				var status = new monitor.PromiseStatus();
+				status.rejected(sentinel);
+
+				when.defer().reject(sentinel);
+			}
+		},
+
 		'promise': {
 			'rejection should trigger report': function(done) {
-				var captured;
-				aggregator(function(promises) {
-					captured = promises;
+				aggregator(function() {
+					assert(true);
+					done();
 				}).publish(monitor);
 
 				when.promise(function(_, reject) {
 					reject(sentinel);
-				}).then(fail, function(e) {
-					setTimeout(function() {
-						for(var key in captured) {
-							assert.same(captured[key].reason, e);
-						}
-						done();
-					}, 0)
 				});
 			}
 		},
 
 		'defer': {
 			'rejection should trigger report': function(done) {
-				var captured;
-				aggregator(function(promises) {
-					captured = promises;
+				aggregator(function() {
+					assert(true);
+					done();
 				}).publish(monitor);
 
-				when.defer().reject(sentinel).then(fail, function(e) {
-					setTimeout(function() {
-						for(var key in captured) {
-							assert.same(captured[key].reason, e);
-						}
-						done();
-					}, 0)
-				});
+				when.defer().reject(sentinel);
 			}
 		}
 	});
