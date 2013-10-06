@@ -817,12 +817,7 @@ define(function (require) {
 	 * processing until it is truly empty.
 	 */
 	function drainQueue() {
-		var task, i = 0;
-
-		while(task = handlerQueue[i++]) {
-			task();
-		}
-
+		runHandlers(handlerQueue);
 		handlerQueue = [];
 	}
 
