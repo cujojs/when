@@ -15,6 +15,10 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 
 # What's New?
 
+### 2.5.1
+
+* `ensure` now ignores non-functions, [like `then` does](http://promisesaplus.com/#point-25), for consistency. (#207)
+
 ### 2.5.0
 
 * [Promises/A+ 1.1](http://promisesaplus.com) compliant.  Passes version 2.0.0 of the [Promises/A+ test suite](https://github.com/promises-aplus/promises-tests).
