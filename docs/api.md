@@ -129,6 +129,8 @@ A promise makes the following guarantees about handlers registered in the same c
 1. `onFulfilled` and `onRejected` will never be called more than once.
 1. `onProgress` may be called multiple times.
 
+*NOTE:* See [Promises/A+](http://promisesaplus.com] for extensive information on the behavior of `then`.
+
 ## Extended Promise API
 
 Convenience methods that are not part of Promises/A+.  These are simply shortcuts for using `.then()`.
@@ -155,7 +157,7 @@ Ensure allows you to execute "cleanup" type tasks in a promise chain.  It arrang
 
 `promise.ensure` should be used instead of `promise.always`.  It is safer in that it *cannot* transform a failure into a success by accident (which `always` could do simply by returning successfully!).
 
-When combined with `promise.otherwise`, `promise.ensure` allows you to write code that is similar to the familar synchronous `catch`/`finally` pair.  Consider the following synchronous code:
+When combined with `promise.otherwise`, `promise.ensure` allows you to write code that is similar to the familiar synchronous `catch`/`finally` pair.  Consider the following synchronous code:
 
 ```js
 try {
