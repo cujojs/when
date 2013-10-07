@@ -638,6 +638,10 @@ define('when/promise-test', function (require) {
 
 					d.reject(other);
 				}
+			},
+
+			'should ignore non-function': function() {
+				return when.resolve(true).ensure().then(assert);
 			}
 		},
 

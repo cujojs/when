@@ -113,7 +113,9 @@ define(function (require) {
 		 * @returns {Promise}
 		 */
 		ensure: function(onFulfilledOrRejected) {
-			return this.then(injectHandler, injectHandler)['yield'](this);
+			return typeof onFulfilledOrRejected === 'function'
+				? this.then(injectHandler, injectHandler)['yield'](this)
+				: this;
 
 			function injectHandler() {
 				return resolve(onFulfilledOrRejected());
