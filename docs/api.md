@@ -1412,18 +1412,20 @@ when   = require("when");
 nodefn = require("when/node/function");
 
 function nodeStyleAsyncFunction(callback) {
-	if(somethingWrongHappened) {
-		callback(error);
-	} else {
-		callback(null, interestingValue);
-	}
+    if(Math.random() * 2 > 1) {
+      callback("Oh no!");
+    } else {
+      callback(null, "Interesting value");
+    }
 }
 
 var deferred = when.defer();
-callbackTakingFunction(nodefn.nodeStyleAsyncFunction(deferred.resolver));
+nodeStyleAsyncFunction(nodefn.createCallback(deferred.resolver));
 
 deferred.promise.then(function(interestingValue) {
-	// Use interestingValue
+  console.log(interestingValue)
+},function(err) {
+  console.error(err)
 });
 ```
 
