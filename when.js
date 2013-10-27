@@ -11,7 +11,7 @@
  * @author John Hann
  * @version 2.5.1
  */
-(function(define, global) { 'use strict';
+(function (define, global) { 'use strict';
 define(function (require) {
 
 	// Public API
@@ -828,7 +828,7 @@ define(function (require) {
 	setTimeout = global.setTimeout;
 
 	// Allow attaching the monitor to when() if env has no console
-	monitorApi = typeof console != 'undefined' ? console : when;
+	monitorApi = typeof console !== 'undefined' ? console : when;
 
 	// Sniff "best" async scheduling option
 	// Prefer process.nextTick or MutationObserver, then check for
