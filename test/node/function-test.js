@@ -292,6 +292,34 @@ define('when/node/function-test', function (require) {
 			}
 		},
 
+		'createDeferred': {
+			'should return a deferred object': function() {
+				assertIsPromise(nodefn.createDeferred().promise);
+			},
+
+			'should register callback as callback': function(done) {
+				function callback(_, val) {
+					assert.same(val, sentinel);
+					done();
+				}
+
+				var d = nodefn.createDeferred(callback);
+
+				d.resolve(sentinel);
+			},
+
+			'should register callback as errback': function(done) {
+				function callback(err) {
+					assert.same(err, sentinel);
+					done();
+				}
+
+				var d = nodefn.createDeferred(callback);
+
+				d.reject(sentinel);
+			}
+		},
+
 		'bindCallback': {
 			'should return a promise': function () {
 				assert.isFunction(nodefn.bindCallback({}, function(){}).then);

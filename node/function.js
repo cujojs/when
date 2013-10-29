@@ -24,6 +24,7 @@ define(function(require) {
 		lift: lift,
 		bind: lift, // DEPRECATED alias for lift
 		createCallback: createCallback,
+		createDeferred: createDeferred,
 		bindCallback: bindCallback,
 		liftCallback: liftCallback
 	};
@@ -178,6 +179,40 @@ define(function(require) {
 				resolver.resolve(value);
 			}
 		};
+	}
+
+	/**
+	 * Creates a deferred that calls the node-style callback when
+	 * the promise resolves or rejects
+	 *
+	 * @example
+	 *	function nodeback(err, value) {
+	 *		// Handle err or use value
+	 *	}
+	 *
+	 *	var nodefn = require('when/node/function');
+	 *
+	 *	var deferred = nodefn.createDeferred(nodeback);
+	 *
+	 *	deferred.resolve('interesting value');
+	 *
+	 * @param  {Function} callback The node-style callback to attach
+	 * @return {Deferred} new Deferred
+	 */
+	function createDeferred(callback) {
+		var d = when.defer();
+		if(callback) {
+			d.promise.then(success, failure);
+		}
+		return d;
+
+		function success(value) {
+			setTimeout(function() { callback(null, value); }, 0);
+		}
+
+		function failure(err) {
+			setTimeout(function() { callback(err, null); }, 0);
+		}
 	}
 
 	/**
