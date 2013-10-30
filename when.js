@@ -122,6 +122,10 @@ define(function (require) {
 			}
 		},
 
+		done: function(handleResult, handleFatalError) {
+			this.then(handleResult, handleFatalError).otherwise(crash);
+		},
+
 		/**
 		 * Shortcut for .then(function() { return value; })
 		 * @param  {*} value
@@ -919,6 +923,12 @@ define(function (require) {
 
 	function identity(x) {
 		return x;
+	}
+
+	function crash(fatalError) {
+		enqueue(function() {
+			throw fatalError;
+		});
 	}
 
 	return when;
