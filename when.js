@@ -926,9 +926,15 @@ define(function (require) {
 	}
 
 	function crash(fatalError) {
-		enqueue(function() {
-			throw fatalError;
-		});
+		if(typeof monitorApi.reportUnhandled === 'function') {
+			monitorApi.reportUnhandled();
+		} else {
+			enqueue(function() {
+				throw fatalError;
+			});
+		}
+
+		throw fatalError;
 	}
 
 	return when;

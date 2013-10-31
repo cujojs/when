@@ -18,7 +18,7 @@ define(function() {
 		hasStackTraces = !!e.stack;
 	}
 
-	return function(filterStack, unhandledMsg, reasonMsg) {
+	return function(filterStack, unhandledMsg, reasonMsg, stackJumpMsg) {
 		return function format(rec) {
 			var cause, formatted;
 
@@ -58,8 +58,10 @@ define(function() {
 		function stitch(escaped, jumps, rejected) {
 			escaped = filterStack(toArray(escaped)).slice(1);
 			rejected = filterStack(toArray(rejected));
-			return [unhandledMsg]
-				.concat(escaped, jumps, reasonMsg, rejected);
+
+			return jumps.reduce(function(stack, jump, i) {
+				return i ? stack.concat(stackJumpMsg, jump) : stack.concat(jump);
+			}, [unhandledMsg]).concat(reasonMsg, rejected);
 		}
 
 		function toArray(stack) {

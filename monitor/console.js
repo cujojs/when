@@ -12,7 +12,7 @@ define(function(require) {
 
 	var createAggregator, throttleReporter, simpleReporter, aggregator,
 		formatter, stackFilter, excludeRx, filter, reporter, logger,
-		rejectionMsg, reasonMsg, filteredFramesMsg, attachPoint;
+		rejectionMsg, reasonMsg, filteredFramesMsg, stackJumpMsg, attachPoint;
 
 	createAggregator = require('./aggregator');
 	throttleReporter = require('./throttledReporter');
@@ -21,15 +21,16 @@ define(function(require) {
 	stackFilter = require('./stackFilter');
 	logger = require('./logger/consoleGroup');
 
-	rejectionMsg = '--- Unhandled rejection escaped at ---';
-	reasonMsg = '--- Caused by reason ---';
+	rejectionMsg = '=== Unhandled rejection escaped at ===';
+	reasonMsg = '=== Caused by reason ===';
+	stackJumpMsg = '  --- new call stack ---';
 	filteredFramesMsg = '  ...[filtered frames]...';
 
-	excludeRx = /when\.js|when\/monitor\//i;
+	excludeRx = /when\.js|(module|node)\.js:\d|when\/monitor\//i;
 	filter = stackFilter(exclude, mergePromiseFrames);
-	reporter = simpleReporter(formatter(filter, rejectionMsg, reasonMsg), logger);
+	reporter = simpleReporter(formatter(filter, rejectionMsg, reasonMsg, stackJumpMsg), logger);
 
-	aggregator = createAggregator(throttleReporter(250, reporter));
+	aggregator = createAggregator(throttleReporter(200, reporter));
 
 	attachPoint = typeof console !== 'undefined'
 		? aggregator.publish(console)
