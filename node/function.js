@@ -182,9 +182,8 @@ define(function(require) {
 
 	/**
 	 * Attaches a node-style callback to a promise, ensuring the callback is
-	 * called for either fulfillment or rejection. Returns a new Promise that is
-	 * fulfilled with the return value of the callback and rejected with any error
-	 * thrown inside the callback.
+	 * called for either fulfillment or rejection. Returns a promise with the same
+	 * state as the passed-in promise.
 	 *
 	 * @example
 	 *	var deferred = when.defer();
@@ -199,13 +198,25 @@ define(function(require) {
 	 *
 	 * @param {Promise} promise The promise to be attached to.
 	 * @param {Function} callback The node-style callback to attach.
-	 * @returns {Promise} new Promise
+	 * @returns {Promise} A promise with the same state as the passed-in promise.
 	 */
 	function bindCallback(promise, callback) {
-		return when(promise, callback && success, callback);
+		promise = when(promise);
+
+		if (callback) {
+			promise.then(success, wrapped);
+		}
+
+		return promise;
 
 		function success(value) {
-			return callback(null, value);
+			wrapped(null, value);
+		}
+
+		function wrapped(err, value) {
+			process.nextTick(function () {
+				callback(err, value);
+			});
 		}
 	}
 
