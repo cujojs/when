@@ -13,10 +13,18 @@
 (function(define) {
 define(function(require) {
 
-	var when, slice;
+	var when, slice, setTimer, cjsRequire, vertxSetTimer;
 
 	when = require('../when');
 	slice = [].slice;
+	cjsRequire = require;
+
+	try {
+		vertxSetTimer = cjsRequire('vertx').setTimer;
+		setTimer = function (f, ms) { return vertxSetTimer(ms, f); };
+	} catch(e) {
+		setTimer = setTimeout;
+	}
 
 	return {
 		apply: apply,
@@ -214,9 +222,9 @@ define(function(require) {
 		}
 
 		function wrapped(err, value) {
-			process.nextTick(function () {
+			setTimer(function () {
 				callback(err, value);
-			});
+			}, 0);
 		}
 	}
 
