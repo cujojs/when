@@ -1,7 +1,8 @@
 (function(buster, define) {
-var assert, fail, sentinel, other;
+var assert, refute, fail, sentinel, other;
 
 assert = buster.assert;
+refute = buster.refute;
 fail   = buster.fail;
 sentinel = { value: 'sentinel' };
 other = { value: 'other' };
@@ -332,9 +333,8 @@ define('when/node/function-test', function (require) {
 
 			'returned promise': {
 				'should be fulfilled with the original value': function (done) {
-					function callback(_, val) {
-						assert.same(val, sentinel);
-						done();
+					function callback() {
+						return other;
 					}
 
 					return nodefn.bindCallback(
@@ -342,13 +342,12 @@ define('when/node/function-test', function (require) {
 						callback
 					).then(function (value) {
 						assert.same(value, sentinel);
-					});
+					}).ensure(done);
 				},
 
 				'should be rejected with the original error': function (done) {
-					function callback(err) {
-						assert.same(err, sentinel);
-						done();
+					function callback() {
+						return other;
 					}
 
 					return nodefn.bindCallback(
@@ -356,7 +355,39 @@ define('when/node/function-test', function (require) {
 						callback
 					).then(fail, function (reason) {
 						assert.same(reason, sentinel);
-					});
+					}).ensure(done);
+				},
+
+				'should fire onFulfilled before the callback': function (done) {
+					var callbackRan = false;
+
+					function callback() {
+						callbackRan = true;
+					}
+
+					return nodefn.bindCallback(
+						when.resolve(sentinel),
+						callback
+					).then(function (value) {
+						assert.same(value, sentinel);
+						refute(callbackRan);
+					}).ensure(done);
+				},
+
+				'should fire onRejected before the callback': function (done) {
+					var callbackRan = false;
+
+					function callback() {
+						callbackRan = true;
+					}
+
+					return nodefn.bindCallback(
+						when.reject(sentinel),
+						callback
+					).then(fail, function (reason) {
+						assert.same(reason, sentinel);
+						refute(callbackRan);
+					}).ensure(done);
 				}
 			}
 		},
@@ -405,29 +436,57 @@ define('when/node/function-test', function (require) {
 
 				'returned promise': {
 					'should be fulfilled with the original value': function (done) {
-						function callback(_, val) {
-							assert.same(val, sentinel);
-							done();
+						function callback() {
+							return other;
 						}
 
 						var lifted = nodefn.liftCallback(callback);
 
 						return lifted(when.resolve(sentinel)).then(function (value) {
 							assert.same(value, sentinel);
-						});
+						}).ensure(done);
 					},
 
 					'should be rejected with the original error': function (done) {
-						function callback(err) {
-							assert.same(err, sentinel);
-							done();
+						function callback() {
+							return other;
 						}
 
 						var lifted = nodefn.liftCallback(callback);
 
 						return lifted(when.reject(sentinel)).then(fail, function (reason) {
 							assert.same(reason, sentinel);
-						});
+						}).ensure(done);
+					},
+
+					'should fire onFulfilled before the callback': function (done) {
+						var callbackRan = false;
+
+						function callback() {
+							callbackRan = true;
+						}
+
+						var lifted = nodefn.liftCallback(callback);
+
+						return lifted(when.resolve(sentinel)).then(function (value) {
+							assert.same(value, sentinel);
+							refute(callbackRan);
+						}).ensure(done);
+					},
+
+					'should fire onRejected before the callback': function (done) {
+						var callbackRan = false;
+
+						function callback() {
+							callbackRan = true;
+						}
+
+						var lifted = nodefn.liftCallback(callback);
+
+						return lifted(when.reject(sentinel)).then(fail, function (reason) {
+							assert.same(reason, sentinel);
+							refute(callbackRan);
+						}).ensure(done);
 					}
 				}
 			}
