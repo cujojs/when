@@ -346,13 +346,13 @@ define('when/node/function-test', function (require) {
 				},
 
 				'should be rejected with the original error': function (done) {
-					function callback(_, val) {
-						assert.same(val, sentinel);
+					function callback(err) {
+						assert.same(err, sentinel);
 						done();
 					}
 
 					return nodefn.bindCallback(
-						when.resolve(sentinel),
+						when.reject(sentinel),
 						callback
 					).then(fail, function (reason) {
 						assert.same(reason, sentinel);
@@ -418,14 +418,14 @@ define('when/node/function-test', function (require) {
 					},
 
 					'should be rejected with the original error': function (done) {
-						function callback(_, val) {
-							assert.same(val, sentinel);
+						function callback(err) {
+							assert.same(err, sentinel);
 							done();
 						}
 
 						var lifted = nodefn.liftCallback(callback);
 
-						return lifted(when.resolve(sentinel)).then(fail, function (reason) {
+						return lifted(when.reject(sentinel)).then(fail, function (reason) {
 							assert.same(reason, sentinel);
 						});
 					}
