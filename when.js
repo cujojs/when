@@ -122,8 +122,18 @@ define(function (require) {
 			}
 		},
 
-		done: function(handleResult, handleFatalError) {
-			this.then(handleResult, handleFatalError).otherwise(crash);
+		/**
+		 * Terminate a promise chain by handling the ultimate fulfillment value or
+		 * rejection reason, and assuming responsibility for all errors.  if an
+		 * error propagates out of handleResult or handleFatalError, it will be
+		 * rethrown to the host, resulting in a loud stack track on most platforms
+		 * and a crash on some.
+		 * @param {function?} handleResult
+		 * @param {function?} handleError
+		 * @returns {undefined}
+		 */
+		done: function(handleResult, handleError) {
+			this.then(handleResult, handleError).otherwise(crash);
 		},
 
 		/**

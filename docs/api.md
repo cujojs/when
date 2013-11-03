@@ -96,9 +96,9 @@ In either case, `when()` will *always* return a trusted when.js promise, which w
 The promise represents the *eventual outcome*, which is either fulfillment (success) and an associated value, or rejection (failure) and an associated *reason*. The promise provides mechanisms for arranging to call a function on its value or reason, and produces a new promise for the result.
 
 ```js
-// Get a deferred promise
-var deferred = when.defer();
-var promise = deferred.promise;
+// Create a pending promise whose fate is detemined by
+// the provided resolver function
+var promise = when.promise(resolver;
 
 // Or a resolved promise
 var promise = when.resolve(promiseOrValue);
@@ -115,7 +115,7 @@ var promise = when.reject(reason);
 var newPromise = promise.then(onFulfilled, onRejected, onProgress);
 ```
 
-arranges for
+[Promises/A+ `then`](http://promisesaplus.com).  The primary API for transforming a promise's value and producing a new promise for the transformed result, or for handling and recovering from intermediate errors in a promise chain.  It arranges for:
 
 * `onFulfilled` to be called with the value after `promise` is fulfilled, or
 * `onRejected` to be called with the rejection reason after `promise` is rejected.
@@ -133,7 +133,19 @@ A promise makes the following guarantees about handlers registered in the same c
 
 ## Extended Promise API
 
-Convenience methods that are not part of Promises/A+.  These are simply shortcuts for using `.then()`.
+Convenience methods that are not part of Promises/A+.
+
+### done()
+
+```js
+promise.done(handleValue, handleError);
+```
+
+One golden rule of promise error handling is:
+
+Either `return` the promise, thereby *passing the error-handling buck* to the caller, or call `done` and *assuming responsibility for errors*.
+
+The `done` method
 
 ### otherwise()
 
@@ -1531,6 +1543,29 @@ when.all(arrayOfPromisesOrValues, apply(functionThatAcceptsMultipleArgs));
 More when/apply [examples on the wiki](https://github.com/cujojs/when/wiki/when-apply).
 
 # Debugging promises
+
+## `promise.then` vs. `promise.done`
+
+Remember the golden rule: either `return` your promise, or call `done` on it.
+
+At first glance, `then`, and `done` seem very similar, and they are.  The two most important distinctions are:
+
+1. The *intent*
+2. The error handling characteristics
+
+### Intent
+
+The intent of `then` is to *transform* a promise's value and to pass or return a new promise for the transformed value along to other parts of your application.
+
+The intent of `done` is to *consume* a promise's value, transferring *responsibility* for the value to your code.
+
+### Errors
+
+In addition to transforming a value, `then` allows you to recover from, or propagate, *intermediate* errors.  Any errors that are not handled will be caught by the promise machinery and used to reject the promise returned by `then`.
+
+Calling `done` transfers all responsibility for errors to your code.  If an error (either a thrown exception or returned rejection) escapes the `handleValue`, or `handleError` you provide to `done`, it will be rethrown in an uncatchable way to the host environment.
+
+This can be a big help with debugging, since most environments will then generate a loud stack trace.  In some environments, such as Node.js, the VM will also exit immediately, making it very obvious that a fatal error has escaped your promise chain.
 
 ## when/monitor/*
 
