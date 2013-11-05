@@ -1,7 +1,8 @@
 (function(buster, define) {
-var assert, fail, sentinel, other;
+var assert, refute, fail, sentinel, other;
 
 assert = buster.assert;
+refute = buster.refute;
 fail   = buster.fail;
 sentinel = { value: 'sentinel' };
 other = { value: 'other' };
@@ -294,12 +295,13 @@ define('when/node/function-test', function (require) {
 
 		'bindCallback': {
 			'should return a promise': function () {
-				assert.isFunction(nodefn.bindCallback({}, function(){}).then);
+				assert.isFunction(nodefn.bindCallback(when.resolve(true), function(){}).then);
 			},
 
-			'should register callback as callback': function () {
+			'should register callback as callback': function (done) {
 				function callback(_, val) {
 					assert.same(val, sentinel);
+					done();
 				}
 
 				return nodefn.bindCallback(
@@ -308,9 +310,10 @@ define('when/node/function-test', function (require) {
 				);
 			},
 
-			'should register callback as errback': function () {
+			'should register callback as errback': function (done) {
 				function callback(err) {
 					assert.same(err, sentinel);
+					done();
 				}
 
 				return nodefn.bindCallback(
@@ -329,64 +332,62 @@ define('when/node/function-test', function (require) {
 			},
 
 			'returned promise': {
-				'should be fulfilled with the callback return value': {
-					'when the original is fulfilled': function () {
-						function callback(_, val) {
-							assert.same(val, other);
-							return sentinel;
-						}
-
-						return nodefn.bindCallback(
-							when.resolve(other),
-							callback
-						).then(function (value) {
-							assert.same(value, sentinel);
-						});
-					},
-
-					'when the original is rejected': function () {
-						function callback(err) {
-							assert.same(err, other);
-							return sentinel;
-						}
-
-						return nodefn.bindCallback(
-							when.reject(other),
-							callback
-						).then(function (value) {
-							assert.same(value, sentinel);
-						});
+				'should be fulfilled with the original value': function (done) {
+					function callback() {
+						return other;
 					}
+
+					return nodefn.bindCallback(
+						when.resolve(sentinel),
+						callback
+					).then(function (value) {
+						assert.same(value, sentinel);
+					}).ensure(done);
 				},
 
-				'should be rejected with any error thrown in the callback': {
-					'when the original is fulfilled': function () {
-						function callback(_, val) {
-							assert.same(val, other);
-							throw sentinel;
-						}
-
-						return nodefn.bindCallback(
-							when.resolve(other),
-							callback
-						).then(fail, function (reason) {
-							assert.same(reason, sentinel);
-						});
-					},
-
-					'when the original is rejected': function () {
-						function callback(err) {
-							assert.same(err, other);
-							throw sentinel;
-						}
-
-						return nodefn.bindCallback(
-							when.reject(other),
-							callback
-						).then(fail, function (reason) {
-							assert.same(reason, sentinel);
-						});
+				'should be rejected with the original error': function (done) {
+					function callback() {
+						return other;
 					}
+
+					return nodefn.bindCallback(
+						when.reject(sentinel),
+						callback
+					).then(fail, function (reason) {
+						assert.same(reason, sentinel);
+					}).ensure(done);
+				},
+
+				'should fire onFulfilled before the callback': function (done) {
+					var callbackRan = false;
+
+					function callback() {
+						callbackRan = true;
+					}
+
+					return nodefn.bindCallback(
+						when.resolve(sentinel),
+						callback
+					).then(function (value) {
+						assert.same(value, sentinel);
+						refute(callbackRan);
+					}).ensure(done);
+				},
+
+				'should fire onRejected before the callback': function (done) {
+					var callbackRan = false;
+
+					function callback() {
+						callbackRan = true;
+					}
+
+					return nodefn.bindCallback(
+						when.reject(sentinel),
+						callback
+					).then(fail, function (reason) {
+						assert.same(reason, sentinel);
+						refute(callbackRan);
+					}).ensure(done);
 				}
 			}
 		},
@@ -400,12 +401,13 @@ define('when/node/function-test', function (require) {
 				'should return a promise': function () {
 					var lifted = nodefn.liftCallback(function(){});
 
-					assert.isFunction(lifted({}).then);
+					assert.isFunction(lifted(when.resolve(true)).then);
 				},
 
-				'should register callback as callback': function () {
+				'should register callback as callback': function (done) {
 					function callback(_, val) {
 						assert.same(val, sentinel);
+						done();
 					}
 
 					var lifted = nodefn.liftCallback(callback);
@@ -413,9 +415,10 @@ define('when/node/function-test', function (require) {
 					return lifted(when.resolve(sentinel));
 				},
 
-				'should register callback as errback': function () {
+				'should register callback as errback': function (done) {
 					function callback(err) {
 						assert.same(err, sentinel);
+						done();
 					}
 
 					var lifted = nodefn.liftCallback(callback);
@@ -432,60 +435,58 @@ define('when/node/function-test', function (require) {
 				},
 
 				'returned promise': {
-					'should be fulfilled with the callback return value': {
-						'when the original is fulfilled': function () {
-							function callback(_, val) {
-								assert.same(val, other);
-								return sentinel;
-							}
-
-							var lifted = nodefn.liftCallback(callback);
-
-							return lifted(when.resolve(other)).then(function (value) {
-								assert.same(value, sentinel);
-							});
-						},
-
-						'when the original is rejected': function () {
-							function callback(err) {
-								assert.same(err, other);
-								return sentinel;
-							}
-
-							var lifted = nodefn.liftCallback(callback);
-
-							return lifted(when.reject(other)).then(function (value) {
-								assert.same(value, sentinel);
-							});
+					'should be fulfilled with the original value': function (done) {
+						function callback() {
+							return other;
 						}
+
+						var lifted = nodefn.liftCallback(callback);
+
+						return lifted(when.resolve(sentinel)).then(function (value) {
+							assert.same(value, sentinel);
+						}).ensure(done);
 					},
 
-					'should be rejected with any error thrown in the callback': {
-						'when the original is fulfilled': function () {
-							function callback(_, val) {
-								assert.same(val, other);
-								throw sentinel;
-							}
-
-							var lifted = nodefn.liftCallback(callback);
-
-							return lifted(when.resolve(other)).then(fail, function (reason) {
-								assert.same(reason, sentinel);
-							});
-						},
-
-						'when the original is rejected': function () {
-							function callback(err) {
-								assert.same(err, other);
-								throw sentinel;
-							}
-
-							var lifted = nodefn.liftCallback(callback);
-
-							return lifted(when.reject(other)).then(fail, function (reason) {
-								assert.same(reason, sentinel);
-							});
+					'should be rejected with the original error': function (done) {
+						function callback() {
+							return other;
 						}
+
+						var lifted = nodefn.liftCallback(callback);
+
+						return lifted(when.reject(sentinel)).then(fail, function (reason) {
+							assert.same(reason, sentinel);
+						}).ensure(done);
+					},
+
+					'should fire onFulfilled before the callback': function (done) {
+						var callbackRan = false;
+
+						function callback() {
+							callbackRan = true;
+						}
+
+						var lifted = nodefn.liftCallback(callback);
+
+						return lifted(when.resolve(sentinel)).then(function (value) {
+							assert.same(value, sentinel);
+							refute(callbackRan);
+						}).ensure(done);
+					},
+
+					'should fire onRejected before the callback': function (done) {
+						var callbackRan = false;
+
+						function callback() {
+							callbackRan = true;
+						}
+
+						var lifted = nodefn.liftCallback(callback);
+
+						return lifted(when.reject(sentinel)).then(fail, function (reason) {
+							assert.same(reason, sentinel);
+							refute(callbackRan);
+						}).ensure(done);
 					}
 				}
 			}

@@ -13,10 +13,18 @@
 (function(define) {
 define(function(require) {
 
-	var when, slice;
+	var when, slice, setTimer, cjsRequire, vertxSetTimer;
 
 	when = require('../when');
 	slice = [].slice;
+	cjsRequire = require;
+
+	try {
+		vertxSetTimer = cjsRequire('vertx').setTimer;
+		setTimer = function (f, ms) { return vertxSetTimer(ms, f); };
+	} catch(e) {
+		setTimer = setTimeout;
+	}
 
 	return {
 		apply: apply,
@@ -182,9 +190,8 @@ define(function(require) {
 
 	/**
 	 * Attaches a node-style callback to a promise, ensuring the callback is
-	 * called for either fulfillment or rejection. Returns a new Promise that is
-	 * fulfilled with the return value of the callback and rejected with any error
-	 * thrown inside the callback.
+	 * called for either fulfillment or rejection. Returns a promise with the same
+	 * state as the passed-in promise.
 	 *
 	 * @example
 	 *	var deferred = when.defer();
@@ -199,13 +206,25 @@ define(function(require) {
 	 *
 	 * @param {Promise} promise The promise to be attached to.
 	 * @param {Function} callback The node-style callback to attach.
-	 * @returns {Promise} new Promise
+	 * @returns {Promise} A promise with the same state as the passed-in promise.
 	 */
 	function bindCallback(promise, callback) {
-		return when(promise, callback && success, callback);
+		promise = when(promise);
+
+		if (callback) {
+			promise.then(success, wrapped);
+		}
+
+		return promise;
 
 		function success(value) {
-			return callback(null, value);
+			wrapped(null, value);
+		}
+
+		function wrapped(err, value) {
+			setTimer(function () {
+				callback(err, value);
+			}, 0);
 		}
 	}
 
