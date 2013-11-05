@@ -9,7 +9,7 @@
  */
 
 (function(define) { 'use strict';
-define(function() {
+define(function(require) {
 
 	var when, slice;
 
@@ -25,7 +25,7 @@ define(function() {
 	function lift(generator) {
 		return function() {
 			return apply(generator, arguments);
-		}
+		};
 	}
 
 	function call(generator) {
@@ -33,6 +33,7 @@ define(function() {
 	}
 
 	function apply(generator, args) {
+		/*jshint validthis:true*/
 		var iterator = generator.apply(this, args);
 
 		return next();
@@ -58,4 +59,4 @@ define(function() {
 		}
 	}
 });
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
