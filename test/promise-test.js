@@ -32,10 +32,29 @@ function assertRejected(s, reason) {
 
 define('when/promise-test', function (require) {
 
-	var when, defer;
+	var when, aggregator, monitor, defer;
 
 	when = require('when');
+	aggregator = require('when/monitor/aggregator');
+	monitor = typeof console != 'undefined' ? console : when;
+
 	defer = when.defer;
+
+	function expectEventualRejectionViaMonitor(done, expectedReason) {
+		var p;
+		aggregator(function(promises) {
+			if(p) {
+				return;
+			}
+			p = promises;
+			setTimeout(function() {
+				for (var key in promises) {
+					assert.same(promises[key].reason, expectedReason);
+				}
+				done();
+			}, 10);
+		}).publish(monitor);
+	}
 
 	buster.testCase('promise', {
 
@@ -43,6 +62,79 @@ define('when/promise-test', function (require) {
 	//	'should be frozen': function() {
 	//		assert(isFrozen(defer().promise));
 	//	},
+
+		'done': {
+			'tearDown': function() {
+				if(typeof monitor.PromiseStatus === 'function') {
+					delete monitor.PromiseStatus;
+				}
+			},
+
+			'should return undefined': function() {
+				refute.defined(when.resolve().done(f, f));
+				refute.defined(when.reject().done(f, f));
+			},
+
+			'when fulfilled': {
+				'should invoke handleValue': function(done) {
+					when.resolve(sentinel).done(function(x) {
+						assert.same(x, sentinel);
+						done();
+					});
+				},
+
+				'should be fatal': {
+					'when handleValue throws': function(done) {
+						expectEventualRejectionViaMonitor(done, sentinel);
+
+						when.resolve().done(function() {
+							throw sentinel;
+						});
+					},
+
+					'when handleValue rejects': function(done) {
+						expectEventualRejectionViaMonitor(done, sentinel);
+
+						when.resolve().done(function() {
+							return when.reject(sentinel);
+						});
+					}
+				}
+			},
+
+			'when rejected': {
+				'should invoke handleFatalError': function(done) {
+					when.reject(sentinel).done(null, function(e) {
+						assert.same(e, sentinel);
+						done();
+					});
+				},
+
+				'should be fatal': {
+					'when no handleFatalError provided': function(done) {
+						expectEventualRejectionViaMonitor(done, sentinel);
+
+						when.reject(sentinel).done();
+					},
+
+					'when handleFatalError throws': function(done) {
+						expectEventualRejectionViaMonitor(done, sentinel);
+
+						when.resolve().done(function() {
+							throw sentinel;
+						});
+					},
+
+					'when handleFatalError rejects': function(done) {
+						expectEventualRejectionViaMonitor(done, sentinel);
+
+						when.resolve().done(function() {
+							return when.reject(sentinel);
+						});
+					}
+				}
+			}
+		},
 
 		'then': {
 
