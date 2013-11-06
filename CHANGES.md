@@ -1,3 +1,8 @@
+### 2.6.0
+
+* New [`promise.done`](docs/api.md#done) allows consuming the ultimate value at the end of a promise chain while ensuring that any errors are thrown to the host environment so you get loud stack traces.
+* `when/node/function` [`bindCallback`](docs/api.md#nodefn-bindcallback) and [`liftCallback`](docs/api.md#nodefn-liftcallback) now behave more like standard node-style APIs in that they allow exceptions to propagate to the host environment for loud stack traces.
+
 ### 2.5.1
 
 * `ensure` now ignores non-functions, [like `then` does](http://promisesaplus.com/#point-25), for consistency. (#207)

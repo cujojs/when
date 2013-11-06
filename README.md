@@ -15,6 +15,11 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 
 # What's New?
 
+### 2.6.0
+
+* New [`promise.done`](docs/api.md#done) allows consuming the ultimate value at the end of a promise chain while ensuring that any errors are thrown to the host environment so you get loud stack traces.
+* `when/node/function` [`bindCallback`](docs/api.md#nodefn-bindcallback) and [`liftCallback`](docs/api.md#nodefn-liftcallback) now behave more like standard node-style APIs in that they allow exceptions to propagate to the host environment for loud stack traces.
+
 ### 2.5.1
 
 * `ensure` now ignores non-functions, [like `then` does](http://promisesaplus.com/#point-25), for consistency. (#207)
@@ -41,46 +46,6 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 * New `MessageChannel` scheduler reduces "time-to-first" handler, in environments that support it.
 * Performance optimizations for promise resolution.
 * Internal architecture improvements to pave the way for when.js 3.0.0.
-
-### 2.2.1
-
-* Fix for `when.defer().reject()` bypassing the unhandled rejection monitor. (#166)
-* Fix for `when/function`, `when/callbacks`, and `when/node/function` not preserving `thisArg`. (#162)
-* Doc clarifications for [`promise.yield`](docs/api.md#yield). (#164)
-
-### 2.2.0
-
-* New experimental [promise monitoring and debugging](docs/api.md#debugging-promises) via `when/monitor/console`.
-* New [`when.promise(resolver)`](docs/api.md#whenpromise) promise creation API. A lighter alternative to the heavier `when.defer()`
-* New `bindCallback` and `liftCallback` in `when/node/function` for more integration options with node-style callbacks.
-
-### 2.1.1
-
-* Quote internal usages of `promise.yield` to workaround .NET minifier tools that don't yet understand ES5 identifier-as-property rules.  See [#157](https://github.com/cujojs/when/issues/157)
-
-### 2.1.0
-
-* New [`when.settle`](docs/api.md#whensettle) that settles an array of promises
-* New [`when/guard`](docs/api.md#whenguard) generalized concurrency guarding and limiting
-* New [`promise.inspect`](docs/api.md#inspect) for synchronously getting a snapshot of a promise's state at a particular instant.
-* Significant performance improvements when resolving promises with non-primitives (e.g. with Arrays, Objects, etc.)
-* Experimental [vert.x](http://vertx.io) support
-* **DEPRECATED**: `onFulfilled`, `onRejected`, `onProgress` handler arguments to `when.all`, `when.any`, `when.some`.  Use the returned promise's `then()` (or `otherwise()`, `ensure()`, etc) to register handlers instead.
-	* For example, do this: `when.all(array).then(onFulfilled, onRejected)` instead of this: `when.all(array, onFulfilled, onRejected)`.  The functionality is equivalent.
-
-### 2.0.1
-
-* Account for the fact that Mocha creates a global named `process`. Thanks [Narsul](https://github.com/cujojs/when/pull/136)
-
-### 2.0.0
-
-* Fully asynchronous resolutions.
-* [Promises/A+](http://promises-aplus.github.com/promises-spec) compliance.
-* New [`when/keys`](docs/api.md#object-keys) module with `all()` and `map()` for object keys/values.
-* New [`promise.ensure`](docs/api.md#ensure) as a better, and safer, replacement for `promise.always`.  [See discussion](https://github.com/cujojs/when/issues/103) as to why `promise.always` is mistake-prone.
-	* **DEPRECATED:** `promise.always`
-* `lift()` is now the preferred name for what was `bind()` in [when/function](docs/api.md#synchronous-functions), [when/node/function](docs/api.md#node-style-asynchronous-functions), and [when/callbacks](docs/api.md#asynchronous-functions).
-	* **DEPRECATED:** `bind()` in `when/function`, `when/node/function`, and `when/callbacks`.  Use `lift()` instead.
 
 [Full Changelog](CHANGES.md)
 
