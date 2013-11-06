@@ -10,4 +10,7 @@ jsdoc3
 .npmignore
 .gitmodules
 .travis.yml
-*.globalized.js
+*.globalized.jsbenchmark/
+.jshintrc
+.jshintignore
+.editorconfig
