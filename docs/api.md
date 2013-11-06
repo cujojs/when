@@ -129,7 +129,9 @@ A promise makes the following guarantees about handlers registered in the same c
 1. `onFulfilled` and `onRejected` will never be called more than once.
 1. `onProgress` may be called multiple times.
 
-*NOTE:* See [Promises/A+](http://promisesaplus.com] for extensive information on the behavior of `then`.
+### See also
+* [Promises/A+](http://promisesaplus.com] for extensive information on the behavior of `then`.
+* [promise.done](#done)
 
 ## Extended Promise API
 
@@ -152,6 +154,9 @@ Any error, either a returned rejection or a thrown exception, that propagates ou
 Note that there are still cases that `done` simply cannot catch, such as the case of *forgetting to call `done`*!  Thus, `done` and the [unhandled rejection monitor](#debugging-promises) are complimentary in many ways.  In fact, when the monitor is enabled, any error that escapes `handleValue` or `handleError` will also trigger the monitor.
 
 Since `done`'s purpose is consumption rather than transformation, `done` always returns `undefined`.
+
+#### See also
+* [promise.then](#main-promise-api)
 
 ### otherwise()
 
