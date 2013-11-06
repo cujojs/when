@@ -147,7 +147,9 @@ Either `return` the promise, thereby *passing the error-handling buck* to the ca
 
 While `then` is the primary API for transforming a promise's value and producing a new promise for the transformed value, `done` is used to terminate a promise chain, and extract the final value or error.  It signals that you are *taking responsibility* for the final outcome.  If the chain was ultimately successful, `handleValue` will be called with the final value.  If the chain was not successful and an error propagated to the end, `handleError` will be called with that error.
 
-Any error, either a returned rejection or a thrown exception, that propagates out of `handleValue` or `handleError` will be rethrown to the host environment, thereby generating a loud stack trace (and in some cases, such as Node, halting the VM).  This provides immediate feedback for development time errors and mistakes, and greatly reduces the chance of an unhandled promise rejection going silent.  Note that there are still cases that `done` simply cannot catch, such as the case of *forgetting to call `done`*!  Thus, `done` and the [unhandled rejection monitor](#debugging-promises) are complimentary in many ways.  In fact, when the monitor is enabled, any error that escapes `handleValue` or `handleError` will also trigger the monitor.
+Any error, either a returned rejection or a thrown exception, that propagates out of `handleValue` or `handleError` will be rethrown to the host environment, thereby generating a loud stack trace (and in some cases, such as Node, halting the VM).  This provides immediate feedback for development time errors and mistakes, and greatly reduces the chance of an unhandled promise rejection going silent.
+
+Note that there are still cases that `done` simply cannot catch, such as the case of *forgetting to call `done`*!  Thus, `done` and the [unhandled rejection monitor](#debugging-promises) are complimentary in many ways.  In fact, when the monitor is enabled, any error that escapes `handleValue` or `handleError` will also trigger the monitor.
 
 Since `done`'s purpose is consumption rather than transformation, `done` always returns `undefined`.
 
