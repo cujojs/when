@@ -1453,12 +1453,12 @@ direction".  For example, if you have a node-style callback,
 and a function that returns promises, you can lift the former to allow the
 two functions to be composed.
 
-The lifted function returns a promise that will resolve once the nodeback has finished:
+The lifted function will always returns its input promise, and always executes
+`nodeback` in a future turn of the event loop.  Thus, the outcome of `nodeback`
+has no bearing on the returned promise.
 
-* if the nodeback returns without throwing, the returned promise will fulfill.
-* if the nodeback throws, the returned promise will reject.
-
-Note that since node-style callbacks *typically do not return a useful result*, the fulfillment value of the returned promise will most likely be `undefined`.  On the off-chance that the node-style callback *does* return a result, it will be used as the returned promise's fulfillment value.
+If `nodeback` throws an exception, it will propagate to the host environment,
+just as it would when using node-style callbacks with typical Node.js APIs.
 
 ```js
 var nodefn, handlePromisedData, dataPromise;
