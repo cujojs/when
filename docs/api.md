@@ -130,7 +130,7 @@ A promise makes the following guarantees about handlers registered in the same c
 1. `onProgress` may be called multiple times.
 
 ### See also
-* [Promises/A+](http://promisesaplus.com] for extensive information on the behavior of `then`.
+* [Promises/A+](http://promisesaplus.com) for extensive information on the behavior of `then`.
 * [promise.done](#done)
 
 ## Extended Promise API
