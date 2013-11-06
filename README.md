@@ -13,19 +13,10 @@ When.js is cujoJS's lightweight [Promises/A+](http://promises-aplus.github.com/p
 
 It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promises-tests), is [very fast](https://github.com/cujojs/promise-perf-tests#test-results) and compact, and has no external dependencies.
 
-What's New?
------------
-
-Check out the [changelog](CHANGES.md) to find out!
-
-Docs & Examples
----------------
-
-[API docs](docs/api.md#api)
-
-[More info on the wiki](https://github.com/cujojs/when/wiki)
-
-[Examples](https://github.com/cujojs/when/wiki/Examples)
+- [What's new](CHANGES.md)
+- [API docs](docs/api.md#api)
+- [Examples](https://github.com/cujojs/when/wiki/Examples)
+- [More info on the wiki](https://github.com/cujojs/when/wiki)
 
 Quick Start
 -----------
