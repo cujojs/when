@@ -13,43 +13,13 @@ When.js is cujoJS's lightweight [Promises/A+](http://promises-aplus.github.com/p
 
 It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promises-tests), is [very fast](https://github.com/cujojs/promise-perf-tests#test-results) and compact, and has no external dependencies.
 
-# What's New?
+What's New?
+-----------
 
-### 2.6.0
+Check out the [changelog](CHANGES.md) to find out!
 
-* New [`promise.done`](docs/api.md#done) allows consuming the ultimate value at the end of a promise chain while ensuring that any errors are thrown to the host environment so you get loud stack traces.
-* `when/node/function` [`bindCallback`](docs/api.md#nodefn-bindcallback) and [`liftCallback`](docs/api.md#nodefn-liftcallback) now behave more like standard node-style APIs in that they allow exceptions to propagate to the host environment for loud stack traces.
-
-### 2.5.1
-
-* `ensure` now ignores non-functions, [like `then` does](http://promisesaplus.com/#point-25), for consistency. (#207)
-
-### 2.5.0
-
-* [Promises/A+ 1.1](http://promisesaplus.com) compliant.  Passes version 2.0.0 of the [Promises/A+ test suite](https://github.com/promises-aplus/promises-tests).
-
-### 2.4.1
-
-* New `MutationObserver` scheduler further reduces "time-to-first-handler" in modern browsers. (#198)
-	* Also, this works around a horrible IE10 bug (desktop and mobile) that renders `setImmediate`, `MessageChannel`, and `postMessage` unusable as fast task schedulers.  Many thanks to @plaa and @calvinmetcalf for their help in discovering the problem and working out a solution. (#197)
-
-### 2.4.0
-
-* Experimental support for [vert.x 2.x](http://vertx.io). Should now run in vert.x >= 1.1.0.
-* New `when.isPromiseLike` as the more accurately-named synonym for `when.isPromise`.
-* **DEPRECATED**: `when.isPromise`. It can only tell you that something is "promise-like" (aka "thenable") anyway. Use the new, more accurately-named `when.isPromiseLike` instead.
-* Fix for promise monitor reporting extra unhandled rejections for `when.all` and `when.map`.
-
-### 2.3.0
-
-* New [`promise.tap`](docs/api.md#tap) for adding side effects to a promise chain.
-* New `MessageChannel` scheduler reduces "time-to-first" handler, in environments that support it.
-* Performance optimizations for promise resolution.
-* Internal architecture improvements to pave the way for when.js 3.0.0.
-
-[Full Changelog](CHANGES.md)
-
-# Docs & Examples
+Docs & Examples
+---------------
 
 [API docs](docs/api.md#api)
 
@@ -58,9 +28,9 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 [Examples](https://github.com/cujojs/when/wiki/Examples)
 
 Quick Start
-===========
+-----------
 
-### AMD
+#### AMD
 
 1. Get it
 	- `bower install when` or `yeoman install when`, *or*
@@ -76,17 +46,17 @@ Quick Start
 
 1. `define(['when', ...], function(when, ...) { ... });` or `require(['when', ...], function(when, ...) { ... });`
 
-### Node
+#### Node
 
 1. `npm install when`
 1. `var when = require('when');`
 
-### RingoJS
+#### RingoJS
 
 1. `ringo-admin install cujojs/when`
 1. `var when = require('when');`
 
-### Legacy environments
+#### Legacy environments
 
 1. `git clone https://github.com/cujojs/when` or `git submodule add https://github.com/cujojs/when`
 1. Add a transient `define` shim, and a `<script>` element for when.js
@@ -104,21 +74,22 @@ Quick Start
 
 1. `when` will be available as `window.when`
 
-# Running the Unit Tests
+Running the Unit Tests
+----------------------
 
-## Node
+#### Node
 
 Note that when.js includes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise-tests).  Running unit tests in Node will run both when.js's own test suite, and the Promises/A+ Test Suite.
 
 1. `npm install`
-1. `npm test`
+2. `npm test`
 
-## Browsers
+#### Browsers
 
 1. `npm install`
-1. `npm start` - starts buster server & prints a url
-1. Point browsers at <buster server url>/capture, e.g. `localhost:1111/capture`
-1. `npm run-script test-browser`
+2. `npm start` - starts buster server & prints a url
+3. Point browsers at <buster server url>/capture, e.g. `localhost:1111/capture`
+4. `npm run-script test-browser`
 
 References
 ----------
