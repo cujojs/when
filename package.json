@@ -46,6 +46,23 @@
 		"microtime": "~0"
 	},
 	"main": "when",
+	"ender": {
+		"files": [
+			"parallel.js",
+			"pipline.js",
+			"poll.js",
+			"sequence.js",
+			"unfold.js",
+			"timeout.js",
+			"timed.js",
+			"delay.js",
+			"keys.js",
+			"guard.js",
+			"function.js",
+			"callbacks.js",
+			"cancelable.js"
+		]
+	},
 	"directories": {
 		"test": "test"
 	},
