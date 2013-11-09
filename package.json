@@ -46,6 +46,7 @@
 		"microtime": "~0"
 	},
 	"main": "when",
+	"ender": { "files": ["*.js", "node/*.js", "unfold/*.js", "monitor/*.js"] },
 	"directories": {
 		"test": "test"
 	},
