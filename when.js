@@ -73,116 +73,116 @@ define(function (require) {
 		this.inspect = inspect;
 	}
 
-	Promise.prototype = {
-		/**
-		 * Register handlers for this promise.
-		 * @param [onFulfilled] {Function} fulfillment handler
-		 * @param [onRejected] {Function} rejection handler
-		 * @param [onProgress] {Function} progress handler
-		 * @return {Promise} new Promise
-		 */
-		then: function(onFulfilled, onRejected, onProgress) {
-			/*jshint unused:false*/
-			var args, sendMessage;
+	var promisePrototype = Promise.prototype;
 
-			args = arguments;
-			sendMessage = this._message;
+	/**
+	 * Register handlers for this promise.
+	 * @param [onFulfilled] {Function} fulfillment handler
+	 * @param [onRejected] {Function} rejection handler
+	 * @param [onProgress] {Function} progress handler
+	 * @return {Promise} new Promise
+	 */
+	promisePrototype.then = function(onFulfilled, onRejected, onProgress) {
+		/*jshint unused:false*/
+		var args, sendMessage;
 
-			return _promise(function(resolve, reject, notify) {
-				sendMessage('when', args, resolve, notify);
-			}, this._status && this._status.observed());
-		},
+		args = arguments;
+		sendMessage = this._message;
 
-		/**
-		 * Register a rejection handler.  Shortcut for .then(undefined, onRejected)
-		 * @param {function?} onRejected
-		 * @return {Promise}
-		 */
-		otherwise: function(onRejected) {
-			return this.then(undef, onRejected);
-		},
+		return _promise(function(resolve, reject, notify) {
+			sendMessage('when', args, resolve, notify);
+		}, this._status && this._status.observed());
+	};
 
-		/**
-		 * Ensures that onFulfilledOrRejected will be called regardless of whether
-		 * this promise is fulfilled or rejected.  onFulfilledOrRejected WILL NOT
-		 * receive the promises' value or reason.  Any returned value will be disregarded.
-		 * onFulfilledOrRejected may throw or return a rejected promise to signal
-		 * an additional error.
-		 * @param {function} onFulfilledOrRejected handler to be called regardless of
-		 *  fulfillment or rejection
-		 * @returns {Promise}
-		 */
-		ensure: function(onFulfilledOrRejected) {
-			return typeof onFulfilledOrRejected === 'function'
-				? this.then(injectHandler, injectHandler)['yield'](this)
-				: this;
+	/**
+	 * Register a rejection handler.  Shortcut for .then(undefined, onRejected)
+	 * @param {function?} onRejected
+	 * @return {Promise}
+	 */
+	promisePrototype['catch'] = promisePrototype.otherwise = function(onRejected) {
+		return this.then(undef, onRejected);
+	};
 
-			function injectHandler() {
-				return resolve(onFulfilledOrRejected());
-			}
-		},
+	/**
+	 * Ensures that onFulfilledOrRejected will be called regardless of whether
+	 * this promise is fulfilled or rejected.  onFulfilledOrRejected WILL NOT
+	 * receive the promises' value or reason.  Any returned value will be disregarded.
+	 * onFulfilledOrRejected may throw or return a rejected promise to signal
+	 * an additional error.
+	 * @param {function} onFulfilledOrRejected handler to be called regardless of
+	 *  fulfillment or rejection
+	 * @returns {Promise}
+	 */
+	promisePrototype['finally'] = promisePrototype.ensure = function(onFulfilledOrRejected) {
+		return typeof onFulfilledOrRejected === 'function'
+			? this.then(injectHandler, injectHandler)['yield'](this)
+			: this;
 
-		/**
-		 * Terminate a promise chain by handling the ultimate fulfillment value or
-		 * rejection reason, and assuming responsibility for all errors.  if an
-		 * error propagates out of handleResult or handleFatalError, it will be
-		 * rethrown to the host, resulting in a loud stack track on most platforms
-		 * and a crash on some.
-		 * @param {function?} handleResult
-		 * @param {function?} handleError
-		 * @returns {undefined}
-		 */
-		done: function(handleResult, handleError) {
-			this.then(handleResult, handleError).otherwise(crash);
-		},
-
-		/**
-		 * Shortcut for .then(function() { return value; })
-		 * @param  {*} value
-		 * @return {Promise} a promise that:
-		 *  - is fulfilled if value is not a promise, or
-		 *  - if value is a promise, will fulfill with its value, or reject
-		 *    with its reason.
-		 */
-		'yield': function(value) {
-			return this.then(function() {
-				return value;
-			});
-		},
-
-		/**
-		 * Runs a side effect when this promise fulfills, without changing the
-		 * fulfillment value.
-		 * @param {function} onFulfilledSideEffect
-		 * @returns {Promise}
-		 */
-		tap: function(onFulfilledSideEffect) {
-			return this.then(onFulfilledSideEffect)['yield'](this);
-		},
-
-		/**
-		 * Assumes that this promise will fulfill with an array, and arranges
-		 * for the onFulfilled to be called with the array as its argument list
-		 * i.e. onFulfilled.apply(undefined, array).
-		 * @param {function} onFulfilled function to receive spread arguments
-		 * @return {Promise}
-		 */
-		spread: function(onFulfilled) {
-			return this.then(function(array) {
-				// array may contain promises, so resolve its contents.
-				return all(array, function(array) {
-					return onFulfilled.apply(undef, array);
-				});
-			});
-		},
-
-		/**
-		 * Shortcut for .then(onFulfilledOrRejected, onFulfilledOrRejected)
-		 * @deprecated
-		 */
-		always: function(onFulfilledOrRejected, onProgress) {
-			return this.then(onFulfilledOrRejected, onFulfilledOrRejected, onProgress);
+		function injectHandler() {
+			return resolve(onFulfilledOrRejected());
 		}
+	};
+
+	/**
+	 * Terminate a promise chain by handling the ultimate fulfillment value or
+	 * rejection reason, and assuming responsibility for all errors.  if an
+	 * error propagates out of handleResult or handleFatalError, it will be
+	 * rethrown to the host, resulting in a loud stack track on most platforms
+	 * and a crash on some.
+	 * @param {function?} handleResult
+	 * @param {function?} handleError
+	 * @returns {undefined}
+	 */
+	promisePrototype.done = function(handleResult, handleError) {
+		this.then(handleResult, handleError).otherwise(crash);
+	};
+
+	/**
+	 * Shortcut for .then(function() { return value; })
+	 * @param  {*} value
+	 * @return {Promise} a promise that:
+	 *  - is fulfilled if value is not a promise, or
+	 *  - if value is a promise, will fulfill with its value, or reject
+	 *    with its reason.
+	 */
+	promisePrototype['yield'] = function(value) {
+		return this.then(function() {
+			return value;
+		});
+	};
+
+	/**
+	 * Runs a side effect when this promise fulfills, without changing the
+	 * fulfillment value.
+	 * @param {function} onFulfilledSideEffect
+	 * @returns {Promise}
+	 */
+	promisePrototype.tap = function(onFulfilledSideEffect) {
+		return this.then(onFulfilledSideEffect)['yield'](this);
+	};
+
+	/**
+	 * Assumes that this promise will fulfill with an array, and arranges
+	 * for the onFulfilled to be called with the array as its argument list
+	 * i.e. onFulfilled.apply(undefined, array).
+	 * @param {function} onFulfilled function to receive spread arguments
+	 * @return {Promise}
+	 */
+	promisePrototype.spread = function(onFulfilled) {
+		return this.then(function(array) {
+			// array may contain promises, so resolve its contents.
+			return all(array, function(array) {
+				return onFulfilled.apply(undef, array);
+			});
+		});
+	};
+
+	/**
+	 * Shortcut for .then(onFulfilledOrRejected, onFulfilledOrRejected)
+	 * @deprecated
+	 */
+	promisePrototype.always = function(onFulfilledOrRejected, onProgress) {
+		return this.then(onFulfilledOrRejected, onFulfilledOrRejected, onProgress);
 	};
 
 	/**
