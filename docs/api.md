@@ -1346,6 +1346,8 @@ var promisified3 = callbacks.promisify(inverseVariadic, {
 
 Node.js APIs have their own standard for asynchronous functions: Instead of taking an errback, errors are passed as the first argument to the callback function. To use promises instead of callbacks with node-style asynchronous functions, you can use the `when/node/function` module, which is very similar to `when/callbacks`, but tuned to this convention.
 
+Note: There are some Node.js functions that are designed to return an event emitter. These functions will emit error events instead of passing an error as the first argument to the callback function. An example being `http.get`. These types of Node.js functions do not work with the below methodologies.
+
 ### `nodefn.call()`
 
 ```js
@@ -1378,15 +1380,17 @@ var promisedResult = nodefn.apply(nodeStyleFunction, [arg1, arg2/*...more args*/
 Following the tradition from `when/function` and `when/callbacks`, `when/node/function` also provides a array-based alternative to `nodefn.call()`.
 
 ```js
-var nodefn, http;
+var fs, nodefn;
 
+fs     = require("fs");
 nodefn = require("when/node/function");
-http   = require("http");
 
-var getCats = nodefn.apply(http.get, ["http://lolcats.com"]);
+var loadPasswd = nodefn.apply(fn.readFile, ["/etc/passwd"]);
 
-getCats.then(function(cats) {
-	// Rejoice!
+loadPasswd.then(function(passwd) {
+	console.log("Contents of /etc/passwd:\n" + passwd);
+}, function(error) {
+	console.log("Something wrong happened: " + error);
 });
 ```
 
