@@ -98,7 +98,7 @@ The promise represents the *eventual outcome*, which is either fulfillment (succ
 ```js
 // Create a pending promise whose fate is detemined by
 // the provided resolver function
-var promise = when.promise(resolver;
+var promise = when.promise(resolver);
 
 // Or a resolved promise
 var promise = when.resolve(promiseOrValue);
