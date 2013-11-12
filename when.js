@@ -11,7 +11,7 @@
  * @author John Hann
  * @version 2.6.0
  */
-(function(define, global) { 'use strict';
+(function(define) { 'use strict';
 define(function (require) {
 
 	// Public API
@@ -802,8 +802,8 @@ define(function (require) {
 	//
 
 	var reduceArray, slice, fcall, nextTick, handlerQueue,
-		setTimeout, funcProto, call, arrayProto, monitorApi,
-		cjsRequire, MutationObserver, undef;
+		funcProto, call, arrayProto, monitorApi,
+		cjsRequire, MutationObs, undef;
 
 	cjsRequire = require;
 
@@ -839,7 +839,7 @@ define(function (require) {
 
 	// capture setTimeout to avoid being caught by fake timers
 	// used in time based tests
-	setTimeout = global.setTimeout;
+//	setTimeout = global.setTimeout;
 
 	// Allow attaching the monitor to when() if env has no console
 	monitorApi = typeof console !== 'undefined' ? console : when;
@@ -847,10 +847,12 @@ define(function (require) {
 	// Sniff "best" async scheduling option
 	// Prefer process.nextTick or MutationObserver, then check for
 	// vertx and finally fall back to setTimeout
-	/*global process*/
+	/*global process,setTimeout,MutationObserver,WebKitMutationObserver*/
 	if (typeof process === 'object' && process.nextTick) {
 		nextTick = process.nextTick;
-	} else if(MutationObserver = global.MutationObserver || global.WebKitMutationObserver) {
+	} else if(MutationObs =
+		(typeof MutationObserver === 'function' && MutationObserver) ||
+			(typeof WebKitMutationObserver === 'function' && WebKitMutationObserver)) {
 		nextTick = (function(document, MutationObserver, drainQueue) {
 			var el = document.createElement('div');
 			new MutationObserver(drainQueue).observe(el, { attributes: true });
@@ -858,7 +860,7 @@ define(function (require) {
 			return function() {
 				el.setAttribute('x', 'x');
 			};
-		}(document, MutationObserver, drainQueue));
+		}(document, MutationObs, drainQueue));
 	} else {
 		try {
 			// vert.x 1.x || 2.x
@@ -949,4 +951,4 @@ define(function (require) {
 
 	return when;
 });
-})(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }, this);
+})(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });

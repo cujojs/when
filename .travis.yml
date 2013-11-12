@@ -7,7 +7,6 @@ branches:
   only:
     - dev
     - master
-    - fix-sauce-for-pull-requests
 env:
   global:
     - SAUCE_USERNAME="cujojs-when"
