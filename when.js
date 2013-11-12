@@ -803,7 +803,7 @@ define(function (require) {
 
 	var reduceArray, slice, fcall, nextTick, handlerQueue,
 		funcProto, call, arrayProto, monitorApi,
-		cjsRequire, MutationObs, undef;
+		capturedSetTimeout, cjsRequire, MutationObs, undef;
 
 	cjsRequire = require;
 
@@ -837,17 +837,13 @@ define(function (require) {
 		handlerQueue = [];
 	}
 
-	// capture setTimeout to avoid being caught by fake timers
-	// used in time based tests
-//	setTimeout = global.setTimeout;
-
 	// Allow attaching the monitor to when() if env has no console
 	monitorApi = typeof console !== 'undefined' ? console : when;
 
 	// Sniff "best" async scheduling option
 	// Prefer process.nextTick or MutationObserver, then check for
 	// vertx and finally fall back to setTimeout
-	/*global process,setTimeout,MutationObserver,WebKitMutationObserver*/
+	/*global process,document,setTimeout,MutationObserver,WebKitMutationObserver*/
 	if (typeof process === 'object' && process.nextTick) {
 		nextTick = process.nextTick;
 	} else if(MutationObs =
@@ -866,7 +862,10 @@ define(function (require) {
 			// vert.x 1.x || 2.x
 			nextTick = cjsRequire('vertx').runOnLoop || cjsRequire('vertx').runOnContext;
 		} catch(ignore) {
-			nextTick = function(t) { setTimeout(t, 0); };
+			// capture setTimeout to avoid being caught by fake timers
+			// used in time based tests
+			capturedSetTimeout = setTimeout;
+			nextTick = function(t) { capturedSetTimeout(t, 0); };
 		}
 	}
 
