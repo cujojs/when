@@ -833,8 +833,9 @@ define(function (require) {
 	 * processing until it is truly empty.
 	 */
 	function drainQueue() {
-		runHandlers(handlerQueue);
+		var queue = handlerQueue;
 		handlerQueue = [];
+		runHandlers(queue);
 	}
 
 	// capture setTimeout to avoid being caught by fake timers
@@ -847,9 +848,9 @@ define(function (require) {
 	// Sniff "best" async scheduling option
 	// Prefer process.nextTick or MutationObserver, then check for
 	// vertx and finally fall back to setTimeout
-	/*global process*/
+	/*global process,setImmediate*/
 	if (typeof process === 'object' && process.nextTick) {
-		nextTick = process.nextTick;
+		nextTick = typeof setImmediate === 'function' ? setImmediate : process.nextTick;
 	} else if(MutationObserver = global.MutationObserver || global.WebKitMutationObserver) {
 		nextTick = (function(document, MutationObserver, drainQueue) {
 			var el = document.createElement('div');
