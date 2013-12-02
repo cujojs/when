@@ -158,9 +158,13 @@ Since `done`'s purpose is consumption rather than transformation, `done` always 
 #### See also
 * [promise.then](#main-promise-api)
 
-### otherwise()
+<a name="otherwise" />
+### catch()
+**ALIAS:** otherwise() for non-ES5 environments
 
 ```js
+promise.catch(onRejected);
+// or
 promise.otherwise(onRejected);
 ```
 
@@ -170,17 +174,22 @@ Arranges to call `onRejected` on the promise's rejection reason if it is rejecte
 promise.then(undefined, onRejected);
 ```
 
-### ensure()
+<a name="finally" />
+### finally()
+
+**ALIAS:** ensure() for non-ES5 environments
 
 ```js
+promise.finally(onFulfilledOrRejected);
+// or
 promise.ensure(onFulfilledOrRejected);
 ```
 
-Ensure allows you to execute "cleanup" type tasks in a promise chain.  It arranges for `onFulfilledOrRejected` to be called, *with no arguments*, when promise is either fulfilled or rejected.  `onFulfilledOrRejected` cannot modify `promise`'s fulfillment value, but may signal a new or additional error by throwing an exception or returning a rejected promise.
+Finally allows you to execute "cleanup" type tasks in a promise chain.  It arranges for `onFulfilledOrRejected` to be called, *with no arguments*, when promise is either fulfilled or rejected.  `onFulfilledOrRejected` cannot modify `promise`'s fulfillment value, but may signal a new or additional error by throwing an exception or returning a rejected promise.
 
-`promise.ensure` should be used instead of `promise.always`.  It is safer in that it *cannot* transform a failure into a success by accident (which `always` could do simply by returning successfully!).
+`promise.finally` should be used instead of `promise.always`.  It is safer in that it *cannot* transform a failure into a success by accident (which `always` could do simply by returning successfully!).
 
-When combined with `promise.otherwise`, `promise.ensure` allows you to write code that is similar to the familiar synchronous `catch`/`finally` pair.  Consider the following synchronous code:
+When combined with `promise.catch`, `promise.finally` allows you to write code that is similar to the familiar synchronous `catch`/`finally` pair.  Consider the following synchronous code:
 
 ```js
 try {
@@ -192,12 +201,12 @@ try {
 }
 ```
 
-Using `promise.ensure`, similar asynchronous code (with `doSomething()` that returns a promise) can be written:
+Using `promise.finally`, similar asynchronous code (with `doSomething()` that returns a promise) can be written:
 
 ```js
 return doSomething()
-	.otherwise(handleError)
-	.ensure(cleanup);
+	.catch(handleError)
+	.finally(cleanup);
 ```
 
 ### yield()
@@ -799,7 +808,7 @@ function unspool(files) {
 
 	file = files[0];
 	content = nodefn.call(fs.readFile, file)
-		.otherwise(function(e) {
+		.catch(function(e) {
 			return '[Skipping dir ' + file + ']';
 		});
 	return [content, files.slice(1)];
@@ -825,7 +834,7 @@ function printFirstLine(content) {
 	console.log(content.slice(0, Math.min(80, content.indexOf('\n'))));
 }
 
-unfold(unspool, condition, printFirstLine, files).otherwise(console.error);
+unfold(unspool, condition, printFirstLine, files).catch(console.error);
 ```
 
 

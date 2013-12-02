@@ -10,4 +10,4 @@ branches:
 env:
   global:
     - SAUCE_USERNAME="cujojs-when"
-    - secure: "xDw2GHHEODbhKOEKXwE0iHdLE+dSQW5dsNFjLnfSEJKmhQe4bmmuK2r7NcgF\nYsAFFJ1Oy8smLXfibeCqVp9Pgyjqwhy6oe7ZH/5y4BXTACEC1UKGM/ZgLsXQ\nMzp4Ydt1Hdb+0QyPDYEeLKZOoBsqp1botU0ux0ZDKDwWGEmLSg8="
+    - SAUCE_ACCESS_KEY="e5d3d1a5-bc49-4607-8a7e-702a512c7f60"

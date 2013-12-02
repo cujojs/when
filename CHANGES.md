@@ -1,3 +1,12 @@
+### 2.7.0
+
+* Added [`promise.catch`](docs/api.md#catch) and [`promise.finally`](docs/api.md#finally) as synonyms for `promise.otherwise` and `promise.ensure`. (#212)
+* New [browserify build](../README.md#legacy-environments-via-browserify) for those using globals.
+* Added [ender](http://ender.jit.su) support to `package.json`.
+* Fix compatibility with [PhantomJS](http://phantomjs.org)'s' CommonJS module support. (#266)
+* Fix [Sauce Labs](https://saucelabs.com) tests for pull requests. (#216)
+* Added `bower.json` `ignore` to trim files installed via bower.
+
 ### 2.6.0
 
 * New [`promise.done`](docs/api.md#done) allows consuming the ultimate value at the end of a promise chain while ensuring that any errors are thrown to the host environment so you get loud stack traces.

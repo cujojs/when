@@ -1,6 +1,6 @@
 {
 	"name": "when",
-	"version": "2.6.0",
+	"version": "2.7.0",
 	"description": "A lightweight Promises/A+ and when() implementation, plus other async goodies.",
 	"keywords": ["Promises/A+", "promises-aplus", "promise", "promises", "deferred", "deferreds", "when", "async", "asynchronous", "cujo"],
 	"homepage": "http://cujojs.com",
@@ -43,7 +43,8 @@
 		"test-support": "~0.3",
 		"promises-aplus-tests": "~2",
 		"benchmark": "~1",
-		"microtime": "~0"
+		"microtime": "~0",
+		"browserify": "~2"
 	},
 	"main": "when",
 	"ender": { "files": ["*.js", "node/*.js", "unfold/*.js", "monitor/*.js"] },
@@ -55,6 +56,8 @@
 		"ci": "npm test && sauceme",
 		"tunnel": "sauceme -m",
 		"start": "buster static -e browser",
-		"benchmark": "node benchmark/promise && node benchmark/map"
+		"benchmark": "node benchmark/promise && node benchmark/map",
+		"browserify": "browserify -s when build/when.browserify.js -o build/when.js",
+		"browserify-debug": "browserify -s when build/when.browserify-debug.js -o build/when.js"
 	}
 }

@@ -629,6 +629,13 @@ define('when/promise-test', function (require) {
 
 		},
 
+		'finally': {
+			'should be an alias for ensure': function() {
+				var p = when.resolve();
+				assert.same(p['finally'], p.ensure);
+			}
+		},
+
 		'ensure': {
 			'should return a promise': function() {
 				assert.isFunction(defer().promise.ensure().then);
@@ -734,6 +741,13 @@ define('when/promise-test', function (require) {
 
 			'should ignore non-function': function() {
 				return when.resolve(true).ensure().then(assert);
+			}
+		},
+
+		'catch': {
+			'should be an alias for otherwise': function() {
+				var p = when.resolve();
+				assert.same(p['catch'], p.otherwise);
 			}
 		},
 
