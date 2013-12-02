@@ -47,23 +47,15 @@ Quick Start
 1. `ringo-admin install cujojs/when`
 1. `var when = require('when');`
 
-#### Legacy environments
+#### Legacy environments (via browserify)
 
-1. `git clone https://github.com/cujojs/when` or `git submodule add https://github.com/cujojs/when`
-1. Add a transient `define` shim, and a `<script>` element for when.js
-
-	```html
-	<script>
-		window.define = function(factory) {
-			try{ delete window.define; } catch(e){ window.define = void 0; } // IE
-			window.when = factory();
-		};
-		window.define.amd = {};
-	</script>
-	<script src="path/to/when/when.js"></script>
-	```
-
-1. `when` will be available as `window.when`
+1. `git clone https://github.com/cujojs/when`
+1. `npm install`
+1. `npm run browserify` to generate `build/when.js`
+	1. Or `npm run browserify-debug` to build with [when/monitor/console](docs/api.md#debugging-promises) enabled
+1. `<script src="path/to/when/build/when.js"></script>`
+	1. `when` will be available as `window.when`
+	1. Other modules will be available as sub-objects/functions, e.g. `window.when.fn.lift`, `window.when.sequence`.  See the [full sub-namespace list in the browserify build file](build/when.browserify.js)
 
 Running the Unit Tests
 ----------------------
