@@ -47,6 +47,11 @@ Quick Start
 1. `ringo-admin install cujojs/when`
 1. `var when = require('when');`
 
+#### Ender
+
+1. `ender add cujojs/when`
+2. `var when = require('when');`
+
 #### Legacy environments (via browserify)
 
 1. `git clone https://github.com/cujojs/when`
