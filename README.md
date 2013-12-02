@@ -18,66 +18,61 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 - [Examples](https://github.com/cujojs/when/wiki/Examples)
 - [More info on the wiki](https://github.com/cujojs/when/wiki)
 
-Quick Start
------------
+Installation
+------------
 
 #### AMD
 
-1. Get it
-	- `bower install when` or `yeoman install when`, *or*
-	- `git clone https://github.com/cujojs/when` or `git submodule add https://github.com/cujojs/when`
-1. Configure your loader with a package:
+Availble as `when` through [bower](http://bower.io) and [yeoman](https://github.com/yeoman/yo), or just clone the repo and load `when.js` from the root. When.js is AMD-compatible out of the box, so no need for shims.
 
-	```js
-	packages: [
-		{ name: 'when', location: 'path/to/when/', main: 'when' },
-		// ... other packages ...
-	]
-	```
+#### CommonJS/Node
 
-1. `define(['when', ...], function(when, ...) { ... });` or `require(['when', ...], function(when, ...) { ... });`
+```
+npm install when
+```
 
-#### Node
+[More help & other environments &raquo;](docs/installation.md)
 
-1. `npm install when`
-1. `var when = require('when');`
+Usage
+-----
 
-#### RingoJS
+Promises can be used to help manage complex and/or nested callback flows in a simple manner. A basic example (using CommonJS) can be seen below:
 
-1. `ringo-admin install cujojs/when`
-1. `var when = require('when');`
+```js
+var when = require('when');
 
-#### Ender
+var greetingPromise = sayHello(); // returns a promise for 'hello world'
+greetingPromise
+    .then(addExclamation)
+    .then(function(greeting) {
+        console.log(greeting);    // 'hello world!!!!’
+    }).otherwise(function(error) {
+        console.error('uh oh: ', error);   // 'uh oh: something bad happened’
+    });
 
-1. `ender add cujojs/when`
-2. `var when = require('when');`
+function sayHello() {
+	var deferred = when.defer();
+	setTimeout(function(){ deferred.resolve('hello world') }, 500);
+	return deferred.promise;
+}
 
-#### Legacy environments (via browserify)
+function addExclamation(greeting) {
+	return greeting + '!!!!'
+}
+```
 
-1. `git clone https://github.com/cujojs/when`
-1. `npm install`
-1. `npm run browserify` to generate `build/when.js`
-	1. Or `npm run browserify-debug` to build with [when/monitor/console](docs/api.md#debugging-promises) enabled
-1. `<script src="path/to/when/build/when.js"></script>`
-	1. `when` will be available as `window.when`
-	1. Other modules will be available as sub-objects/functions, e.g. `window.when.fn.lift`, `window.when.sequence`.  See the [full sub-namespace list in the browserify build file](build/when.browserify.js)
+- For more examples, see [examples &raquo;](https://github.com/cujojs/when/wiki/Examples)
+- For the full documentation see [api docs &raquo;](docs/api.md#api)
 
-Running the Unit Tests
-----------------------
+License
+-------
 
-#### Node
+Licensed under MIT. [See the license here &raquo;](LICENSE.txt)
 
-Note that when.js includes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise-tests).  Running unit tests in Node will run both when.js's own test suite, and the Promises/A+ Test Suite.
+Contributing
+------------
 
-1. `npm install`
-2. `npm test`
-
-#### Browsers
-
-1. `npm install`
-2. `npm start` - starts buster server & prints a url
-3. Point browsers at <buster server url>/capture, e.g. `localhost:1111/capture`
-4. `npm run-script test-browser`
+Please see the [contributing guide](CONTRIBUTING.md) for more information on running tests, opening issues, and contributing code to the project.
 
 References
 ----------
