@@ -51,7 +51,7 @@ Quick Start
 
 1. `git clone https://github.com/cujojs/when`
 1. `npm install` - installs [browserify](http://browserify.org) locally
-1. `npm run browserify` - generated `build/when.js`
+1. `npm run browserify` - generates `build/when.js`
 	1. Or `npm run browserify-debug` if you want a build with [when/monitor/console](docs/api.md#debugging-promises) enabled
 1. `<script src="path/to/when/build/when.js"></script>`
 	1. `when` will be available as `window.when`
