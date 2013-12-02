@@ -1,6 +1,7 @@
 .idea/
 .gitignore/
 test/
+benchmark/
 experiments/
 docs/
 build/
