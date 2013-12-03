@@ -44,9 +44,9 @@ var when = require('when');
 var greetingPromise = sayHello(); // returns a promise for 'hello world'
 greetingPromise
     .then(addExclamation)
-    .then(function(greeting) {
+    .done(function(greeting) {
         console.log(greeting);    // 'hello world!!!!’
-    }).otherwise(function(error) {
+    }, function(error) {
         console.error('uh oh: ', error);   // 'uh oh: something bad happened’
     });
 
