@@ -36,29 +36,52 @@ npm install when
 Usage
 -----
 
-Promises can be used to help manage complex and/or nested callback flows in a simple manner. A basic example (using CommonJS) can be seen below:
+Promises can be used to help manage complex and/or nested callback flows in a simple manner. To get a better handle on how promise flows look and how they can be helpful, there are a couple examples below (using commonjs).
+
+This first example will print `"hello world!!!!"` if all went well, or `"drat!"` if there was a problem. It also uses [rest](https://github.com/cujojs/rest) to make an ajax request to a (fictional) external service.
+
+```js
+var rest = require('rest');
+ 
+fetchRemoteGreeting()
+    .then(addExclamation)
+    .catch(handleError)
+    .done(function(greeting) {
+        console.log(greeting);
+    });
+ 
+function fetchRemoteGreeting() {
+    // returns a when.js promise for 'hello world'
+    rest('http://example.com/greeting');
+}
+ 
+function addExclamation(greeting) {
+    return greeting + '!!!!'
+}
+ 
+function handleError(e) {
+    return 'drat!';
+}
+```
+
+The second example shows off the power that comes with when's promise logic. Here, we get an array of numbers from a remote source and reduce them. The example will print `150` if all went well, and if there was a problem will print a full stack trace.
 
 ```js
 var when = require('when');
-
-var greetingPromise = sayHello(); // returns a promise for 'hello world'
-greetingPromise
-    .then(addExclamation)
-    .done(function(greeting) {
-        console.log(greeting);    // 'hello world!!!!’
-    }, function(error) {
-        console.error('uh oh: ', error);   // 'uh oh: something bad happened’
+var rest = require('rest');
+ 
+when.reduce(when.map(getRemoteNumberList(), times10), sum)
+    .done(function(result) {
+        console.log(result);
     });
-
-function sayHello() {
-	var deferred = when.defer();
-	setTimeout(function(){ deferred.resolve('hello world') }, 500);
-	return deferred.promise;
+ 
+function getRemoteNumberList() {
+    // Get a remote array [1, 2, 3, 4, 5]
+    rest('http://example.com/numbers').then(JSON.parse);
 }
-
-function addExclamation(greeting) {
-	return greeting + '!!!!'
-}
+ 
+function sum(x, y) { return x + y; }
+function times10(x) {return x * 10; }
 ```
 
 - For more examples, see [examples &raquo;](https://github.com/cujojs/when/wiki/Examples)
