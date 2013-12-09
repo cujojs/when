@@ -101,11 +101,11 @@ define(function (require) {
 		 * the promise's ultimate fulfillment value or rejection reason.
 		 * @private
 		 */
-		function _when(resolve, notify, f, r, u) {
+		function _when(resolve, notify, onFulfilled, onRejected, onProgress) {
 			consumers ? consumers.push(deliver) : enqueue(function() { deliver(value); });
 
 			function deliver(p) {
-				p._when(resolve, notify, f, r, u);
+				p._when(resolve, notify, onFulfilled, onRejected, onProgress);
 			}
 		}
 
@@ -420,6 +420,7 @@ define(function (require) {
 	/**
 	 * Creates a fulfilled, local promise as a proxy for a value
 	 * NOTE: must never be exposed
+	 * @private
 	 * @param {*} value fulfillment value
 	 * @returns {Promise}
 	 */
@@ -441,8 +442,15 @@ define(function (require) {
 		}
 	};
 
-	function RejectedPromise(value) {
-		this.value = value;
+	/**
+	 * Creates a rejected, local promise as a proxy for a value
+	 * NOTE: must never be exposed
+	 * @private
+	 * @param {*} reason rejection reason
+	 * @returns {Promise}
+	 */
+	function RejectedPromise(reason) {
+		this.value = reason;
 	}
 
 	RejectedPromise.prototype = makePromisePrototype(promisePrototype);
@@ -462,7 +470,7 @@ define(function (require) {
 	/**
 	 * Create a progress promise with the supplied update.
 	 * @private
-	 * @param {*} value
+	 * @param {*} value progress update value
 	 * @return {Promise} progress promise
 	 */
 	function ProgressingPromise(value) {
@@ -479,6 +487,12 @@ define(function (require) {
 		}
 	};
 
+	/**
+	 * Update a PromiseStatus monitor object with the outcome
+	 * of the supplied value promise.
+	 * @param {Promise} value
+	 * @param {PromiseStatus} status
+	 */
 	function updateStatus(value, status) {
 		value.then(statusFulfilled, statusRejected);
 
