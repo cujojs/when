@@ -10,10 +10,18 @@ CommonJS and AMD are the primary targets for `when`, but instructions for a vari
 1. Configure your loader. When.js is AMD-compatible out of the box need for shims or anything. Below is an example of how configuring the package might look:
 
   ```js
+  // using requirejs
   requirejs.config({
     packages: [
       { name: 'when', location: '/path/to/when', main: 'when' }
     ]
+  });
+
+  // using curl.js
+  curl.config({
+    packages: {
+      when: { location: '/path/to/when', main: 'when' }
+    }
   });
   ```
 
