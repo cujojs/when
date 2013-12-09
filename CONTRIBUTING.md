@@ -31,4 +31,4 @@ Note that when.js includes the [Promises/A+ Test Suite](https://github.com/promi
 1. `npm install`
 2. `npm start` - starts buster server & prints a url
 3. Point browsers at <buster server url>/capture, e.g. `localhost:1111/capture`
-4. `npm run-script test-browser`
+4. `npm run test-browser`
