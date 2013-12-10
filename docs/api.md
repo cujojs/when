@@ -1196,7 +1196,7 @@ promiseSetText(element, getMessage());
 
 // Leveraging the partial application
 var setElementMessage = fn.lift(setText, element);
-setElementMessage(geMessage());
+setElementMessage(getMessage());
 ```
 
 ### `fn.compose()`
