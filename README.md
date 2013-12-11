@@ -52,7 +52,7 @@ fetchRemoteGreeting()
  
 function fetchRemoteGreeting() {
     // returns a when.js promise for 'hello world'
-    rest('http://example.com/greeting');
+    return rest('http://example.com/greeting');
 }
  
 function addExclamation(greeting) {
@@ -77,7 +77,7 @@ when.reduce(when.map(getRemoteNumberList(), times10), sum)
  
 function getRemoteNumberList() {
     // Get a remote array [1, 2, 3, 4, 5]
-    rest('http://example.com/numbers').then(JSON.parse);
+    return rest('http://example.com/numbers').then(JSON.parse);
 }
  
 function sum(x, y) { return x + y; }
