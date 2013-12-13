@@ -18,61 +18,84 @@ It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise
 - [Examples](https://github.com/cujojs/when/wiki/Examples)
 - [More info on the wiki](https://github.com/cujojs/when/wiki)
 
-Quick Start
------------
+Installation
+------------
 
 #### AMD
 
-1. Get it
-	- `bower install when` or `yeoman install when`, *or*
-	- `git clone https://github.com/cujojs/when` or `git submodule add https://github.com/cujojs/when`
-1. Configure your loader with a package:
+Availble as `when` through [bower](http://bower.io) and [yeoman](https://github.com/yeoman/yo), or just clone the repo and load `when.js` from the root. When.js is AMD-compatible out of the box, so no need for shims.
 
-	```js
-	packages: [
-		{ name: 'when', location: 'path/to/when/', main: 'when' },
-		// ... other packages ...
-	]
-	```
+#### CommonJS/Node
 
-1. `define(['when', ...], function(when, ...) { ... });` or `require(['when', ...], function(when, ...) { ... });`
+```
+npm install when
+```
 
-#### Node
+[More help & other environments &raquo;](docs/installation.md)
 
-1. `npm install when`
-1. `var when = require('when');`
+Usage
+-----
 
-#### RingoJS
+Promises can be used to help manage complex and/or nested callback flows in a simple manner. To get a better handle on how promise flows look and how they can be helpful, there are a couple examples below (using commonjs).
 
-1. `ringo-admin install cujojs/when`
-1. `var when = require('when');`
+This first example will print `"hello world!!!!"` if all went well, or `"drat!"` if there was a problem. It also uses [rest](https://github.com/cujojs/rest) to make an ajax request to a (fictional) external service.
 
-#### Legacy environments (via browserify)
+```js
+var rest = require('rest');
+ 
+fetchRemoteGreeting()
+    .then(addExclamation)
+    .catch(handleError)
+    .done(function(greeting) {
+        console.log(greeting);
+    });
+ 
+function fetchRemoteGreeting() {
+    // returns a when.js promise for 'hello world'
+    return rest('http://example.com/greeting');
+}
+ 
+function addExclamation(greeting) {
+    return greeting + '!!!!'
+}
+ 
+function handleError(e) {
+    return 'drat!';
+}
+```
 
-1. `git clone https://github.com/cujojs/when`
-1. `npm install`
-1. `npm run browserify` to generate `build/when.js`
-	1. Or `npm run browserify-debug` to build with [when/monitor/console](docs/api.md#debugging-promises) enabled
-1. `<script src="path/to/when/build/when.js"></script>`
-	1. `when` will be available as `window.when`
-	1. Other modules will be available as sub-objects/functions, e.g. `window.when.fn.lift`, `window.when.sequence`.  See the [full sub-namespace list in the browserify build file](build/when.browserify.js)
+The second example shows off the power that comes with when's promise logic. Here, we get an array of numbers from a remote source and reduce them. The example will print `150` if all went well, and if there was a problem will print a full stack trace.
 
-Running the Unit Tests
-----------------------
+```js
+var when = require('when');
+var rest = require('rest');
+ 
+when.reduce(when.map(getRemoteNumberList(), times10), sum)
+    .done(function(result) {
+        console.log(result);
+    });
+ 
+function getRemoteNumberList() {
+    // Get a remote array [1, 2, 3, 4, 5]
+    return rest('http://example.com/numbers').then(JSON.parse);
+}
+ 
+function sum(x, y) { return x + y; }
+function times10(x) {return x * 10; }
+```
 
-#### Node
+- For more examples, see [examples &raquo;](https://github.com/cujojs/when/wiki/Examples)
+- For the full documentation see [api docs &raquo;](docs/api.md#api)
 
-Note that when.js includes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promise-tests).  Running unit tests in Node will run both when.js's own test suite, and the Promises/A+ Test Suite.
+License
+-------
 
-1. `npm install`
-2. `npm test`
+Licensed under MIT. [See the license here &raquo;](LICENSE.txt)
 
-#### Browsers
+Contributing
+------------
 
-1. `npm install`
-2. `npm start` - starts buster server & prints a url
-3. Point browsers at <buster server url>/capture, e.g. `localhost:1111/capture`
-4. `npm run-script test-browser`
+Please see the [contributing guide](CONTRIBUTING.md) for more information on running tests, opening issues, and contributing code to the project.
 
 References
 ----------
