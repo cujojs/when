@@ -42,23 +42,23 @@ This first example will print `"hello world!!!!"` if all went well, or `"drat!"`
 
 ```js
 var rest = require('rest');
- 
+
 fetchRemoteGreeting()
     .then(addExclamation)
     .catch(handleError)
     .done(function(greeting) {
         console.log(greeting);
     });
- 
+
 function fetchRemoteGreeting() {
     // returns a when.js promise for 'hello world'
     return rest('http://example.com/greeting');
 }
- 
+
 function addExclamation(greeting) {
     return greeting + '!!!!'
 }
- 
+
 function handleError(e) {
     return 'drat!';
 }
@@ -69,17 +69,17 @@ The second example shows off the power that comes with when's promise logic. Her
 ```js
 var when = require('when');
 var rest = require('rest');
- 
+
 when.reduce(when.map(getRemoteNumberList(), times10), sum)
     .done(function(result) {
         console.log(result);
     });
- 
+
 function getRemoteNumberList() {
     // Get a remote array [1, 2, 3, 4, 5]
     return rest('http://example.com/numbers').then(JSON.parse);
 }
- 
+
 function sum(x, y) { return x + y; }
 function times10(x) {return x * 10; }
 ```

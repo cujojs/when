@@ -43,7 +43,7 @@ CommonJS and AMD are the primary targets for `when`, but instructions for a vari
 
 #### Ender
 
-1. `ender add cujojs/when`
+1. `ender add when`
 2. `var when = require('when');`
 
 #### Legacy environments (via browserify)
