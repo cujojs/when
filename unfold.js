@@ -7,9 +7,7 @@
 (function(define) {
 define(function(require) {
 
-	var when;
-
-	when = require('./when');
+	var when = require('./when');
 
 	/**
 	 * Anamorphic unfold/map that generates values by applying
@@ -39,8 +37,5 @@ define(function(require) {
 	};
 
 });
-})(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
-	// Boilerplate for AMD and Node
-);
+})(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); } );
 
