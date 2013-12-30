@@ -16,8 +16,12 @@ define(function (require) {
 
 	// Public API
 
+	var Promise = require('./Promise');
+	var ArrayPromise = require('./ArrayPromise');
+
+	when.Promise   = Promise;
 	when.promise   = promise;    // Create a pending promise
-	when.resolve   = resolve;    // Create a resolved promise
+	when.resolve   = Promise.resolve;    // Create a resolved promise
 	when.reject    = reject;     // Create a rejected promise
 	when.defer     = defer;      // Create a {promise, resolver} pair
 
@@ -52,7 +56,7 @@ define(function (require) {
 	function when(promiseOrValue, onFulfilled, onRejected, onProgress) {
 		// Get a trusted promise for the input promiseOrValue, and then
 		// register promise handlers
-		return cast(promiseOrValue).then(onFulfilled, onRejected, onProgress);
+		return Promise.cast(promiseOrValue).then(onFulfilled, onRejected, onProgress);
 	}
 
 	/**
@@ -299,10 +303,8 @@ define(function (require) {
 	 * @param {*} x the rejected value of the returned promise
 	 * @return {Promise} rejected promise
 	 */
-	function reject(x) {
-		return when(x, function(e) {
-			return new RejectedPromise(e);
-		});
+	function reject(promiseOrValue) {
+		return when(promiseOrValue, Promise.reject);
 	}
 
 	/**
@@ -338,7 +340,7 @@ define(function (require) {
 		function makeDeferred(resolvePending, rejectPending, notifyPending) {
 			deferred.resolve = deferred.resolver.resolve = function(value) {
 				if(resolved) {
-					return resolve(value);
+					return Promise.resolve(value);
 				}
 				resolved = true;
 				resolvePending(value);
@@ -347,7 +349,7 @@ define(function (require) {
 
 			deferred.reject  = deferred.resolver.reject  = function(reason) {
 				if(resolved) {
-					return resolve(new RejectedPromise(reason));
+					return Promise.reject(reason);
 				}
 				resolved = true;
 				rejectPending(reason);
@@ -362,6 +364,7 @@ define(function (require) {
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Run a queue of functions as quickly as possible, passing
 	 * value to each.
 	 */
@@ -509,6 +512,8 @@ define(function (require) {
 	}
 
 	/**
+=======
+>>>>>>> Extract configurable core, Promise, and ArrayPromise based on previous work in when3-proto, but simpler now
 	 * Determines if x is promise-like, i.e. a thenable object
 	 * NOTE: Will return true for *any thenable object*, and isn't truly
 	 * safe, since it may attempt to access the `then` property of x (i.e.
@@ -651,7 +656,8 @@ define(function (require) {
 	 *  outcome snapshots for each input promise.
 	 */
 	function settle(array) {
-		return _map(array, toFulfilledState, toRejectedState);
+		return ArrayPromise.cast(array).settle();
+//		return _map(array, toFulfilledState, toRejectedState);
 	}
 
 	/**
@@ -749,44 +755,12 @@ define(function (require) {
 		});
 	}
 
-	// Snapshot states
-
-	/**
-	 * Creates a fulfilled state snapshot
-	 * @private
-	 * @param {*} x any value
-	 * @returns {{state:'fulfilled',value:*}}
-	 */
-	function toFulfilledState(x) {
-		return { state: 'fulfilled', value: x };
-	}
-
-	/**
-	 * Creates a rejected state snapshot
-	 * @private
-	 * @param {*} x any reason
-	 * @returns {{state:'rejected',reason:*}}
-	 */
-	function toRejectedState(x) {
-		return { state: 'rejected', reason: x };
-	}
-
-	/**
-	 * Creates a pending state snapshot
-	 * @private
-	 * @returns {{state:'pending'}}
-	 */
-	function toPendingState() {
-		return { state: 'pending' };
-	}
-
 	//
 	// Internals, utilities, etc.
 	//
 
-	var promisePrototype, makePromisePrototype, reduceArray, slice, fcall, nextTick, handlerQueue,
-		funcProto, call, arrayProto, monitorApi,
-		capturedSetTimeout, cjsRequire, MutationObs, undef;
+	var reduceArray, slice, fcall,
+		funcProto, call, arrayProto, monitorApi, cjsRequire, undef;
 
 	cjsRequire = require;
 
@@ -797,60 +771,8 @@ define(function (require) {
 	// this type of extensible queue + trampoline approach for
 	// next-tick conflation.
 
-	handlerQueue = [];
-
-	/**
-	 * Enqueue a task. If the queue is not currently scheduled to be
-	 * drained, schedule it.
-	 * @param {function} task
-	 */
-	function enqueue(task) {
-		if(handlerQueue.push(task) === 1) {
-			nextTick(drainQueue);
-		}
-	}
-
-	/**
-	 * Drain the handler queue entirely, being careful to allow the
-	 * queue to be extended while it is being processed, and to continue
-	 * processing until it is truly empty.
-	 */
-	function drainQueue() {
-		runHandlers(handlerQueue);
-		handlerQueue = [];
-	}
-
 	// Allow attaching the monitor to when() if env has no console
 	monitorApi = typeof console !== 'undefined' ? console : when;
-
-	// Sniff "best" async scheduling option
-	// Prefer process.nextTick or MutationObserver, then check for
-	// vertx and finally fall back to setTimeout
-	/*global process,document,setTimeout,MutationObserver,WebKitMutationObserver*/
-	if (typeof process === 'object' && process.nextTick) {
-		nextTick = process.nextTick;
-	} else if(MutationObs =
-		(typeof MutationObserver === 'function' && MutationObserver) ||
-			(typeof WebKitMutationObserver === 'function' && WebKitMutationObserver)) {
-		nextTick = (function(document, MutationObserver, drainQueue) {
-			var el = document.createElement('div');
-			new MutationObserver(drainQueue).observe(el, { attributes: true });
-
-			return function() {
-				el.setAttribute('x', 'x');
-			};
-		}(document, MutationObs, drainQueue));
-	} else {
-		try {
-			// vert.x 1.x || 2.x
-			nextTick = cjsRequire('vertx').runOnLoop || cjsRequire('vertx').runOnContext;
-		} catch(ignore) {
-			// capture setTimeout to avoid being caught by fake timers
-			// used in time based tests
-			capturedSetTimeout = setTimeout;
-			nextTick = function(t) { capturedSetTimeout(t, 0); };
-		}
-	}
 
 	//
 	// Capture/polyfill function and array utils
@@ -917,18 +839,6 @@ define(function (require) {
 
 	function identity(x) {
 		return x;
-	}
-
-	function crash(fatalError) {
-		if(typeof monitorApi.reportUnhandled === 'function') {
-			monitorApi.reportUnhandled();
-		} else {
-			enqueue(function() {
-				throw fatalError;
-			});
-		}
-
-		throw fatalError;
 	}
 
 	return when;
