@@ -1371,7 +1371,7 @@ var fs, nodefn;
 fs     = require("fs");
 nodefn = require("when/node/function");
 
-var loadPasswd = nodefn.call(fn.readFile, "/etc/passwd");
+var loadPasswd = nodefn.call(fs.readFile, "/etc/passwd");
 
 loadPasswd.then(function(passwd) {
 	console.log("Contents of /etc/passwd:\n" + passwd);
