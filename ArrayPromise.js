@@ -95,8 +95,10 @@ define(function(require) {
 	};
 
 	ArrayPromise.prototype.flatMap = function(f) {
-		return this.reduceRight(function(result, x) {
-			return f(x).concat(result);
+		return this.foldr(function(result, x) {
+			return f(x).then(function(a) {
+				return a.concat(result);
+			});
 		}, ArrayPromise.empty());
 	};
 
