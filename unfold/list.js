@@ -7,10 +7,7 @@
 (function(define) {
 define(function(require) {
 
-	var when, unfold;
-
-	when = require('../when');
-	unfold = require('../unfold');
+	var ArrayPromise = require('../ArrayPromise');
 
 	/**
 	 * Given a seed and generator, produces an Array.  Effectively the
@@ -23,14 +20,7 @@ define(function(require) {
 	 * @return {Promise} resulting array
 	 */
 	return function list(generator, condition, seed) {
-		var result = [];
-
-		return unfold(generator, condition, append, seed)['yield'](result);
-
-		function append(value, newSeed) {
-			result.push(value);
-			return newSeed;
-		}
+		return ArrayPromise.unfold(generator, condition, seed);
 	};
 
 });

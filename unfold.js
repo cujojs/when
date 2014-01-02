@@ -7,7 +7,7 @@
 (function(define) {
 define(function(require) {
 
-	var when = require('./when');
+	var Promise = require('./Promise');
 
 	/**
 	 * Anamorphic unfold/map that generates values by applying
@@ -22,18 +22,7 @@ define(function(require) {
 	 * @return {Promise} the result of the unfold
 	 */
 	return function unfold(unspool, condition, handler, seed) {
-		return when(seed, function(seed) {
-
-			return when(condition(seed), function(done) {
-				return done ? seed : when.resolve(unspool(seed)).spread(next);
-			});
-
-			function next(item, newSeed) {
-				return when(handler(item), function() {
-					return unfold(unspool, condition, handler, newSeed);
-				});
-			}
-		});
+		return Promise.unfold(unspool, condition, handler, seed);
 	};
 
 });

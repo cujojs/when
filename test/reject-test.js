@@ -8,9 +8,7 @@ fail = buster.assertions.fail;
 
 define('when.reject-test', function (require) {
 
-	var when;
-
-	when = require('when');
+	var when = require('when');
 
 	buster.testCase('when.reject', {
 

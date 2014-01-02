@@ -11,16 +11,22 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	var bind, uncurryThis, slice, Promise, cast;
+	var Promise, asPromise, resolvePromise,
+		bind, uncurryThis, slice, map, reduce, reduceRight;
 
 	Promise = require('./Promise');
-	cast = Promise.cast;
+	asPromise = Promise.cast;
+	resolvePromise = Promise.resolve;
 
 	bind = Function.prototype.bind;
 	uncurryThis = bind.bind(bind.call);
 	slice = uncurryThis(Array.prototype.slice);
+	map = uncurryThis(Array.prototype.map);
+	reduce = uncurryThis(Array.prototype.reduce);
+	reduceRight = uncurryThis(Array.prototype.reduceRight);
 
-	function ArrayPromise(/*resolver, status*/) {
+	function ArrayPromise(resolver) {
+		/*jshint unused:false*/
 		Promise.apply(this, arguments);
 	}
 
@@ -28,76 +34,50 @@ define(function(require) {
 		return resolve([x]);
 	};
 
-	ArrayPromise.cast = function(x) {
-		return x instanceof ArrayPromise ? x : resolve(x);
+	ArrayPromise.empty = function() {
+		return resolve([]);
 	};
 
-	ArrayPromise.empty = function() {
-		return ArrayPromise.resolve([]);
-	};
+	ArrayPromise.cast = asArrayPromise;
+	function asArrayPromise(x) {
+		return x instanceof ArrayPromise ? x : resolve(x);
+	}
 
 	ArrayPromise.resolve = resolve;
 	function resolve(x) {
 		return new ArrayPromise(function(resolve) {
-			resolve(x);
+			resolve(slice(x));
 		});
 	}
 
 	ArrayPromise.reject = Promise.reject;
 
+	ArrayPromise.unfold = unfold;
+	ArrayPromise.iterate = iterate;
+
 	ArrayPromise.prototype = Object.create(Promise.prototype);
 	ArrayPromise.prototype.constructor = ArrayPromise;
 
 	ArrayPromise.prototype.all = function() {
-		var self = this;
-		return new ArrayPromise(function(resolve, reject, notify) {
-			return self.then(function(array) {
-				var results, toResolve;
-
-				results = [];
-
-				if(array.length === 0) {
-					resolve(results);
-					return;
-				}
-
-				toResolve = 0;
-
-				array.forEach(function(x, i) {
-					++toResolve;
-					cast(x).then(resolveOne(x, i), reject, notify);
-				});
-
-				function resolveOne(x, i) {
-					results[i] = x;
-
-					if(--toResolve === 0) {
-						resolve(results);
-					}
-				}
-			});
-		});
+		return this.then(Promise.all);
 	};
 
 	ArrayPromise.prototype.settle = function() {
+		return this.then(Promise.settle);
+	};
+
+	ArrayPromise.prototype.any = function() {
+		return this.then(Promise.any);
+	};
+
+	ArrayPromise.prototype.some = function(n) {
 		return this.then(function(array) {
-			return array.map(function(x) {
-				return cast(x).inspect();
-			});
+			return Promise.some(array, n);
 		});
 	};
 
-	ArrayPromise.prototype.any = function() {};
-
 	ArrayPromise.prototype.race = function() {
-		var self = this;
-		return new ArrayPromise(function(resolve, reject) {
-			return self.then(function(array) {
-				array.forEach(function(x) {
-					cast(x).then(resolve, reject);
-				});
-			});
-		});
+		return this.then(Promise.race);
 	};
 
 	ArrayPromise.prototype.spread = function(onFulfilled) {
@@ -108,7 +88,9 @@ define(function(require) {
 
 	ArrayPromise.prototype.map = function(f) {
 		return this.then(function(a) {
-			return a.map(f);
+			return map(a, function(x) {
+				return resolvePromise(x).map(f);
+			});
 		});
 	};
 
@@ -118,34 +100,66 @@ define(function(require) {
 		}, ArrayPromise.empty());
 	};
 
-	ArrayPromise.prototype.reduce = function(f, initial) {
+	ArrayPromise.prototype.foldl = function(f, initial) {
 		return this.then(function(a) {
-			return a.reduce(function(result, x) {
-				return cast(result).then(function(r) {
-					return cast(x).then(function(x) {
-						return f(r, x);
+			return reduce(a, function(result, x, i) {
+				return asPromise(result).then(function(r) {
+					return asPromise(x).then(function(x) {
+						return f(r, x, i);
 					});
 				});
-			}, resolve(initial));
+			}, asPromise(initial));
 		});
 	};
 
-	ArrayPromise.prototype.reduceRight = function(f, initial) {
+	ArrayPromise.prototype.foldl1 = function(f) {
 		return this.then(function(a) {
-			return a.reduceRight(function(result, x) {
-				return cast(result).then(function(r) {
-					return cast(x).then(function(x) {
-						return f(r, x);
+			return reduce(a, function(result, x, i) {
+				return asPromise(result).then(function(r) {
+					return asPromise(x).then(function(x) {
+						return f(r, x, i);
 					});
 				});
-			}, resolve(initial));
+			});
 		});
 	};
 
-	ArrayPromise.prototype.concat = function(a) {
-		return this.then(function(b) {
-			return a.then(function(a) {
-				return a.concat(b);
+	ArrayPromise.prototype.reduce = function(f /*, initialValue */) {
+		return arguments.length > 1 ? this.foldl(f, arguments[1]) : this.foldl1(f);
+	};
+
+	ArrayPromise.prototype.foldr = function(f, initial) {
+		return this.then(function(a) {
+			return reduceRight(a, function(result, x, i) {
+				return asPromise(result).then(function(r) {
+					return asPromise(x).then(function(x) {
+						return f(r, x, i);
+					});
+				});
+			}, asPromise(initial));
+		});
+	};
+
+	ArrayPromise.prototype.foldr1 = function(f) {
+		return this.then(function(a) {
+			return reduceRight(a, function(result, x, i) {
+				return asPromise(result).then(function(r) {
+					return asPromise(x).then(function(x) {
+						return f(r, x, i);
+					});
+				});
+			});
+		});
+	};
+
+	Array.prototype.reduceRight = function(f /*, initialValue */) {
+		return arguments.length > 1 ? this.foldr(f, arguments[1]) : this.foldr1(f);
+	};
+
+	ArrayPromise.prototype.concat = function(tail) {
+		return this.then(function(head) {
+			return tail.then(function(tail) {
+				return head.concat(tail);
 			});
 		});
 	};
@@ -175,10 +189,92 @@ define(function(require) {
 		});
 	};
 
-	ArrayPromise.prototype.find = function() {};
-	ArrayPromise.prototype.findIndex = function() {};
-	ArrayPromise.prototype.indexOf = function() {};
-	ArrayPromise.prototype.lastIndexOf = function() {};
+	ArrayPromise.prototype.find = function(predicate) {
+		return resolvePromise(find(predicate, this)).then(value);
+	};
+
+	ArrayPromise.prototype.findIndex = function(predicate) {
+		return resolvePromise(find(predicate, this)).then(index);
+	};
+
+	ArrayPromise.prototype.indexOf = function(x) {
+		return this.findIndex(function(y) {
+			return y === x;
+		});
+	};
+
+	ArrayPromise.prototype.lastIndexOf = function(y) {
+		var found;
+		return resolvePromise(this.then(function(a) {
+			return reduceRight(a, function(_, x, i) {
+				return asPromise(x).then(function(x) {
+					if(y === x) {
+						found = true;
+						return Promise.reject(i);
+					}
+					return _;
+				}, identity);
+			}, void 0);
+
+		}).catch(function(x) {
+			if(found) {
+				return x;
+			}
+			throw x;
+		}));
+	};
+
+	function find(predicate, ap) {
+		var found;
+		return ap.then(function(a) {
+			return reduce(a, function(_, x, i) {
+				return asPromise(x).then(function(x) {
+					if(predicate(x)) {
+						found = true;
+						return Promise.reject({ value: x, index: i });
+					}
+					return _;
+				}, identity);
+			}, void 0);
+		}).catch(function(x) {
+			if(found) {
+				return x;
+			}
+			throw x;
+		});
+	}
+
+	function value(x) {
+		return x && x.value;
+	}
+
+	function index(x) {
+		return x && x.index;
+	}
+
+	function unfold(generator, condition, seed) {
+		var result = [];
+
+		return asArrayPromise(Promise.unfold(generator, condition, append, seed)['yield'](result));
+
+		function append(value, newSeed) {
+			result.push(value);
+			return newSeed;
+		}
+	}
+
+	function iterate(generator, condition, seed) {
+		var result = [];
+
+		return asArrayPromise(Promise.iterate(generator, condition, append, seed)['yield'](result));
+
+		function append(x) {
+			result.push(x);
+			return x;
+		}
+	}
+
+	function identity(x) { return x; }
 
 	return ArrayPromise;
 

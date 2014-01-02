@@ -11,18 +11,7 @@
 
 (function(define) {
 define(function(require) {
-	/*global setTimeout*/
-	var when, setTimer, cjsRequire, vertxSetTimer;
-
-	when = require('./when');
-	cjsRequire = require;
-
-	try {
-		vertxSetTimer = cjsRequire('vertx').setTimer;
-		setTimer = function (f, ms) { return vertxSetTimer(ms, f); };
-	} catch(e) {
-		setTimer = setTimeout;
-	}
+	var when = require('./when');
 
     /**
      * Creates a new promise that will resolve after a msec delay.  If
@@ -43,14 +32,7 @@ define(function(require) {
 			msec = tmp;
 		}
 
-		return when.promise(function(resolve, reject, notify) {
-			when(value, function(val) {
-				setTimer(function() {
-					resolve(val);
-				}, msec);
-			},
-			reject, notify);
-		});
+		return when(value).delay(msec);
     };
 
 });

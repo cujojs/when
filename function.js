@@ -59,7 +59,7 @@ define(function(require) {
 	 * @private
 	 */
 	function _apply(func, thisArg, promisedArgs) {
-		return when.all(promisedArgs || [], function(args) {
+		return when.all(promisedArgs || []).then(function(args) {
 			return func.apply(thisArg, args);
 		});
 	}

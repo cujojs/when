@@ -10,20 +10,18 @@
 (function(define) { 'use strict';
 define(function (require) {
 
-	// Public API
-
-	var makeCore = require('./lib/makeCore');
+	var makePromise = require('./lib/makePromise');
 	var scheduler = require('./lib/scheduler');
 
-	var config = {
+	var environment = {
 		enqueue: scheduler
 	};
 
 	if(typeof console !== 'undefined') {
-		config.monitor = console;
+		environment.monitor = console;
 	}
 
-	return makeCore(config);
+	return makePromise(environment);
 
 });
 })(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });

@@ -12,20 +12,8 @@
 
 (function(define) {
 define(function(require) {
-	/*global setTimeout,clearTimeout*/
-    var when, setTimer, cancelTimer, cjsRequire, vertx;
 
-	when = require('./when');
-	cjsRequire = require;
-
-	try {
-		vertx = cjsRequire('vertx');
-		setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
-		cancelTimer = vertx.cancelTimer;
-	} catch (e) {
-		setTimer = setTimeout;
-		cancelTimer = clearTimeout;
-	}
+	var when = require('./when');
 
     /**
      * Returns a new promise that will automatically reject after msec if
@@ -45,24 +33,7 @@ define(function(require) {
 			msec = tmp;
 		}
 
-		return when.promise(function(resolve, reject, notify) {
-
-			var timeoutRef = setTimer(function onTimeout() {
-				reject(new Error('timed out after ' + msec + 'ms'));
-			}, msec);
-
-			when(trigger,
-				function onFulfill(value) {
-					cancelTimer(timeoutRef);
-					resolve(value);
-				},
-				function onReject(reason) {
-					cancelTimer(timeoutRef);
-					reject(reason);
-				},
-				notify
-			);
-		});
+		return when(trigger).timeout(msec);
     };
 });
 })(

@@ -18,9 +18,7 @@ function hasObjectDefineProperty() {
 
 define('when.resolve-test', function (require) {
 
-	var when;
-
-	when = require('when');
+	var when = require('when');
 
 	buster.testCase('when.resolve', {
 

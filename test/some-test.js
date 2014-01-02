@@ -44,7 +44,7 @@ define('when.some-test', function (require) {
 	buster.testCase('when.some', {
 
 		'should resolve empty input': function(done) {
-			when.some([], 1,
+			when.some([], 1).then(
 				function(result) {
 					assert.equals(result, []);
 				},
@@ -54,7 +54,7 @@ define('when.some-test', function (require) {
 
 		'should resolve values array': function(done) {
 			var input = [1, 2, 3];
-			when.some(input, 2,
+			when.some(input, 2).then(
 				function(results) {
 					assert(isSubset(results, input));
 				},
@@ -64,7 +64,7 @@ define('when.some-test', function (require) {
 
 		'should resolve promises array': function(done) {
 			var input = [resolved(1), resolved(2), resolved(3)];
-			when.some(input, 2,
+			when.some(input, 2).then(
 				function(results) {
 					assert(isSubset(results, [1, 2, 3]));
 				},
@@ -74,7 +74,7 @@ define('when.some-test', function (require) {
 
 		'should resolve sparse array input': function(done) {
 			var input = [, 1, , 2, 3 ];
-			when.some(input, 2,
+			when.some(input, 2).then(
 				function(results) {
 					assert(isSubset(results, input));
 					done();
@@ -85,7 +85,7 @@ define('when.some-test', function (require) {
 
 		'should reject with all rejected input values if resolving howMany becomes impossible': function(done) {
 			var input = [resolved(1), rejected(2), rejected(3)];
-			when.some(input, 2,
+			when.some(input, 2).then(
 				fail,
 				function(failed) {
 					assert.equals(failed, [2, 3]);
@@ -99,7 +99,7 @@ define('when.some-test', function (require) {
 			expected = [1, 2, 3];
 			input = resolved(expected);
 
-			when.some(input, 2,
+			when.some(input, 2).then(
 				function(results) {
 					assert.equals(results.length, 2);
 				},
@@ -108,7 +108,7 @@ define('when.some-test', function (require) {
 		},
 
 		'should resolve to empty array when input promise does not resolve to array': function(done) {
-			when.some(resolved(1), 1,
+			when.some(resolved(1), 1).then(
 				function(result) {
 					assert.equals(result, []);
 				},
