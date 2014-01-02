@@ -46,7 +46,7 @@ define(function(require) {
 	ArrayPromise.resolve = resolve;
 	function resolve(x) {
 		return new ArrayPromise(function(resolve) {
-			resolve(slice(x));
+			resolve(x);
 		});
 	}
 

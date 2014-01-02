@@ -44,22 +44,22 @@ define('when/parallel-test', function (require) {
 			);
 		},
 
-		'should pass args to all tasks': function() {
+		'should pass args to all tasks': function(done) {
 			var expected, tasks;
 
 			expected = [1, 2, 3];
 			tasks = [expectArgs(expected), expectArgs(expected), expectArgs(expected)];
 
-			return parallel.apply(null, [tasks].concat(expected));
+			parallel.apply(void 0, [tasks].concat(expected)).ensure(done);
 		},
 
-		'should accept promises for args': function() {
+		'should accept promises for args': function(done) {
 			var expected, tasks;
 
 			expected = [1, 2, 3];
 			tasks = [expectArgs(expected), expectArgs(expected), expectArgs(expected)];
 
-			return parallel.apply(null, [tasks].concat(expected.map(when)));
+			parallel.apply(void 0, [tasks].concat(expected.map(when))).ensure(done);
 		}
 	});
 

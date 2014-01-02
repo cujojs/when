@@ -585,50 +585,6 @@ define('when/promise-test', function (require) {
 			d.notify(expected);
 		},
 
-		'always': {
-			'should return a promise': function() {
-				assert.isFunction(defer().promise.always().then);
-			},
-
-			'should register callback': function(done) {
-				var d = when.defer();
-
-				d.promise.always(
-					function(val) {
-						assert.equals(val, 1);
-						done();
-					}
-				);
-
-				d.resolve(1);
-			},
-
-			'should register errback': function(done) {
-				var d = when.defer();
-
-				d.promise.always(
-					function(val) {
-						assert.equals(val, 1);
-						done();
-					}
-				);
-
-				d.reject(1);
-			},
-
-			'should register progback': function(done) {
-				var d = when.defer();
-
-				d.promise.always(null, function (status) {
-					assert.equals(status, 1);
-					done();
-				});
-
-				d.notify(1);
-			}
-
-		},
-
 		'finally': {
 			'should be an alias for ensure': function() {
 				var p = when.resolve();

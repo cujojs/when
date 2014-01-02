@@ -12,16 +12,14 @@ define(function (require) {
 
 	var makePromise = require('./lib/makePromise');
 	var scheduler = require('./lib/scheduler');
+	var timer = require('./lib/timer');
 
-	var environment = {
-		enqueue: scheduler
-	};
-
-	if(typeof console !== 'undefined') {
-		environment.monitor = console;
-	}
-
-	return makePromise(environment);
+	return makePromise({
+		enqueue: scheduler,
+		setTimeout: timer.set,
+		clearTimeout: timer.clear,
+		monitor: typeof console !== 'undefined' && console
+	});
 
 });
 })(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
