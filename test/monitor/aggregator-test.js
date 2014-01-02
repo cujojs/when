@@ -30,15 +30,15 @@ define('when/monitor/aggregator-test', function (require) {
 			'rejection should trigger report': function(done) {
 				aggregator(function(promises) {
 					for (var key in promises) {
-						assert.same(promises[key].reason, sentinel);
+						assert.same(promises[key].message, 'test');
 					}
 					done();
 				}).publish(monitor);
 
 				var status = new monitor.PromiseStatus();
-				status.rejected(sentinel);
+				status.rejected(new Error('test'));
 
-				when.defer().reject(sentinel);
+				when.defer().reject(new Error('test'));
 			}
 		},
 

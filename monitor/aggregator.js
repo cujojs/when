@@ -8,7 +8,9 @@
  * @author: John Hann
  */
 (function(define) { 'use strict';
-define(function() {
+define(function(require) {
+
+	var captureStack = require('./captureStackTrace');
 
 	return function createAggregator(reporter) {
 		var promises, nextKey;
@@ -18,20 +20,12 @@ define(function() {
 				return new PromiseStatus(parent);
 			}
 
-			var stackHolder;
-
-			try {
-				throw new Error();
-			} catch(e) {
-				stackHolder = e;
-			}
-
 			this.key = nextKey++;
 			promises[this.key] = this;
 
 			this.parent = parent;
 			this.timestamp = +(new Date());
-			this.createdAt = stackHolder;
+			this.createdAt = captureStack();
 		}
 
 		PromiseStatus.prototype = {
@@ -50,20 +44,11 @@ define(function() {
 				}
 			},
 			rejected: function (reason) {
-				var stackHolder;
-
 				if(this.key in promises) {
-
-					try {
-						throw new Error(reason && reason.message || reason);
-					} catch (e) {
-						stackHolder = e;
-					}
-
-					this.reason = reason;
-					this.rejectedAt = stackHolder;
+					this.message = reason.message;
+					this.reason = reason.stack;
+					this.rejectedAt = captureStack(reason && reason.message || reason);
 					report();
-
 				}
 			}
 		};
@@ -90,4 +75,4 @@ define(function() {
 	};
 
 });
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

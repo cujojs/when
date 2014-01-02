@@ -49,7 +49,7 @@ define('when/promise-test', function (require) {
 			p = promises;
 			setTimeout(function() {
 				for (var key in promises) {
-					assert.same(promises[key].reason, expectedReason);
+					assert.same(promises[key].message, expectedReason);
 				}
 				done();
 			}, 10);
@@ -85,18 +85,18 @@ define('when/promise-test', function (require) {
 
 				'should be fatal': {
 					'when handleValue throws': function(done) {
-						expectEventualRejectionViaMonitor(done, sentinel);
+						expectEventualRejectionViaMonitor(done, 'test');
 
 						when.resolve().done(function() {
-							throw sentinel;
+							throw new Error('test');
 						});
 					},
 
 					'when handleValue rejects': function(done) {
-						expectEventualRejectionViaMonitor(done, sentinel);
+						expectEventualRejectionViaMonitor(done, 'test');
 
 						when.resolve().done(function() {
-							return when.reject(sentinel);
+							return when.reject(new Error('test'));
 						});
 					}
 				}
@@ -112,24 +112,24 @@ define('when/promise-test', function (require) {
 
 				'should be fatal': {
 					'when no handleFatalError provided': function(done) {
-						expectEventualRejectionViaMonitor(done, sentinel);
+						expectEventualRejectionViaMonitor(done, 'test');
 
-						when.reject(sentinel).done();
+						when.reject(new Error('test')).done();
 					},
 
 					'when handleFatalError throws': function(done) {
-						expectEventualRejectionViaMonitor(done, sentinel);
+						expectEventualRejectionViaMonitor(done, 'test');
 
 						when.resolve().done(function() {
-							throw sentinel;
+							throw new Error('test');
 						});
 					},
 
 					'when handleFatalError rejects': function(done) {
-						expectEventualRejectionViaMonitor(done, sentinel);
+						expectEventualRejectionViaMonitor(done, 'test');
 
 						when.resolve().done(function() {
-							return when.reject(sentinel);
+							return when.reject(new Error('test'));
 						});
 					}
 				}
