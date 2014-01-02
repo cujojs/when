@@ -13,7 +13,7 @@
 (function(define) {
 define(function(require) {
 
-	var when = require('./when');
+	var cast = require('./Promise').cast;
 
     /**
      * Returns a new promise that will automatically reject after msec if
@@ -33,7 +33,7 @@ define(function(require) {
 			msec = tmp;
 		}
 
-		return when(trigger).timeout(msec);
+		return cast(trigger).timeout(msec);
     };
 });
 })(
