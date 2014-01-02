@@ -37,12 +37,10 @@ define('when/monitor/aggregator-test', function (require) {
 
 				var status = new monitor.PromiseStatus();
 				status.rejected(new Error('test'));
-
-				when.defer().reject(new Error('test'));
 			}
 		},
 
-		'promise': {
+		'//promise': {
 			'rejection should trigger report': function(done) {
 				aggregator(function() {
 					assert(true);
@@ -55,7 +53,7 @@ define('when/monitor/aggregator-test', function (require) {
 			}
 		},
 
-		'defer': {
+		'//defer': {
 			'rejection should trigger report': function(done) {
 				aggregator(function() {
 					assert(true);
