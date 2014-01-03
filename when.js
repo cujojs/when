@@ -109,37 +109,20 @@ define(function (require) {
 	 * }}}
 	 */
 	function defer() {
-		var deferred, pending, resolved;
-
 		// Optimize object shape
-		deferred = {
-			promise: undef, resolve: undef, reject: undef, notify: undef,
+		var deferred = {
+			promise: undef,
+			resolve: undef, reject: undef, notify: undef,
 			resolver: { resolve: undef, reject: undef, notify: undef }
 		};
 
-		deferred.promise = pending = promise(makeDeferred);
+		deferred.promise = promise(makeDeferred);
 
 		return deferred;
 
 		function makeDeferred(resolvePending, rejectPending, notifyPending) {
-			deferred.resolve = deferred.resolver.resolve = function(value) {
-				if(resolved) {
-					return Promise.resolve(value);
-				}
-				resolved = true;
-				resolvePending(value);
-				return pending;
-			};
-
-			deferred.reject  = deferred.resolver.reject  = function(reason) {
-				if(resolved) {
-					return Promise.reject(reason);
-				}
-				resolved = true;
-				rejectPending(reason);
-				return pending;
-			};
-
+			deferred.resolve = deferred.resolver.resolve = resolvePending;
+			deferred.reject  = deferred.resolver.reject  = rejectPending;
 			deferred.notify  = deferred.resolver.notify  = function(update) {
 				notifyPending(update);
 				return update;

@@ -16,9 +16,7 @@
  */
 
 (function(define) {
-define(function(require) {
-
-	var when = require('./when');
+define(function() {
 
     /**
      * Makes deferred cancelable, adding a cancel() method.
@@ -33,28 +31,24 @@ define(function(require) {
      * @returns deferred, with an added cancel() method.
      */
     return function(deferred, canceler) {
-
-        var delegate = when.defer();
-
         // Add a cancel method to the deferred to reject the delegate
         // with the special canceled indicator.
         deferred.cancel = function() {
-            return deferred.reject(canceler(deferred));
+			try {
+				deferred.reject(canceler(deferred))
+			} catch(e) {
+				deferred.reject(e);
+			}
+
+			return deferred.promise;
         };
-
-        // Ensure that the original resolve, reject, and progress all forward
-        // to the delegate
-        deferred.promise.then(delegate.resolve, delegate.reject, delegate.notify);
-
-        // Replace deferred's promise with the delegate promise
-        deferred.promise = delegate.promise;
 
         return deferred;
     };
 
 });
 })(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
+	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(); }
 	// Boilerplate for AMD and Node
 );
 
