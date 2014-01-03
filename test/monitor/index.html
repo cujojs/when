@@ -8,8 +8,8 @@
         curl.config({
             packages: {
                 when: { location: '../..', main: 'when' }
-            },
-            preloads: ['when/monitor/console']
+            }//,
+//            preloads: ['when/monitor/console']
         });
 
         curl(['./unhandled-begets-unhandled']);

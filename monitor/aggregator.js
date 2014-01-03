@@ -16,11 +16,7 @@ define(function(require) {
 		var promises, nextKey;
 
 		function PromiseStatus(parent) {
-			if(!(this instanceof PromiseStatus)) {
-				return new PromiseStatus(parent);
-			}
-
-			this.key = nextKey++;
+			this.key = ++nextKey;
 			promises[this.key] = this;
 
 			this.parent = parent;
@@ -53,16 +49,12 @@ define(function(require) {
 			}
 		};
 
+		PromiseStatus.reportUnhandled = report;
+		PromiseStatus.resetUnhandled = reset;
+
 		reset();
 
-		return publish({ publish: publish });
-
-		function publish(target) {
-			target.PromiseStatus = PromiseStatus;
-			target.reportUnhandled = report;
-			target.resetUnhandled = reset;
-			return target;
-		}
+		return PromiseStatus;
 
 		function report() {
 			return reporter(promises);
