@@ -7,10 +7,9 @@ fail = buster.assertions.fail;
 
 define('when.reduce-test', function (require) {
 
-	var when, delay, resolved, reject;
+	var when, resolved, reject;
 
 	when = require('when');
-	delay = require('when/delay');
 	resolved = when.resolve;
 	reject = when.reject;
 
@@ -19,7 +18,7 @@ define('when.reduce-test', function (require) {
 	}
 
 	function later(val) {
-		return delay(val, Math.random() * 10);
+		return when(val).delay(Math.random()*10);
 	}
 
 	buster.testCase('when.reduce', {

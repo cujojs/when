@@ -35,7 +35,7 @@ define(function() {
         // with the special canceled indicator.
         deferred.cancel = function() {
 			try {
-				deferred.reject(canceler(deferred))
+				deferred.reject(canceler(deferred));
 			} catch(e) {
 				deferred.reject(e);
 			}

@@ -22,7 +22,7 @@ define('when/timeout-test', function (require) {
 
 	buster.testCase('when/timeout', {
 		'should reject after timeout': function(done) {
-			timeout(new FakePromise(), 10).then(
+			timeout(10, new FakePromise()).then(
 				fail,
 				function(e) {
 					assert(e instanceof Error);
@@ -31,7 +31,7 @@ define('when/timeout-test', function (require) {
 		},
 
 		'should not timeout when rejected before timeout': function(done) {
-			timeout(when.reject(sentinel), 10).then(
+			timeout(10, when.reject(sentinel)).then(
 				fail,
 				function(val) {
 					assert.same(val, sentinel);
@@ -40,7 +40,7 @@ define('when/timeout-test', function (require) {
 		},
 
 		'should not timeout when forcibly resolved before timeout': function(done) {
-			timeout(when.resolve(sentinel), 10).then(
+			timeout(10, when.resolve(sentinel)).then(
 				function(val) {
 					assert.same(val, sentinel);
 				},
@@ -51,7 +51,7 @@ define('when/timeout-test', function (require) {
 		'should propagate progress': function(done) {
 			var d = when.defer();
 
-			timeout(d.promise, 10).then(null, null,
+			timeout(10, d.promise).then(null, null,
 				function(val) {
 					assert.same(val, sentinel);
 					d.resolve();

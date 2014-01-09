@@ -13,7 +13,6 @@ define('when.map-test', function (require) {
 	var when, delay, resolved, reject;
 
 	when = require('when');
-	delay = require('when/delay');
 	resolved = when.resolve;
 	reject = when.reject;
 
@@ -22,7 +21,7 @@ define('when.map-test', function (require) {
 	}
 
 	function deferredMapper(val) {
-		return delay(mapper(val), Math.random()*10);
+		return when(mapper(val)).delay(Math.random()*10);
 	}
 
 	function identity(x) {

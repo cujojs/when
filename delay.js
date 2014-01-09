@@ -11,28 +11,14 @@
 
 (function(define) {
 define(function(require) {
-	var when = require('./when');
+
+	var cast = require('./Promise').cast;
 
     /**
-     * Creates a new promise that will resolve after a msec delay.  If
-	 * value is supplied, the delay will start *after* the supplied
-	 * value is resolved.
-     *
-	 * @param {number} msec delay in milliseconds
-     * @param {*|Promise?} value any promise or value after which
-	 *  the delay will start
-	 * @returns {Promise} promise that is equivalent to value, only delayed
-	 *  by msec
+	 * @deprecated Use Promise.cast(value).delay(ms)
      */
     return function delay(msec, value) {
-		// Support reversed, deprecated argument ordering
-		if(typeof value === 'number') {
-			var tmp = value;
-			value = msec;
-			msec = tmp;
-		}
-
-		return when(value).delay(msec);
+		return cast(value).delay(msec);
     };
 
 });

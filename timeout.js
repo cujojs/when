@@ -16,23 +16,9 @@ define(function(require) {
 	var cast = require('./Promise').cast;
 
     /**
-     * Returns a new promise that will automatically reject after msec if
-     * the supplied trigger doesn't resolve or reject before that.
-     *
-	 * @param {number} msec timeout in milliseconds
-     * @param {*|Promise} trigger any promise or value that should trigger the
-	 *  returned promise to resolve or reject before the msec timeout
-     * @returns {Promise} promise that will timeout after msec, or be
-	 *  equivalent to trigger if resolved/rejected before msec
+	 * @deprecated Use Promise.cast(trigger).timeout(ms)
      */
     return function timeout(msec, trigger) {
-		// Support reversed, deprecated argument ordering
-		if(typeof trigger === 'number') {
-			var tmp = trigger;
-			trigger = msec;
-			msec = tmp;
-		}
-
 		return cast(trigger).timeout(msec);
     };
 });
