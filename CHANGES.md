@@ -1,3 +1,7 @@
+### 2.8.0
+
+* Experimental ES6 generator support via new `when/generator` module, with `lift`, `call`, `apply`.
+
 ### 2.7.1
 
 * Internal changes to reduce overall memory usage, along with minor performance improvements.
