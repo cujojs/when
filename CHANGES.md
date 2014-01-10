@@ -1,5 +1,9 @@
 ### 2.7.0
 
+* Internal changes to reduce overall memory usage, along with minor performance improvements.
+
+### 2.7.0
+
 * Added [`promise.catch`](docs/api.md#catch) and [`promise.finally`](docs/api.md#finally) as synonyms for `promise.otherwise` and `promise.ensure`. (#212)
 * New [browserify build](../README.md#legacy-environments-via-browserify) for those using globals. (#209)
 * Added [ender](http://ender.jit.su) support to `package.json`. (#223)
