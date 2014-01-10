@@ -22,16 +22,39 @@ define(function(require) {
 		lift: lift
 	};
 
+	/**
+	 * Lift a generator to create a function that can suspend and
+	 * resume using the `yield` keyword to await promises.
+	 * @param {function} generator
+	 * @return {function}
+	 */
 	function lift(generator) {
 		return function() {
 			return apply(generator, arguments);
 		};
 	}
 
-	function call(generator) {
+	/**
+	 * Immediately call a generator as a promise-aware coroutine
+	 * that can suspend and resume using the `yield` keyword to
+	 * await promises.  Additional arguments after the first will
+	 * be passed through to the generator.
+	 * @param {function} generator
+	 * @returns {Promise} promise for the ultimate value returned
+	 *  from the generator.
+	 */
+	function call(generator /*x, y, z...*/) {
 		return apply(generator, slice.call(arguments, 1));
 	}
 
+	/**
+	 * Immediately apply a generator, with the supplied args array,
+	 * as a promise-aware coroutine that can suspend and resume
+	 * using the `yield` keyword to await promises.
+	 * @param {function} generator
+	 * @returns {Promise} promise for the ultimate value returned
+	 *  from the generator.
+	 */
 	function apply(generator, args) {
 		/*jshint validthis:true*/
 		var iterator = generator.apply(this, args);
