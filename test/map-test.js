@@ -10,7 +10,7 @@ sentinel = {};
 define('when.map-test', function (require) {
 	/*global setInterval,clearInterval*/
 
-	var when, delay, resolved, reject;
+	var when, resolved, reject;
 
 	when = require('when');
 	resolved = when.resolve;
