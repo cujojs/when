@@ -122,8 +122,8 @@ define(function (require) {
 			var queue = consumers;
 			consumers = undef;
 
+			value = coerce(self, val);
 			enqueue(function () {
-				value = coerce(self, val);
 				if(status) {
 					updateStatus(value, status);
 				}
@@ -406,7 +406,13 @@ define(function (require) {
 	 */
 	function assimilate(untrustedThen, x) {
 		return promise(function (resolve, reject) {
-			fcall(untrustedThen, x, resolve, reject);
+			enqueue(function() {
+				try {
+					fcall(untrustedThen, x, resolve, reject);
+				} catch(e) {
+					reject(e);
+				}
+			});
 		});
 	}
 
