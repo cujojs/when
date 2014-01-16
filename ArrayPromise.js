@@ -39,21 +39,20 @@ define(function(require) {
 	};
 
 	ArrayPromise.cast = asArrayPromise;
+	ArrayPromise.resolve = resolve;
+	ArrayPromise.reject = Promise.reject;
+	ArrayPromise.unfold = unfold;
+	ArrayPromise.iterate = iterate;
+
 	function asArrayPromise(x) {
 		return x instanceof ArrayPromise ? x : resolve(x);
 	}
 
-	ArrayPromise.resolve = resolve;
 	function resolve(x) {
 		return new ArrayPromise(function(resolve) {
 			resolve(x);
 		});
 	}
-
-	ArrayPromise.reject = Promise.reject;
-
-	ArrayPromise.unfold = unfold;
-	ArrayPromise.iterate = iterate;
 
 	ArrayPromise.prototype = Object.create(Promise.prototype);
 	ArrayPromise.prototype.constructor = ArrayPromise;
@@ -218,7 +217,7 @@ define(function(require) {
 				}, identity);
 			}, void 0);
 
-		}).catch(function(x) {
+		})['catch'](function(x) {
 			if(found) {
 				return x;
 			}
@@ -238,7 +237,7 @@ define(function(require) {
 					return _;
 				}, identity);
 			}, void 0);
-		}).catch(function(x) {
+		})['catch'](function(x) {
 			if(found) {
 				return x;
 			}

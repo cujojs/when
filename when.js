@@ -123,10 +123,7 @@ define(function (require) {
 		function makeDeferred(resolvePending, rejectPending, notifyPending) {
 			deferred.resolve = deferred.resolver.resolve = resolvePending;
 			deferred.reject  = deferred.resolver.reject  = rejectPending;
-			deferred.notify  = deferred.resolver.notify  = function(update) {
-				notifyPending(update);
-				return update;
-			};
+			deferred.notify  = deferred.resolver.notify  = notifyPending;
 		}
 	}
 
@@ -324,21 +321,26 @@ define(function (require) {
 	}
 
 	/**
-	 * Return a promise that will resolve only once all the supplied promisesOrValues
+	 * Return a promise that will resolve only once all the supplied promises
 	 * have resolved. The resolution value of the returned promise will be an array
-	 * containing the resolution values of each of the promisesOrValues.
-	 * @memberOf when
-	 *
+	 * containing the resolution values of each of the promises.
 	 * @param {Array|Promise} promises array of anything, may contain a mix
-	 *      of {@link Promise}s and values
+	 *      of promises and values
 	 * @returns {Promise}
 	 */
 	function all(promises) {
 		return castArray(promises).all();
 	}
 
-	function join() {
-		return Promise.all(slice(arguments));
+	/**
+	 * Return a promise that will resolve only once all the supplied arguments
+	 * have resolved. The resolution value of the returned promise will be an array
+	 * containing the resolution values of each of the arguments.
+	 * @param {...*} arguments may be a mix of promises and values
+	 * @returns {Promise}
+	 */
+	function join(/* ...promises */) {
+		return all(slice(arguments));
 	}
 
 	/**
