@@ -15,7 +15,7 @@ define(function (require) {
 	var timer = require('./lib/timer');
 
 	return makePromise({
-		enqueue: scheduler,
+		scheduler: scheduler,
 		setTimeout: timer.set,
 		clearTimeout: timer.clear,
 		monitor: typeof console !== 'undefined' && console

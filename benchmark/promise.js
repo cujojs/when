@@ -12,9 +12,9 @@
 define(function(require) {
 	/*global setImmediate,process*/
 
-	var when, tests, run, ok;
+	var Promise, tests, run, ok;
 
-	when = require('../when');
+	Promise = require('../Promise');
 	run = require('./run');
 	ok = 0;
 
@@ -52,23 +52,27 @@ define(function(require) {
 	//
 
 	function createPending() {
-		when.promise(pendingForever);
+		/*jshint nonew:false*/
+		new Promise(pendingForever);
 	}
 
 	function resolvePromise(deferred) {
-		when.promise(resolve).then(function() {
+		/*jshint nonew:false*/
+		new Promise(resolve).then(function() {
 			deferred.resolve();
 		});
 	}
 
 	function rejectPromise(deferred) {
-		when.promise(reject).then(null, function() {
+		/*jshint nonew:false*/
+		new Promise(reject).then(null, function() {
 			deferred.resolve();
 		});
 	}
 
 	function rejectThenResolve(deferred) {
-		when.promise(reject).then(null, identity).then(function() {
+		/*jshint nonew:false*/
+		new Promise(reject).then(null, identity).then(function() {
 			deferred.resolve();
 		});
 	}
@@ -93,7 +97,7 @@ define(function(require) {
 
 	function resolveChain(n) {
 		return function(deferred) {
-			var p = when.resolve({}), i = 0;
+			var p = Promise.cast({}), i = 0;
 			for(;i < n; i++) {
 				p = p.then(identity);
 			}
@@ -106,7 +110,7 @@ define(function(require) {
 
 	function resolveChainSparse(n) {
 		return function(deferred) {
-			var p = when.resolve({}), i = 1;
+			var p = Promise.cast({}), i = 1;
 			for(;i < n; i++) {
 				p = p.then(null);
 			}
@@ -119,7 +123,7 @@ define(function(require) {
 
 	function rejectChain(n) {
 		return function(deferred) {
-			var p = when.reject({}), i = 0;
+			var p = Promise.reject({}), i = 0;
 			for(;i < n; i++) {
 				p = p.then(null, rethrow);
 			}
@@ -132,7 +136,7 @@ define(function(require) {
 
 	function rejectChainSparse(n) {
 		return function(deferred) {
-			var p = when.reject({}), i = 1;
+			var p = Promise.reject({}), i = 1;
 			for(;i < n; i++) {
 				p = p.then(null, rethrow);
 			}
