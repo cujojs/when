@@ -293,7 +293,7 @@ Returns a snapshot descriptor of the current state of `promise`.  This descripto
 While there are use cases where synchronously inspecting a promise's state can be helpful, the use of `inspect` is discouraged.  It is almost always preferable to simply use `when()` or `promise.then` to be notified when the promise fulfills or rejects.
 
 #### See also:
-* [when.settle()](#whenall) - settling an Array of promises
+* [when.settle()](#whensettle) - settling an Array of promises
 
 ### always()
 
@@ -518,7 +518,7 @@ If any of the promises is rejected, the returned promise will be rejected with t
 
 ### See also:
 * [when.join()](#whenjoin) - joining multiple promises
-* [when.settle()](#whenall) - settling an Array of promises
+* [when.settle()](#whensettle) - settling an Array of promises
 
 ## when.map()
 
