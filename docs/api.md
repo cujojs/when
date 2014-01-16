@@ -445,24 +445,14 @@ Create a resolved promise for the supplied promiseOrValue. If promiseOrValue is 
 ## when.reject()
 
 ```js
-var rejected = when.reject(promiseOrValue);
+var rejected = when.reject(error);
 ```
 
-Create a rejected promise for the supplied promiseOrValue. If promiseOrValue is a value, it will be the rejection value of the returned promise.  If promiseOrValue is a promise, its completion value will be the rejected value of the returned promise.
+Create a rejected promise with the supplied error as the rejection reason.
 
-This can be useful in situations where you need to reject a promise *without* throwing an exception.  For example, it allows you to propagate a rejection with the value of another promise.
+**DEPRECATION WARNING:** In when.js 2.x, error is allowed to be a promise for an error.  In when.js 3.0, error will always be used verbatim as the rejection reason, even if it is a promise.
 
-```js
-when(doSomething(),
-	handleSuccess,
-	function(error) {
-		// doSomething failed, but we want to do some processing on the error
-		// to return something more useful to the caller.
-		// This allows processError to return either a value or a promise.
-		return when.reject(processError(e));
-	}
-);
-```
+If error is a value, it will be the rejection reason of the returned promise.  If error is a promise, its rejection reason will be the rejection reason of the returned promise.
 
 ## when.isPromiseLike()
 
