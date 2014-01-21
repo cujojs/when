@@ -11,15 +11,19 @@
 define(function (require) {
 
 	var makePromise = require('./lib/makePromise');
-	var scheduler = require('./lib/scheduler');
+	var Scheduler = require('./lib/scheduler');
 	var timer = require('./lib/timer');
 
-	return makePromise({
-		scheduler: scheduler,
-		setTimeout: timer.set,
-		clearTimeout: timer.clear,
+	var array = require('./lib/array');
+	var timed = require('./lib/timed');
+	var monad = require('./lib/monad');
+
+	var Promise = makePromise({
+		scheduler: Scheduler.createDefault(),
 		monitor: typeof console !== 'undefined' && console
 	});
+
+	return monad(array(timed(timer.set, timer.clear, Promise)));
 
 });
 })(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
