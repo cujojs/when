@@ -8,7 +8,6 @@ branches:
     - dev
     - master
     - when3
-    - when3-es5
 env:
   global:
     - SAUCE_USERNAME="cujojs-when"
