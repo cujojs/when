@@ -88,7 +88,7 @@ define(function(require) {
 	ArrayPromise.prototype.map = function(f) {
 		return this.then(function(a) {
 			return map(a, function(x) {
-				return resolvePromise(x).map(f);
+				return asPromise(x).map(f);
 			});
 		});
 	};
