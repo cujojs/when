@@ -37,7 +37,7 @@ define(function(require) {
 				t = event.currentTarget;
 
 				result = pad(t.name, 24)
-					+ pad(t.hz.toFixed(2) + ' op/s', 16)
+					+ pad(t.hz.toFixed(2) + ' op/s', 18)
 					+ pad((1000 * t.stats.mean).toFixed(2), 8)
 					+ ' ms/op \xb1 ' + t.stats.rme.toFixed(2) + '%';
 				log(result);

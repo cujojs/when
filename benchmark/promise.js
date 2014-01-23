@@ -19,7 +19,11 @@ define(function(require) {
 	ok = 0;
 
 	tests = [
-		{ name: 'create pending', fn: createPending },
+		{ name: 'pending', fn: createPending },
+		{ name: 'resolved', fn: createResolved },
+		{ name: 'rejected', fn: createRejected },
+		{ name: 'of', fn: createOf },
+		{ name: 'empty', fn: createEmpty },
 		{ name: 'resolve', fn: resolvePromise, defer: true },
 		{ name: 'reject', fn: rejectPromise, defer: true },
 		{ name: 'setImmediate', fn: viaSetImmediate, defer: true,
@@ -54,6 +58,22 @@ define(function(require) {
 	function createPending() {
 		/*jshint nonew:false*/
 		new Promise(pendingForever);
+	}
+
+	function createResolved() {
+		new Promise.resolve();
+	}
+
+	function createRejected() {
+		new Promise.reject();
+	}
+
+	function createOf() {
+		new Promise.of();
+	}
+
+	function createEmpty() {
+		new Promise.empty();
 	}
 
 	function resolvePromise(deferred) {
