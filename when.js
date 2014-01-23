@@ -14,17 +14,14 @@
 (function(define) { 'use strict';
 define(function (require) {
 
-	var Promise, ArrayPromise, cast, castArray, bind, uncurryThis, slice;
-
-	Promise = require('./Promise');
-	ArrayPromise = require('./ArrayPromise');
-
-	cast = Promise.cast;
-	castArray = ArrayPromise.cast;
+	var Promise, cast, bind, uncurryThis, slice;
 
 	bind = Function.prototype.bind;
 	uncurryThis = bind.bind(bind.call);
 	slice = uncurryThis(Array.prototype.slice);
+
+	Promise = require('./Promise');
+	cast = Promise.cast;
 
 	// Public API
 
@@ -137,7 +134,9 @@ define(function (require) {
 	 *  (promisesOrValues.length - howMany) + 1 rejection reasons.
 	 */
 	function some(promises, howMany) {
-		return castArray(promises).some(howMany);
+		return when(promises, function(array) {
+			return Promise.some(array, howMany);
+		});
 	}
 
 	/**
@@ -151,7 +150,7 @@ define(function (require) {
 	 * will reject with an array of all rejected inputs.
 	 */
 	function any(promises) {
-		return castArray(promises).any();
+		return when(promises, Promise.any);
 	}
 
 	/**
@@ -163,7 +162,7 @@ define(function (require) {
 	 * @returns {Promise}
 	 */
 	function all(promises) {
-		return castArray(promises).all();
+		return when(promises, Promise.all);
 	}
 
 	/**
@@ -187,7 +186,7 @@ define(function (require) {
 	 *  outcome snapshots for each input promise.
 	 */
 	function settle(promises) {
-		return castArray(promises).settle();
+		return when(promises, Promise.settle);
 	}
 
 	/**
@@ -199,7 +198,9 @@ define(function (require) {
 	 *  or reject if any input promise rejects.
 	 */
 	function map(promises, mapFunc) {
-		return castArray(promises).map(mapFunc).all();
+		return when(promises, function(promises) {
+			return Promise.map(promises, mapFunc);
+		});
 	}
 
 	/**
@@ -214,8 +215,13 @@ define(function (require) {
 	 * @returns {Promise} that will resolve to the final reduced value
 	 */
 	function reduce(promises, f /*, initialValue */) {
-		var ap = castArray(promises);
-		return arguments.length > 2 ? ap.foldl(f, arguments[2]) : ap.foldl1(f);
+		/*jshint unused:false*/
+		var args = slice(arguments, 1);
+		var fold = args.length > 1 ? Promise.foldl : Promise.foldl1;
+
+		return when(promises, function(array) {
+			return fold.apply(Promise, [array].concat(args));
+		});
 	}
 
 	return when;

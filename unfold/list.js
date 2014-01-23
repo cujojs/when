@@ -7,7 +7,7 @@
 (function(define) {
 define(function(require) {
 
-	var ArrayPromise = require('../ArrayPromise');
+	var unfold = require('../unfold');
 
 	/**
 	 * Given a seed and generator, produces an Array.  Effectively the
@@ -20,12 +20,16 @@ define(function(require) {
 	 * @return {Promise} resulting array
 	 */
 	return function list(generator, condition, seed) {
-		return ArrayPromise.unfold(generator, condition, seed);
+		var result = [];
+
+		return unfold(generator, condition, append, seed)['yield'](result);
+
+		function append(value, newSeed) {
+			result.push(value);
+			return newSeed;
+		}
 	};
 
 });
-})(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
-	// Boilerplate for AMD and Node
-);
+})(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
 

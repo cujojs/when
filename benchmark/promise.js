@@ -61,19 +61,19 @@ define(function(require) {
 	}
 
 	function createResolved() {
-		new Promise.resolve();
+		Promise.resolve();
 	}
 
 	function createRejected() {
-		new Promise.reject();
+		Promise.reject();
 	}
 
 	function createOf() {
-		new Promise.of();
+		Promise.of();
 	}
 
 	function createEmpty() {
-		new Promise.empty();
+		Promise.empty();
 	}
 
 	function resolvePromise(deferred) {
