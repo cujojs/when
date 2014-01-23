@@ -42,6 +42,8 @@ API
 	* [Synchronous functions](#synchronous-functions)
 	* [Asynchronous functions](#asynchronous-functions)
 	* [Node-style asynchronous functions](#node-style-asynchronous-functions)
+1. [ES6 generators]
+	* [when/generator](#whengenerator)
 1. [Helpers](#helpers)
 	* [when/apply](#whenapply)
 1. [Debugging promises](#debugging-promises)
@@ -1531,6 +1533,28 @@ dataPromise = fetchData(123);
 
 nodefn.bindCallback(dataPromise, handleData);
 ```
+
+# ES6 generators
+
+## when/generator
+
+### `generator.call`
+
+```js
+var resultPromise = generator.call(es6generator, arg1, arg2/*...more args*/);
+```
+
+### `generator.apply`
+
+```js
+var resultPromise = generator.apply(es6generator, [arg1, arg2/*...more args*/]);
+```
+
+### `generator.lift`
+```js
+var coroutine = generator.lift(es6generator, arg1, arg2/*...more args*/);
+```
+
 
 # Helpers
 
