@@ -46,7 +46,9 @@ CommonJS and AMD are the primary targets for `when`, but instructions for a vari
 1. `ender add when`
 2. `var when = require('when');`
 
-#### Legacy environments (via browserify)
+#### Browser environments (via browserify)
+ 
+When.js depends on an [AMD](http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition) or [CJS](http://wiki.commonjs.org/wiki/CommonJS) library implementation to be consumed by the browser. This happens because when.js does not export to the global object (`window` in browsers). If you don't want to include such a library in your stack you have to create your own builds using browserify as follows:
 
 1. `git clone https://github.com/cujojs/when`
 1. `npm install`
