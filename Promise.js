@@ -15,15 +15,22 @@ define(function (require) {
 	var timer = require('./lib/timer');
 
 	var array = require('./lib/array');
-	var timed = require('./lib/timed');
+	var flow = require('./lib/flow');
+	var foldable = require('./lib/foldable');
+	var generate = require('./lib/generate');
 	var monad = require('./lib/monad');
+	var progress = require('./lib/progress');
+	var timed = require('./lib/timed');
 
 	var Promise = makePromise({
 		scheduler: Scheduler.createDefault(),
 		monitor: typeof console !== 'undefined' && console
 	});
 
-	return monad(array(timed(timer.set, timer.clear, Promise)));
+	return [array, flow, foldable, generate, monad, progress]
+		.reduceRight(function(Promise, feature) {
+			return feature(Promise);
+		}, timed(timer.set, timer.clear, Promise));
 
 });
 })(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
