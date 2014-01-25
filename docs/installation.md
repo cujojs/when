@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-CommonJS and AMD are the primary targets for `when`, but instructions for a variety of setups are provided below.
+[CJS](http://wiki.commonjs.org/wiki/CommonJS) and [AMD](http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition) are the primary targets for `when`, but instructions for a variety of setups are provided below.
 
 #### AMD
 
@@ -47,8 +47,8 @@ CommonJS and AMD are the primary targets for `when`, but instructions for a vari
 2. `var when = require('when');`
 
 #### Browser environments (via browserify)
- 
-When.js depends on an [AMD](http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition) or [CJS](http://wiki.commonjs.org/wiki/CommonJS) library implementation to be consumed by the browser. This happens because when.js does not export to the global object (`window` in browsers). If you don't want to include such a library in your stack you have to create your own builds using browserify as follows:
+
+Since when.js primarily targets modular environments, it doesn't export to the global object (`window` in browsers) by default. You can create your own build of when.js using browserify, if you prefer not to use an AMD or CommonJS loader in your project.
 
 1. `git clone https://github.com/cujojs/when`
 1. `npm install`
