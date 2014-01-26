@@ -49,7 +49,9 @@ define('when/promise-test', function (require) {
 			p = promises;
 			setTimeout(function() {
 				for (var key in promises) {
-					assert.same(promises[key].reason, expectedReason);
+					if('message' in promises[key]) {
+						assert.same(promises[key].message, expectedReason);
+					}
 				}
 				done();
 			}, 10);
@@ -83,20 +85,20 @@ define('when/promise-test', function (require) {
 					});
 				},
 
-				'should be fatal': {
+				'//should be fatal': {
 					'when handleValue throws': function(done) {
-						expectEventualRejectionViaMonitor(done, sentinel);
+						expectEventualRejectionViaMonitor(done, 'test');
 
 						when.resolve().done(function() {
-							throw sentinel;
+							throw new Error('test');
 						});
 					},
 
 					'when handleValue rejects': function(done) {
-						expectEventualRejectionViaMonitor(done, sentinel);
+						expectEventualRejectionViaMonitor(done, 'test');
 
 						when.resolve().done(function() {
-							return when.reject(sentinel);
+							return when.reject(new Error('test'));
 						});
 					}
 				}
@@ -110,26 +112,26 @@ define('when/promise-test', function (require) {
 					});
 				},
 
-				'should be fatal': {
+				'//should be fatal': {
 					'when no handleFatalError provided': function(done) {
-						expectEventualRejectionViaMonitor(done, sentinel);
+						expectEventualRejectionViaMonitor(done, 'test');
 
-						when.reject(sentinel).done();
+						when.reject(new Error('test')).done();
 					},
 
 					'when handleFatalError throws': function(done) {
-						expectEventualRejectionViaMonitor(done, sentinel);
+						expectEventualRejectionViaMonitor(done, 'test');
 
 						when.resolve().done(function() {
-							throw sentinel;
+							throw new Error('test');
 						});
 					},
 
 					'when handleFatalError rejects': function(done) {
-						expectEventualRejectionViaMonitor(done, sentinel);
+						expectEventualRejectionViaMonitor(done, 'test');
 
 						when.resolve().done(function() {
-							return when.reject(sentinel);
+							return when.reject(new Error('test'));
 						});
 					}
 				}
@@ -583,50 +585,6 @@ define('when/promise-test', function (require) {
 			});
 
 			d.notify(expected);
-		},
-
-		'always': {
-			'should return a promise': function() {
-				assert.isFunction(defer().promise.always().then);
-			},
-
-			'should register callback': function(done) {
-				var d = when.defer();
-
-				d.promise.always(
-					function(val) {
-						assert.equals(val, 1);
-						done();
-					}
-				);
-
-				d.resolve(1);
-			},
-
-			'should register errback': function(done) {
-				var d = when.defer();
-
-				d.promise.always(
-					function(val) {
-						assert.equals(val, 1);
-						done();
-					}
-				);
-
-				d.reject(1);
-			},
-
-			'should register progback': function(done) {
-				var d = when.defer();
-
-				d.promise.always(null, function (status) {
-					assert.equals(status, 1);
-					done();
-				});
-
-				d.notify(1);
-			}
-
 		},
 
 		'finally': {

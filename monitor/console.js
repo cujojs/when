@@ -12,7 +12,7 @@ define(function(require) {
 
 	var createAggregator, throttleReporter, simpleReporter, aggregator,
 		formatter, stackFilter, excludeRx, filter, reporter, logger,
-		rejectionMsg, reasonMsg, filteredFramesMsg, stackJumpMsg, attachPoint;
+		rejectionMsg, reasonMsg, filteredFramesMsg, stackJumpMsg;
 
 	createAggregator = require('./aggregator');
 	throttleReporter = require('./throttledReporter');
@@ -26,15 +26,11 @@ define(function(require) {
 	stackJumpMsg = '  --- new call stack ---';
 	filteredFramesMsg = '  ...[filtered frames]...';
 
-	excludeRx = /when\.js|(module|node)\.js:\d|when\/monitor\//i;
+	excludeRx = /when\.js|(module|node)\.js:\d|when\/(monitor|lib)\//i;
 	filter = stackFilter(exclude, mergePromiseFrames);
 	reporter = simpleReporter(formatter(filter, rejectionMsg, reasonMsg, stackJumpMsg), logger);
 
 	aggregator = createAggregator(throttleReporter(200, reporter));
-
-	attachPoint = typeof console !== 'undefined'
-		? aggregator.publish(console)
-		: aggregator;
 
 	return aggregator;
 
@@ -43,7 +39,7 @@ define(function(require) {
 	}
 
 	function exclude(line) {
-		var rx = attachPoint.promiseStackFilter || excludeRx;
+		var rx = aggregator.promiseStackFilter || excludeRx;
 		return rx.test(line);
 	}
 

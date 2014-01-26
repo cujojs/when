@@ -29,7 +29,7 @@ define('when/delay-test', function (require) {
 		},
 
 		'should resolve with provided value after delay': function(done) {
-			delay(sentinel, 0).then(
+			delay(0, sentinel).then(
 				function(val) {
 					assert.same(val, sentinel);
 					done();
@@ -50,7 +50,7 @@ define('when/delay-test', function (require) {
 		},
 
 		'should resolve after input promise plus delay': function(done) {
-			delay(when.resolve(sentinel), 10).then(
+			when.resolve(sentinel).delay(10).then(
 				function(val) {
 					assert.equals(val, sentinel);
 				},
@@ -62,7 +62,7 @@ define('when/delay-test', function (require) {
 			var d = when.defer();
 			d.reject(sentinel);
 
-			delay(d.promise, 0).then(
+			d.promise.delay(0).then(
 				fail,
 				function(val) {
 					assert.equals(val, sentinel);
@@ -73,7 +73,7 @@ define('when/delay-test', function (require) {
 		'should propagate progress': function(done) {
 			var d = when.defer();
 
-			delay(d.promise, 0).then(null, null,
+			d.promise.delay(0).then(null, null,
 				function(val) {
 					assert.same(val, sentinel);
 					d.resolve();

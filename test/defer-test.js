@@ -73,41 +73,6 @@ define('when.defer-test', function (require) {
 				d.resolve(fakeRejected(sentinel));
 			},
 
-			'should return a promise for the resolution value': function(done) {
-				var d = when.defer();
-
-				d.resolve(sentinel).then(
-					function(returnedPromiseVal) {
-						assert.equals(returnedPromiseVal, sentinel);
-					},
-					fail
-				).ensure(done);
-			},
-
-			'should return a promise for a promised resolution value': function(done) {
-				var d = when.defer();
-
-				d.resolve(when.resolve(sentinel)).then(
-					function(returnedPromiseVal) {
-						assert.equals(returnedPromiseVal, sentinel);
-					},
-					fail
-				).ensure(done);
-			},
-
-			'should return a promise for a promised rejection value': function(done) {
-				var d = when.defer();
-
-				// Both the returned promise, and the deferred's own promise should
-				// be rejected with the same value
-				d.resolve(when.reject(sentinel)).then(
-					fail,
-					function(returnedPromiseVal) {
-						assert.equals(returnedPromiseVal, sentinel);
-					}
-				).ensure(done);
-			},
-
 			'should invoke newly added callback when already resolved': function(done) {
 				var d = when.defer();
 
@@ -167,20 +132,6 @@ define('when.defer-test', function (require) {
 				).ensure(done);
 
 				d.reject(expected);
-			},
-
-
-			'should return a promise for the rejection value': function(done) {
-				var d = when.defer();
-
-				// Both the returned promise, and the deferred's own promise should
-				// be rejected with the same value
-				d.reject(sentinel).then(
-					fail,
-					function(returnedPromiseVal) {
-						assert.equals(returnedPromiseVal, sentinel);
-					}
-				).ensure(done);
 			},
 
 			'should invoke newly added errback when already rejected': function(done) {
@@ -393,53 +344,11 @@ define('when.defer-test', function (require) {
 			}
 		},
 
-		'should return a promise for passed-in resolution value when already resolved': function(done) {
-			var d = when.defer();
-			d.resolve(other);
-
-			d.resolve(sentinel).then(function(val) {
-				assert.same(val, sentinel);
-			}).ensure(done);
-		},
-
-		'should return a promise for passed-in rejection value when already resolved': function(done) {
-			var d = when.defer();
-			d.resolve(other);
-
-			d.reject(sentinel).then(
-				fail,
-				function(val) {
-					assert.same(val, sentinel);
-				}
-			).ensure(done);
-		},
-
 		'should return silently on progress when already resolved': function() {
 			var d = when.defer();
 			d.resolve();
 
 			refute.defined(d.notify());
-		},
-
-		'should return a promise for passed-in resolution value when already rejected': function(done) {
-			var d = when.defer();
-			d.reject(other);
-
-			d.resolve(sentinel).then(function(val) {
-				assert.same(val, sentinel);
-			}).ensure(done);
-		},
-
-		'should return a promise for passed-in rejection value when already rejected': function(done) {
-			var d = when.defer();
-			d.reject(other);
-
-			d.reject(sentinel).then(
-				fail,
-				function(val) {
-					assert.same(val, sentinel);
-				}
-			).ensure(done);
 		},
 
 		'should return silently on progress when already rejected': function() {

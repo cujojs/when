@@ -8,11 +8,11 @@ fail = buster.assertions.fail;
 sentinel = {};
 
 define('when.map-test', function (require) {
+	/*global setInterval,clearInterval*/
 
-	var when, delay, resolved, reject;
+	var when, resolved, reject;
 
 	when = require('when');
-	delay = require('when/delay');
 	resolved = when.resolve;
 	reject = when.reject;
 
@@ -21,7 +21,11 @@ define('when.map-test', function (require) {
 	}
 
 	function deferredMapper(val) {
-		return delay(mapper(val), Math.random()*10);
+		return when(mapper(val)).delay(Math.random()*10);
+	}
+
+	function identity(x) {
+		return x;
 	}
 
 	buster.testCase('when.map', {
@@ -106,40 +110,31 @@ define('when.map-test', function (require) {
 
 		'should propagate progress': function() {
 			// Thanks @depeele for this test
-			var input, ncall;
+			var input = [_resolver(1), _resolver(2), _resolver(3)];
+			var ncall = 0;
 
-			input = [ _resolver(1), _resolver(2), _resolver(3) ];
-			ncall = 0;
-
-			return when.map(input).then(
-				function(){
+			return when.map(input, identity).then(
+				function() {
 					assert.equals(ncall, 6);
 				},
 				fail,
-				function(){
+				function() {
 					ncall++;
 				}
 			);
 
-			function _resolver(id)
-			{
-				var p = when.defer();
-
-				setTimeout(function() {
-					var loop, timer;
-
-					loop = 0;
-					timer = setInterval(function () {
-						p.notify(id);
+			function _resolver(id) {
+				return when.promise(function(resolve, reject, notify) {
+					var loop = 0;
+					var timer = setInterval(function () {
+						notify(id);
 						loop++;
 						if (loop === 2) {
 							clearInterval(timer);
-							p.resolve(id);
+							resolve(id);
 						}
 					}, 1);
-				}, 0);
-
-				return p.promise;
+				});
 			}
 		}
 	});

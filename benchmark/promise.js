@@ -12,21 +12,21 @@
 define(function(require) {
 	/*global setImmediate,process*/
 
-	var when, tests, run, ok;
+	var Promise, tests, run, ok;
 
-	when = require('../when');
+	Promise = require('../Promise');
 	run = require('./run');
 	ok = 0;
 
 	tests = [
-		{ name: 'create pending',     fn: createPending },
-		{ name: 'resolve promise',    fn: resolvePromise, defer: true },
-		{ name: 'setImmediate',       fn: viaSetImmediate, defer: true,
+		{ name: 'create pending', fn: createPending },
+		{ name: 'resolve', fn: resolvePromise, defer: true },
+		{ name: 'reject', fn: rejectPromise, defer: true },
+		{ name: 'setImmediate', fn: viaSetImmediate, defer: true,
 			condition: checkSetImmediate },
-		{ name: 'process.nextTick',   fn: viaProcessNextTick, defer: true,
+		{ name: 'process.nextTick', fn: viaProcessNextTick, defer: true,
 			condition: checkProcessNextTick },
-		{ name: 'setTimeout',         fn: viaSetTimeout, defer: true },
-		{ name: 'reject promise',     fn: rejectPromise, defer: true },
+		{ name: 'setTimeout', fn: viaSetTimeout, defer: true },
 		{ name: 'reject then resolve', fn: rejectThenResolve, defer: true },
 		{ name: 'resolve chain 100',  fn: resolveChain(100), defer: true },
 		{ name: 'resolve chain 1k', fn: resolveChain(1e3), defer: true },
@@ -52,23 +52,27 @@ define(function(require) {
 	//
 
 	function createPending() {
-		when.promise(pendingForever);
+		/*jshint nonew:false*/
+		new Promise(pendingForever);
 	}
 
 	function resolvePromise(deferred) {
-		when.promise(resolve).then(function() {
+		/*jshint nonew:false*/
+		new Promise(resolve).done(function() {
 			deferred.resolve();
 		});
 	}
 
 	function rejectPromise(deferred) {
-		when.promise(reject).then(null, function() {
+		/*jshint nonew:false*/
+		new Promise(reject).done(null, function() {
 			deferred.resolve();
 		});
 	}
 
 	function rejectThenResolve(deferred) {
-		when.promise(reject).then(null, identity).then(function() {
+		/*jshint nonew:false*/
+		new Promise(reject).then(null, identity).done(function() {
 			deferred.resolve();
 		});
 	}
@@ -93,12 +97,12 @@ define(function(require) {
 
 	function resolveChain(n) {
 		return function(deferred) {
-			var p = when.resolve({}), i = 0;
+			var p = Promise.cast({}), i = 0;
 			for(;i < n; i++) {
 				p = p.then(identity);
 			}
 
-			p.then(function() {
+			p.done(function() {
 				deferred.resolve();
 			});
 		};
@@ -106,12 +110,12 @@ define(function(require) {
 
 	function resolveChainSparse(n) {
 		return function(deferred) {
-			var p = when.resolve({}), i = 1;
+			var p = Promise.cast({}), i = 1;
 			for(;i < n; i++) {
 				p = p.then(null);
 			}
 
-			p.then(identity).then(function() {
+			p.then(identity).done(function() {
 				deferred.resolve();
 			});
 		};
@@ -119,12 +123,12 @@ define(function(require) {
 
 	function rejectChain(n) {
 		return function(deferred) {
-			var p = when.reject({}), i = 0;
+			var p = Promise.reject({}), i = 0;
 			for(;i < n; i++) {
 				p = p.then(null, rethrow);
 			}
 
-			p.then(null, function() {
+			p.done(null, function() {
 				deferred.resolve();
 			});
 		};
@@ -132,12 +136,12 @@ define(function(require) {
 
 	function rejectChainSparse(n) {
 		return function(deferred) {
-			var p = when.reject({}), i = 1;
+			var p = Promise.reject({}), i = 1;
 			for(;i < n; i++) {
 				p = p.then(null, rethrow);
 			}
 
-			p.then(null, identity).then(function() {
+			p.then(null, identity).done(function() {
 				deferred.resolve();
 			});
 		};

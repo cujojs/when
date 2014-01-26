@@ -26,9 +26,7 @@ function FakePromise(val) {
 
 define('when-test', function (require) {
 
-	var when;
-
-	when = require('when');
+	var when = require('when');
 
 	buster.testCase('when', {
 		'should return a promise for a value': function() {

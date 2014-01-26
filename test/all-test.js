@@ -16,7 +16,7 @@ define('when.all-test', function (require) {
 	buster.testCase('when.all', {
 
 		'should resolve empty input': function(done) {
-			return when.all([],
+			return when.all([]).then(
 				function(result) {
 					assert.equals(result, []);
 				},
@@ -26,7 +26,7 @@ define('when.all-test', function (require) {
 
 		'should resolve values array': function(done) {
 			var input = [1, 2, 3];
-			when.all(input,
+			when.all(input).then(
 				function(results) {
 					assert.equals(results, input);
 				},
@@ -36,7 +36,7 @@ define('when.all-test', function (require) {
 
 		'should resolve promises array': function(done) {
 			var input = [resolved(1), resolved(2), resolved(3)];
-			when.all(input,
+			when.all(input).then(
 				function(results) {
 					assert.equals(results, [1, 2, 3]);
 				},
@@ -46,7 +46,7 @@ define('when.all-test', function (require) {
 
 		'should resolve sparse array input': function(done) {
 			var input = [, 1, , 1, 1 ];
-			when.all(input,
+			when.all(input).then(
 				function(results) {
 					assert.equals(results, input);
 				},
@@ -56,7 +56,7 @@ define('when.all-test', function (require) {
 
 		'should reject if any input promise rejects': function(done) {
 			var input = [resolved(1), rejected(2), resolved(3)];
-			when.all(input,
+			when.all(input).then(
 				fail,
 				function(failed) {
 					assert.equals(failed, 2);
@@ -70,7 +70,7 @@ define('when.all-test', function (require) {
 			expected = [1, 2, 3];
 			input = resolved(expected);
 
-			when.all(input,
+			when.all(input).then(
 				function(results) {
 					assert.equals(results, expected);
 				},
@@ -79,7 +79,7 @@ define('when.all-test', function (require) {
 		},
 
 		'should resolve to empty array when input promise does not resolve to array': function(done) {
-			when.all(resolved(1),
+			when.all(resolved(1)).then(
 				function(result) {
 					assert.equals(result, []);
 				},

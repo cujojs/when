@@ -23,26 +23,24 @@ define('when/monitor/aggregator-test', function (require) {
 		},
 
 		'should have PromiseStatus API': function() {
-			assert.isFunction(aggregator(function(){}).PromiseStatus);
+			assert.isFunction(aggregator(function(){}));
 		},
 
 		'PromiseStatus': {
 			'rejection should trigger report': function(done) {
-				aggregator(function(promises) {
+				var PromiseStatus = aggregator(function(promises) {
 					for (var key in promises) {
-						assert.same(promises[key].reason, sentinel);
+						assert.same(promises[key].message, 'test');
 					}
 					done();
-				}).publish(monitor);
+				});
 
-				var status = new monitor.PromiseStatus();
-				status.rejected(sentinel);
-
-				when.defer().reject(sentinel);
+				var status = new PromiseStatus();
+				status.rejected(new Error('test'));
 			}
 		},
 
-		'promise': {
+		'//promise': {
 			'rejection should trigger report': function(done) {
 				aggregator(function() {
 					assert(true);
@@ -55,7 +53,7 @@ define('when/monitor/aggregator-test', function (require) {
 			}
 		},
 
-		'defer': {
+		'//defer': {
 			'rejection should trigger report': function(done) {
 				aggregator(function() {
 					assert(true);

@@ -8,9 +8,7 @@ fail = buster.assertions.fail;
 
 define('when.reject-test', function (require) {
 
-	var when;
-
-	when = require('when');
+	var when = require('when');
 
 	buster.testCase('when.reject', {
 
@@ -35,7 +33,7 @@ define('when.reject-test', function (require) {
 			when.reject(d.promise).then(
 				fail,
 				function(value) {
-					assert.equals(value, expected);
+					assert.same(value, d.promise);
 				}
 			).ensure(done);
 		},
@@ -50,7 +48,7 @@ define('when.reject-test', function (require) {
 			when.reject(d.promise).then(
 				fail,
 				function(value) {
-					assert.equals(value, expected);
+					assert.equals(value, d.promise);
 				}
 			).ensure(done);
 		}
