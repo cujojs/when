@@ -42,6 +42,8 @@ API
 	* [Synchronous functions](#synchronous-functions)
 	* [Asynchronous functions](#asynchronous-functions)
 	* [Node-style asynchronous functions](#node-style-asynchronous-functions)
+1. [ES6 generators]
+	* [when/generator](#whengenerator)
 1. [Helpers](#helpers)
 	* [when/apply](#whenapply)
 1. [Debugging promises](#debugging-promises)
@@ -293,7 +295,7 @@ Returns a snapshot descriptor of the current state of `promise`.  This descripto
 While there are use cases where synchronously inspecting a promise's state can be helpful, the use of `inspect` is discouraged.  It is almost always preferable to simply use `when()` or `promise.then` to be notified when the promise fulfills or rejects.
 
 #### See also:
-* [when.settle()](#whenall) - settling an Array of promises
+* [when.settle()](#whensettle) - settling an Array of promises
 
 ### always()
 
@@ -529,7 +531,7 @@ If any of the promises is rejected, the returned promise will be rejected with t
 
 ### See also:
 * [when.join()](#whenjoin) - joining multiple promises
-* [when.settle()](#whenall) - settling an Array of promises
+* [when.settle()](#whensettle) - settling an Array of promises
 
 ## when.map()
 
@@ -1382,7 +1384,7 @@ var fs, nodefn;
 fs     = require("fs");
 nodefn = require("when/node/function");
 
-var loadPasswd = nodefn.call(fn.readFile, "/etc/passwd");
+var loadPasswd = nodefn.call(fs.readFile, "/etc/passwd");
 
 loadPasswd.then(function(passwd) {
 	console.log("Contents of /etc/passwd:\n" + passwd);
@@ -1405,7 +1407,7 @@ var fs, nodefn;
 fs     = require("fs");
 nodefn = require("when/node/function");
 
-var loadPasswd = nodefn.apply(fn.readFile, ["/etc/passwd"]);
+var loadPasswd = nodefn.apply(fs.readFile, ["/etc/passwd"]);
 
 loadPasswd.then(function(passwd) {
 	console.log("Contents of /etc/passwd:\n" + passwd);
@@ -1552,6 +1554,28 @@ dataPromise = fetchData(123);
 
 nodefn.bindCallback(dataPromise, handleData);
 ```
+
+# ES6 generators
+
+## when/generator
+
+### `generator.call`
+
+```js
+var resultPromise = generator.call(es6generator, arg1, arg2/*...more args*/);
+```
+
+### `generator.apply`
+
+```js
+var resultPromise = generator.apply(es6generator, [arg1, arg2/*...more args*/]);
+```
+
+### `generator.lift`
+```js
+var coroutine = generator.lift(es6generator, arg1, arg2/*...more args*/);
+```
+
 
 # Helpers
 
