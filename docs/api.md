@@ -309,6 +309,27 @@ Arranges to call `onFulfilledOrRejected` on either the promise's value if it is 
 promise.then(onFulfilledOrRejected, onFulfilledOrRejected [, onProgress]);
 ```
 
+### else()
+
+**ALIAS:** `orElse()` for non-ES5 environments
+
+```js
+var p1 = doAyncOperationThatMightFail();
+return p1.else(defaultValue);
+```
+
+If a promise is rejected, `else` catches the rejection and fulfills with a default value. This is a shortcut for manually `catch`ing a promise and returning a value, as such:
+
+```js
+var p1 = doAyncOperationThatMightFail();
+return p1.catch(function() {
+    return defaultValue;
+});
+```
+
+#### See also:
+* [when.catch()](#catch) - intercept a rejected promise
+
 ## Progress events
 
 Progress events are not specified in Promises/A+ and are optional in Promises/A.  They have proven to be useful in practice, but unfortunately, they are also underspecified, and there is no current *de facto* or agreed-upon behavior in the promise implementor community.
