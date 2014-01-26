@@ -16,6 +16,7 @@ define(function (require) {
 
 	var array = require('./lib/array');
 	var flow = require('./lib/flow');
+	var semigroup = require('./lib/semigroup');
 	var foldable = require('./lib/foldable');
 	var generate = require('./lib/generate');
 	var monad = require('./lib/monad');
@@ -27,7 +28,7 @@ define(function (require) {
 		monitor: typeof console !== 'undefined' && console
 	});
 
-	return [array, flow, foldable, generate, monad, progress]
+	return [array, flow, semigroup, foldable, generate, monad, progress]
 		.reduceRight(function(Promise, feature) {
 			return feature(Promise);
 		}, timed(timer.set, timer.clear, Promise));

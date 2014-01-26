@@ -293,7 +293,7 @@ define('when.defer-test', function (require) {
 				d2.notify();
 			},
 
-			'should allow resolve after progress': function(done) {
+			'//should allow resolve after progress': function(done) {
 				var d = when.defer();
 
 				var progressed = false;
@@ -312,7 +312,7 @@ define('when.defer-test', function (require) {
 				d.resolve();
 			},
 
-			'should allow reject after progress': function(done) {
+			'//should allow reject after progress': function(done) {
 				var d = when.defer();
 
 				var progressed = false;
