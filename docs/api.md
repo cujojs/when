@@ -42,7 +42,7 @@ API
 	* [Synchronous functions](#synchronous-functions)
 	* [Asynchronous functions](#asynchronous-functions)
 	* [Node-style asynchronous functions](#node-style-asynchronous-functions)
-1. [ES6 generators]
+1. [ES6 generators](#es6-generators)
 	* [when/generator](#whengenerator)
 1. [Helpers](#helpers)
 	* [when/apply](#whenapply)
@@ -1536,25 +1536,102 @@ nodefn.bindCallback(dataPromise, handleData);
 
 # ES6 generators
 
+**Experimental**: Requires an environment that supports ES6 generators and the `yield` keyword.
+
 ## when/generator
+
+The `when/generator` module provides APIs for using ES6 generators as coroutines.  You can `yield` promises to await their resolution while control is transferred back to the JS event loop.  You can write code that looks and acts like synchronous code, even using synchronous `try`, `catch` and `finally`.
+
+The following example uses `generator.call` to fetch a list of todos for a user, `yield`ing control until the promise returned by `getTodosForUser` is resolved.  If the promise fulfills, execution will continue and show the todos.  If the promise rejects, the rejection will be translated to a synchronous exception (using ES6 generator `.throw()`).  As you'd expect, control will jump to the `catch` and show an error.
+
+```js
+var gen = require('when/generator');
+
+gen.call(function*(todosFilter, userId) {
+	var todos;
+	try {
+		todos = yield getTodosForUser(userId);
+		showTodos(todos.filter(todosFilter));
+	} catch(e) {
+		showError(e);
+	}
+}, isRecentTodo, 123);
+
+function getTodosForUser(userId) {
+	// returns a promise for an array of the user's todos
+}
+
+```
 
 ### `generator.call`
 
 ```js
-var resultPromise = generator.call(es6generator, arg1, arg2/*...more args*/);
+var resultPromise = generator.call(es6generator*, arg1, arg2/*...more args*/);
 ```
+
+Immediately calls `es6generator` with the supplied args, and allows it use `yield` to await promises.
 
 ### `generator.apply`
 
 ```js
-var resultPromise = generator.apply(es6generator, [arg1, arg2/*...more args*/]);
+var resultPromise = generator.apply(es6generator*, [arg1, arg2/*...more args*/]);
 ```
+
+Similar to `generator.call`, immediately calls `es6generator` with the supplied args array, and allows it use `yield` to await promises.
 
 ### `generator.lift`
 ```js
-var coroutine = generator.lift(es6generator, arg1, arg2/*...more args*/);
+var coroutine = generator.lift(es6generator*, arg1, arg2/*...more args*/);
 ```
 
+Lifts `es6generator` to a promise-aware coroutine, instead of calling it immediately.  Returns a function that, when called, can use `yield` to await promises.  This can be more convenient than using `generator.call` or `generator.apply` by allowing you to create the coroutine once, and call it repeatedly as a plain function.
+
+Additional arguments provided to `generator.lift` will be partially applied to the lifted coroutine.
+
+Here is a revised version of the above example using `generator.lift`.  Note that we're also partially applying the `isRecentTodos` filtering function.
+
+```js
+var gen = require('when/generator');
+
+// Use generator.lift to create a function that acts as a coroutine
+var getRecentTodosForUser = gen.lift(function*(todosFilter, userId) {
+	var todos;
+	try {
+		todos = yield getTodosForUser(userId);
+		showTodos(todos.filter(todosFilter));
+	} catch(e) {
+		showError(e);
+	}
+}, isRecentTodo);
+
+function getTodosForUser(userId) {
+	// returns a promise for an array of the user's todos
+}
+
+// Get the todos for user 123, and filter them using the partially
+// applied `isRecentTodo` filter.
+getRecentTodosForUser(123);
+```
+
+In addition to `try`, `catch`, and `finally`, `return` also works as expected.  In this revised example, `yield` allows us to return a result and move error handling out to the caller.
+
+```js
+var gen = require('when/generator');
+
+// Use generator.lift to create a function that acts as a coroutine
+var getRecentTodosForUser = gen.lift(function*(todosFilter, userId) {
+	var todos = yield getTodosForUser(userId);
+	return todos.filter(todosFilter);
+}, isRecentTodo);
+
+function getTodosForUser(userId) {
+	// returns a promise for an array of the user's todos
+}
+
+// Get the todos for user 123, and filter them using the partially
+// applied `isRecentTodo` filter.
+var filteredTodos = getRecentTodosForUser(123);
+```
 
 # Helpers
 
