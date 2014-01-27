@@ -9,7 +9,7 @@ define('when/monoid-test', function (require) {
 	buster.testCase('Promise.empty/concat', {
 		'empty': {
 			'should exist on constructor': function() {
-				assert.isFunction(Promise.of().constructor.empty);
+				assert.isFunction(Promise.prototype.constructor.empty);
 			},
 
 			'should return promise': function() {
