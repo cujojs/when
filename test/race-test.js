@@ -14,7 +14,7 @@ define('when/race-test', function (require) {
 	var empty = Promise.empty();
 
 	function delayReject(ms) {
-		return Promise.of().delay(ms)['yield'](rejected)
+		return Promise.of().delay(ms)['yield'](rejected);
 	}
 
 	buster.testCase('Promise.race', {

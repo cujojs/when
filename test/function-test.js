@@ -35,7 +35,7 @@ define('when/function-test', function (require) {
 	function partial(f) {
 		var partialArgs = slice.call(arguments, 1);
 		return function() {
-			return f.apply(null, partialArgs.concat(slice.call(arguments)));
+			return f.apply(void 0, partialArgs.concat(slice.call(arguments)));
 		};
 	}
 

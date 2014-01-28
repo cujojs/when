@@ -40,19 +40,19 @@ define('when/semigroup-test', function (require) {
 			},
 
 			'should be associative': function() {
-				return assertAssociative(Promise.of('a'), Promise.of('b'), Promise.of('c'));
+				return assertAssociative(Promise.of('a').delay(1), Promise.of('b'), Promise.of('c').delay(1));
 			},
 
 			'should be associative for rejections a': function() {
-				return assertAssociative(Promise.reject('a'), Promise.of('b'), Promise.of('c'));
+				return assertAssociative(Promise.reject('a'), Promise.of('b').delay(1), Promise.of('c'));
 			},
 
 			'should be associative for rejections b': function() {
-				return assertAssociative(Promise.of('a'), Promise.reject('b'), Promise.of('c'));
+				return assertAssociative(Promise.of('a').delay(1), Promise.reject('b'), Promise.of('c'));
 			},
 
 			'should be associative for rejections c': function() {
-				return assertAssociative(Promise.of('a'), Promise.of('b'), Promise.reject('c'));
+				return assertAssociative(Promise.of('a').delay(1), Promise.of('b'), Promise.reject('c'));
 			},
 
 			'should be associative for rejections a b': function() {
@@ -65,6 +65,14 @@ define('when/semigroup-test', function (require) {
 
 			'should be associative for rejections b c': function() {
 				return assertAssociative(Promise.of('a'), Promise.reject('b'), Promise.reject('c'));
+			},
+
+			'should reject if both reject': function() {
+				return Promise.reject().concat(Promise.reject()).then(function() {
+					assert(false);
+				}, function() {
+					assert(true);
+				});
 			}
 		}
 	});

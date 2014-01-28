@@ -35,6 +35,15 @@ define('when/applicative-test', function (require) {
 				return Promise.of(fulfilled).then(function(x) {
 					assert.same(x, fulfilled);
 				});
+			},
+
+			'should be async': function() {
+				var x = sentinel;
+				Promise.of().then(function() {
+					x = void 0;
+				});
+
+				assert.same(x, sentinel);
 			}
 		},
 
@@ -52,8 +61,8 @@ define('when/applicative-test', function (require) {
 				return function(g) {
 					return function(x) {
 						return f(g(x));
-					}
-				}
+					};
+				};
 			}).ap(u).ap(v).ap(a);
 
 			var p2 = u.ap(v.ap(a));

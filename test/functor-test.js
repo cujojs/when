@@ -35,7 +35,7 @@ define('when/functor-test', function (require) {
 		},
 
 		'should retain promises in composition': function() {
-			function f(x) { return fulfilled; }
+			function f() { return fulfilled; }
 			function g(x) { return x.then(function(x) { return x; }); }
 
 			return assertSame(Promise.of(fulfilled).map(function(x) {
