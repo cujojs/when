@@ -50,7 +50,7 @@ define('when/monitor/aggregator-test', function (require) {
 				}).publish(monitor);
 
 				when.promise(function(_, reject) {
-					reject(sentinel);
+					reject();
 				});
 			}
 		},
@@ -62,7 +62,7 @@ define('when/monitor/aggregator-test', function (require) {
 					done();
 				}).publish(monitor);
 
-				when.defer().reject(sentinel);
+				when.defer().reject();
 			}
 		}
 	});
