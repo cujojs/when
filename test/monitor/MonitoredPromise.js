@@ -4,23 +4,17 @@
  * Licensed under the MIT License at:
  * http://www.opensource.org/licenses/mit-license.php
  *
- * @author: Brian Cavalier
- * @author: John Hann
+ * @author Brian Cavalier
+ * @author John Hann
  */
 
 (function(define) { 'use strict';
 define(function(require) {
 
-	var Promise = require('./MonitoredPromise');
-
-	var p = new Promise(function(_, reject) {
-		reject(new Error('first error'));
-	});
-
-	setTimeout(function() {
-		console.log('***Begetting new unhandled error now***');
-		p.otherwise(function() { throw new Error('unhandled-begets-unhandled'); });
-	}, 2000);
+	var Promise = require('../../Promise');
+	var monitor = require('../../lib/monitor');
+	var PromiseStatus = require('../../monitor/console');
+	return monitor(PromiseStatus, Promise);
 
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

@@ -11,10 +11,10 @@
 (function(define) { 'use strict';
 	define(function(require) {
 
-		var when = require('../../when');
+		var Promise = require('./MonitoredPromise');
 
 		function f1() {
-			return when.promise(function(_, reject) {
+			return new Promise(function(_, reject) {
 				reject(new Error('unhandled-forever'));
 			});
 		}
@@ -27,6 +27,8 @@
 			return p.then(function() {});
 		}
 
+//		f1();
+//		f2(f1());
 		f3(f2(f1()));
 	});
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

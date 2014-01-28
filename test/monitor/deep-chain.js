@@ -11,10 +11,10 @@
 (function(define) { 'use strict';
 	define(function(require) {
 
-		var when = require('../../when');
+		var Promise = require('./MonitoredPromise');
 
 		function f1() {
-			return when.resolve(123);
+			return Promise.resolve(123);
 		}
 
 		console.log('*** Creating deep promise rejection chain ***');
@@ -43,7 +43,7 @@
 		}
 
 		function reject(x) {
-			return when.reject(new Error('error originates here'));
+			return Promise.reject(new Error('error originates here'));
 		}
 	});
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

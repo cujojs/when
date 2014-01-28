@@ -32,31 +32,10 @@ function assertRejected(s, reason) {
 
 define('when/promise-test', function (require) {
 
-	var when, aggregator, monitor, defer;
+	var when, defer;
 
 	when = require('when');
-	aggregator = require('when/monitor/aggregator');
-	monitor = typeof console != 'undefined' ? console : when;
-
 	defer = when.defer;
-
-	function expectEventualRejectionViaMonitor(done, expectedReason) {
-		var p;
-		aggregator(function(promises) {
-			if(p) {
-				return;
-			}
-			p = promises;
-			setTimeout(function() {
-				for (var key in promises) {
-					if('message' in promises[key]) {
-						assert.same(promises[key].message, expectedReason);
-					}
-				}
-				done();
-			}, 10);
-		}).publish(monitor);
-	}
 
 	buster.testCase('promise', {
 
@@ -66,11 +45,6 @@ define('when/promise-test', function (require) {
 	//	},
 
 		'done': {
-			'tearDown': function() {
-				if(typeof monitor.PromiseStatus === 'function') {
-					delete monitor.PromiseStatus;
-				}
-			},
 
 			'should return undefined': function() {
 				refute.defined(when.resolve().done(f, f));
@@ -85,20 +59,28 @@ define('when/promise-test', function (require) {
 					});
 				},
 
-				'//should be fatal': {
+				'should be fatal': {
 					'when handleValue throws': function(done) {
-						expectEventualRejectionViaMonitor(done, 'test');
+						var p = when.resolve();
+						p._fatal = function testFatal(e) {
+							assert.same(e, sentinel);
+							done();
+						};
 
-						when.resolve().done(function() {
-							throw new Error('test');
+						p.done(function() {
+							throw sentinel;
 						});
 					},
 
 					'when handleValue rejects': function(done) {
-						expectEventualRejectionViaMonitor(done, 'test');
+						var p = when.resolve();
+						p._fatal = function testFatal(e) {
+							assert.same(e, sentinel);
+							done();
+						};
 
-						when.resolve().done(function() {
-							return when.reject(new Error('test'));
+						p.done(function() {
+							return when.reject(sentinel);
 						});
 					}
 				}
@@ -112,26 +94,38 @@ define('when/promise-test', function (require) {
 					});
 				},
 
-				'//should be fatal': {
+				'should be fatal': {
 					'when no handleFatalError provided': function(done) {
-						expectEventualRejectionViaMonitor(done, 'test');
+						var p = when.reject(sentinel);
+						p._fatal = function testFatal(e) {
+							assert.same(e, sentinel);
+							done();
+						};
 
-						when.reject(new Error('test')).done();
+						p.done();
 					},
 
 					'when handleFatalError throws': function(done) {
-						expectEventualRejectionViaMonitor(done, 'test');
+						var p = when.reject(other);
+						p._fatal = function testFatal(e) {
+							assert.same(e, sentinel);
+							done();
+						};
 
-						when.resolve().done(function() {
-							throw new Error('test');
+						p.done(void 0, function(e) {
+							throw sentinel;
 						});
 					},
 
 					'when handleFatalError rejects': function(done) {
-						expectEventualRejectionViaMonitor(done, 'test');
+						var p = when.reject();
+						p._fatal = function testFatal(e) {
+							assert.same(e, sentinel);
+							done();
+						};
 
-						when.resolve().done(function() {
-							return when.reject(new Error('test'));
+						p.done(void 0, function() {
+							return when.reject(sentinel);
 						});
 					}
 				}

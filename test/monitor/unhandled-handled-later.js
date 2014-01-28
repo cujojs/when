@@ -11,9 +11,9 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	var when = require('../../when');
+	var Promise = require('./MonitoredPromise');
 
-	var p = when.promise(function(_, reject) {
+	var p = new Promise(function(_, reject) {
 		reject(new Error('unhandled-handled-later'));
 	});
 

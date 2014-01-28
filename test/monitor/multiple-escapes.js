@@ -11,18 +11,18 @@
 (function(define) { 'use strict';
 	define(function(require) {
 
-		var when = require('../../when');
+		var Promise = require('./MonitoredPromise');
 
 		var i = 1;
-		var p = when.promise(function(_, reject) {
+		var p = new Promise(function(_, reject) {
 			setTimeout(reject.bind(null, new Error(i++)), 1);
 		});
 
-		var p = when.promise(function(_, reject) {
+		var p = new Promise(function(_, reject) {
 			setTimeout(reject.bind(null, new Error(i++)), 1);
 		});
 
-		var p = when.promise(function(_, reject) {
+		var p = new Promise(function(_, reject) {
 			setTimeout(reject.bind(null, new Error(i++)), 1);
 		});
 
