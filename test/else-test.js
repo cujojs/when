@@ -15,7 +15,7 @@ define('when/else-test', function (require) {
     'should resolve normally if previous promise doesnt fail': function() {
 
       return when.resolve(input)
-        .else(sentinel)
+        ['else'](sentinel)
         .then(function(val) {
           assert.same(val, input);
         });
@@ -24,7 +24,7 @@ define('when/else-test', function (require) {
     'should resolve with else value if previous promise fails': function() {
 
       return when.reject(input)
-        .else(sentinel)
+        ['else'](sentinel)
         .then(function(val) {
           assert.same(val, sentinel);
         });

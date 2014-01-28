@@ -112,7 +112,7 @@ define('when/promise-test', function (require) {
 							done();
 						};
 
-						p.done(void 0, function(e) {
+						p.done(void 0, function() {
 							throw sentinel;
 						});
 					},
