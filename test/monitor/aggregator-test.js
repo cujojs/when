@@ -9,19 +9,13 @@ sentinel = { value: 'sentinel' };
 
 define('when/monitor/aggregator-test', function (require) {
 
-	var when, aggregator, monitor;
+	var Promise, when, aggregator, monitor;
 
-	when = require('when');
+	Promise = require('when/Promise');
 	aggregator = require('when/monitor/aggregator');
-	monitor = typeof console != 'undefined' ? console : when;
+	monitor = require('when/lib/monitor');
 
 	buster.testCase('when/monitor/aggregator', {
-		'tearDown': function() {
-			if(typeof monitor.PromiseStatus === 'function') {
-				delete monitor.PromiseStatus;
-			}
-		},
-
 		'should have PromiseStatus API': function() {
 			assert.isFunction(aggregator(function(){}));
 		},
@@ -40,40 +34,42 @@ define('when/monitor/aggregator-test', function (require) {
 			}
 		},
 
-		'//promise': {
-			'rejection should trigger report': function(done) {
-				aggregator(function() {
+		'Promise': {
+			'reject should trigger report': function(done) {
+				var PromiseStatus = aggregator(function() {
 					assert(true);
 					done();
-				}).publish(monitor);
-
-				when.promise(function(_, reject) {
-					reject(sentinel);
 				});
-			}
-		},
 
-		'//defer': {
-			'rejection should trigger report': function(done) {
-				aggregator(function() {
+				var MonitoredPromise = monitor(PromiseStatus, Promise);
+
+				new MonitoredPromise(function(_, reject) {
+					reject();
+				});
+			},
+
+			'Promise.reject should trigger report': function(done) {
+				var PromiseStatus = aggregator(function() {
 					assert(true);
 					done();
-				}).publish(monitor);
+				});
 
-				when.defer().reject(sentinel);
+				var MonitoredPromise = monitor(PromiseStatus, Promise);
+
+				MonitoredPromise.reject();
 			}
 		}
 	});
 
 });
 }(
-		this.buster || require('buster'),
-		typeof define === 'function' && define.amd ? define : function (id, factory) {
-			var packageName = id.split(/[\/\-\.]/)[0], pathToRoot = id.replace(/[^\/]+/g, '..');
-			pathToRoot = pathToRoot.length > 2 ? pathToRoot.substr(3) : pathToRoot;
-			factory(function (moduleId) {
-				return require(moduleId.indexOf(packageName) === 0 ? pathToRoot + moduleId.substr(packageName.length) : moduleId);
-			});
-		}
-		// Boilerplate for AMD and Node
-	));
+	this.buster || require('buster'),
+	typeof define === 'function' && define.amd ? define : function (id, factory) {
+		var packageName = id.split(/[\/\-\.]/)[0], pathToRoot = id.replace(/[^\/]+/g, '..');
+		pathToRoot = pathToRoot.length > 2 ? pathToRoot.substr(3) : pathToRoot;
+		factory(function (moduleId) {
+			return require(moduleId.indexOf(packageName) === 0 ? pathToRoot + moduleId.substr(packageName.length) : moduleId);
+		});
+	}
+	// Boilerplate for AMD and Node
+));

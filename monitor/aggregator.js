@@ -41,9 +41,9 @@ define(function(require) {
 			},
 			rejected: function (reason) {
 				if(this.key in promises) {
-					this.message = reason.message;
-					this.reason = reason.stack;
-					this.rejectedAt = captureStack(reason && reason.message || reason);
+					this.message = reason && reason.message;
+					this.reason = reason && reason.stack;
+					this.rejectedAt = captureStack(this.message || reason);
 					report();
 				}
 			}

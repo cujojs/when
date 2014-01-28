@@ -24,8 +24,7 @@ define(function (require) {
 	var timed = require('./lib/timed');
 
 	var Promise = makePromise({
-		scheduler: Scheduler.createDefault(),
-		monitor: typeof console !== 'undefined' && console
+		scheduler: Scheduler.createDefault()
 	});
 
 	return [array, flow, semigroup, foldable, generate, monad, progress]
