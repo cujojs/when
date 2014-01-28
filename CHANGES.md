@@ -1,4 +1,4 @@
-### 2.7.0
+### 2.7.1
 
 * Internal changes to reduce overall memory usage, along with minor performance improvements.
 
