@@ -21,7 +21,8 @@ config.browser = {
 		'monitor/**/*.js',
 		'node/**/*.js',
 		'unfold/**/*.js',
-		'node_modules/curl/**/*.js'
+		'node_modules/curl/**/*.js',
+		'node_modules/poly/**/*.js'
 	],
 	libs: [
 		'test/curl-config.js',

@@ -2,7 +2,19 @@
 	"name": "when",
 	"version": "2.8.0",
 	"description": "A lightweight Promises/A+ and when() implementation, plus other async goodies.",
-	"keywords": ["Promises/A+", "promises-aplus", "promise", "promises", "deferred", "deferreds", "when", "async", "asynchronous", "cujo", "ender"],
+	"keywords": [
+		"cujo",
+		"Promises/A+",
+		"promises-aplus",
+		"promise",
+		"promises",
+		"deferred",
+		"deferreds",
+		"when",
+		"async",
+		"asynchronous",
+		"ender"
+	],
 	"homepage": "http://cujojs.com",
 	"licenses": [
 		{
@@ -40,6 +52,7 @@
 	],
 	"devDependencies": {
 		"curl": "https://github.com/cujojs/curl/tarball/0.7.3",
+		"poly": "git://github.com/cujojs/poly",
 		"test-support": "~0.3",
 		"promises-aplus-tests": "~2",
 		"benchmark": "~1",

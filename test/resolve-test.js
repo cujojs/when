@@ -11,8 +11,7 @@ other = {};
 
 function hasGetters() {
 	try {
-		Object.defineProperty({}, 'a', { get: function() { return 1; } });
-		return true;
+		return Object.defineProperty({}, 'a', { get: function() { return 1; } }).a === 1;
 	} catch (ex) {}
 }
 
