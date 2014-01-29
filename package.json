@@ -53,7 +53,7 @@
 	},
 	"scripts": {
 		"test": "jshint . && buster test -e node -r specification && promises-aplus-tests test/promises-aplus-adapter.js --reporter spec",
-		"ci": "npm test && sauceme",
+		"ci": "npm test && sauceme -b test/browsers.json",
 		"tunnel": "sauceme -m",
 		"start": "buster static -e browser",
 		"benchmark": "node benchmark/promise && node benchmark/map",
