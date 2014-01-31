@@ -23,13 +23,17 @@ define(function() {
 			var cause, formatted;
 
 			formatted = {
-				message: rec.message
+				reason: rec.reason,
+				message: rec.reason && rec.reason.toString()
 			};
 
 			if(hasStackTraces) {
-				cause = rec.reason || rec.rejectedAt;
+				cause = rec.reason && rec.reason.stack;
+				if(!cause) {
+					cause = rec.rejectedAt && rec.rejectedAt.stack;
+				}
 				var jumps = formatStackJumps(rec);
-				formatted.stack = stitch(rec.createdAt, jumps, cause);
+				formatted.stack = stitch(rec.createdAt.stack, jumps, cause);
 			}
 
 			return formatted;
@@ -48,7 +52,7 @@ define(function() {
 		}
 
 		function formatStackJump(rec) {
-			return filterStack(toArray(rec.createdAt).slice(1));
+			return filterStack(toArray(rec.createdAt.stack).slice(1));
 		}
 
 		function stitch(escaped, jumps, rejected) {
