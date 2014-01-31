@@ -24,13 +24,13 @@ define('when/monitor/aggregator-test', function (require) {
 			'rejection should trigger report': function(done) {
 				var PromiseStatus = aggregator(function(promises) {
 					for (var key in promises) {
-						assert.same(promises[key].message, 'test');
+						assert.same(promises[key].reason, sentinel);
 					}
 					done();
 				});
 
 				var status = new PromiseStatus();
-				status.rejected(new Error('test'));
+				status.rejected(sentinel);
 			}
 		},
 
