@@ -13,18 +13,11 @@
 (function(define) {
 define(function(require) {
 
-	var when, slice, setTimer, cjsRequire, vertxSetTimer;
+	var when, slice, setTimer;
 
 	when = require('../when');
 	slice = [].slice;
-	cjsRequire = require;
-
-	try {
-		vertxSetTimer = cjsRequire('vertx').setTimer;
-		setTimer = function (f, ms) { return vertxSetTimer(ms, f); };
-	} catch(e) {
-		setTimer = setTimeout;
-	}
+	setTimer = require('../lib/timer').set;
 
 	return {
 		apply: apply,
