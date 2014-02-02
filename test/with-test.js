@@ -109,7 +109,6 @@ define('when/with-test', function (require) {
 				}).call(thisArg);
 
 				return Promise.resolve()['with'](thisArg).then(function() {
-					console.log(typeof this, typeof expected);
 					assert.equals(this, expected);
 				});
 			},
@@ -122,7 +121,6 @@ define('when/with-test', function (require) {
 				}).call(thisArg);
 
 				return Promise.reject()['with'](thisArg).then(void 0, function() {
-					console.log(typeof this, typeof expected);
 					assert.equals(this, expected);
 				});
 			}
