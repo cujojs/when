@@ -34,12 +34,20 @@ define('when/inspect-test', function (require) {
 				assertPending(promise.inspect());
 			},
 
+			'should immediately return fulfilled state for fulfilled promise': function() {
+				assertFulfilled(Promise.resolve(sentinel).inspect(), sentinel);
+			},
+
 			'should return fulfilled state for fulfilled promise': function() {
 				var promise = Promise.resolve(sentinel);
 
 				return promise.then(function() {
 					assertFulfilled(promise.inspect(), sentinel);
 				});
+			},
+
+			'should immediately return rejected state for rejected promise': function() {
+				assertRejected(Promise.reject(sentinel).inspect(), sentinel);
 			},
 
 			'should return rejected state for rejected promise': function() {
