@@ -14,14 +14,14 @@
 (function(define) { 'use strict';
 define(function (require) {
 
-	var Promise, cast, bind, uncurryThis, slice;
+	var Promise, resolve, bind, uncurryThis, slice;
 
 	bind = Function.prototype.bind;
 	uncurryThis = bind.bind(bind.call);
 	slice = uncurryThis(Array.prototype.slice);
 
 	Promise = require('./Promise');
-	cast = Promise.cast;
+	resolve = Promise.resolve;
 
 	// Public API
 
@@ -60,7 +60,7 @@ define(function (require) {
 	 *   callback and/or errback is not supplied.
 	 */
 	function when(promiseOrValue, onFulfilled, onRejected, onProgress) {
-		return cast(promiseOrValue).then(onFulfilled, onRejected, onProgress);
+		return resolve(promiseOrValue).then(onFulfilled, onRejected, onProgress);
 	}
 
 	/**

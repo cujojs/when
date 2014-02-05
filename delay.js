@@ -12,13 +12,13 @@
 (function(define) {
 define(function(require) {
 
-	var cast = require('./Promise').cast;
+	var resolve = require('./Promise').resolve;
 
     /**
-	 * @deprecated Use Promise.cast(value).delay(ms)
+	 * @deprecated Use Promise.resolve(value).delay(ms)
      */
     return function delay(msec, value) {
-		return cast(value).delay(msec);
+		return resolve(value).delay(msec);
     };
 
 });

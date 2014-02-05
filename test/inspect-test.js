@@ -61,13 +61,13 @@ define('when/inspect-test', function (require) {
 
 		'when inspecting thenables': {
 			'should return pending state for pending thenable': function() {
-				var p = Promise.cast({ then: function() {} });
+				var p = Promise.resolve({ then: function() {} });
 
 				assertPending(p.inspect());
 			},
 
 			'should return fulfilled state for fulfilled thenable': function() {
-				var p = Promise.cast({ then: function(fulfill) { fulfill(sentinel); } });
+				var p = Promise.resolve({ then: function(fulfill) { fulfill(sentinel); } });
 
 				return p.then(function() {
 					assertFulfilled(p.inspect(), sentinel);
@@ -75,7 +75,7 @@ define('when/inspect-test', function (require) {
 			},
 
 			'should return rejected state for rejected thenable': function() {
-				var p = Promise.cast({ then: function(_, rejected) { rejected(sentinel); } });
+				var p = Promise.resolve({ then: function(_, rejected) { rejected(sentinel); } });
 
 				return p.then(fail, function() {
 					assertRejected(p.inspect(), sentinel);

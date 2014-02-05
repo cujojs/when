@@ -13,13 +13,13 @@
 (function(define) {
 define(function(require) {
 
-	var cast = require('./Promise').cast;
+	var resolve = require('./Promise').resolve;
 
     /**
-	 * @deprecated Use Promise.cast(trigger).timeout(ms)
+	 * @deprecated Use Promise.resolve(trigger).timeout(ms)
      */
     return function timeout(msec, trigger) {
-		return cast(trigger).timeout(msec);
+		return resolve(trigger).timeout(msec);
     };
 });
 })(

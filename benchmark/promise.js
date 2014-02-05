@@ -117,7 +117,7 @@ define(function(require) {
 
 	function resolveChain(n) {
 		return function(deferred) {
-			var p = Promise.cast({}), i = 0;
+			var p = Promise.resolve({}), i = 0;
 			for(;i < n; i++) {
 				p = p.then(identity);
 			}
@@ -130,7 +130,7 @@ define(function(require) {
 
 	function resolveChainSparse(n) {
 		return function(deferred) {
-			var p = Promise.cast({}), i = 1;
+			var p = Promise.resolve({}), i = 1;
 			for(;i < n; i++) {
 				p = p.then(null);
 			}
