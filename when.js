@@ -36,7 +36,7 @@ define(function (require) {
 	when.all       = all;        // Resolve a list of promises
 	when.map       = map;        // Array.map() for promises
 	when.reduce    = reduce;     // Array.reduce() for promises
-	when.reduce    = reduceRight;     // Array.reduceRight() for promises
+	when.reduceRight = reduceRight;     // Array.reduceRight() for promises
 	when.settle    = settle;     // Settle a list of promises
 
 	when.any       = any;        // One-winner race
