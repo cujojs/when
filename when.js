@@ -36,6 +36,7 @@ define(function (require) {
 	when.all       = all;        // Resolve a list of promises
 	when.map       = map;        // Array.map() for promises
 	when.reduce    = reduce;     // Array.reduce() for promises
+	when.reduce    = reduceRight;     // Array.reduceRight() for promises
 	when.settle    = settle;     // Settle a list of promises
 
 	when.any       = any;        // One-winner race
@@ -218,6 +219,27 @@ define(function (require) {
 		/*jshint unused:false*/
 		var args = slice(arguments, 1);
 		var fold = args.length > 1 ? Promise.foldl : Promise.foldl1;
+
+		return when(promises, function(array) {
+			return fold.apply(Promise, [array].concat(args));
+		});
+	}
+
+	/**
+	 * Traditional reduce function, similar to `Array.prototype.reduceRight()`, but
+	 * input may contain promises and/or values, and reduceFunc
+	 * may return either a value or a promise, *and* initialValue may
+	 * be a promise for the starting value.
+	 *
+	 * @param {Array|Promise} promises array or promise for an array of anything,
+	 *      may contain a mix of promises and values.
+	 * @param {function} f reduce function reduce(currentValue, nextValue, index)
+	 * @returns {Promise} that will resolve to the final reduced value
+	 */
+	function reduceRight(promises, f /*, initialValue */) {
+		/*jshint unused:false*/
+		var args = slice(arguments, 1);
+		var fold = args.length > 1 ? Promise.foldr : Promise.foldr1;
 
 		return when(promises, function(array) {
 			return fold.apply(Promise, [array].concat(args));
