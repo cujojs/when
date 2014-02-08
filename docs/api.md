@@ -1659,6 +1659,28 @@ More when/apply [examples on the wiki](https://github.com/cujojs/when/wiki/when-
 
 # Debugging promises
 
+### A Note on Errors
+
+JavaScript allows `throw`ing and `catch`ing any value, not just the various builtin Error types (Error, TypeError, ReferenceError, etc).  However, in most VMs, *only Error types* will produce a usable stack trace.  If at all possible, you should always `throw` Error types, and likewise always reject promises with Error types.
+
+To get good stack traces when using [`promise.done`](#done) and the [unhandled rejection monitor](#whenmonitor), do this:
+
+```js
+return when.promise(function(resolve, reject) {
+	// ...
+	reject(new Error("Oops!"));
+});
+```
+
+And not this:
+
+```js
+return when.promise(function(resolve, reject) {
+	// ...
+	reject("Oops!");
+});
+```
+
 ## `promise.then` vs. `promise.done`
 
 Remember the golden rule: either `return` your promise, or call `done` on it.
