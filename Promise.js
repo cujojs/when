@@ -17,10 +17,7 @@ define(function (require) {
 	var array = require('./lib/array');
 	var flow = require('./lib/flow');
 	var inspect = require('./lib/inspect');
-	var semigroup = require('./lib/semigroup');
-	var foldable = require('./lib/foldable');
 	var generate = require('./lib/generate');
-	var monad = require('./lib/monad');
 	var progress = require('./lib/progress');
 	var timed = require('./lib/timed');
 
@@ -28,7 +25,7 @@ define(function (require) {
 		scheduler: Scheduler.createDefault()
 	});
 
-	return [array, flow, semigroup, foldable, generate, monad, progress, inspect]
+	return [array, flow, generate, progress, inspect]
 		.reduceRight(function(Promise, feature) {
 			return feature(Promise);
 		}, timed(timer.set, timer.clear, Promise));
