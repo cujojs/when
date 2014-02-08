@@ -1680,6 +1680,28 @@ More when/apply [examples on the wiki](https://github.com/cujojs/when/wiki/when-
 
 # Debugging promises
 
+### A Note on Errors
+
+JavaScript allows `throw`ing and `catch`ing any value, not just the various builtin Error types (Error, TypeError, ReferenceError, etc).  However, in most VMs, *only Error types* will produce a usable stack trace.  If at all possible, you should always `throw` Error types, and likewise always reject promises with Error types.
+
+To get good stack traces when using [`promise.done`](#done) and the [unhandled rejection monitor](#whenmonitor), do this:
+
+```js
+return when.promise(function(resolve, reject) {
+	// ...
+	reject(new Error("Oops!"));
+});
+```
+
+And not this:
+
+```js
+return when.promise(function(resolve, reject) {
+	// ...
+	reject("Oops!");
+});
+```
+
 ## `promise.then` vs. `promise.done`
 
 Remember the golden rule: either `return` your promise, or call `done` on it.
@@ -1741,6 +1763,12 @@ curl(['my/app']);
 require('when/monitor/console');
 ```
 
+### PrettyMonitor for Node
+
+[PrettyMonitor](https://github.com/AriaMinaei/pretty-monitor) by [@AriaMinaei](https://github.com/AriaMinaei) is an alternative promise monitor on Node.  It's built using when.js's own monitoring apis and modules, and provides a very nice visual display of unhandled rejections in Node.
+
 ## Roll your own!
 
-The monitor modules are building blocks.  The [when/monitor/console](../monitor/console.js) module is one particular, and fairly simple, monitor built using the monitoring APIs and tools.  Using when/monitor/console as an example, you can build your own promise monitoring tools that look for specific types of errors, or patterns and log or display them in whatever way you need.
+The monitor modules are building blocks.  The [when/monitor/console](../monitor/console.js) module is one particular, and fairly simple, monitor built using the monitoring APIs and tools (PrettyMonitor is another, prettier one!).  Using when/monitor/console as an example, you can build your own promise monitoring tools that look for specific types of errors, or patterns and log or display them in whatever way you need.
+
+
