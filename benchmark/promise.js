@@ -22,7 +22,6 @@ define(function(require) {
 		{ name: 'pending', fn: createPending },
 		{ name: 'resolved', fn: createResolved },
 		{ name: 'rejected', fn: createRejected },
-		{ name: 'of', fn: createOf },
 		{ name: 'empty', fn: createEmpty },
 		{ name: 'resolve', fn: resolvePromise, defer: true },
 		{ name: 'reject', fn: rejectPromise, defer: true },
@@ -66,10 +65,6 @@ define(function(require) {
 
 	function createRejected() {
 		Promise.reject();
-	}
-
-	function createOf() {
-		Promise.of();
 	}
 
 	function createEmpty() {

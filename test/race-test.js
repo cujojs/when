@@ -9,12 +9,12 @@ define('when/race-test', function (require) {
 
 	var Promise = require('when/Promise');
 	var sentinel = { value: 'sentinel' };
-	var fulfilled = Promise.of(sentinel);
+	var fulfilled = Promise.resolve(sentinel);
 	var rejected = Promise.reject(sentinel);
 	var empty = Promise.empty();
 
 	function delayReject(ms) {
-		return Promise.of().delay(ms)['yield'](rejected);
+		return Promise.resolve().delay(ms)['yield'](rejected);
 	}
 
 	buster.testCase('Promise.race', {
