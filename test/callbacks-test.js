@@ -177,12 +177,6 @@ define('when/callbacks-test', function (require) {
 			}
 		},
 
-		'bind': {
-			'should be an alias for lift': function() {
-				assert.same(callbacks.bind, callbacks.lift);
-			}
-		},
-
 		'lift': {
 			'should return a function': function() {
 				assert.isFunction(callbacks.lift(function() {}));

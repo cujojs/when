@@ -7,19 +7,19 @@ fail   = buster.fail;
 sentinel = { value: 'sentinel' };
 other = { value: 'other' };
 
-define('when/node/function-test', function (require) {
+define('when/node-test', function (require) {
 
 	var nodefn, when;
 
-	nodefn = require('when/node/function');
+	nodefn = require('when/node');
 	when = require('when');
 
 	function assertIsPromise(something) {
 		var message = 'Object is not a promise';
-		buster.assert(when.isPromise(something), message);
+		buster.assert(when.isPromiseLike(something), message);
 	}
 
-	buster.testCase('when/node/function', {
+	buster.testCase('when/node', {
 		'apply': {
 			'should return promise': function() {
 				assertIsPromise(nodefn.apply(function() {}));
@@ -157,12 +157,6 @@ define('when/node/function-test', function (require) {
 				return promise.then(function(value) {
 					assert.equals(value, 30);
 				});
-			}
-		},
-
-		'bind': {
-			'should be an alias for lift': function() {
-				assert.same(nodefn.bind, nodefn.lift);
 			}
 		},
 

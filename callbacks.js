@@ -1,12 +1,10 @@
-/** @license MIT License (c) copyright 2013 original author or authors */
+/** @license MIT License (c) copyright 2013-2014 original author or authors */
 
 /**
- * callbacks.js
- *
  * Collection of helper functions for interacting with 'traditional',
  * callback-taking functions using a promise interface.
  *
- * @author Renato Zannon <renato.riccieri@gmail.com>
+ * @author Renato Zannon
  * @contributor Brian Cavalier
  */
 
@@ -23,7 +21,6 @@ define(function(require) {
 		apply: apply,
 		call: call,
 		lift: lift,
-		bind: lift, // DEPRECATED alias for lift
 		promisify: promisify
 	};
 

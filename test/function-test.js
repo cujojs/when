@@ -153,12 +153,6 @@ define('when/function-test', function (require) {
 			}
 		},
 
-		'bind': {
-			'should be an alias for lift': function() {
-				assert.same(fn.bind, fn.lift);
-			}
-		},
-
 		'lift': {
 			'should return a function': function() {
 				assert.isFunction(fn.lift(f, null));

@@ -1,15 +1,12 @@
-/** @license MIT License (c) copyright 2011-2013 original author or authors */
+/** @license MIT License (c) copyright 2010-2014 original author or authors */
 
 /**
  * A lightweight CommonJS Promises/A and when() implementation
- * when is part of the cujo.js family of libraries (http://cujojs.com/)
- *
- * Licensed under the MIT License at:
- * http://www.opensource.org/licenses/mit-license.php
+ * when is part of the cujoJS family of libraries (http://cujojs.com/)
  *
  * @author Brian Cavalier
  * @author John Hann
- * @version 2.8.0
+ * @version 3.0.0
  */
 (function(define) { 'use strict';
 define(function (require) {

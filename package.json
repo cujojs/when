@@ -1,6 +1,6 @@
 {
 	"name": "when",
-	"version": "2.8.0",
+	"version": "3.0.0",
 	"description": "A lightweight Promises/A+ and when() implementation, plus other async goodies.",
 	"keywords": [
 		"cujo",
@@ -60,7 +60,7 @@
 		"browserify": "~2"
 	},
 	"main": "when",
-	"ender": { "files": ["*.js", "node/*.js", "unfold/*.js", "monitor/*.js"] },
+	"ender": { "files": ["*.js", "lib/*.js", "node/*.js", "unfold/*.js", "monitor/*.js"] },
 	"directories": {
 		"test": "test"
 	},

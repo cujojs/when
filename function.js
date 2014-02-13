@@ -1,13 +1,11 @@
-/** @license MIT License (c) copyright 2013 original author or authors */
+/** @license MIT License (c) copyright 2013-2014 original author or authors */
 
 /**
- * function.js
- *
  * Collection of helper functions for wrapping and executing 'traditional'
  * synchronous functions in a promise interface.
  *
- * @author brian@hovercraftstudios.com
- * @contributor renato.riccieri@gmail.com
+ * @author Brian Cavalier
+ * @contributor Renato Zannon
  */
 
 (function(define) {
@@ -22,7 +20,6 @@ define(function(require) {
 		apply: apply,
 		call: call,
 		lift: lift,
-		bind: lift, // DEPRECATED alias for lift
 		compose: compose
 	};
 

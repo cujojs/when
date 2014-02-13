@@ -44,8 +44,6 @@ API
 	* [Node-style asynchronous functions](#node-style-asynchronous-functions)
 1. [ES6 generators](#es6-generators)
 	* [when/generator](#whengenerator)
-1. [Helpers](#helpers)
-	* [when/apply](#whenapply)
 1. [Debugging promises](#debugging-promises)
 
 ## when()
@@ -794,18 +792,17 @@ This example iterates over files in a directory, mapping each file to the first 
 
 Notice that, while the pair returned by `unspool` is an Array (not a promise), it does *contain* a promise as it's 0th element.  The promise will be resolved by the `unfold` machinery.
 
-Notice also the use of `when/node/function`'s [`call()`](#node-style-asynchronous-functions) to call Node-style async functions (`fs.readdir` and `fs.readFile`), and return a promise instead of requiring a callback.  This allows node-style functions can be promisified and composed with other promise-aware functions.
+Notice also the use of `when/node`'s [`call()`](#node-style-asynchronous-functions) to call Node-style async functions (`fs.readdir` and `fs.readFile`), and return a promise instead of requiring a callback.  This allows node-style functions can be promisified and composed with other promise-aware functions.
 
 ```js
-var when, delay, unfold, nodefn, fs, files;
+var when, unfold, nodefn, fs, files;
 
-when = require('../when');
-delay = require('../delay');
-unfold = require('../unfold');
-nodefn = require('../node/function');
+when = require('when');
+unfold = require('when/unfold');
+nodefn = require('when/node');
 fs = require('fs');
 
-// Use when/node/function to promisify-call fs.readdir
+// Use when/node to promisify-call fs.readdir
 // files is a promise for the file list
 files = nodefn.call(fs.readdir, '.');
 
@@ -837,7 +834,7 @@ function printFirstLine(content) {
 	// Even though contents was a promise in unspool() above,
 	// when/unfold ensures that it is fully resolved here, i.e. it is
 	// not a promise any longer.
-	// We can do any work, even asyncrhonous work, we need
+	// We can do any work, even asynchronous work, we need
 	// here on the current file
 
 	// Node fs returns buffers, convert to string
@@ -1171,8 +1168,6 @@ fn.apply(sumMultipleNumbers, [10, 20, shortCircuit]).then(console.log, console.e
 
 ### `fn.lift()`
 
-**DEPRECATED ALIAS:** `fn.bind()`
-
 ```js
 var promiseFunction = fn.lift(normalFunction, arg1, arg2/* ...more args */);
 ```
@@ -1288,8 +1283,6 @@ when.join(venuesLoaded, artistsLoaded, transitionedScreens).then(function() {
 
 ### `callbacks.lift()`
 
-**DEPRECATED ALIAS:** `callbacks.bind()`
-
 ```js
 var promiseFunc = callbacks.lift(callbackTakingFunc, arg1, arg2/* ...more args */);
 ```
@@ -1366,7 +1359,7 @@ var promisified3 = callbacks.promisify(inverseVariadic, {
 
 ## Node-style asynchronous functions
 
-Node.js APIs have their own standard for asynchronous functions: Instead of taking an errback, errors are passed as the first argument to the callback function. To use promises instead of callbacks with node-style asynchronous functions, you can use the `when/node/function` module, which is very similar to `when/callbacks`, but tuned to this convention.
+Node.js APIs have their own standard for asynchronous functions: Instead of taking an errback, errors are passed as the first argument to the callback function. To use promises instead of callbacks with node-style asynchronous functions, you can use the `when/node` module, which is very similar to `when/callbacks`, but tuned to this convention.
 
 Note: There are some Node.js functions that are designed to return an event emitter. These functions will emit error events instead of passing an error as the first argument to the callback function. An example being `http.get`. These types of Node.js functions do not work with the below methodologies.
 
@@ -1382,7 +1375,7 @@ Analogous to [`fn.call()`](#fncall) and [`callbacks.call()`](#callbackscall): Ta
 var fs, nodefn;
 
 fs     = require("fs");
-nodefn = require("when/node/function");
+nodefn = require("when/function");
 
 var loadPasswd = nodefn.call(fs.readFile, "/etc/passwd");
 
@@ -1399,13 +1392,13 @@ loadPasswd.then(function(passwd) {
 var promisedResult = nodefn.apply(nodeStyleFunction, [arg1, arg2/*...more args*/]);
 ```
 
-Following the tradition from `when/function` and `when/callbacks`, `when/node/function` also provides a array-based alternative to `nodefn.call()`.
+Following the tradition from `when/function` and `when/callbacks`, `when/node` also provides a array-based alternative to `nodefn.call()`.
 
 ```js
 var fs, nodefn;
 
 fs     = require("fs");
-nodefn = require("when/node/function");
+nodefn = require("when/node");
 
 var loadPasswd = nodefn.apply(fs.readFile, ["/etc/passwd"]);
 
@@ -1418,8 +1411,6 @@ loadPasswd.then(function(passwd) {
 
 ### `nodefn.lift()`
 
-**DEPRECATED ALIAS:** `nodefn.bind()`
-
 ```js
 var promiseFunc = nodefn.lift(nodeStyleFunction, arg1, arg2/*...more args*/);
 ```
@@ -1431,7 +1422,7 @@ var dns, when, nodefn;
 
 dns    = require("dns");
 when   = require("when");
-nodefn = require("when/node/function");
+nodefn = require("when/node");
 
 var resolveAddress = nodefn.lift(dns.resolve);
 
@@ -1452,13 +1443,13 @@ when.join(
 var nodeStyleCallback = nodefn.createCallback(resolver);
 ```
 
-The core function on the `when/node/function` implementation, which might be useful for cases that aren't covered by the higher level API. It takes an object that responds to the [resolver interface](#resolver) and returns a function that can be used with any node-style asynchronous function, and will call `resolve()` or `reject()` on the resolver depending on whether the conventional error argument is passed to it.
+The core function on the `when/node` implementation, which might be useful for cases that aren't covered by the higher level API. It takes an object that responds to the [resolver interface](#resolver) and returns a function that can be used with any node-style asynchronous function, and will call `resolve()` or `reject()` on the resolver depending on whether the conventional error argument is passed to it.
 
 ```js
 var when, nodefn;
 
 when   = require("when");
-nodefn = require("when/node/function");
+nodefn = require("when/node");
 
 function nodeStyleAsyncFunction(callback) {
     if(Math.random() * 2 > 1) {
@@ -1500,7 +1491,7 @@ just as it would when using node-style callbacks with typical Node.js APIs.
 ```js
 var nodefn, handlePromisedData, dataPromise;
 
-nodefn = require('when/node/function');
+nodefn = require('when/node');
 
 function fetchData(key) {
 	// go get the data and,
@@ -1534,7 +1525,7 @@ Lifts and then calls the node-style callback on the provided promise.  This is a
 ```js
 var nodefn, dataPromise;
 
-nodefn = require('when/node/function');
+nodefn = require('when/node');
 
 function fetchData(key) {
 	// go get the data and,
@@ -1653,30 +1644,6 @@ function getTodosForUser(userId) {
 // applied `isRecentTodo` filter.
 var filteredTodos = getRecentTodosForUser(123);
 ```
-
-# Helpers
-
-## when/apply
-
-```js
-function functionThatAcceptsMultipleArgs(arg1, arg2, arg3) {
-    console.log(arg1, arg2, arg3);
-}
-
-var functionThatAcceptsAnArray = apply(functionThatAcceptsMultipleArgs);
-
-// Logs 1, 2, 3
-functionThatAcceptsAnArray([1, 2, 3]);
-
-```
-
-Helper that allows using callbacks that take multiple args, instead of an array, with `when.all/some/map`:
-
-```js
-when.all(arrayOfPromisesOrValues, apply(functionThatAcceptsMultipleArgs));
-```
-
-More when/apply [examples on the wiki](https://github.com/cujojs/when/wiki/when-apply).
 
 # Debugging promises
 
