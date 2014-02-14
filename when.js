@@ -36,6 +36,9 @@ define(function (require) {
 	when.reject    = Promise.reject;     // Create a rejected promise
 	when.defer     = defer;      // Create a {promise, resolve, reject} tuple
 
+	when.unfold    = Promise.unfold;
+	when.iterate   = Promise.iterate;
+
 	when.join      = join;       // Join 2 or more promises
 
 	when.all       = all;        // Resolve a list of promises

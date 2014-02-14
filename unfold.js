@@ -7,14 +7,10 @@
 (function(define) {
 define(function(require) {
 
-	var Promise = require('./lib/Promise');
-
 	/**
-	 * @deprecated Use Promise.unfold
+	 * @deprecated Use when.unfold
 	 */
-	return function unfold(unspool, condition, handler, seed) {
-		return Promise.unfold(unspool, condition, handler, seed);
-	};
+	return require('./when').unfold;
 
 });
 })(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); } );
