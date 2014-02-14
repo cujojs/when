@@ -39,6 +39,9 @@ define(function (require) {
 	when.unfold    = Promise.unfold;
 	when.iterate   = Promise.iterate;
 
+	when['try']    = when.attempt = tryCall;
+	when.lift      = lift;
+
 	when.join      = join;       // Join 2 or more promises
 
 	when.all       = all;        // Resolve a list of promises
@@ -84,6 +87,39 @@ define(function (require) {
 	}
 
 	/**
+	 * Call f in a future turn, with the supplied args, and return a promise
+	 * for the result.
+	 * @param {function} f
+	 * @returns {Promise}
+	 */
+	function tryCall(f /*, args... */) {
+		/*jshint validthis:true */
+		return _apply(f, this, slice.call(arguments, 1));
+	}
+
+	/**
+	 * Lift the supplied function, creating a version of f that returns
+	 * promises, and accepts promises as arguments.
+	 * @param {function} f
+	 * @returns {Function} version of f that returns promises
+	 */
+	function lift(f) {
+		return function() {
+			return _apply(f, this, slice.call(arguments));
+		};
+	}
+
+	/**
+	 * try/lift helper that allows specifying thisArg
+	 * @private
+	 */
+	function _apply(func, thisArg, args) {
+		return Promise.all(args).then(function(args) {
+			return func.apply(thisArg, args);
+		});
+	}
+
+	/**
 	 * Creates a {promise, resolver} pair, either or both of which
 	 * may be given out safely to consumers.
 	 * The resolver has resolve, reject, and progress.  The promise
@@ -94,11 +130,7 @@ define(function (require) {
 	 * resolve: function:Promise,
 	 * reject: function:Promise,
 	 * notify: function:Promise
-	 * resolver: {
-	 *	resolve: function:Promise,
-	 *	reject: function:Promise,
-	 *	notify: function:Promise
-	 * }}}
+	 * }}
 	 */
 	function defer() {
 		// Optimize object shape

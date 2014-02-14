@@ -18,7 +18,7 @@ define(function(require) {
 
 	return {
 		apply: apply,
-		call: call,
+		call: when['try'],
 		lift: lift,
 		compose: compose
 	};
@@ -48,45 +48,9 @@ define(function(require) {
 	 * @returns {Promise} promise for the return value of func
 	 */
 	function apply(func, promisedArgs) {
-		return _apply(func, this, promisedArgs);
-	}
-
-	/**
-	 * Apply helper that allows specifying thisArg
-	 * @private
-	 */
-	function _apply(func, thisArg, promisedArgs) {
-		return when.all(promisedArgs || []).then(function(args) {
-			return func.apply(thisArg, args);
-		});
-	}
-	/**
-	 * Has the same behavior that {@link apply} has, with the difference that the
-	 * arguments to the function are provided individually, while {@link apply} accepts
-	 * a single array.
-	 *
-	 * @example
-	 *    function sumSmallNumbers(x, y) {
-	 *		var result = x + y;
-	 *		if(result < 10) {
-	 *			return result;
-	 *		} else {
-	 *			throw new Error("Calculation failed");
-	 *		}
-	 *	}
-	 *
-	 * // Logs '5'
-	 * func.apply(sumSmallNumbers, 2, 3).then(console.log, console.error);
-	 *
-	 * // Logs 'Calculation failed'
-	 * func.apply(sumSmallNumbers, 5, 10).then(console.log, console.error);
-	 *
-	 * @param {function} func function to be called
-	 * @param {...*} [args] arguments that will be forwarded to the function
-	 * @returns {Promise} promise for the return value of func
-	 */
-	function call(func /*, args... */) {
-		return _apply(func, this, slice.call(arguments, 1));
+		return arguments.length > 1
+			? when.try.apply(this, [func].concat(promisedArgs))
+			: when.try.call(this, func);
 	}
 
 	/**
@@ -132,7 +96,9 @@ define(function(require) {
 	function lift(func /*, args... */) {
 		var args = slice.call(arguments, 1);
 		return function() {
-			return _apply(func, this, args.concat(slice.call(arguments)));
+			args.unshift(func);
+			args.push.apply(args, slice.call(arguments));
+			return when.try.apply(this, args);
 		};
 	}
 
@@ -192,7 +158,7 @@ define(function(require) {
 
 			thisArg = this;
 			args = slice.call(arguments);
-			firstPromise = _apply(f, thisArg, args);
+			firstPromise = when.try.apply(thisArg, [f].concat(args));
 
 			return when.reduce(funcs, function(arg, func) {
 				return func.call(thisArg, arg);
