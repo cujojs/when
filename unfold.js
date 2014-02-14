@@ -7,7 +7,7 @@
 (function(define) {
 define(function(require) {
 
-	var Promise = require('./Promise');
+	var Promise = require('./lib/Promise');
 
 	/**
 	 * @deprecated Use Promise.unfold

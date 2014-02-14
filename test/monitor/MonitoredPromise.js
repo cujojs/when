@@ -11,7 +11,7 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	var Promise = require('../../Promise');
+	var Promise = require('../../lib/Promise');
 	var monitor = require('../../lib/monitor');
 	var PromiseStatus = require('../../monitor/console');
 	return monitor(PromiseStatus, Promise);

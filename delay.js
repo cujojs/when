@@ -12,7 +12,7 @@
 (function(define) {
 define(function(require) {
 
-	var resolve = require('./Promise').resolve;
+	var resolve = require('./when').resolve;
 
     /**
 	 * @deprecated Use Promise.resolve(value).delay(ms)

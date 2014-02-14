@@ -70,7 +70,8 @@
 		"tunnel": "sauceme -m",
 		"start": "buster static -e browser",
 		"benchmark": "node benchmark/promise && node benchmark/map",
-		"browserify": "browserify -s when build/when.browserify.js -o build/when.js",
-		"browserify-debug": "browserify -s when build/when.browserify-debug.js -o build/when.js"
+		"browserify": "browserify -s when build/when.browserify.js --no-detect-globals -o build/when.js",
+		"browserify-es6": "browserify -s Promise lib/Promise --no-detect-globals -o build/Promise.js",
+		"browserify-debug": "browserify -s when build/when.browserify-debug.js --no-detect-globals -o build/when.js"
 	}
 }

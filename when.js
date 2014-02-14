@@ -11,18 +11,26 @@
 (function(define) { 'use strict';
 define(function (require) {
 
-	var Promise, resolve, bind, uncurryThis, slice;
+	var timer = require('./lib/timer');
+	var timed = require('./lib/timed');
+	var array = require('./lib/array');
+	var flow = require('./lib/flow');
+	var inspect = require('./lib/inspect');
+	var generate = require('./lib/generate');
+	var progress = require('./lib/progress');
 
-	bind = Function.prototype.bind;
-	uncurryThis = bind.bind(bind.call);
-	slice = uncurryThis(Array.prototype.slice);
+	var Promise = require('./lib/Promise');
 
-	Promise = require('./Promise');
-	resolve = Promise.resolve;
+	Promise = [array, flow, generate, progress, inspect]
+		.reduceRight(function(Promise, feature) {
+			return feature(Promise);
+		}, timed(timer.set, timer.clear, Promise));
+
+	var resolve = Promise.resolve;
+	var slice = Array.prototype.slice;
 
 	// Public API
 
-	when.Promise   = Promise;    // Promise constructor
 	when.promise   = promise;    // Create a pending promise
 	when.resolve   = Promise.resolve;    // Create a resolved promise
 	when.reject    = Promise.reject;     // Create a rejected promise
@@ -41,6 +49,8 @@ define(function (require) {
 
 	when.isPromise = isPromiseLike;  // DEPRECATED: use isPromiseLike
 	when.isPromiseLike = isPromiseLike; // Is something promise-like, aka thenable
+
+	when.Promise   = Promise;    // Promise constructor
 
 	/**
 	 * Register an observer for a promise or immediate value.
@@ -171,7 +181,7 @@ define(function (require) {
 	 * @returns {Promise}
 	 */
 	function join(/* ...promises */) {
-		return all(slice(arguments));
+		return all(slice.call(arguments));
 	}
 
 	/**
@@ -214,7 +224,7 @@ define(function (require) {
 	 */
 	function reduce(promises, f /*, initialValue */) {
 		/*jshint unused:false*/
-		var args = slice(arguments, 1);
+		var args = slice.call(arguments, 1);
 		var fold = args.length > 1 ? Promise.foldl : Promise.foldl1;
 
 		return when(promises, function(array) {
@@ -235,7 +245,7 @@ define(function (require) {
 	 */
 	function reduceRight(promises, f /*, initialValue */) {
 		/*jshint unused:false*/
-		var args = slice(arguments, 1);
+		var args = slice.call(arguments, 1);
 		var fold = args.length > 1 ? Promise.foldr : Promise.foldr1;
 
 		return when(promises, function(array) {

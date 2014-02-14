@@ -11,7 +11,7 @@ define('when/monitor/aggregator-test', function (require) {
 
 	var Promise, when, aggregator, monitor;
 
-	Promise = require('when/Promise');
+	Promise = require('when/lib/Promise');
 	aggregator = require('when/monitor/aggregator');
 	monitor = require('when/lib/monitor');
 

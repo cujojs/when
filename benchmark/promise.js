@@ -14,7 +14,7 @@ define(function(require) {
 
 	var Promise, tests, run, ok;
 
-	Promise = require('../Promise');
+	Promise = require('../lib/Promise');
 	run = require('./run');
 	ok = 0;
 

@@ -7,7 +7,7 @@ fail = buster.assertions.fail;
 
 define('when/race-test', function (require) {
 
-	var Promise = require('when/Promise');
+	var Promise = require('when/lib/Promise');
 	var sentinel = { value: 'sentinel' };
 	var fulfilled = Promise.resolve(sentinel);
 	var rejected = Promise.reject(sentinel);

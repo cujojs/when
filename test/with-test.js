@@ -7,8 +7,10 @@ fail = buster.assertions.fail;
 
 define('when/with-test', function (require) {
 
-	var Promise = require('when/Promise'),
-		sentinel = { value: 'sentinel' };
+	var Promise, sentinel;
+
+	Promise = require('when/lib/Promise');
+	sentinel = { value: 'sentinel' };
 
 	buster.testCase('promise.with', {
 		'should set thisArg': function() {
