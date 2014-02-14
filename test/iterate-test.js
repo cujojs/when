@@ -11,7 +11,7 @@ other = {};
 
 function noop() {}
 
-define('when/generate-test', function (require) {
+define('when/iterate-test', function (require) {
 
 	var when, unfold, iterate;
 
@@ -19,7 +19,7 @@ define('when/generate-test', function (require) {
 	unfold = when.unfold;
 	iterate = when.iterate;
 
-	buster.testCase('lib/generate', {
+	buster.testCase('lib/iterate', {
 
 		'unfold': {
 			'should invoke condition first': function(done) {

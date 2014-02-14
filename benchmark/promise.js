@@ -14,7 +14,7 @@ define(function(require) {
 
 	var Promise, tests, run, ok;
 
-	Promise = require('../lib/Promise');
+	Promise = require('../when').Promise;
 	run = require('./run');
 	ok = 0;
 

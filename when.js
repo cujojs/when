@@ -3,7 +3,6 @@
 /**
  * A lightweight CommonJS Promises/A and when() implementation
  * when is part of the cujoJS family of libraries (http://cujojs.com/)
- *
  * @author Brian Cavalier
  * @author John Hann
  * @version 3.0.0
@@ -16,11 +15,10 @@ define(function (require) {
 	var array = require('./lib/array');
 	var flow = require('./lib/flow');
 	var inspect = require('./lib/inspect');
-	var generate = require('./lib/generate');
+	var generate = require('./lib/iterate');
 	var progress = require('./lib/progress');
 
 	var Promise = require('./lib/Promise');
-
 	Promise = [array, flow, generate, progress, inspect]
 		.reduceRight(function(Promise, feature) {
 			return feature(Promise);
@@ -31,32 +29,33 @@ define(function (require) {
 
 	// Public API
 
-	when.promise   = promise;    // Create a pending promise
-	when.resolve   = Promise.resolve;    // Create a resolved promise
-	when.reject    = Promise.reject;     // Create a rejected promise
-	when.defer     = defer;      // Create a {promise, resolve, reject} tuple
+	when.promise     = promise;         // Create a pending promise
+	when.resolve     = Promise.resolve; // Create a resolved promise
+	when.reject      = Promise.reject;  // Create a rejected promise
 
-	when.unfold    = Promise.unfold;
-	when.iterate   = Promise.iterate;
+	when.lift        = lift;            // lift a function to return promises
+	when['try']      = tryCall;         // call a function and return a promise
+	when.attempt     = tryCall;         // alias for when.try
 
-	when['try']    = when.attempt = tryCall;
-	when.lift      = lift;
+	when.iterate     = Promise.iterate; // Generate a stream of promises
+	when.unfold      = Promise.unfold;  // Generate a stream of promises
 
-	when.join      = join;       // Join 2 or more promises
+	when.join        = join;            // Join 2 or more promises
 
-	when.all       = all;        // Resolve a list of promises
-	when.map       = map;        // Array.map() for promises
-	when.reduce    = reduce;     // Array.reduce() for promises
+	when.all         = all;             // Resolve a list of promises
+	when.map         = map;             // Array.map() for promises
+	when.reduce      = reduce;          // Array.reduce() for promises
 	when.reduceRight = reduceRight;     // Array.reduceRight() for promises
-	when.settle    = settle;     // Settle a list of promises
+	when.settle      = settle;          // Settle a list of promises
 
-	when.any       = any;        // One-winner race
-	when.some      = some;       // Multi-winner race
+	when.any         = any;             // One-winner race
+	when.some        = some;            // Multi-winner race
 
-	when.isPromise = isPromiseLike;  // DEPRECATED: use isPromiseLike
+	when.isPromise   = isPromiseLike;   // DEPRECATED: use isPromiseLike
 	when.isPromiseLike = isPromiseLike; // Is something promise-like, aka thenable
 
-	when.Promise   = Promise;    // Promise constructor
+	when.Promise   = Promise;           // Promise constructor
+	when.defer     = defer;             // Create a {promise, resolve, reject} tuple
 
 	/**
 	 * Register an observer for a promise or immediate value.
@@ -260,10 +259,9 @@ define(function (require) {
 	function reduce(promises, f /*, initialValue */) {
 		/*jshint unused:false*/
 		var args = slice.call(arguments, 1);
-		var fold = args.length > 1 ? Promise.foldl : Promise.foldl1;
-
 		return when(promises, function(array) {
-			return fold.apply(Promise, [array].concat(args));
+			args.unshift(array);
+			return Promise.reduce.apply(Promise, args);
 		});
 	}
 
@@ -281,10 +279,9 @@ define(function (require) {
 	function reduceRight(promises, f /*, initialValue */) {
 		/*jshint unused:false*/
 		var args = slice.call(arguments, 1);
-		var fold = args.length > 1 ? Promise.foldr : Promise.foldr1;
-
 		return when(promises, function(array) {
-			return fold.apply(Promise, [array].concat(args));
+			args.unshift(array);
+			return Promise.reduceRight.apply(Promise, args);
 		});
 	}
 
