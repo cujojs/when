@@ -248,7 +248,7 @@ define('when/node-test', function (require) {
 
 		'createCallback': {
 			'should return a function': function() {
-				assert.isFunction(nodefn.createCallback());
+				assert.isFunction(nodefn.createCallback({}));
 			},
 
 			'the returned function': {

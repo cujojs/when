@@ -9,37 +9,14 @@
  */
 (function(define) { 'use strict';
 define(function(require) {
-	var when, promise, keys, eachKey, owns;
 
-	when = require('./when');
-	promise = when.promise;
+	var when = require('./when');
+	var toPromise = when.resolve;
 
-	// Public API
-
-	keys = {
-		all: all,
-		map: map
+	return {
+		all: when.lift(all),
+		map: when.lift(map)
 	};
-
-	// Safe ownProp
-	owns = {}.hasOwnProperty;
-
-	// Use Object.keys if available, otherwise for..in
-	eachKey = Object.keys
-		? function(object, lambda) {
-			Object.keys(object).forEach(function(key) {
-				lambda(object[key], key);
-			});
-		}
-		: function(object, lambda) {
-			for(var key in object) {
-				if(owns.call(object, key)) {
-					lambda(object[key], key);
-				}
-			}
-		};
-
-	return keys;
 
 	/**
 	 * Resolve all the key-value pairs in the supplied object or promise
@@ -49,48 +26,48 @@ define(function(require) {
 	 * @returns {Promise} promise for an object with the fully resolved key-value pairs
 	 */
 	function all(object) {
-		return map(object, identity);
+		return when.promise(function(resolve, reject, notify) {
+			var results = {};
+			var pending = 0;
+
+			eachKey(object, function(x, k) {
+				++pending;
+				toPromise(x).then(function(x) {
+					results[k] = x;
+
+					if(!--pending) {
+						resolve(results);
+					}
+				}, reject, notify);
+			});
+
+			if(pending === 0) {
+				resolve(results);
+			}
+		});
 	}
 
 	/**
 	 * Map values in the supplied object's keys
 	 * @param {Promise|object} object or promise for object whose key-value pairs
 	 *  will be reduced
-	 * @param {function} mapFunc mapping function mapFunc(value) which may
+	 * @param {function} f mapping function mapFunc(value) which may
 	 *  return either a promise or a value
 	 * @returns {Promise} promise for an object with the mapped and fully
 	 *  resolved key-value pairs
 	 */
-	function map(object, mapFunc) {
-		return when(object, function(object) {
-			return promise(resolveMap);
-
-			function resolveMap(resolve, reject, notify) {
-				var results, toResolve;
-
-				results = {};
-				toResolve = 0;
-
-				eachKey(object, function(value, key) {
-					++toResolve;
-					when(value, mapFunc).then(function(mapped) {
-						results[key] = mapped;
-
-						if(!--toResolve) {
-							resolve(results);
-						}
-					}, reject, notify);
-				});
-
-				// If there are no keys, resolve immediately
-				if(!toResolve) {
-					resolve(results);
-				}
-			}
-		});
+	function map(object, f) {
+		return all(Object.keys(object).reduce(function(o, k) {
+			o[k] = toPromise(object[k]).then(f);
+			return o;
+		}, {}));
 	}
 
-	function identity(x) { return x; }
+	function eachKey(object, f) {
+		Object.keys(object).forEach(function(k) {
+			f(object[k], k);
+		});
+	}
 
 });
 })(

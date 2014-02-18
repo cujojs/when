@@ -66,12 +66,10 @@ define(function(require) {
 	 */
 	function _apply(func, thisArg, args) {
 		return when.all(args || []).then(function(resolvedArgs) {
-			var d = when.defer();
-			var callback = createCallback(d.resolver);
-
-			func.apply(thisArg, resolvedArgs.concat(callback));
-
-			return d.promise;
+			return when.promise(function(resolve, reject) {
+				var nodeback = _createCallback(resolve, reject);
+				func.apply(thisArg, resolvedArgs.concat(nodeback));
+			});
 		});
 	}
 
@@ -167,13 +165,17 @@ define(function(require) {
 	 * @returns {Function} a node-style callback function
 	 */
 	function createCallback(resolver) {
+		return _createCallback(resolver.resolve, resolver.reject);
+	}
+
+	function _createCallback(resolve, reject) {
 		return function(err, value) {
 			if(err) {
-				resolver.reject(err);
+				reject(err);
 			} else if(arguments.length > 2) {
-				resolver.resolve(slice.call(arguments, 1));
+				resolve(slice.call(arguments, 1));
 			} else {
-				resolver.resolve(value);
+				resolve(value);
 			}
 		};
 	}
