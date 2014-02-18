@@ -16,13 +16,12 @@ define(function(require) {
 	var resolve = require('./when').resolve;
 
     /**
-	 * @deprecated Use Promise.resolve(trigger).timeout(ms)
+	 * @deprecated Use when(trigger).timeout(ms)
      */
     return function timeout(msec, trigger) {
 		return resolve(trigger).timeout(msec);
     };
 });
-})(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
+})(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
 
 

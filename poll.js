@@ -8,16 +8,13 @@
  * @author Scott Andrews
  */
 
-(function (define) {
-'use strict';
+(function (define) { 'use strict';
 define(function(require) {
 
-	var when, cancelable, delay, fn, undef;
+	var when, cancelable;
 
 	when = require('./when');
 	cancelable = require('./cancelable');
-	delay = require('./delay');
-	fn = require('./function');
 
 	/**
 	 * Periodically execute the work function on the msec delay. The result of
@@ -70,7 +67,7 @@ define(function(require) {
 
 		if (typeof interval !== 'function') {
 			interval = (function (interval) {
-				return function () { return delay(interval); };
+				return function () { return when().delay(interval); };
 			})(interval);
 		}
 
@@ -79,8 +76,8 @@ define(function(require) {
 		}
 
 		function schedule(result) {
-			fn.apply(interval).then(vote, reject);
-			if (result !== undef) {
+			when.try(interval).then(vote, reject);
+			if (result !== void 0) {
 				deferred.notify(result);
 			}
 		}
@@ -102,30 +99,17 @@ define(function(require) {
 
 		if (delayInitialWork) {
 			schedule();
-		}
-		else {
+		} else {
 			// if work() is blocking, vote will also block
 			vote();
 		}
 
 		// make the promise cancelable
-		deferred.promise = beget(deferred.promise);
+		deferred.promise = Object.create(deferred.promise);
 		deferred.promise.cancel = deferred.cancel;
 
 		return deferred.promise;
 	};
 
-	function F() {}
-
-	function beget(p) {
-		F.prototype = p;
-		var newPromise = new F();
-		F.prototype = null;
-		return newPromise;
-	}
-
 });
-})(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
-	// Boilerplate for AMD and Node
-);
+})(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });

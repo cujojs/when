@@ -27,13 +27,11 @@ define(function(require) {
 	 */
 	function guard(condition, f) {
 		return function() {
-			var self, args;
-
-			self = this;
-			args = arguments;
+			var self = this;
+			var args = arguments;
 
 			return when(condition(), function(exit) {
-				return when(f.apply(self, args)).ensure(exit);
+				return when(f.apply(self, args))['finally'](exit);
 			});
 		};
 	}
@@ -48,10 +46,8 @@ define(function(require) {
 	 *  section has been exited.
 	 */
 	function n(allowed) {
-		var count, waiting;
-
-		count = 0;
-		waiting = [];
+		var count = 0;
+		var waiting = [];
 
 		return function enter() {
 			return when.promise(function(resolve) {
@@ -64,7 +60,7 @@ define(function(require) {
 
 				function exit() {
 					count = Math.max(count - 1, 0);
-					if(waiting.length) {
+					if(waiting.length > 0) {
 						waiting.shift()(exit);
 					}
 				}

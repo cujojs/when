@@ -15,7 +15,7 @@ define(function(require) {
 
 	when = require('./when');
 	promise = when.promise;
-	slice = [].slice;
+	slice = Array.prototype.slice;
 
 	return {
 		apply: apply,
