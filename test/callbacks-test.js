@@ -15,7 +15,7 @@ define('when/callbacks-test', function (require) {
 	when = require('when');
 
 	function assertIsPromise(arg) {
-		assert(when.isPromise(arg));
+		assert(when.isPromiseLike(arg));
 	}
 
 	buster.testCase('when/callbacks', {

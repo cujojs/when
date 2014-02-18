@@ -29,51 +29,51 @@ define(function (require) {
 
 	// Public API
 
-	when.promise     = promise;         // Create a pending promise
-	when.resolve     = Promise.resolve; // Create a resolved promise
-	when.reject      = Promise.reject;  // Create a rejected promise
+	when.promise     = promise;              // Create a pending promise
+	when.resolve     = Promise.resolve;      // Create a resolved promise
+	when.reject      = Promise.reject;       // Create a rejected promise
 
-	when.lift        = lift;            // lift a function to return promises
-	when['try']      = tryCall;         // call a function and return a promise
-	when.attempt     = tryCall;         // alias for when.try
+	when.lift        = lift;                 // lift a function to return promises
+	when['try']      = tryCall;              // call a function and return a promise
+	when.attempt     = tryCall;              // alias for when.try
 
-	when.iterate     = Promise.iterate; // Generate a stream of promises
-	when.unfold      = Promise.unfold;  // Generate a stream of promises
+	when.iterate     = Promise.iterate;      // Generate a stream of promises
+	when.unfold      = Promise.unfold;       // Generate a stream of promises
 
-	when.join        = join;            // Join 2 or more promises
+	when.join        = join;                 // Join 2 or more promises
 
-	when.all         = all;             // Resolve a list of promises
-	when.map         = map;             // Array.map() for promises
-	when.reduce      = reduce;          // Array.reduce() for promises
-	when.reduceRight = reduceRight;     // Array.reduceRight() for promises
-	when.settle      = settle;          // Settle a list of promises
+	when.all         = lift(Promise.all);    // Resolve a list of promises
+	when.settle      = lift(Promise.settle); // Settle a list of promises
 
-	when.any         = any;             // One-winner race
-	when.some        = some;            // Multi-winner race
+	when.any         = lift(Promise.any);    // One-winner race
+	when.some        = lift(Promise.some);   // Multi-winner race
 
-	when.isPromise   = isPromiseLike;   // DEPRECATED: use isPromiseLike
-	when.isPromiseLike = isPromiseLike; // Is something promise-like, aka thenable
+	when.map         = map;                  // Array.map() for promises
+	when.reduce      = reduce;               // Array.reduce() for promises
+	when.reduceRight = reduceRight;          // Array.reduceRight() for promises
 
-	when.Promise   = Promise;           // Promise constructor
-	when.defer     = defer;             // Create a {promise, resolve, reject} tuple
+	when.isPromiseLike = isPromiseLike;      // Is something promise-like, aka thenable
+
+	when.Promise     = Promise;              // Promise constructor
+	when.defer       = defer;                // Create a {promise, resolve, reject} tuple
 
 	/**
-	 * Register an observer for a promise or immediate value.
+	 * When x, which may be a promise, thenable, or non-promise value,
 	 *
-	 * @param {*} promiseOrValue
-	 * @param {function?} [onFulfilled] callback to be called when promiseOrValue is
+	 * @param {*} x
+	 * @param {function?} onFulfilled callback to be called when x is
 	 *   successfully fulfilled.  If promiseOrValue is an immediate value, callback
 	 *   will be invoked immediately.
-	 * @param {function?} [onRejected] callback to be called when promiseOrValue is
+	 * @param {function?} onRejected callback to be called when x is
 	 *   rejected.
-	 * @param {function?} [onProgress] callback to be called when progress updates
-	 *   are issued for promiseOrValue.
-	 * @returns {Promise} a new {@link Promise} that will complete with the return
+	 * @param {function?} onProgress callback to be called when progress updates
+	 *   are issued for x.
+	 * @returns {Promise} a new promise that will fulfill with the return
 	 *   value of callback or errback or the completion value of promiseOrValue if
 	 *   callback and/or errback is not supplied.
 	 */
-	function when(promiseOrValue, onFulfilled, onRejected, onProgress) {
-		return resolve(promiseOrValue).then(onFulfilled, onRejected, onProgress);
+	function when(x, onFulfilled, onRejected, onProgress) {
+		return resolve(x).then(onFulfilled, onRejected, onProgress);
 	}
 
 	/**
@@ -86,17 +86,6 @@ define(function (require) {
 	}
 
 	/**
-	 * Call f in a future turn, with the supplied args, and return a promise
-	 * for the result.
-	 * @param {function} f
-	 * @returns {Promise}
-	 */
-	function tryCall(f /*, args... */) {
-		/*jshint validthis:true */
-		return _apply(f, this, slice.call(arguments, 1));
-	}
-
-	/**
 	 * Lift the supplied function, creating a version of f that returns
 	 * promises, and accepts promises as arguments.
 	 * @param {function} f
@@ -106,6 +95,17 @@ define(function (require) {
 		return function() {
 			return _apply(f, this, slice.call(arguments));
 		};
+	}
+
+	/**
+	 * Call f in a future turn, with the supplied args, and return a promise
+	 * for the result.
+	 * @param {function} f
+	 * @returns {Promise}
+	 */
+	function tryCall(f /*, args... */) {
+		/*jshint validthis:true */
+		return _apply(f, this, slice.call(arguments, 1));
 	}
 
 	/**
@@ -163,51 +163,6 @@ define(function (require) {
 	}
 
 	/**
-	 * Initiates a competitive race, returning a promise that will resolve when
-	 * howMany of the supplied promisesOrValues have resolved, or will reject when
-	 * it becomes impossible for howMany to resolve, for example, when
-	 * (promisesOrValues.length - howMany) + 1 input promises reject.
-	 *
-	 * @param {Array} promises array of anything, may contain a mix
-	 *      of promises and values
-	 * @param howMany {number} number of promisesOrValues to resolve
-	 * @returns {Promise} promise that will resolve to an array of howMany values that
-	 *  resolved first, or will reject with an array of
-	 *  (promisesOrValues.length - howMany) + 1 rejection reasons.
-	 */
-	function some(promises, howMany) {
-		return when(promises, function(array) {
-			return Promise.some(array, howMany);
-		});
-	}
-
-	/**
-	 * Initiates a competitive race, returning a promise that will resolve when
-	 * any one of the supplied promisesOrValues has resolved or will reject when
-	 * *all* promisesOrValues have rejected.
-	 *
-	 * @param {Array|Promise} promises array of anything, may contain a mix
-	 *      of {@link Promise}s and values
-	 * @returns {Promise} promise that will resolve to the value that resolved first, or
-	 * will reject with an array of all rejected inputs.
-	 */
-	function any(promises) {
-		return when(promises, Promise.any);
-	}
-
-	/**
-	 * Return a promise that will resolve only once all the supplied promises
-	 * have resolved. The resolution value of the returned promise will be an array
-	 * containing the resolution values of each of the promises.
-	 * @param {Array|Promise} promises array of anything, may contain a mix
-	 *      of promises and values
-	 * @returns {Promise}
-	 */
-	function all(promises) {
-		return when(promises, Promise.all);
-	}
-
-	/**
 	 * Return a promise that will resolve only once all the supplied arguments
 	 * have resolved. The resolution value of the returned promise will be an array
 	 * containing the resolution values of each of the arguments.
@@ -215,20 +170,7 @@ define(function (require) {
 	 * @returns {Promise}
 	 */
 	function join(/* ...promises */) {
-		return all(slice.call(arguments));
-	}
-
-	/**
-	 * Settles all input promises such that they are guaranteed not to
-	 * be pending once the returned promise fulfills. The returned promise
-	 * will always fulfill, except in the case where `array` is a promise
-	 * that rejects.
-	 * @param {Array|Promise} promises or promise for array of promises to settle
-	 * @returns {Promise} promise that always fulfills with an array of
-	 *  outcome snapshots for each input promise.
-	 */
-	function settle(promises) {
-		return when(promises, Promise.settle);
+		return Promise.all(arguments);
 	}
 
 	/**

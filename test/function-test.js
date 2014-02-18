@@ -17,7 +17,7 @@ define('when/function-test', function (require) {
 
 	function assertIsPromise(something) {
 		var message = 'Object is not a promise';
-		buster.assert(when.isPromise(something), message);
+		buster.assert(when.isPromiseLike(something), message);
 	}
 
 	function functionThatThrows(error) {
@@ -31,7 +31,7 @@ define('when/function-test', function (require) {
 	}
 
 	// Use instead of Function.prototype.bind, since we need to
-// test in envs that don't support it
+	// test in envs that don't support it
 	function partial(f) {
 		var partialArgs = slice.call(arguments, 1);
 		return function() {
