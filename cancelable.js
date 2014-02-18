@@ -2,6 +2,7 @@
 
 /**
  * cancelable.js
+ * @deprecated
  *
  * Decorator that makes a deferred "cancelable".  It adds a cancel() method that
  * will call a special cancel handler function and then reject the deferred.  The
@@ -47,9 +48,6 @@ define(function() {
     };
 
 });
-})(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(); }
-	// Boilerplate for AMD and Node
-);
+})(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(); });
 
 

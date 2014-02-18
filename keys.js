@@ -15,7 +15,7 @@ define(function(require) {
 
 	return {
 		all: when.lift(all),
-		map: when.lift(map)
+		map: map
 	};
 
 	/**
@@ -57,10 +57,12 @@ define(function(require) {
 	 *  resolved key-value pairs
 	 */
 	function map(object, f) {
-		return all(Object.keys(object).reduce(function(o, k) {
-			o[k] = toPromise(object[k]).then(f);
-			return o;
-		}, {}));
+		return toPromise(object).then(function(object) {
+			return all(Object.keys(object).reduce(function(o, k) {
+				o[k] = toPromise(object[k]).then(f);
+				return o;
+			}, {}));
+		});
 	}
 
 	function eachKey(object, f) {
@@ -70,7 +72,4 @@ define(function(require) {
 	}
 
 });
-})(
-	typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); }
-	// Boilerplate for AMD and Node
-);
+})(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
