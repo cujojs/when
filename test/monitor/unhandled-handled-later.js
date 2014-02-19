@@ -11,7 +11,7 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	var Promise = require('./MonitoredPromise');
+	var Promise = require('when').Promise;
 
 	var p = new Promise(function(_, reject) {
 		reject(new Error('unhandled-handled-later'));
@@ -19,7 +19,7 @@ define(function(require) {
 
 	setTimeout(function() {
 		console.log('***Handling error now***');
-		p.otherwise(function() { /* handled by squelching */ });
+		p['catch'](function() { /* handled by squelching */ });
 	}, 1000);
 
 });

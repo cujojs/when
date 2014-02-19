@@ -11,7 +11,7 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	var Promise = require('./MonitoredPromise');
+	var Promise = require('when').Promise;
 
 	var p = Promise.resolve(123);
 

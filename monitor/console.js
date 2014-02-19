@@ -10,36 +10,43 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	var createAggregator, throttleReporter, simpleReporter, aggregator,
-		formatter, stackFilter, excludeRx, filter, reporter, logger,
-		rejectionMsg, reasonMsg, filteredFramesMsg, stackJumpMsg;
 
-	createAggregator = require('./aggregator');
-	throttleReporter = require('./throttledReporter');
-	simpleReporter = require('./simpleReporter');
-	formatter = require('./simpleFormatter');
-	stackFilter = require('./stackFilter');
-	logger = require('./logger/consoleGroup');
+	var createPromiseStatus = require('./aggregator');
+	var throttleReporter = require('./throttledReporter');
+	var simpleReporter = require('./simpleReporter');
+	var formatter = require('./simpleFormatter');
+	var stackFilter = require('./stackFilter');
+	var logger = require('./logger/consoleGroup');
 
-	rejectionMsg = '=== Unhandled rejection escaped at ===';
-	reasonMsg = '=== Caused by reason ===';
-	stackJumpMsg = '  --- new call stack ---';
-	filteredFramesMsg = '  ...[filtered frames]...';
+	var monitorPromise = require('../lib/monitor');
 
-	excludeRx = /when\.js|(module|node)\.js:\d|when\/(monitor|lib)\//i;
-	filter = stackFilter(exclude, mergePromiseFrames);
-	reporter = simpleReporter(formatter(filter, rejectionMsg, reasonMsg, stackJumpMsg), logger);
+	var rejectionMsg = '=== Unhandled rejection escaped at ===';
+	var reasonMsg = '=== Caused by reason ===';
+	var stackJumpMsg = '  --- new call stack ---';
+	var filteredFramesMsg = '  ...[filtered frames]...';
 
-	aggregator = createAggregator(throttleReporter(200, reporter));
+	var excludeRx = /when\.js|(module|node)\.js:\d|when\/(monitor|lib)\//i;
+	var filter = stackFilter(exclude, mergePromiseFrames);
+	var reporter = simpleReporter(formatter(filter, rejectionMsg, reasonMsg, stackJumpMsg), logger);
 
-	return aggregator;
+	var PromiseStatus = createPromiseStatus(throttleReporter(200, reporter));
+
+	PromiseStatus.monitor = function(PromiseType) {
+		return monitorPromise(PromiseStatus, PromiseType);
+	};
+
+	if(typeof console !== 'undefined') {
+		console.PromiseStatus = PromiseStatus;
+	}
+
+	return PromiseStatus;
 
 	function mergePromiseFrames(/* frames */) {
 		return filteredFramesMsg;
 	}
 
 	function exclude(line) {
-		var rx = aggregator.promiseStackFilter || excludeRx;
+		var rx = PromiseStatus.promiseStackFilter || excludeRx;
 		return rx.test(line);
 	}
 

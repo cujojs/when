@@ -11,7 +11,7 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	var Promise = require('./MonitoredPromise');
+	var Promise = require('when').Promise;
 
 	var p = new Promise(function(_, reject) {
 		reject(new Error('first error'));
@@ -19,7 +19,7 @@ define(function(require) {
 
 	setTimeout(function() {
 		console.log('***Begetting new unhandled error now***');
-		p.otherwise(function() { throw new Error('unhandled-begets-unhandled'); });
+		p['catch'](function() { throw new Error('unhandled-begets-unhandled'); });
 	}, 2000);
 
 });
