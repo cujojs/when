@@ -11,16 +11,18 @@
 (function(define) {
 define(function(require) {
 
-	var when, slice, setTimer;
+	var when, slice, setTimer, _liftAll;
 
 	when = require('./when');
-	slice = [].slice;
+	_liftAll = require('./lib/liftAll');
 	setTimer = require('./lib/timer').set;
+	slice = Array.prototype.slice;
 
 	return {
+		lift: lift,
+		liftAll: liftAll,
 		apply: apply,
 		call: call,
-		lift: lift,
 		createCallback: createCallback,
 		bindCallback: bindCallback,
 		liftCallback: liftCallback
@@ -137,6 +139,10 @@ define(function(require) {
 		return function() {
 			return _apply(func, this, args.concat(slice.call(arguments)));
 		};
+	}
+
+	function liftAll(src, combine, dst) {
+		return _liftAll(lift, combine, dst, src);
 	}
 
 	/**

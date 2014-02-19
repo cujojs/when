@@ -139,7 +139,7 @@ define(function (require) {
 			resolver: { resolve: void 0, reject: void 0, notify: void 0 }
 		};
 
-		deferred.promise = promise(makeDeferred);
+		deferred.promise = new Promise(makeDeferred);
 
 		return deferred;
 

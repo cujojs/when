@@ -11,14 +11,17 @@
 (function(define) {
 define(function(require) {
 
-	var when, slice;
+	var when, slice, attempt, _liftAll;
 
 	when = require('./when');
+	attempt = when['try'];
+	_liftAll = require('./lib/liftAll');
 	slice = Array.prototype.slice;
 
 	return {
 		lift: lift,
-		call: when['try'],
+		liftAll: liftAll,
+		call: attempt,
 		apply: apply,
 		compose: compose
 	};
@@ -33,8 +36,8 @@ define(function(require) {
 	 */
 	function apply(func, promisedArgs) {
 		return arguments.length > 1
-			? when['try'].apply(this, [func].concat(promisedArgs))
-			: when['try'].call(this, func);
+			? attempt.apply(this, [func].concat(promisedArgs))
+			: attempt.call(this, func);
 	}
 
 	/**
@@ -54,8 +57,12 @@ define(function(require) {
 		return function() {
 			args.unshift(func);
 			args.push.apply(args, slice.call(arguments));
-			return when['try'].apply(this, args);
+			return attempt.apply(this, args);
 		};
+	}
+
+	function liftAll(src, combine, dst) {
+		return _liftAll(lift, combine, dst, src);
 	}
 
 	/**
@@ -79,7 +86,7 @@ define(function(require) {
 
 			thisArg = this;
 			args = slice.call(arguments);
-			firstPromise = when['try'].apply(thisArg, [f].concat(args));
+			firstPromise = attempt.apply(thisArg, [f].concat(args));
 
 			return when.reduce(funcs, function(arg, func) {
 				return func.call(thisArg, arg);

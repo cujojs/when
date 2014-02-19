@@ -11,9 +11,10 @@
 (function (define) { 'use strict';
 define(function(require) {
 
-	var when, cancelable;
+	var when, attempt, cancelable;
 
 	when = require('./when');
+	attempt = when['try'];
 	cancelable = require('./cancelable');
 
 	/**
@@ -76,7 +77,7 @@ define(function(require) {
 		}
 
 		function schedule(result) {
-			when.try(interval).then(vote, reject);
+			attempt(interval).then(vote, reject);
 			if (result !== void 0) {
 				deferred.notify(result);
 			}

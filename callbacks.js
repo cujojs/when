@@ -11,16 +11,18 @@
 (function(define) {
 define(function(require) {
 
-	var when, promise, slice;
+	var when, promise, slice, _liftAll;
 
 	when = require('./when');
+	_liftAll = require('./lib/liftAll');
 	promise = when.promise;
 	slice = Array.prototype.slice;
 
 	return {
+		lift: lift,
+		liftAll: liftAll,
 		apply: apply,
 		call: call,
-		lift: lift,
 		promisify: promisify
 	};
 
@@ -137,6 +139,10 @@ define(function(require) {
 		return function() {
 			return _apply(f, this, args.concat(slice.call(arguments)));
 		};
+	}
+
+	function liftAll(src, combine, dst) {
+		return _liftAll(lift, combine, dst, src);
 	}
 
 	/**
