@@ -13,7 +13,7 @@ define(function(require) {
 
 	var when, slice, setTimer;
 
-	when = require('when');
+	when = require('./when');
 	slice = [].slice;
 	setTimer = require('./lib/timer').set;
 
