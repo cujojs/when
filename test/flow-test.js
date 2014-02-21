@@ -26,26 +26,38 @@ define('when/flow-test', function (require) {
 				});
 			},
 
-			'when Error type match is specified': {
-				'should only catch errors of same type': function() {
-					var e1 = new TypeError();
-					return Promise.reject(e1)['catch'](SyntaxError, fail)
-						['catch'](TypeError, function(e) {
-						assert.same(e1, e);
-					});
-				}
-			},
+			'when predicate is provided': {
 
-			'when predicate is specified': {
-				'should only catch errors of same type': function() {
-					var e1 = new TypeError();
-					return Promise.reject(e1) ['catch'](function(e) {
+				'and is an Error type match': {
+					'should only catch errors of same type': function() {
+						var e1 = new TypeError();
+						return Promise.reject(e1)['catch'](SyntaxError, fail)
+							['catch'](TypeError, function(e) {
+							assert.same(e1, e);
+						});
+					}
+				},
+
+				'and is a predicate function': {
+					'should only catch errors of same type': function() {
+						var e1 = new TypeError();
+						return Promise.reject(e1)['catch'](function(e) {
 							return e !== e1;
-					}, fail)['catch'](function(e) {
-						return e === e1;
-					}, function(e) {
-						assert.same(e1, e);
-					});
+						}, fail)['catch'](function(e) {
+							return e === e1;
+						}, function(e) {
+							assert.same(e1, e);
+						});
+					}
+				},
+
+				'but is not a function': {
+					'should reject with a TypeError': function() {
+						return Promise.reject(sentinel)['catch'](123, fail)
+							['catch'](function(e) {
+								assert(e instanceof TypeError);
+							});
+					}
 				}
 			}
 		},
