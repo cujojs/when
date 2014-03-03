@@ -30,19 +30,23 @@ define(function(require) {
 			var results = {};
 			var pending = 0;
 
-			eachPair(object, function(x, k) {
+			for(var k in object) {
+				resolveOne(object[k], k);
+			}
+
+			if(pending === 0) {
+				resolve(results);
+			}
+
+			function resolveOne(x, k) {
 				++pending;
 				toPromise(x).then(function(x) {
 					results[k] = x;
 
-					if(!--pending) {
+					if(--pending === 0) {
 						resolve(results);
 					}
 				}, reject, notify);
-			});
-
-			if(pending === 0) {
-				resolve(results);
 			}
 		});
 	}
@@ -62,12 +66,6 @@ define(function(require) {
 				o[k] = toPromise(object[k]).then(f);
 				return o;
 			}, {}));
-		});
-	}
-
-	function eachPair(object, f) {
-		Object.keys(object).forEach(function(k) {
-			f(object[k], k);
 		});
 	}
 
