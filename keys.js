@@ -30,7 +30,7 @@ define(function(require) {
 			var results = {};
 			var pending = 0;
 
-			eachKey(object, function(x, k) {
+			eachPair(object, function(x, k) {
 				++pending;
 				toPromise(x).then(function(x) {
 					results[k] = x;
@@ -65,7 +65,7 @@ define(function(require) {
 		});
 	}
 
-	function eachKey(object, f) {
+	function eachPair(object, f) {
 		Object.keys(object).forEach(function(k) {
 			f(object[k], k);
 		});
