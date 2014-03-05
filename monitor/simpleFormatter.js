@@ -23,14 +23,13 @@ define(function() {
 			var cause, formatted;
 
 			formatted = {
-				reason: rec.reason,
-				message: rec.reason && rec.reason.toString()
+				message: String(rec.reason)
 			};
 
 			if(hasStackTraces) {
-				cause = rec.reason && rec.reason.stack;
+				cause = typeof rec.reason !== 'undefined' && rec.reason.stack;
 				if(!cause) {
-					cause = rec.rejectedAt && rec.rejectedAt.stack;
+					cause = typeof rec.rejectedAt !== 'undefined'  && rec.rejectedAt.stack;
 				}
 				var jumps = formatStackJumps(rec);
 				formatted.stack = stitch(rec.createdAt.stack, jumps, cause);

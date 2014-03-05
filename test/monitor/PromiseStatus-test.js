@@ -9,25 +9,35 @@ sentinel = { value: 'sentinel' };
 
 define('when/monitor/aggregator-test', function (require) {
 
-	var Promise, when, aggregator, monitor;
+	var Promise, when, PromiseStatus;
 
 	Promise = require('when/lib/Promise');
-	aggregator = require('when/monitor/aggregator');
-	monitor = require('when/lib/monitor');
+	PromiseStatus = require('when/monitor/PromiseStatus');
 
 	buster.testCase('when/monitor/aggregator', {
-		'should have PromiseStatus API': function() {
-			assert.isFunction(aggregator(function(){}));
+
+		'setUp': function() {
+			PromiseStatus.reset();
+			if(typeof console !== 'undefined') {
+				console.PromiseStatus = PromiseStatus;
+			}
+		},
+
+		'tearDown': function() {
+			PromiseStatus.reset();
+			if(typeof console !== 'undefined') {
+				console.PromiseStatus = void 0;
+			}
 		},
 
 		'PromiseStatus': {
 			'rejection should trigger report': function(done) {
-				var PromiseStatus = aggregator(function(promises) {
+				PromiseStatus.reporter = function(promises) {
 					for (var key in promises) {
 						assert.same(promises[key].reason, sentinel);
 					}
 					done();
-				});
+				};
 
 				var status = new PromiseStatus();
 				status.rejected(sentinel);
@@ -36,27 +46,23 @@ define('when/monitor/aggregator-test', function (require) {
 
 		'Promise': {
 			'reject should trigger report': function(done) {
-				var PromiseStatus = aggregator(function() {
+				PromiseStatus.reporter = function() {
 					assert(true);
 					done();
-				});
+				};
 
-				var MonitoredPromise = monitor(PromiseStatus, Promise);
-
-				new MonitoredPromise(function(_, reject) {
+				new Promise(function(_, reject) {
 					reject();
 				});
 			},
 
 			'Promise.reject should trigger report': function(done) {
-				var PromiseStatus = aggregator(function() {
+				PromiseStatus.reporter = function() {
 					assert(true);
 					done();
-				});
+				};
 
-				var MonitoredPromise = monitor(PromiseStatus, Promise);
-
-				MonitoredPromise.reject();
+				Promise.reject();
 			}
 		}
 	});

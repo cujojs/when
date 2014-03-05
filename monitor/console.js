@@ -10,15 +10,12 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-
-	var createPromiseStatus = require('./aggregator');
+	var PromiseStatus = require('./PromiseStatus');
 	var throttleReporter = require('./throttledReporter');
 	var simpleReporter = require('./simpleReporter');
 	var formatter = require('./simpleFormatter');
 	var stackFilter = require('./stackFilter');
 	var logger = require('./logger/consoleGroup');
-
-	var monitorPromise = require('../lib/monitor');
 
 	var rejectionMsg = '=== Unhandled rejection escaped at ===';
 	var reasonMsg = '=== Caused by reason ===';
@@ -29,11 +26,7 @@ define(function(require) {
 	var filter = stackFilter(exclude, mergePromiseFrames);
 	var reporter = simpleReporter(formatter(filter, rejectionMsg, reasonMsg, stackJumpMsg), logger);
 
-	var PromiseStatus = createPromiseStatus(throttleReporter(200, reporter));
-
-	PromiseStatus.monitor = function(PromiseType) {
-		return monitorPromise(PromiseStatus, PromiseType);
-	};
+	PromiseStatus.reporter = throttleReporter(200, reporter);
 
 	if(typeof console !== 'undefined') {
 		console.PromiseStatus = PromiseStatus;
