@@ -11,7 +11,9 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	var Promise = require('when').Promise;
+	require('../../monitor/console');
+
+	var Promise = require('../../when').Promise;
 
 	var p = new Promise(function(_, reject) {
 		reject(new Error('first error'));

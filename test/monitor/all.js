@@ -9,21 +9,16 @@
  */
 
 (function(define) { 'use strict';
-define(function(require) {
+	define(function(require) {
 
-	require('../..//monitor/console');
+		require('../../monitor/console');
 
-	var Promise = require('../../when').Promise;
+		var when = require('../../when');
 
-	var p = new Promise(function(_, reject) {
-		reject(new Error('unhandled-handled-later'));
+		var p = when.reject(new Error('fail1'));
+
+		when.all([p]);
+
 	});
-
-	setTimeout(function() {
-		console.log('***Handling error now***');
-		p['catch'](function() { /* handled by squelching */ });
-	}, 1000);
-
-});
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
 
