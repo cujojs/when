@@ -17,9 +17,10 @@ define(function (require) {
 	var inspect = require('./lib/inspect');
 	var generate = require('./lib/iterate');
 	var progress = require('./lib/progress');
+	var withThis = require('./lib/with');
 
 	var Promise = require('./lib/Promise');
-	Promise = [array, flow, generate, progress, inspect]
+	Promise = [array, flow, generate, progress, inspect, withThis]
 		.reduceRight(function(Promise, feature) {
 			return feature(Promise);
 		}, timed(timer.set, timer.clear, Promise));
