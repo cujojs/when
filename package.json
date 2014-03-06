@@ -57,7 +57,6 @@
 		"promises-aplus-tests": "~2",
 		"benchmark": "~1",
 		"microtime": "~0",
-		"jshint": "~2",
 		"browserify": "~2"
 	},
 	"main": "when",
