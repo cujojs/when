@@ -1,3 +1,166 @@
+!function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Promise=e():"undefined"!=typeof global?global.Promise=e():"undefined"!=typeof self&&(self.Promise=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/** @license MIT License (c) copyright 2011-2013 original author or authors */
+
+/**
+ * Licensed under the MIT License at:
+ * http://www.opensource.org/licenses/mit-license.php
+ *
+ * @author Brian Cavalier
+ * @author John Hann
+ */
+(function(define) { 'use strict';
+define(function (require) {
+
+	var makePromise = require('./makePromise');
+	var Scheduler = require('./scheduler');
+	var async = require('./async');
+
+	return makePromise({
+		scheduler: new Scheduler(async),
+		monitor: typeof console !== 'undefined' ? console : void 0
+//		decorate: typeof console !== 'undefined' && console.PromiseStatus
+//			&& console.PromiseStatus.monitor
+	});
+
+});
+})(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
+
+},{"./async":3,"./makePromise":4,"./scheduler":5}],2:[function(require,module,exports){
+/** @license MIT License (c) copyright 2010-2013 original author or authors */
+/** @author Brian Cavalier */
+/** @author John Hann */
+
+(function(define) { 'use strict';
+define(function() {
+	/**
+	 * Circular queue
+	 * @param {number} capacityPow2 power of 2 to which this queue's capacity
+	 *  will be set initially. eg when capacityPow2 == 3, queue capacity
+	 *  will be 8.
+	 * @constructor
+	 */
+	function Queue(capacityPow2) {
+		this.head = this.tail = this.length = 0;
+		this.buffer = new Array(1 << capacityPow2);
+	}
+
+	Queue.prototype.push = function(x) {
+		if(this.length === this.buffer.length) {
+			this._ensureCapacity(this.length * 2);
+		}
+
+		this.buffer[this.tail] = x;
+		this.tail = (this.tail + 1) & (this.buffer.length - 1);
+		++this.length;
+		return this.length;
+	};
+
+	Queue.prototype.shift = function() {
+		var x = this.buffer[this.head];
+		this.buffer[this.head] = void 0;
+		this.head = (this.head + 1) & (this.buffer.length - 1);
+		--this.length;
+		return x;
+	};
+
+	Queue.prototype._ensureCapacity = function(capacity) {
+		var head = this.head;
+		var buffer = this.buffer;
+		var newBuffer = new Array(capacity);
+		var i = 0;
+		var len;
+
+		if(head === 0) {
+			len = this.length;
+			for(; i<len; ++i) {
+				newBuffer[i] = buffer[i];
+			}
+		} else {
+			capacity = buffer.length;
+			len = this.tail;
+			for(; head<capacity; ++i, ++head) {
+				newBuffer[i] = buffer[head];
+			}
+
+			for(head=0; head<len; ++i, ++head) {
+				newBuffer[i] = buffer[head];
+			}
+		}
+
+		this.buffer = newBuffer;
+		this.head = 0;
+		this.tail = this.length;
+	};
+
+	return Queue;
+
+});
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
+
+},{}],3:[function(require,module,exports){
+/** @license MIT License (c) copyright 2010-2013 original author or authors */
+/** @author Brian Cavalier */
+/** @author John Hann */
+
+(function(define) { 'use strict';
+define(function(require) {
+
+	// Sniff "best" async scheduling option
+	// Prefer process.nextTick or MutationObserver, then check for
+	// vertx and finally fall back to setTimeout
+
+	/*jshint maxcomplexity:6*/
+	/*global process,document,setTimeout,MutationObserver,WebKitMutationObserver*/
+	var nextTick, MutationObs;
+
+	if (typeof process !== 'undefined' && process !== null &&
+		typeof process.nextTick === 'function') {
+		nextTick = function(f) {
+			process.nextTick(f);
+		};
+
+	} else if (MutationObs =
+		(typeof MutationObserver === 'function' && MutationObserver) ||
+		(typeof WebKitMutationObserver === 'function' && WebKitMutationObserver)) {
+		nextTick = (function (document, MutationObserver) {
+			var scheduled;
+			var el = document.createElement('div');
+			var o = new MutationObserver(run);
+			o.observe(el, { attributes: true });
+
+			function run() {
+				var f = scheduled;
+				scheduled = void 0;
+				f();
+			}
+
+			return function (f) {
+				scheduled = f;
+				el.setAttribute('class', 'x');
+			};
+		}(document, MutationObs));
+
+	} else {
+		nextTick = (function(cjsRequire) {
+			try {
+				// vert.x 1.x || 2.x
+				return cjsRequire('vertx').runOnLoop || cjsRequire('vertx').runOnContext;
+			} catch (ignore) {}
+
+			// capture setTimeout to avoid being caught by fake timers
+			// used in time based tests
+			var capturedSetTimeout = setTimeout;
+			return function (t) {
+				capturedSetTimeout(t, 0);
+			};
+		}(require));
+	}
+
+	return nextTick;
+});
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
+
+},{}],4:[function(require,module,exports){
 /** @license MIT License (c) copyright 2010-2013 original author or authors */
 
 /**
@@ -169,7 +332,6 @@ define(function() {
 		 * @returns {Promise} promise for array of fulfillment values
 		 */
 		function all(promises) {
-			/*jshint maxcomplexity:6*/
 			var resolver = new DeferredHandler();
 			var len = promises.length >>> 0;
 			var pending = len;
@@ -658,3 +820,65 @@ define(function() {
 
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
+
+},{}],5:[function(require,module,exports){
+/** @license MIT License (c) copyright 2010-2013 original author or authors */
+
+/**
+ * Licensed under the MIT License at:
+ * http://www.opensource.org/licenses/mit-license.php
+ *
+ * @author Brian Cavalier
+ * @author John Hann
+ */
+
+(function(define) { 'use strict';
+define(function(require) {
+
+	var Queue = require('./Queue');
+
+	// Credit to Twisol (https://github.com/Twisol) for suggesting
+	// this type of extensible queue + trampoline approach for next-tick conflation.
+
+	function Scheduler(enqueue) {
+		this._enqueue = enqueue;
+		this._handlerQueue = new Queue(15);
+
+		var self = this;
+		this.drainQueue = function() {
+			self._drainQueue();
+		};
+	}
+
+	/**
+	 * Enqueue a task. If the queue is not currently scheduled to be
+	 * drained, schedule it.
+	 * @param {function} task
+	 */
+	Scheduler.prototype.enqueue = function(task) {
+		if(this._handlerQueue.push(task) === 1) {
+			this._enqueue(this.drainQueue);
+		}
+	};
+
+	/**
+	 * Drain the handler queue entirely, being careful to allow the
+	 * queue to be extended while it is being processed, and to continue
+	 * processing until it is truly empty.
+	 */
+	Scheduler.prototype._drainQueue = function() {
+		var q = this._handlerQueue;
+		while(q.length > 0) {
+			q.shift().run();
+		}
+	};
+
+	return Scheduler;
+
+});
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
+
+},{"./Queue":2}]},{},[1])
+(1)
+});
+;

@@ -3,3 +3,5 @@ node_modules/
 .idea/
 experiments/
 test/monitor
+es6-shim/
+build/when.js
