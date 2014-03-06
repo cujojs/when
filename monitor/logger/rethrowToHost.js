@@ -1,18 +1,10 @@
-/** @license MIT License (c) copyright 2010-2013 original author or authors */
-
-/**
- * Licensed under the MIT License at:
- * http://www.opensource.org/licenses/mit-license.php
- *
- * @author: Brian Cavalier
- * @author: John Hann
- */
+/** @license MIT License (c) copyright 2010-2014 original author or authors */
+/** @author Brian Cavalier */
+/** @author John Hann */
 
 (function(define) { 'use strict';
-define(function(require) {
+define(function() {
 	/*global setTimeout*/
-
-	var array = require('../array');
 
 	var rethrow = {
 		RangeError: 1,
@@ -31,7 +23,7 @@ define(function(require) {
 	return function(exceptionsToRethrow) {
 		exceptionsToRethrow || (exceptionsToRethrow = rethrow);
 		return function(rejections) {
-			array.forEach(rejections, function(r) {
+			rejections.forEach(function(r) {
 				if(r.reason && exceptionsToRethrow[r.reason.name]) {
 					throwUncatchable(r.reason);
 				}
@@ -46,4 +38,4 @@ define(function(require) {
 	}
 
 });
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));

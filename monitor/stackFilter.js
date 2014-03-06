@@ -1,16 +1,9 @@
-/** @license MIT License (c) copyright 2010-2013 original author or authors */
+/** @license MIT License (c) copyright 2010-2014 original author or authors */
+/** @author Brian Cavalier */
+/** @author John Hann */
 
-/**
- * Licensed under the MIT License at:
- * http://www.opensource.org/licenses/mit-license.php
- *
- * @author: Brian Cavalier
- * @author: John Hann
- */
 (function(define) { 'use strict';
-define(function(require) {
-
-	var array = require('./array');
+define(function() {
 
 	return function(isExcluded, replace) {
 		return function filterStack(stack) {
@@ -22,7 +15,7 @@ define(function(require) {
 
 			excluded = [];
 
-			return array.reduce(stack, [], function(filtered, line) {
+			return stack.reduce(function(filtered, line) {
 				var match;
 
 				match = isExcluded(line);
@@ -42,9 +35,9 @@ define(function(require) {
 				}
 
 				return filtered;
-			});
+			}, []);
 		};
 	};
 
 });
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));

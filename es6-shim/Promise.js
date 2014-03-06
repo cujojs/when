@@ -1,13 +1,26 @@
 !function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Promise=e():"undefined"!=typeof global?global.Promise=e():"undefined"!=typeof self&&(self.Promise=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/** @license MIT License (c) copyright 2011-2013 original author or authors */
+/** @license MIT License (c) copyright 2010-2014 original author or authors */
+/** @author Brian Cavalier */
+/** @author John Hann */
 
 /**
- * Licensed under the MIT License at:
- * http://www.opensource.org/licenses/mit-license.php
- *
- * @author Brian Cavalier
- * @author John Hann
+ * ES6 global Promise shim
  */
+var PromiseConstructor = module.exports = require('../lib/Promise');
+
+var g = typeof global !== 'undefined' && global
+	|| typeof window !== 'undefined' && window
+	|| typeof self !== 'undefined' && self;
+
+if(typeof g !== 'undefined' && typeof g.Promise === 'undefined') {
+	g.Promise = PromiseConstructor;
+}
+
+},{"../lib/Promise":2}],2:[function(require,module,exports){
+/** @license MIT License (c) copyright 2010-2014 original author or authors */
+/** @author Brian Cavalier */
+/** @author John Hann */
+
 (function(define) { 'use strict';
 define(function (require) {
 
@@ -18,15 +31,13 @@ define(function (require) {
 	return makePromise({
 		scheduler: new Scheduler(async),
 		monitor: typeof console !== 'undefined' ? console : void 0
-//		decorate: typeof console !== 'undefined' && console.PromiseStatus
-//			&& console.PromiseStatus.monitor
 	});
 
 });
 })(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
 
-},{"./async":3,"./makePromise":4,"./scheduler":5}],2:[function(require,module,exports){
-/** @license MIT License (c) copyright 2010-2013 original author or authors */
+},{"./async":4,"./makePromise":5,"./scheduler":6}],3:[function(require,module,exports){
+/** @license MIT License (c) copyright 2010-2014 original author or authors */
 /** @author Brian Cavalier */
 /** @author John Hann */
 
@@ -97,8 +108,8 @@ define(function() {
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
 
-},{}],3:[function(require,module,exports){
-/** @license MIT License (c) copyright 2010-2013 original author or authors */
+},{}],4:[function(require,module,exports){
+/** @license MIT License (c) copyright 2010-2014 original author or authors */
 /** @author Brian Cavalier */
 /** @author John Hann */
 
@@ -160,16 +171,10 @@ define(function(require) {
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
 
-},{}],4:[function(require,module,exports){
-/** @license MIT License (c) copyright 2010-2013 original author or authors */
-
-/**
- * Licensed under the MIT License at:
- * http://www.opensource.org/licenses/mit-license.php
- *
- * @author Brian Cavalier
- * @author John Hann
- */
+},{}],5:[function(require,module,exports){
+/** @license MIT License (c) copyright 2010-2014 original author or authors */
+/** @author Brian Cavalier */
+/** @author John Hann */
 
 (function(define) { 'use strict';
 define(function() {
@@ -332,6 +337,7 @@ define(function() {
 		 * @returns {Promise} promise for array of fulfillment values
 		 */
 		function all(promises) {
+			/*jshint maxcomplexity:6*/
 			var resolver = new DeferredHandler();
 			var len = promises.length >>> 0;
 			var pending = len;
@@ -821,16 +827,10 @@ define(function() {
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
 
-},{}],5:[function(require,module,exports){
-/** @license MIT License (c) copyright 2010-2013 original author or authors */
-
-/**
- * Licensed under the MIT License at:
- * http://www.opensource.org/licenses/mit-license.php
- *
- * @author Brian Cavalier
- * @author John Hann
- */
+},{}],6:[function(require,module,exports){
+/** @license MIT License (c) copyright 2010-2014 original author or authors */
+/** @author Brian Cavalier */
+/** @author John Hann */
 
 (function(define) { 'use strict';
 define(function(require) {
@@ -878,7 +878,7 @@ define(function(require) {
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
 
-},{"./Queue":2}]},{},[1])
+},{"./Queue":3}]},{},[1])
 (1)
 });
 ;

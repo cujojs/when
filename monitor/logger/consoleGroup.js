@@ -1,19 +1,12 @@
-/** @license MIT License (c) copyright 2010-2013 original author or authors */
+/** @license MIT License (c) copyright 2010-2014 original author or authors */
+/** @author Brian Cavalier */
+/** @author John Hann */
 
-/**
- * Licensed under the MIT License at:
- * http://www.opensource.org/licenses/mit-license.php
- *
- * @author: Brian Cavalier
- * @author: John Hann
- */
 (function(define) { 'use strict';
-define(function(require) {
+define(function() {
 	/*jshint maxcomplexity:7*/
 
-	var array, warn, warnAll, log;
-
-	array = require('../array');
+	var warn, warnAll, log;
 
 	if(typeof console === 'undefined') {
 		// No console, give up, but at least don't break
@@ -44,7 +37,7 @@ define(function(require) {
 				warnAll = function(msg, list) {
 					console.groupCollapsed(msg);
 					try {
-						array.forEach(list, warn);
+						list.forEach(warn);
 					} finally {
 						console.groupEnd();
 					}
@@ -73,4 +66,4 @@ define(function(require) {
 	function consoleNotAvailable() {}
 
 });
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
