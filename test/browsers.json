@@ -16,6 +16,5 @@
 	{ browserName: 'ipad',              version: '7',   platform: 'Mac 10.9'     },
 	{ browserName: 'ipad',              version: '6',   platform: 'Mac 10.8'     },
 	{ browserName: 'ipad',              version: '5.1', platform: 'Mac 10.8'     },
-	{ browserName: 'ipad',              version: '5',   platform: 'Mac 10.6'     },
-	{ browserName: 'ipad',              version: '4.3', platform: 'Mac 10.6'     }
+	{ browserName: 'ipad',              version: '5',   platform: 'Mac 10.6'     }
 ]
