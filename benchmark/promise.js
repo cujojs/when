@@ -16,7 +16,7 @@ define(function(require) {
 		{ name: 'pending', fn: createPending },
 		{ name: 'resolved', fn: createResolved },
 		{ name: 'rejected', fn: createRejected },
-		{ name: 'empty', fn: createEmpty },
+		{ name: 'never', fn: createNever },
 		{ name: 'resolve', fn: resolvePromise, defer: true },
 		{ name: 'reject', fn: rejectPromise, defer: true },
 		{ name: 'setImmediate', fn: viaSetImmediate, defer: true,
@@ -61,8 +61,8 @@ define(function(require) {
 		Promise.reject();
 	}
 
-	function createEmpty() {
-		Promise.empty();
+	function createNever() {
+		Promise.never();
 	}
 
 	function resolvePromise(deferred) {

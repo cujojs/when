@@ -11,7 +11,7 @@ define('when/race-test', function (require) {
 	var sentinel = { value: 'sentinel' };
 	var fulfilled = Promise.resolve(sentinel);
 	var rejected = Promise.reject(sentinel);
-	var empty = Promise.empty();
+	var never = Promise.never();
 
 	function delayReject(ms) {
 		return Promise.resolve().delay(ms)['yield'](rejected);
@@ -19,7 +19,7 @@ define('when/race-test', function (require) {
 
 	buster.testCase('Promise.race', {
 		'should return empty race for length 0': function() {
-			assert.equals(empty, Promise.race([]));
+			assert.equals(never, Promise.race([]));
 		},
 
 		'should be identity for length 1': {
@@ -45,16 +45,16 @@ define('when/race-test', function (require) {
 
 		'should be commutative': {
 			'when fulfilled': function() {
-				return Promise.race([fulfilled, empty]).then(function(x) {
-					return Promise.race([empty, fulfilled]).then(function(y) {
+				return Promise.race([fulfilled, never]).then(function(x) {
+					return Promise.race([never, fulfilled]).then(function(y) {
 						assert.same(x, y);
 					});
 				});
 			},
 
 			'when rejected': function() {
-				return Promise.race([rejected, empty]).then(void 0, function(x) {
-					return Promise.race([empty, rejected]).then(void 0, function(y) {
+				return Promise.race([rejected, never]).then(void 0, function(x) {
+					return Promise.race([never, rejected]).then(void 0, function(y) {
 						assert.same(x, y);
 					});
 				});
