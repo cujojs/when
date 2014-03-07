@@ -15,9 +15,9 @@
 
 		var when = require('../../when');
 
-		var p = when.reject(new Error('fail1'));
+//		var p = when.reject(new Error('fail1'));
 
-		when.all([p]);
+		when.Promise.all([when.reject(new Error('fail1'))]);
 
 	});
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
