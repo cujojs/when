@@ -14,7 +14,6 @@ define(function() {
 
 	if(typeof console === 'undefined') {
 		warn = consoleNotAvailable;
-		groupStart = groupEnd = consoleGroupsNotAvailable;
 	} else {
 		if(typeof console.warn === 'function'
 			&& typeof console.dir === 'function') {
@@ -34,7 +33,8 @@ define(function() {
 			// IE8 has console.log and JSON, so we can make a
 			// reasonably useful warn() from those.
 			// Credit to webpro (https://github.com/webpro) for this idea
-			if (console.log && typeof JSON != 'undefined') {
+			if (typeof console.log ==='function'
+				&& typeof JSON !== 'undefined') {
 				warn = function (x) {
 					console.log(typeof x === 'string' ? x : JSON.stringify(x));
 				};
