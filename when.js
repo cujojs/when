@@ -43,8 +43,8 @@ define(function (require) {
 
 	when.join        = join;                 // Join 2 or more promises
 
-	when.all         = lift(Promise.all);    // Resolve a list of promises
-	when.settle      = lift(Promise.settle); // Settle a list of promises
+	when.all         = all;                  // Resolve a list of promises
+	when.settle      = settle;               // Settle a list of promises
 
 	when.any         = lift(Promise.any);    // One-winner race
 	when.some        = lift(Promise.some);   // Multi-winner race
@@ -172,6 +172,27 @@ define(function (require) {
 	 */
 	function join(/* ...promises */) {
 		return Promise.all(arguments);
+	}
+
+	/**
+	 * Return a promise that will fulfill once all input promises have
+	 * fulfilled, or reject when any one input promise rejects.
+	 * @param {array|Promise} promises array (or promise for an array) of promises
+	 * @returns {Promise}
+	 */
+	function all(promises) {
+		return when(promises, Promise.all);
+	}
+
+	/**
+	 * Return a promise that will always fulfill with an array containing
+	 * the outcome states of all input promises.  The returned promise
+	 * will only reject if `promises` itself is a rejected promise.
+	 * @param {array|Promise} promises array (or promise for an array) of promises
+	 * @returns {Promise}
+	 */
+	function settle(promises) {
+		return when(promises, Promise.settle);
 	}
 
 	/**

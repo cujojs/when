@@ -5,38 +5,17 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	var PromiseStatus = require('./PromiseStatus');
-	var throttleReporter = require('./throttledReporter');
+	var PromiseMonitor = require('./PromiseMonitor');
 	var simpleReporter = require('./simpleReporter');
-	var formatter = require('./simpleFormatter');
-	var stackFilter = require('./stackFilter');
-	var logger = require('./logger/consoleGroup');
 
-	var rejectionMsg = '=== Unhandled rejection escaped at ===';
-	var reasonMsg = '=== Caused by reason ===';
-	var stackJumpMsg = '  --- new call stack ---';
-	var filteredFramesMsg = '  ...[filtered frames]...';
-
-	var excludeRx = /when\.js|(module|node)\.js:\d|when\/(monitor|lib)\//i;
-	var filter = stackFilter(exclude, mergePromiseFrames);
-	var reporter = simpleReporter(formatter(filter, rejectionMsg, reasonMsg, stackJumpMsg), logger);
-
-	PromiseStatus.reporter = throttleReporter(200, reporter);
+	var traceFilter = /(node|module|timers)\.js:|when(\/(lib|monitor)\/|\.js)/i;
+	var promiseMonitor = new PromiseMonitor(simpleReporter(traceFilter));
 
 	if(typeof console !== 'undefined') {
-		console.PromiseStatus = PromiseStatus;
+		console.promiseMonitor = promiseMonitor;
 	}
 
-	return PromiseStatus;
-
-	function mergePromiseFrames(/* frames */) {
-		return filteredFramesMsg;
-	}
-
-	function exclude(line) {
-		var rx = PromiseStatus.promiseStackFilter || excludeRx;
-		return rx.test(line);
-	}
+	return promiseMonitor;
 
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

@@ -18,6 +18,11 @@
 		var p = when.reject(new Error('fail1'));
 
 		when.map([p], function(x){return x;});
+		when.map([123], fail);
+
+		function fail(x){
+			throw new Error('map failed');
+		}
 
 	});
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

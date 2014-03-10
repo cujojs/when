@@ -15,9 +15,7 @@ define(function(require) {
 
 	var Promise = require('../../when').Promise;
 
-	var p = new Promise(function(_, reject) {
-		reject(new Error('first error'));
-	});
+	var p = new Promise.reject(new Error('first error'));
 
 	setTimeout(function() {
 		console.log('***Begetting new unhandled error now***');
