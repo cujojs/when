@@ -52,12 +52,20 @@ define('when/flow-test', function (require) {
 				},
 
 				'but is not a function': {
-					'should reject with a TypeError': function() {
+					'when rejected should reject with a TypeError': function() {
 						return Promise.reject(sentinel)['catch'](123, fail)
 							['catch'](function(e) {
 								assert(e instanceof TypeError);
 							});
+					},
+
+					'when fulfilled should reject with a TypeError': function() {
+						return Promise.resolve(sentinel)['catch'](123, fail)
+							['catch'](function(e) {
+							assert(e instanceof TypeError);
+						});
 					}
+
 				}
 			}
 		},

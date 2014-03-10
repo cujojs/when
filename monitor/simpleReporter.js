@@ -68,10 +68,10 @@ define(function() {
 					return !(stackFilter.test(frame));
 				});
 
-				if(stack.length > 1) {
-					if(i > 0) {
-						stack[0] = stackJumpSeparator;
-					}
+				if(i === 0) {
+					longTrace.push.apply(longTrace, stack);
+				} else if (stack.length > 1) {
+					stack[0] = stackJumpSeparator;
 					longTrace.push.apply(longTrace, stack);
 				}
 			} else {
