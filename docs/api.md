@@ -1,6 +1,66 @@
 API
 ===
 
+1. Core
+	* when
+	* when.try
+	* when.lift
+	* when.join
+	* when.promise
+	* when.defer
+	* when.resolve
+	* when.reject
+1. Promise
+	* done
+	* then
+	* spread
+	* catch
+	* finally
+	* yield
+	* else
+	* tap
+	* delay
+	* timeout
+	* inspect
+	* with
+	* progress
+1. Arrays
+	* when.all
+	* when.settle
+	* when.map
+	* when.reduce
+	* when.reduceRight
+	* when.iterate
+	* when.unfold
+1. Array Races
+	* when.any
+	* when.some
+	* when.race
+1. Objects
+	* when/keys all
+	* when/keys map
+1. Functions
+	* when/node
+		* lift
+		* liftAll
+		* call
+		* apply
+	* when/function
+		* lift
+		* liftAll
+		* call
+		* apply
+	* when/callbacks
+		* lift
+		* liftAll
+		* call
+		* apply
+1. Tasks
+	* when/parallel
+	* when/pipeline
+	* when/sequence
+1. Debugging
+
 1. [when](#when)
 1. [Promise](#promise)
 	* [Extended Promise API](#extended-promise-api)
@@ -46,11 +106,17 @@ API
 	* [when/generator](#whengenerator)
 1. [Debugging promises](#debugging-promises)
 
+# Core
+
 ## when()
 
 ```js
-when(promiseOrValue, onFulfilled, onRejected, onProgress)
+var promise = when(x);
+
+var transformedPromise = when(x, onFulfilled);
 ```
+
+TODO: Rewrite this section
 
 Observe a promise or immediate value.
 
@@ -88,12 +154,113 @@ when(promiseOrValue, onFulfilled);
 
 In either case, `when()` will *always* return a trusted when.js promise, which will be fully Promises/A compliant and also have the [extended promise API](#extended-promise-api).
 
-### See Also
-* [Read more about when() here](https://github.com/cujojs/when/wiki/when)
+## when.try()
 
-## Promise
+```js
+var promise = when.try(f /*, arg1, arg2, ...*/);
+```
 
-The promise represents the *eventual outcome*, which is either fulfillment (success) and an associated value, or rejection (failure) and an associated *reason*. The promise provides mechanisms for arranging to call a function on its value or reason, and produces a new promise for the result.
+Calls `f` with the supplied arguments, returning a promise for the result.  The arguments may be promises, in which case, `f` will be called after they have fulfilled.  The returned promise will fulfill with the successful result of calling `f`.  If any argument is a rejected promise, or if `f` fails by throwing or returning a rejected promise, the returned promise will also be rejected.
+
+### See also:
+* when.lift
+* when/function call
+* when/function apply
+
+## when.lift()
+
+```js
+var g = when.lift(f);
+```
+
+Creates a "promisified" version of `f`, which always returns promises (`g` will never throw) and accepts promises or values as arguments.  In other words, calling `g(x, y z)` is like calling `when.try(f, x, y, z)` with the added convenience that once you've created `g` you can call it repeatedly or pass it around like any other function.  In addition, `g`'s thisArg will behave in a predictable way, like any other function (you can `.bind()` it, or use `.call()` or `.apply()`, etc.).
+
+Lifting functions provides a convenient way start promise chains without having to explicitly create promises, e.g. `new Promise`
+
+### See also:
+* [when.try](#whentry)
+* when/function lift
+* when/function liftAll
+
+
+## when.join()
+
+```js
+var joinedPromise = when.join(promiseOrValue1, promiseOrValue2, ...);
+```
+
+Return a promise that will fulfill only once *all* the inputs have fulfilled.  The value of the returned promise will be an array containing the values of each of the inputs.
+
+If any of the input promises is rejected, the returned promise will be rejected with the reason from the first one that is rejected.
+
+```js
+// largerPromise will resolve to the greater of two eventual values
+var largerPromise = when.join(promise1, promise2).then(function (values) {
+	return values[0] > values[1] ? values[0] : values[1];
+});
+```
+
+### See also:
+* [when.all()](#whenall) - resolving an Array of promises
+
+## when.promise
+
+```js
+var promise = when.promise(resolver);
+```
+
+Create a [Promise](#promise), whose fate is determined by running the supplied resolver function.  The resolver function will be called synchronously, with 3 arguments:
+
+```js
+var promise = when.promise(function(resolve, reject, notify) {
+	// Do some work, possibly asynchronously, and then
+	// resolve or reject.  You can notify of progress events
+	// along the way if you want/need.
+
+	resolve(awesomeResult);
+	// or resolve(anotherPromise);
+	// or reject(nastyError);
+});
+```
+
+* `resolve(promiseOrValue)` - Primary function that seals the fate of the returned promise. Accepts either a non-promise value, or another promise.
+	* When called with a non-promise value, fulfills `promise` with that value.
+	* When called with another promise, e.g. `resolve(otherPromise)`, `promise`'s fate will be equivalent to that that of `otherPromise`.
+* `reject(reason)` - function that rejects `promise`.
+* `notify(update)` - function that issues progress events for `promise`.
+
+## when.defer
+
+```js
+var deferred = when.defer();
+var promise = deferred.promise;
+```
+
+Create a `{promise, resolver}` pair, aka [Deferred](#deferred).  In some scenarios it can be convenient to have access to both the `promise` and it's associated resolving functions, for example, to give each out to a separate party. In most cases, however, using `when.promise` provides better separation of concerns.
+
+One common use case for creating a deferred is adapting callback-based functions to promises.  In those cases, it's preferable to use the [when/callbacks](#asynchronous-functions) module to [call](#callbackscall) or [lift](#callbackslift) the callback-based functions instead.
+
+## when.resolve
+
+```js
+var resolved = when.resolve(promiseOrValue);
+```
+
+Create a resolved promise for the supplied promiseOrValue. If promiseOrValue is a value, it will be the resolution value of the returned promise.  Returns promiseOrValue if it's a trusted promise. If promiseOrValue is a foreign promise, returns a promise in the same state (resolved or rejected) and with the same value as promiseOrValue.
+
+## when.reject
+
+```js
+var rejected = when.reject(error);
+```
+
+Create a rejected promise with the supplied error as the rejection reason.
+
+**DEPRECATION WARNING:** In when.js 2.x, error is allowed to be a promise for an error.  In when.js 3.0, error will always be used verbatim as the rejection reason, even if it is a promise.
+
+# Promise
+
+The promise represents the *eventual outcome*, which is either fulfillment (success) and an associated value, or rejection (failure) and an associated *reason*. The promise provides mechanisms for transforming or consuming its value, handling rejections (errors), and other flow control operations.
 
 ```js
 // Create a pending promise whose fate is detemined by
@@ -107,41 +274,13 @@ var promise = when.resolve(promiseOrValue);
 var promise = when.reject(reason);
 ```
 
-## Main Promise API
-
-```js
-// then()
-// Main promise API
-var newPromise = promise.then(onFulfilled, onRejected, onProgress);
-```
-
-[Promises/A+ `then`](http://promisesaplus.com).  The primary API for transforming a promise's value and producing a new promise for the transformed result, or for handling and recovering from intermediate errors in a promise chain.  It arranges for:
-
-* `onFulfilled` to be called with the value after `promise` is fulfilled, or
-* `onRejected` to be called with the rejection reason after `promise` is rejected.
-* `onProgress` to be called with any progress updates issued by `promise`.
-
-Returns a trusted promise that will fulfill with the return value of either `onFulfilled` or `onRejected`, whichever is called, or will reject with the thrown exception if either throws.
-
-A promise makes the following guarantees about handlers registered in the same call to `.then()`:
-
-1. Only one of `onFulfilled` or `onRejected` will be called, never both.
-1. `onFulfilled` and `onRejected` will never be called more than once.
-1. `onProgress` may be called multiple times.
-
-### See also
-* [Promises/A+](http://promisesaplus.com) for extensive information on the behavior of `then`.
-* [promise.done](#done)
-
-## Extended Promise API
-
-Convenience methods that are not part of Promises/A+.
-
-### done()
+## promise.done
 
 ```js
 promise.done(handleValue, handleError);
 ```
+
+The simplest API for interacting with a promise, `done` consumes the promise's value.
 
 One golden rule of promise error handling is:
 
@@ -156,10 +295,53 @@ Note that there are still cases that `done` simply cannot catch, such as the cas
 Since `done`'s purpose is consumption rather than transformation, `done` always returns `undefined`.
 
 #### See also
-* [promise.then](#main-promise-api)
+* [promise.then](#promisethen)
 
-<a name="otherwise" />
-### catch()
+## promise.then
+
+```js
+// then()
+// Main promise API
+var newPromise = promise.then(onFulfilled, onRejected, onProgress);
+```
+
+[Promises/A+ `then`](http://promisesaplus.com).  Transforms a promise's value by applying a function to the promise's fulfillment value.  Returns a new promise for the transformed result.  It may also be used to recover from intermediate errors in a promise chain, although [`catch`](#promisecatch) is often a better (and more readable) choice.
+
+`then` arranges for:
+
+* `onFulfilled` to be called with the value after `promise` is fulfilled, or
+* `onRejected` to be called with the rejection reason after `promise` is rejected.
+* `onProgress` to be called with any progress updates issued by `promise`.
+
+Returns a trusted promise that will fulfill with the return value of either `onFulfilled` or `onRejected`, whichever is called, or will reject with the thrown exception if either throws.
+
+A promise makes the following guarantees about handlers registered in the same call to `.then()`:
+
+1. Only one of `onFulfilled` or `onRejected` will be called, never both.
+1. `onFulfilled` and `onRejected` will never be called more than once.
+1. `onProgress` may be called zero or more times.
+
+### See also
+* [Promises/A+](http://promisesaplus.com) for extensive information on the behavior of `then`.
+* [promise.done](#done)
+
+## promise.spread
+
+```js
+promise.spread(variadicOnFulfilled);
+```
+
+Arranges to call `variadicOnFulfilled` with promise's value, which is assumed to be an array, as its argument list.  It's essentially a shortcut for:
+
+```js
+// Wrapping variadicOnFulfilled
+promise.then(function(array) {
+	return variadicOnFulfilled.apply(undefined, array);
+});
+```
+
+## promise.catch
+
 **ALIAS:** otherwise() for non-ES5 environments
 
 ```js
@@ -174,8 +356,7 @@ Arranges to call `onRejected` on the promise's rejection reason if it is rejecte
 promise.then(undefined, onRejected);
 ```
 
-<a name="finally" />
-### finally()
+## promise.finally
 
 **ALIAS:** ensure() for non-ES5 environments
 
@@ -186,8 +367,6 @@ promise.ensure(onFulfilledOrRejected);
 ```
 
 Finally allows you to execute "cleanup" type tasks in a promise chain.  It arranges for `onFulfilledOrRejected` to be called, *with no arguments*, when promise is either fulfilled or rejected.  `onFulfilledOrRejected` cannot modify `promise`'s fulfillment value, but may signal a new or additional error by throwing an exception or returning a rejected promise.
-
-`promise.finally` should be used instead of `promise.always`.  It is safer in that it *cannot* transform a failure into a success by accident (which `always` could do simply by returning successfully!).
 
 When combined with `promise.catch`, `promise.finally` allows you to write code that is similar to the familiar synchronous `catch`/`finally` pair.  Consider the following synchronous code:
 
@@ -209,7 +388,10 @@ return doSomething()
 	.finally(cleanup);
 ```
 
-### yield()
+### See also:
+* [promise.catch](#promisecatch) - intercept a rejected promise
+
+## promise.yield
 
 ```js
 originalPromise.yield(promiseOrValue);
@@ -232,7 +414,32 @@ originalPromise.then(function() {
 });
 ```
 
-### tap()
+### See also:
+* [promise.else](#promiseelse) - return a default value when promise rejects
+
+## promise.else
+
+**ALIAS:** `orElse()` for non-ES5 environments
+
+```js
+var p1 = doAyncOperationThatMightFail();
+return p1.else(defaultValue);
+```
+
+If a promise is rejected, `else` catches the rejection and resolves the returned promise with a default value. This is a shortcut for manually `catch`ing a promise and returning a different value, as such:
+
+```js
+var p1 = doAyncOperationThatMightFail();
+return p1.catch(function() {
+    return defaultValue;
+});
+```
+
+### See also:
+* [promise.catch](#promisecatch) - intercept a rejected promise
+* [promise.tap](#promisetap) - execute a side effect in a promise chain
+
+## promise.tap
 
 ```js
 promise.tap(onFulfilledSideEffect);
@@ -260,25 +467,55 @@ promise.then(function(x) {
 promise.tap(doSideEffectsHere);
 ```
 
-### spread()
+### See also:
+* [promise.catch](#promisecatch) - intercept a rejected promise
+* [promise.else](#promiseelse) - return a default value when promise rejects
+
+## promise.delay
 
 ```js
-promise.spread(variadicOnFulfilled);
+var delayedPromise = promise.delay(milliseconds);
 ```
 
-Arranges to call `variadicOnFulfilled` with promise's values, which is assumed to be an array, as its argument list, e.g. `variadicOnFulfilled.spread(undefined, array)`.  It's a shortcut for either of the following:
+Create a new promise that, after `milliseconds` delay, fulfills with the same value as `promise`.  If `promise` rejects, `delayedPromise` will be rejected immediately.
 
 ```js
-// Wrapping variadicOnFulfilled
-promise.then(function(array) {
-	return variadicOnFulfilled.apply(undefined, array);
-});
+var delayed;
 
-// Or using when/apply
-promise.then(apply(variadicOnFulfilled));
+// delayed is a pending promise that will become fulfilled
+// in 1 second with the value "hello"
+delayed = when('hello').delay(1000);
+
+// delayed is a pending promise that will become fulfilled
+// 1 second after anotherPromise resolves, or will become rejected
+// *immediately* after anotherPromise rejects.
+delayed = anotherPromise.delay(1000);
+
+// Do something 1 second after triggeringPromise resolves
+triggeringPromise.delay(1000).then(doSomething).catch(handleRejection);
 ```
 
-### inspect()
+## promise.timeout
+
+```js
+var timedPromise = promise.timeout(milliseconds);
+```
+
+Create a new promise that will reject after a timeout if `promise` does not fulfill or reject beforehand.
+
+```js
+var node = require('when/node');
+
+// Lift fs.readFile so it returns promises
+var readFile = node.lift(fs.readFile);
+
+// Try to read the file, but timeout if it takes too long
+function readWithTimeout(path) {
+	return readFile(path).timeout(500);
+}
+```
+
+## promise.inspect
 
 ```js
 var status = promise.inspect();
@@ -292,68 +529,82 @@ Returns a snapshot descriptor of the current state of `promise`.  This descripto
 
 While there are use cases where synchronously inspecting a promise's state can be helpful, the use of `inspect` is discouraged.  It is almost always preferable to simply use `when()` or `promise.then` to be notified when the promise fulfills or rejects.
 
-#### See also:
+### See also:
 * [when.settle()](#whensettle) - settling an Array of promises
 
-### always()
+## promise.with
 
-**DEPRECATED:** Will be removed in an upcoming version
-
-```js
-promise.always(onFulfilledOrRejected [, onProgress]);
-```
-
-Arranges to call `onFulfilledOrRejected` on either the promise's value if it is fulfilled, or on it's rejection reason if it is rejected.  It's a shortcut for:
+**ALIAS:** `withThis()` for non-ES5 environments
 
 ```js
-promise.then(onFulfilledOrRejected, onFulfilledOrRejected [, onProgress]);
+var boundPromise = promise.with(object);
 ```
 
-### else()
+Creates a new promise that follows `promise`, but which will invoke its handlers with their `this` set to `object`.  Normally, promise handlers are invoked with no specific `thisArg`, so `with` can be very useful when bridging promises to object-oriented patterns and libraries.
 
-**ALIAS:** `orElse()` for non-ES5 environments
+**NOTE:** Promises returned from `with`/`withThis` are NOT Promises/A+ compliant, specifically violating 2.2.5 (http://promisesaplus.com/#point-41)
+
+For example:
 
 ```js
-var p1 = doAyncOperationThatMightFail();
-return p1.else(defaultValue);
+function Thing(value, message) {
+	this.value = value;
+	this.message = message;
+}
+
+Thing.prototype.doSomething = function(x) {
+	var promise = doAsyncStuff(x);
+	return promise.with(this) // Set thisArg to this thing instance
+		.then(this.addValue)  // Works since addValue will have correct thisArg
+		.then(this.format);   // all subsequent promises retain thisArg
+};
+
+Thing.prototype.addValue = function(y) {
+	return this.value + y;
+};
+
+Thing.prototype.format = function(result) {
+	return this.message + result;
+};
+
+// Using it
+var thing = new Thing(41, 'The answer is ');
+
+thing.doSomething(1)
+    .with(console) // Re-bind thisArg now to console
+	.then(console.log); // Logs 'The answer is 42'
+
 ```
 
-If a promise is rejected, `else` catches the rejection and fulfills with a default value. This is a shortcut for manually `catch`ing a promise and returning a value, as such:
+All promises created from `boundPromise` will also be bound to the same thisArg until `with` is used to re-bind or *unbind* it.  In the previous example, the promise returned from `thing.doSomething` still has its thisArg bound to `thing`.  That may not be what you want, so you can *unbind* it just before returning:
 
 ```js
-var p1 = doAyncOperationThatMightFail();
-return p1.catch(function() {
-    return defaultValue;
-});
+Thing.prototype.doSomething = function(x) {
+	var promise = doAsyncStuff(x);
+	return promise.with(this)
+		.then(this.addValue)
+		.then(this.format)
+		.with(); // Unbind thisArg
+};
 ```
 
-#### See also:
-* [when.catch()](#catch) - intercept a rejected promise
+## promise.progress
 
-## Progress events
+```js
+promise.progress(onProgress);
+```
+
+Registers a handler for progress updates from `promise`.  It is a shortcut for:
+
+```js
+promise.then(void 0, void 0, onProgress);
+```
+
+### Notes on Progress events
 
 Progress events are not specified in Promises/A+ and are optional in Promises/A.  They have proven to be useful in practice, but unfortunately, they are also underspecified, and there is no current *de facto* or agreed-upon behavior in the promise implementor community.
 
-The two sections below describe how they behave in when.js.
-
-### 1.5.x and earlier
-
-Prior to 1.6.0, progress events were only delivered to progress handlers registered directly on the promise where the progress events were being issued.  In other words, in the following example, `myProgressHandler` would be called with `update`, but `myOtherProgressHandler` would *not*.
-
-```js
-var d = when.defer();
-d.promise.then(undefined, undefined, myProgressHandler);
-
-var chainedPromise = d.promise.then(doStuff);
-chainedPromise.then(undefined, undefined, myOtherProgressHandler);
-
-var update = 1;
-d.notify(update);
-```
-
-### 1.6.0 and later
-
-As of 1.6.0, progress events will be propagated through a promise chain:
+In when.js, progress events will be propagated through a promise chain:
 
 1. In the same way as resolution and rejection handlers, your progress handler *MUST* return a progress event to be propagated to the next link in the chain.  If you return nothing, *undefined will be propagated*.
 1. Also in the same way as resolutions and rejections, if you don't register a progress handler (e.g. `.then(handleResolve, handleReject /* no progress handler */)`), the update will be propagated through.
@@ -362,7 +613,7 @@ As of 1.6.0, progress events will be propagated through a promise chain:
 
 This gives you the opportunity to *transform* progress events at each step in the chain so that they are meaningful to the next step.  It also allows you to choose *not* to transform them, and simply let them propagate untransformed, by not registering a progress handler.
 
-Here is how the above situation works in >= 1.6.0:
+Here is an example:
 
 ```js
 function myProgressHandler(update) {
@@ -390,130 +641,11 @@ d.notify(update);
 // logProgress(2);
 ```
 
-## Deferred
-
-A deferred is a convenience `{promise, resolver}` pair.  Its `promise` and `resolver` parts can be given out to separate groups of consumers and producers, respectively, to allow safe, one-way communication.
-
-```js
-var promise = deferred.promise;
-var resolver = deferred.resolver;
-```
-
-**Note:** Although a deferred has the full `resolver` API, this should used *for convenience only, by the creator of the deferred*.  Only the `resolver` should be given to consumers and producers.
-
-```js
-deferred.resolve(promiseOrValue);
-deferred.reject(reason);
-deferred.notify(update);
-```
-
-### Resolver
-
-The resolver represents *responsibility*--the responsibility of fulfilling or rejecting the associated promise.  This responsibility may be given out separately from the promise itself.
-
-```js
-var resolver = deferred.resolver;
-resolver.resolve(promiseOrValue);
-resolver.reject(reason);
-resolver.notify(update);
-```
-
-# Creating promises
-
-## when.promise()
-
-```js
-var promise = when.promise(resolver);
-```
-
-Create a [Promise](#promise), whose fate is determined by the supplied resolver function.  The resolver function will be called synchronously, with 3 arguments:
-
-```js
-var promise = when.promise(function(resolve, reject, notify) {
-	// Do some work, possibly asynchronously, and then
-	// resolve or reject.  You can notify of progress events
-	// along the way if you want/need.
-
-	resolve(awesomeResult);
-	// or resolve(anotherPromise);
-	// or reject(nastyError);
-});
-```
-
-* `resolve(promiseOrValue)` - Primary function that seals the fate of the returned promise. Accepts either a non-promise value, or another promise.
-	* When called with a non-promise value, fulfills `promise` with that value.
-	* When called with another promise, e.g. `resolve(otherPromise)`, `promise`'s fate will be equivalent to that that of `otherPromise`.
-* `reject(reason)` - function that rejects `promise`.
-* `notify(update)` - function that issues progress events for `promise`.
-
-## when.defer()
-
-```js
-var deferred = when.defer();
-var promise = deferred.promise;
-```
-
-Create a `{promise, resolver}` pair, aka [Deferred](#deferred).  In some scenarios it can be convenient to have access to both the `promise` and it's associated resolving functions, for example, to give each out to a separate party.  In such cases it can be convenient to use `when.defer()`.
-
-## when.resolve()
-
-```js
-var resolved = when.resolve(promiseOrValue);
-```
-
-Create a resolved promise for the supplied promiseOrValue. If promiseOrValue is a value, it will be the resolution value of the returned promise.  Returns promiseOrValue if it's a trusted promise. If promiseOrValue is a foreign promise, returns a promise in the same state (resolved or rejected) and with the same value as promiseOrValue.
-
-## when.reject()
-
-```js
-var rejected = when.reject(error);
-```
-
-Create a rejected promise with the supplied error as the rejection reason.
-
-**DEPRECATION WARNING:** In when.js 2.x, error is allowed to be a promise for an error.  In when.js 3.0, error will always be used verbatim as the rejection reason, even if it is a promise.
-
-If error is a value, it will be the rejection reason of the returned promise.  If error is a promise, its rejection reason will be the rejection reason of the returned promise.
-
-## when.isPromiseLike()
-
-**DEPRECATED ALIAS:** when.isPromise()
-
-```js
-var is = when.isPromiseLike(anything);
-```
-
-Return true if `anything` is an object or function with a `then` method.  It does not distinguish trusted when.js promises from other "thenables" (e.g. from some other promise implementation).
-
-# Joining promises
-
-Promises can be immensely helpful when coordinating multiple *eventual outcomes*.
-
-## when.join()
-
-```js
-var joinedPromise = when.join(promiseOrValue1, promiseOrValue2, ...);
-```
-
-Return a promise that will resolve only once *all* the inputs have resolved.  The resolution value of the returned promise will be an array containing the resolution values of each of the inputs.
-
-If any of the input promises is rejected, the returned promise will be rejected with the reason from the first one that is rejected.
-
-```js
-// largerPromise will resolve to the greater of two eventual values
-var largerPromise = when.join(promise1, promise2).then(function (values) {
-	return values[0] > values[1] ? values[0] : values[1];
-});
-```
-
-### See also:
-* [when.all()](#whenall) - resolving an Array of promises
-
-# Arrays of promises
+# Arrays
 
 When.js provides methods to use array-like patterns to coordinate several promises.
 
-## when.all()
+## when.all
 
 ```js
 var promise = when.all(array)
@@ -531,7 +663,7 @@ If any of the promises is rejected, the returned promise will be rejected with t
 * [when.join()](#whenjoin) - joining multiple promises
 * [when.settle()](#whensettle) - settling an Array of promises
 
-## when.map()
+## when.map
 
 ```js
 var promise = when.map(array, mapFunc)
@@ -555,10 +687,12 @@ Where:
 
 * `item` is a fully resolved value
 
-## when.reduce()
+## when.reduce
+## when.reduceRight
 
 ```js
 var promise = when.reduce(array, reduceFunc [, initialValue])
+var promise = when.reduceRight(array, reduceFunc [, initialValue])
 ```
 
 Where:
@@ -589,7 +723,7 @@ var sumPromise = when.reduce(inputPromisesOrValues, function (sum, value) {
 
 If any of the promises is rejected, the returned promise will be rejected with the rejection reason of the first promise that was rejected.
 
-## when.settle()
+## when.settle
 
 ```js
 var promise = when.settle(array);
@@ -631,7 +765,7 @@ settled.then(function(descriptors) {
 * [when.all()](#whenall) - resolving an Array of promises
 * [promise.inspect()](#inspect) - inspecting a promise's state
 
-# Object Keys
+# Objects
 
 the `when/keys` module provides `all()`, and `map()` for working with object keys, for the times when organizing promises in a hash using object keys is more convenient than using an array.
 
@@ -681,11 +815,11 @@ Where:
 ### See also:
 * [when.map()](#whenmap)
 
-# Competitive races
+# Array Races
 
 The *competitive race* pattern may be used if one or more of the entire possible set of *eventual outcomes* are sufficient to resolve a promise.
 
-## when.any()
+## when.any
 
 ```js
 var promise = when.any(array)
@@ -697,7 +831,7 @@ Where:
 
 Initiates a competitive race that allows one winner, returning a promise that will resolve when any one of the items in `array` resolves.  The returned promise will only reject if *all* items in `array` are rejected.  The resolution value of the returned promise will be the fulfillment value of the winning promise.  The rejection value will be an array of all rejection reasons.
 
-## when.some()
+## when.some
 
 ```js
 var promise = when.some(array, howMany)
@@ -716,6 +850,8 @@ var remotes = [connect('p2p.cdn.com'), connect('p2p2.cdn.com'), connect('p2p3.cd
 when.some(remotes, 1).then(initP2PServer, failGracefully);
 ```
 
+## when.race
+
 # Unbounded lists
 
 [when.reduce](#whenreduce), [when/sequence](#whensequence), and [when/pipeline](#whenpipeline) are great ways to process asynchronous arrays of promises and tasks.  Sometimes, however, you may not know the array in advance, or may not need or want to process *all* the items in the array.  For example, here are a few situations where you may not know the bounds:
@@ -726,7 +862,10 @@ when.some(remotes, 1).then(initP2PServer, failGracefully);
 
 In these cases, you can use `when/unfold` to iteratively (and asynchronously) process items until a particular condition, which you supply, is true.
 
-## when/unfold
+## when.iterate
+
+
+## when.unfold
 
 ```js
 var unfold, promise;
@@ -847,118 +986,7 @@ function printFirstLine(content) {
 unfold(unspool, condition, printFirstLine, files).catch(console.error);
 ```
 
-
-## when/unfold/list
-
-```js
-var unfoldList, resultPromise;
-
-unfoldList = require('when/unfold/list');
-
-resultPromise = unfoldList(unspool, condition, seed);
-```
-
-Where:
-* `unspool` - function that, given a seed, returns a `[valueToAddToList, newSeed]` pair. May return an array, array of promises, promise for an array, or promise for an array of promises.
-* `condition` - function that should return truthy when the unfold should stop
-* `seed` - intial value provided to the first `unspool` invocation. May be a promise.
-
-Generate a list of items from a seed by executing the `unspool` function while `condition` returns true.  The `resultPromise` will fulfill with an array containing all each `valueToAddToList` that is generated by `unspool`.
-
-### Example
-
-```js
-function condition(i) {
-	// Terminate the unfold when i == 3;
-	return i == 3;
-}
-
-// unspool will be called initially with the seed value, 0, passed
-// to unfoldList() below
-function unspool(x) {
-	// Return a pair
-	// item 0: will be added to the resulting list
-	// item 1: will be passed to the next call to condition() and unspool()
-	return [x, x+1];
-}
-
-// Logs:
-// [0, 1, 2]
-unfoldList(unspool, condition, 0).then(console.log.bind(console));
-```
-
-# Timed promises
-
-## when/delay
-
-```js
-var delayed = delay(milliseconds [, promiseOrValue]);
-var delayed = delay(milliseconds);
-
-// DEPRECATED, but currently works:
-var delayed = delay(promiseOrValue, milliseconds);
-```
-
-Create a promise that resolves after a delay, or after a delay following the resolution of another promise.
-
-```js
-var delay, delayed;
-
-delay = require('when/delay');
-
-// delayed is a pending promise that will become fulfilled
-// in 1 second (with the value `undefined`)
-// Useful as a timed trigger when the value doesn't matter
-delayed = delay(1000);
-
-// delayed is a pending promise that will become fulfilled
-// in 1 second with the value "hello"
-delayed = delay(1000, "hello")
-
-// delayed is a pending promise that will become fulfilled
-// 1 second after anotherPromise resolves, or will become rejected
-// *immediately* after anotherPromise rejects.
-delayed = delay(1000, anotherPromise);
-
-// Do something after 1 second, similar to using setTimeout
-delay(1000).then(doSomething);
-
-// Do something 1 second after triggeringPromise resolves
-delay(1000, triggeringPromise).then(doSomething, handleRejection);
-```
-
-More when/delay [examples on the wiki](https://github.com/cujojs/when/wiki/when-delay)
-
-
-## when/timeout
-
-```js
-var timed = timeout(milliseconds, promiseOrValue);
-
-// DEPRECATED, but currently works:
-var delayed = delay(promiseOrValue, milliseconds);
-```
-
-Create a promise that will reject after a timeout if promiseOrValue does not resolved or rejected beforehand.  If promiseOrValue is a value, the returned promise will resolve immediately.  More interestingly, if promiseOrValue is a promise, if it resolved before the timeout period, the returned promise will resolve.  If it doesn't, the returned promise will reject.
-
-```js
-var timeout, timed, d;
-
-timeout = require('when/timeout');
-
-// timed will reject after 5 seconds unless anotherPromise resolves beforehand.
-timed = timeout(5000, anotherPromise);
-
-d = when.defer();
-// Setup d however you need
-
-// return a new promise that will timeout if d doesn't resolve/reject first
-return timeout(1000, d.promise);
-```
-
-More when/timeout [examples on the wiki](https://github.com/cujojs/when/wiki/when-timeout)
-
-# Concurrency
+# Tasks
 
 These modules allow you to execute tasks in series or parallel.  Each module takes an Array of task functions (or a *promise* for an Array), executes the tasks, and returns a promise that resolves when all the tasks have completed.
 
@@ -1739,3 +1767,40 @@ require('when/monitor/console');
 The monitor modules are building blocks.  The [when/monitor/console](../monitor/console.js) module is one particular, and fairly simple, monitor built using the monitoring APIs and tools (PrettyMonitor is another, prettier one!).  Using when/monitor/console as an example, you can build your own promise monitoring tools that look for specific types of errors, or patterns and log or display them in whatever way you need.
 
 
+## Deferred
+
+A deferred is a convenience `{promise, resolver}` pair.  Its `promise` and `resolver` parts can be given out to separate groups of consumers and producers, respectively, to allow safe, one-way communication.
+
+```js
+var promise = deferred.promise;
+var resolver = deferred.resolver;
+```
+
+**Note:** Although a deferred has the full `resolver` API, this should used *for convenience only, by the creator of the deferred*.  Only the `resolver` should be given to consumers and producers.
+
+```js
+deferred.resolve(promiseOrValue);
+deferred.reject(reason);
+deferred.notify(update);
+```
+
+### Resolver
+
+The resolver represents *responsibility*--the responsibility of fulfilling or rejecting the associated promise.  This responsibility may be given out separately from the promise itself.
+
+```js
+var resolver = deferred.resolver;
+resolver.resolve(promiseOrValue);
+resolver.reject(reason);
+resolver.notify(update);
+```
+
+## when.isPromiseLike()
+
+**DEPRECATED ALIAS:** when.isPromise()
+
+```js
+var is = when.isPromiseLike(anything);
+```
+
+Return true if `anything` is an object or function with a `then` method.  It does not distinguish trusted when.js promises from other "thenables" (e.g. from some other promise implementation).
