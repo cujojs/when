@@ -122,33 +122,24 @@ define(function (require) {
 	/**
 	 * Creates a {promise, resolver} pair, either or both of which
 	 * may be given out safely to consumers.
-	 * The resolver has resolve, reject, and progress.  The promise
-	 * has then plus extended promise API.
-	 *
-	 * @return {{
-	 * promise: Promise,
-	 * resolve: function:Promise,
-	 * reject: function:Promise,
-	 * notify: function:Promise
-	 * }}
+	 * @return {{promise: Promise, resolve: function, reject: function, notify: function}}
 	 */
 	function defer() {
-		// Optimize object shape
-		var deferred = {
-			promise: void 0,
-			resolve: void 0, reject: void 0, notify: void 0,
-			resolver: { resolve: void 0, reject: void 0, notify: void 0 }
-		};
+		return new Deferred();
+	}
 
-		deferred.promise = new Promise(makeDeferred);
+	function Deferred() {
+		var d = Promise._defer();
 
-		return deferred;
+		function resolve(x) { d.resolver.resolve(x); }
+		function reject(x) { d.resolver.reject(x); }
+		function notify(x) { d.resolver.notify(x); }
 
-		function makeDeferred(resolvePending, rejectPending, notifyPending) {
-			deferred.resolve = deferred.resolver.resolve = resolvePending;
-			deferred.reject  = deferred.resolver.reject  = rejectPending;
-			deferred.notify  = deferred.resolver.notify  = notifyPending;
-		}
+		this.promise = d.promise;
+		this.resolve = resolve;
+		this.reject = reject;
+		this.notify = notify;
+		this.resolver = { resolve: resolve, reject: reject, notify: notify };
 	}
 
 	/**
