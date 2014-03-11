@@ -2,10 +2,10 @@ API
 ===
 
 1. Core
-	* [when](#when)
-	* [when.try](#whentry)
-	* [when.lift](#whenlift)
-	* [when.join](#whenjoin)
+	* [when(x)](#when) get a trusted promise for `x`
+	* [when.try(f, ...args)](#whentry) call `f` with `args`, return a promise for the result
+	* [when.lift(f)](#whenlift)
+	* [when.join(...promises)](#whenjoin)
 	* [when.promise](#whenpromise)
 	* [when.resolve](#whenresolve)
 	* [when.reject](#whenreject)
@@ -259,7 +259,7 @@ Note that there are still cases that `done` simply cannot catch, such as the cas
 
 Since `done`'s purpose is consumption rather than transformation, `done` always returns `undefined`.
 
-#### See also
+### See also
 * [promise.then](#promisethen)
 
 ## promise.then
@@ -311,15 +311,25 @@ promise.then(function(array) {
 
 ```js
 promise.catch(onRejected);
-// or
-promise.otherwise(onRejected);
+
+promise.catch(predicate, onRejected);
 ```
 
-Arranges to call `onRejected` on the promise's rejection reason if it is rejected.  It's a shortcut for:
+In it's simplest form, `catch` arranges to call `onRejected` on the promise's rejection reason if it is rejected.  It's a shortcut for:
 
 ```js
 promise.then(undefined, onRejected);
 ```
+
+If you also supply a `predicate`, you can `catch` only errors matching the predicate.  This allows much more precise error handling.  The `predicate` can be either an `Error` constructor, like `TypeError`, `ReferenceError`, or any custom error type (its `prototype` must be `instanceof Error`), or it can be a function that returns a boolean.
+
+```js
+promise.then(function() {
+	throw new CustomError('oops!');
+}).catch(CustomError, function(e) {
+	// Only catch CustomError instances
+	// all other types of errors will propagate automatically
+})
 
 ## promise.finally
 
