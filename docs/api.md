@@ -2,108 +2,72 @@ API
 ===
 
 1. Core
-	* when
-	* when.try
-	* when.lift
-	* when.join
-	* when.promise
-	* when.defer
-	* when.resolve
-	* when.reject
-1. Promise
-	* done
-	* then
-	* spread
-	* catch
-	* finally
-	* yield
-	* else
-	* tap
-	* delay
-	* timeout
-	* inspect
-	* with
-	* progress
-1. Arrays
-	* when.all
-	* when.settle
-	* when.map
-	* when.reduce
-	* when.reduceRight
-	* when.iterate
-	* when.unfold
-1. Array Races
-	* when.any
-	* when.some
-	* when.race
-1. Objects
-	* when/keys all
-	* when/keys map
-1. Functions
-	* when/node
-		* lift
-		* liftAll
-		* call
-		* apply
-	* when/function
-		* lift
-		* liftAll
-		* call
-		* apply
-	* when/callbacks
-		* lift
-		* liftAll
-		* call
-		* apply
-1. Tasks
-	* when/parallel
-	* when/pipeline
-	* when/sequence
-1. Debugging
-
-1. [when](#when)
-1. [Promise](#promise)
-	* [Extended Promise API](#extended-promise-api)
-	* [Progress events](#progress-events)
-1. [Deferred](#deferred)
-1. [Creating promises](#creating-promises)
+	* [when](#when)
+	* [when.try](#whentry)
+	* [when.lift](#whenlift)
+	* [when.join](#whenjoin)
 	* [when.promise](#whenpromise)
-	* [when.defer](#whendefer)
 	* [when.resolve](#whenresolve)
 	* [when.reject](#whenreject)
-1. [Joining promises](#joining-promises)
-	* [when.join](#whenjoin)
-1. [Arrays of promises](#arrays-of-promises)
+	* [when.defer](#whendefer)
+1. Promise
+	* [done](#promisedone)
+	* [then](#promisethen)
+	* [spread](#promisespread)
+	* [catch](#promisecatch)
+	* [finally](#promisefinally)
+	* [yield](#promiseyield)
+	* [else](#promiseelse)
+	* [tap](#promisetap)
+	* [delay](#promisedelay)
+	* [timeout](#promisetimeout)
+	* [inspect](#promiseinspect)
+	* [with](#promisewith)
+	* [progress](#promiseprogress)
+1. Arrays
 	* [when.all](#whenall)
+	* [when.settle](#whensettle)
 	* [when.map](#whenmap)
 	* [when.reduce](#whenreduce)
-	* [when.settle](#whensettle)
-1. [Competitive races](#competitive-races)
+	* [when.reduceRight](#whenreduceright)
+	* [when.iterate](#wheniterate)
+	* [when.unfold](#whenunfold)
+1. Array Races
 	* [when.any](#whenany)
 	* [when.some](#whensome)
-1. [Object keys](#object-keys)
-	* [when/keys all](#whenkeys-all)
-	* [when/keys map](#whenkeys-map)
-1. [Unbounded lists](#unbounded-lists)
-	* [when/unfold](#whenunfold)
-	* [when/unfold/list](#whenunfoldlist)
-1. [Timed promises](#timed-promises)
-	* [when/delay](#whendelay)
-	* [when/timeout](#whentimeout)
-1. [Concurrency](#concurrency)
+	* [when.race](#whenrace)
+1. Objects
+	* when/keys
+		* [all](#whenkeys-all)
+		* [map](#whenkeys-map)
+1. Functions
+	* when/node
+		* [lift](#nodelift)
+		* [liftAll](#nodeliftall)
+		* [call](#nodecall)
+		* [apply](#nodeapply)
+	* when/function
+		* [lift](#fnlift)
+		* [liftAll](#fnliftall)
+		* [call](#fncall)
+		* [apply](#fnapply)
+	* when/callbacks
+		* [lift](#callbackslift)
+		* [liftAll](#callbacksliftall)
+		* [call](#callbackscall)
+		* [apply](#callbacksapply)
+1. [ES6 generators](#es6-generators)
+	* when/generator
+		* [lift](#generatorlift)
+		* [liftAll](#generatorliftall)
+		* [call](#generatorcall)
+		* [apply](#generatorapply)
+1. Concurrency
 	* [when/sequence](#whensequence)
 	* [when/pipeline](#whenpipeline)
 	* [when/parallel](#whenparallel)
 	* [when/guard](#whenguard)
 	* [Guard conditions](#guard-conditions)
-1. [Polling with promises](#polling-with-promises)
-	* [when/poll](#whenpoll)
-1. [Interacting with non-promise code](#interacting-with-non-promise-code)
-	* [Synchronous functions](#synchronous-functions)
-	* [Asynchronous functions](#asynchronous-functions)
-	* [Node-style asynchronous functions](#node-style-asynchronous-functions)
-1. [ES6 generators](#es6-generators)
-	* [when/generator](#whengenerator)
 1. [Debugging promises](#debugging-promises)
 
 # Core
@@ -154,7 +118,7 @@ when(promiseOrValue, onFulfilled);
 
 In either case, `when()` will *always* return a trusted when.js promise, which will be fully Promises/A compliant and also have the [extended promise API](#extended-promise-api).
 
-## when.try()
+## when.try
 
 ```js
 var promise = when.try(f /*, arg1, arg2, ...*/);
@@ -163,11 +127,12 @@ var promise = when.try(f /*, arg1, arg2, ...*/);
 Calls `f` with the supplied arguments, returning a promise for the result.  The arguments may be promises, in which case, `f` will be called after they have fulfilled.  The returned promise will fulfill with the successful result of calling `f`.  If any argument is a rejected promise, or if `f` fails by throwing or returning a rejected promise, the returned promise will also be rejected.
 
 ### See also:
-* when.lift
+* [when.lift](#whenlift)
+* Calling node-style functions
 * when/function call
 * when/function apply
 
-## when.lift()
+## when.lift
 
 ```js
 var g = when.lift(f);
@@ -179,11 +144,11 @@ Lifting functions provides a convenient way start promise chains without having 
 
 ### See also:
 * [when.try](#whentry)
-* when/function lift
+* Lifting node-style functions
 * when/function liftAll
 
 
-## when.join()
+## when.join
 
 ```js
 var joinedPromise = when.join(promiseOrValue1, promiseOrValue2, ...);
@@ -229,17 +194,6 @@ var promise = when.promise(function(resolve, reject, notify) {
 * `reject(reason)` - function that rejects `promise`.
 * `notify(update)` - function that issues progress events for `promise`.
 
-## when.defer
-
-```js
-var deferred = when.defer();
-var promise = deferred.promise;
-```
-
-Create a `{promise, resolver}` pair, aka [Deferred](#deferred).  In some scenarios it can be convenient to have access to both the `promise` and it's associated resolving functions, for example, to give each out to a separate party. In most cases, however, using `when.promise` provides better separation of concerns.
-
-One common use case for creating a deferred is adapting callback-based functions to promises.  In those cases, it's preferable to use the [when/callbacks](#asynchronous-functions) module to [call](#callbackscall) or [lift](#callbackslift) the callback-based functions instead.
-
 ## when.resolve
 
 ```js
@@ -257,6 +211,17 @@ var rejected = when.reject(error);
 Create a rejected promise with the supplied error as the rejection reason.
 
 **DEPRECATION WARNING:** In when.js 2.x, error is allowed to be a promise for an error.  In when.js 3.0, error will always be used verbatim as the rejection reason, even if it is a promise.
+
+## when.defer
+
+```js
+var deferred = when.defer();
+var promise = deferred.promise;
+```
+
+Create a `{promise, resolver}` pair, aka [Deferred](#deferred).  In some scenarios it can be convenient to have access to both the `promise` and it's associated resolving functions, for example, to give each out to a separate party. In most cases, however, using `when.promise` provides better separation of concerns.
+
+One common use case for creating a deferred is adapting callback-based functions to promises.  In those cases, it's preferable to use the [when/callbacks](#asynchronous-functions) module to [call](#callbackscall) or [lift](#callbackslift) the callback-based functions instead.
 
 # Promise
 
