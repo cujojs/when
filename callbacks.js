@@ -11,9 +11,10 @@
 (function(define) {
 define(function(require) {
 
-	var when, promise, slice, _liftAll;
+	var when, Promise, promise, slice, _liftAll;
 
 	when = require('./when');
+	Promise = when.Promise;
 	_liftAll = require('./lib/liftAll');
 	promise = when.promise;
 	slice = Array.prototype.slice;
@@ -65,14 +66,10 @@ define(function(require) {
 	 * @private
 	 */
 	function _apply(asyncFunction, thisArg, extraAsyncArgs) {
-		return when.all(extraAsyncArgs || []).then(function(args) {
+		return Promise.all(extraAsyncArgs || []).then(function(args) {
 			return promise(function(resolve, reject) {
-				var asyncArgs = args.concat(
-					alwaysUnary(resolve),
-					alwaysUnary(reject)
-				);
-
-				asyncFunction.apply(thisArg, asyncArgs);
+				args.push(alwaysUnary(resolve), alwaysUnary(reject));
+				asyncFunction.apply(thisArg, args);
 			});
 		});
 	}
@@ -197,7 +194,7 @@ define(function(require) {
 
 		return function() {
 			var thisArg = this;
-			return when.all(arguments).then(function(args) {
+			return Promise.all(arguments).then(function(args) {
 				return promise(applyPromisified);
 
 				function applyPromisified(resolve, reject) {

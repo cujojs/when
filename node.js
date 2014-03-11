@@ -11,9 +11,10 @@
 (function(define) {
 define(function(require) {
 
-	var when, slice, setTimer, _liftAll;
+	var when, Promise, slice, setTimer, _liftAll;
 
 	when = require('./when');
+	Promise = when.Promise;
 	_liftAll = require('./lib/liftAll');
 	setTimer = require('./lib/timer').set;
 	slice = Array.prototype.slice;
@@ -67,10 +68,10 @@ define(function(require) {
 	 * @private
 	 */
 	function _apply(func, thisArg, args) {
-		return when.all(args || []).then(function(resolvedArgs) {
+		return Promise.all(args || []).then(function(resolvedArgs) {
 			return when.promise(function(resolve, reject) {
-				var nodeback = _createCallback(resolve, reject);
-				func.apply(thisArg, resolvedArgs.concat(nodeback));
+				resolvedArgs.push(_createCallback(resolve, reject));
+				func.apply(thisArg, resolvedArgs);
 			});
 		});
 	}
