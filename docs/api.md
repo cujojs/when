@@ -219,9 +219,9 @@ var deferred = when.defer();
 var promise = deferred.promise;
 ```
 
-Create a `{promise, resolver}` pair, aka [Deferred](#deferred).  In some scenarios it can be convenient to have access to both the `promise` and it's associated resolving functions, for example, to give each out to a separate party. In most cases, however, using `when.promise` provides better separation of concerns.
+Create a `{promise, resolver}` pair.  In some scenarios it can be convenient to have access to both the `promise` and it's associated resolving functions, for example, to give each out to a separate party. In most cases, however, using `when.promise` provides better separation of concerns.
 
-One common use case for creating a deferred is adapting callback-based functions to promises.  In those cases, it's preferable to use the [when/callbacks](#asynchronous-functions) module to [call](#callbackscall) or [lift](#callbackslift) the callback-based functions instead.
+One common use case for creating a deferred is adapting callback-based functions to promises.  In those cases, it's preferable to use the [when/callbacks](#asynchronous-functions) module to [call](#callbackscall) or [lift](#callbackslift) the callback-based functions instead.  For adapting node-style async functions, use the [when/node](#node-style-asynchronous-functions) module.
 
 # Promise
 
