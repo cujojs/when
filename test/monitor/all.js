@@ -15,9 +15,17 @@
 
 		var when = require('../../when');
 
-		var p = when.reject(new Error('fail1'));
+		when.resolve().then(function outer() {
+//			return when.resolve().then(function inner() {
+				return when.resolve().then(function evenMoreInner() {
+					a.b.c.d()
+				});
+//			});
+		});
 
-		when.all([p]);
+//		var p = when.reject(new Error('fail1'));
+//
+//		when.all([p]);
 
 	});
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

@@ -1133,7 +1133,65 @@ These modules are aimed at dampening the friction between code that is based on 
 
 The `when/function` module contains functions for calling and adapting "normal" functions (i.e. those that take plain values, return plain values, and throw exceptions on errors). By calling those functions with `fn.call` and `fn.apply`, or by creating a new function with `fn.lift`, the return value will always be a promise, and thrown exceptions will be turned into rejections. As a bonus, promises given as arguments will be transparently resolved before the call.
 
-### `fn.call()`
+### `fn.lift`
+
+```js
+var promiseFunction = fn.lift(normalFunction, arg1, arg2/* ...more args */);
+```
+
+When the same function will be called through `fn.call()` or `fn.apply()` multiple times, it can be more efficient to lift it create a wrapper function that has promise-awareness and exposes the same behavior as the original function. That's what `fn.lift()` does: It takes a normal function and returns a new, promise-aware version of it. As `Function.prototype.bind`, it makes partial application of any additional arguments.
+
+```js
+var fn, when;
+
+when = require("when");
+fn   = require("when/function");
+
+function setText(element, text) {
+	element.text = text;
+}
+
+function getMessage() {
+	// Async function that returns a promise
+}
+
+var element = {};
+
+// Resolving the promise ourselves
+getMessage().then(function(message) {
+	setText(element, message);
+});
+
+// Using fn.call()
+fn.call(setText, element, getMessage());
+
+// Creating a lifted function using fn.lift()
+var promiseSetText = fn.lift(setText);
+promiseSetText(element, getMessage());
+
+// Partial application
+var setElementMessage = fn.lift(setText, element);
+setElementMessage(getMessage());
+```
+
+### `fn.liftAll`
+
+```js
+var liftedApi = fn.liftAll(srcApi);
+
+var liftedApi = fn.liftAll(srcApi, transform);
+
+var destApi = fn.liftAll(srcApi, transform, destApi);
+```
+
+Lifts all the methods of a source object, returning a new object with all the lifted methods.  The optional `transform` function allows you to rename or otherwise customize how the lifted functions are added to the returned object.  If `destApi` is provided, lifted methods will be added to it, instead of to a new object, and `destApi` will be returned.
+
+TODO: Need example
+```js
+
+```
+
+### `fn.call`
 
 ```js
 var promisedResult = fn.call(normalFunction, arg1, arg2/* ...more args */);
@@ -1166,7 +1224,7 @@ fn.call(divideNumbers, 20, promiseForFive).then(console.log);
 fn.call(divideNumbers, 10, 0).then(console.log, console.error);
 ```
 
-### `fn.apply()`
+### `fn.apply`
 
 ```js
 var promisedResult = fn.apply(normalFunction, [arg1, arg2/* ...more args */]);
@@ -1194,48 +1252,7 @@ var shortCircuit = when.reject("something wrong happened");
 fn.apply(sumMultipleNumbers, [10, 20, shortCircuit]).then(console.log, console.error);
 ```
 
-### `fn.lift()`
-
-```js
-var promiseFunction = fn.lift(normalFunction, arg1, arg2/* ...more args */);
-```
-
-When the same function will be called through `fn.call()` or `fn.apply()` multiple times, it can be more efficient to create a wrapper function that has promise-awareness and exposes the same behavior as the original function. That's what `fn.lift()` does: It takes a normal function and returns a new, promise-aware version of it. As `Function.prototype.bind`, it makes partial application of any additional arguments.
-
-```js
-var fn, when;
-
-when = require("when");
-fn   = require("when/function");
-
-function setText(element, text) {
-	element.text = text;
-}
-
-function getMessage() {
-	// Async function that returns a promise
-}
-
-var element = {};
-
-// Resolving the promies ourselves
-getMessage().then(function(message) {
-	setText(element, message);
-});
-
-// Using fn.call()
-fn.call(setText, element, getMessage());
-
-// Creating a new function using fn.lift()
-var promiseSetText = fn.lift(setText);
-promiseSetText(element, getMessage());
-
-// Leveraging the partial application
-var setElementMessage = fn.lift(setText, element);
-setElementMessage(getMessage());
-```
-
-### `fn.compose()`
+### `fn.compose`
 
 ```js
 var composedFunc = fn.compose(func1, func2 /* ...more functions */);
@@ -1260,56 +1277,8 @@ setInterval(function() {
 
 Much of the asynchronous functionality available to javascript developers, be it directly from the environment or via third party libraries, is callback/errback-based. The `when/callbacks` module provides functions to interact with those APIs via promises in a transparent way, without having to write custom wrappers or change existing code. All the functions on this module (with the exception of `callbacks.promisify()`) assume that the callback and errback will be on the "standard" positions - the penultimate and last arguments, respectively.
 
-### `callbacks.call()`
 
-```js
-var promisedResult = callbacks.call(callbackTakingFunc, arg1, arg2/* ...more args */);
-```
-
-Takes a callback-taking function and returns a promise for its final value, forwarding any additional arguments. The promise will be resolved when the function calls its callback, and the resolution value will be callback's first argument. If multiple values are passed to the callback, the promise will resolve to an array. The same thing happens if the function call the errback, with the difference that the promise will be rejected instead.
-
-```js
-var domIsLoaded = callbacks.call($);
-domIsLoaded.then(doMyDomStuff);
-
-var waitFiveSeconds = callbacks.call(setTimeout, 5000);
-waitFiveSeconds.then(function() {
-	console.log("Five seconds have passed");
-});
-```
-
-### `callbacks.apply()`
-
-```js
-var promisedResult = callbacks.apply(callbackTakingFunc, [arg1, arg2/* ...more args */]);
-```
-
-The array-taking analog to `callbacks.call`, as `Function.prototype.apply` is to `Function.prototype.call`.
-
-```js
-// This example simulates fading away an element, fading in a new one, fetching
-// two remote resources, and then waiting for all that to finish before going
-// forward. The APIs are all callback-based, but only promises are manipulated.
-
-// Function.prototype.bind is needed to preserve the context
-var oldHidden = callbacks.apply($old.fadeOut.bind($old), ["slow"]);
-
-var transitionedScreens = oldHidden.then(function() {
-	return callbacks.apply($new.fadeIn.bind($new),  ["slow"]);
-});
-
-var venuesLoaded  = callbacks.apply($.getJSON, ["./venues.json"]);
-var artistsLoaded = callbacks.apply($.getJSON, ["./artists.json"]);
-
-// Leveraging when.join to combine promises
-when.join(venuesLoaded, artistsLoaded, transitionedScreens).then(function() {
-	// Render next screen when everything is ready
-}, function() {
-	// Catch-all error handler
-});
-```
-
-### `callbacks.lift()`
+### `callbacks.lift`
 
 ```js
 var promiseFunc = callbacks.lift(callbackTakingFunc, arg1, arg2/* ...more args */);
@@ -1341,7 +1310,73 @@ var myLib = {
 };
 ```
 
-### `callbacks.promisify()`
+### `callbacks.liftAll`
+
+```js
+var liftedApi = callbacks.liftAll(srcApi);
+
+var liftedApi = callbacks.liftAll(srcApi, transform);
+
+var destApi = callbacks.liftAll(srcApi, transform, destApi);
+```
+
+Lifts all the methods of a source object, returning a new object with all the lifted methods.  The optional `transform` function allows you to rename or otherwise customize how the lifted functions are added to the returned object.  If `destApi` is provided, lifted methods will be added to it, instead of to a new object, and `destApi` will be returned.
+
+TODO: Need example
+```js
+
+```
+
+### `callbacks.call`
+
+```js
+var promisedResult = callbacks.call(callbackTakingFunc, arg1, arg2/* ...more args */);
+```
+
+Takes a callback-taking function and returns a promise for its final value, forwarding any additional arguments. The promise will be resolved when the function calls its callback, and the resolution value will be callback's first argument. If multiple values are passed to the callback, the promise will resolve to an array. The same thing happens if the function call the errback, with the difference that the promise will be rejected instead.
+
+```js
+var domIsLoaded = callbacks.call($);
+domIsLoaded.then(doMyDomStuff);
+
+var waitFiveSeconds = callbacks.call(setTimeout, 5000);
+waitFiveSeconds.then(function() {
+	console.log("Five seconds have passed");
+});
+```
+
+### `callbacks.apply`
+
+```js
+var promisedResult = callbacks.apply(callbackTakingFunc, [arg1, arg2/* ...more args */]);
+```
+
+The array-taking analog to `callbacks.call`, as `Function.prototype.apply` is to `Function.prototype.call`.
+
+```js
+// This example simulates fading away an element, fading in a new one, fetching
+// two remote resources, and then waiting for all that to finish before going
+// forward. The APIs are all callback-based, but only promises are manipulated.
+
+// Function.prototype.bind is needed to preserve the context
+var oldHidden = callbacks.apply($old.fadeOut.bind($old), ["slow"]);
+
+var transitionedScreens = oldHidden.then(function() {
+	return callbacks.apply($new.fadeIn.bind($new),  ["slow"]);
+});
+
+var venuesLoaded  = callbacks.apply($.getJSON, ["./venues.json"]);
+var artistsLoaded = callbacks.apply($.getJSON, ["./artists.json"]);
+
+// Leveraging when.join to combine promises
+when.join(venuesLoaded, artistsLoaded, transitionedScreens).then(function() {
+	// Render next screen when everything is ready
+}, function() {
+	// Catch-all error handler
+});
+```
+
+### `callbacks.promisify`
 
 ```js
 var promiseFunc = callbacks.promisify(nonStandardFunc, {
@@ -1391,7 +1426,63 @@ Node.js APIs have their own standard for asynchronous functions: Instead of taki
 
 Note: There are some Node.js functions that are designed to return an event emitter. These functions will emit error events instead of passing an error as the first argument to the callback function. An example being `http.get`. These types of Node.js functions do not work with the below methodologies.
 
-### `nodefn.call()`
+### `node.lift`
+
+```js
+var promiseFunc = nodefn.lift(nodeStyleFunction, arg1, arg2/*...more args*/);
+```
+
+Function based on the same principles from [`fn.lift()`](#fnlift) and [`callbacks.lift()`](#callbackslift), but tuned to handle nodejs-style async functions.
+
+```js
+var dns, when, nodefn;
+
+dns    = require("dns");
+when   = require("when");
+nodefn = require("when/node");
+
+var resolveAddress = nodefn.lift(dns.resolve);
+
+when.join(
+	resolveAddress("twitter.com"),
+	resolveAddress("facebook.com"),
+	resolveAddress("google.com")
+).then(function(addresses) {
+	// All addresses resolved
+}).catch(function(reason) {
+	// At least one of the lookups failed
+});
+```
+
+### `node.liftAll`
+
+```js
+var liftedApi = fn.liftAll(srcApi);
+
+var liftedApi = fn.liftAll(srcApi, transform);
+
+var destApi = fn.liftAll(srcApi, transform, destApi);
+```
+
+Lifts all the methods of a source object, returning a new object with all the lifted methods.  The optional `transform` function allows you to rename or otherwise customize how the lifted functions are added to the returned object.  If `destApi` is provided, lifted methods will be added to it, instead of to a new object, and `destApi` will be returned.
+
+```js
+// Lift the entire dns API
+var dns = require("dns");
+var liftedDns = node.liftAll(dns);
+
+when.join(
+	liftedDns.resolve("twitter.com"),
+	liftedDns.resolveNs("facebook.com"),
+	liftedDns.resolveMx("google.com")
+).then(function(addresses) {
+	// All addresses resolved
+}).catch(function(reason) {
+	// At least one of the lookups failed
+});
+```
+
+### `node.call`
 
 ```js
 var promisedResult = nodefn.call(nodeStyleFunction, arg1, arg2/*...more args*/);
@@ -1414,7 +1505,7 @@ loadPasswd.then(function(passwd) {
 });
 ```
 
-### `nodefn.apply()`
+### `node.apply`
 
 ```js
 var promisedResult = nodefn.apply(nodeStyleFunction, [arg1, arg2/*...more args*/]);
@@ -1437,35 +1528,7 @@ loadPasswd.then(function(passwd) {
 });
 ```
 
-### `nodefn.lift()`
-
-```js
-var promiseFunc = nodefn.lift(nodeStyleFunction, arg1, arg2/*...more args*/);
-```
-
-Function based on the same principles from [`fn.lift()`](#fnlift) and [`callbacks.lift()`](#callbackslift), but tuned to handle nodejs-style async functions.
-
-```js
-var dns, when, nodefn;
-
-dns    = require("dns");
-when   = require("when");
-nodefn = require("when/node");
-
-var resolveAddress = nodefn.lift(dns.resolve);
-
-when.join(
-	resolveAddress("twitter.com"),
-	resolveAddress("facebook.com"),
-	resolveAddress("google.com")
-).then(function(addresses) {
-  // All addresses resolved
-}, function(reason) {
-  // At least one of the lookups failed
-});
-```
-
-### `nodefn.createCallback()`
+### `node.createCallback`
 
 ```js
 var nodeStyleCallback = nodefn.createCallback(resolver);
@@ -1497,7 +1560,7 @@ deferred.promise.then(function(interestingValue) {
 });
 ```
 
-### `nodefn.liftCallback()`
+### `node.liftCallback`
 
 ```js
 var promiseAcceptingFunction = nodefn.liftCallback(nodeback);
@@ -1542,7 +1605,7 @@ dataPromise = fetchData(123);
 handlePromisedData(dataPromise);
 ```
 
-### `nodefn.bindCallback()`
+### `node.bindCallback`
 
 ```js
 var resultPromise = nodefn.bindCallback(promise, nodeback);

@@ -140,6 +140,17 @@ define(function(require) {
 		};
 	}
 
+	/**
+	 * Lift all the functions/methods on src
+	 * @param {object|function} src source whose functions will be lifted
+	 * @param {function?} combine optional function for customizing the lifting
+	 *  process. It is passed dst, the lifted function, and the property name of
+	 *  the original function on src.
+	 * @param {(object|function)?} dst option destination host onto which to place lifted
+	 *  functions. If not provided, liftAll returns a new object.
+	 * @returns {*} If dst is provided, returns dst with lifted functions as
+	 *  properties.  If dst not provided, returns a new object with lifted functions.
+	 */
 	function liftAll(src, combine, dst) {
 		return _liftAll(lift, combine, dst, src);
 	}
