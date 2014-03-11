@@ -5,12 +5,13 @@
 (function(define) { 'use strict';
 define(function() {
 
-	function PromiseMonitor(report) {
+	function PromiseMonitor(reporter) {
 		this.key = 0;
 		this.traces = {};
 		this.traceTask = 0;
 		this.logDelay = 100;
-		this._report = report;
+
+		this._reporter = reporter;
 
 		var self = this;
 		this._doLogTraces = function() {
@@ -52,7 +53,7 @@ define(function() {
 
 	PromiseMonitor.prototype._logTraces = function() {
 		this.traceTask = void 0;
-		this._report(this.traces);
+		this._reporter.report(this.traces);
 	};
 
 	return PromiseMonitor;

@@ -6,10 +6,10 @@
 define(function(require) {
 
 	var PromiseMonitor = require('./PromiseMonitor');
-	var simpleReporter = require('./simpleReporter');
+	var ConsoleReporter = require('./ConsoleReporter');
 
 	var traceFilter = /(node|module|timers)\.js:|when(\/(lib|monitor)\/|\.js)/i;
-	var promiseMonitor = new PromiseMonitor(simpleReporter(traceFilter));
+	var promiseMonitor = new PromiseMonitor(new ConsoleReporter(traceFilter));
 
 	if(typeof console !== 'undefined') {
 		console.promiseMonitor = promiseMonitor;

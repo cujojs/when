@@ -42,25 +42,31 @@ define(function() {
 		}
 	}
 
-	return function simpleReporter(stackFilter) {
-		return function(traces) {
-			var keys = Object.keys(traces);
+	function ConsoleReporter(stackFilter) {
+		this._stackFilter = stackFilter;
+	}
 
-			if(keys.length === 0) {
-				warn(allHandledMsg);
-				return;
-			}
+	ConsoleReporter.prototype._warn = warn;
+	ConsoleReporter.prototype._groupStart = groupStart;
+	ConsoleReporter.prototype._groupEnd = groupEnd;
 
-			groupStart(unhandledRejectionsMsg + keys.length);
-			try {
-				formatTraces(stackFilter, traces, keys);
-			} finally {
-				groupEnd();
-			}
-		};
+	ConsoleReporter.prototype.report = function(traces) {
+		var keys = Object.keys(traces);
+
+		if(keys.length === 0) {
+			this._warn(allHandledMsg);
+			return;
+		}
+
+		this._groupStart(unhandledRejectionsMsg + keys.length);
+		try {
+			this._formatTraces(traces, keys);
+		} finally {
+			this._groupEnd();
+		}
 	};
 
-	function joinLongTrace(stackFilter, trace) {
+	ConsoleReporter.prototype._joinLongTrace = function(stackFilter, trace) {
 		return trace.reduce(function (longTrace, e, i) {
 			var stack = e && e.stack;
 			if (stack) {
@@ -79,25 +85,27 @@ define(function() {
 			}
 			return longTrace;
 		}, []);
-	}
+	};
 
-	function formatTraces(stackFilter, traces, keys) {
-		keys.map(function (key) {
+	ConsoleReporter.prototype._formatTraces = function(traces, keys) {
+		keys.forEach(function (key) {
 			var trace = traces[key];
 			if (typeof trace === 'string') {
-				warn(trace);
+				this._warn(trace);
 				return;
 			}
 
-			var longTrace = joinLongTrace(stackFilter, trace);
+			var longTrace = this._joinLongTrace(this._stackFilter, trace);
 			longTrace = traces[key] = longTrace.join('\n');
 
-			warn(longTrace);
-		});
-	}
+			this._warn(longTrace);
+		}, this);
+	};
 
 	function consoleNotAvailable() {}
 	function consoleGroupsNotAvailable() {}
+
+	return ConsoleReporter;
 
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
