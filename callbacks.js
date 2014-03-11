@@ -67,10 +67,12 @@ define(function(require) {
 	 */
 	function _apply(asyncFunction, thisArg, extraAsyncArgs) {
 		return Promise.all(extraAsyncArgs || []).then(function(args) {
-			return promise(function(resolve, reject) {
-				args.push(alwaysUnary(resolve), alwaysUnary(reject));
-				asyncFunction.apply(thisArg, args);
-			});
+			var d = Promise._defer();
+			args.push(alwaysUnary(d.resolver.resolve, d.resolver),
+				alwaysUnary(d.resolver.reject, d.resolver));
+			asyncFunction.apply(thisArg, args);
+
+			return d.promise;
 		});
 	}
 
@@ -195,30 +197,29 @@ define(function(require) {
 		return function() {
 			var thisArg = this;
 			return Promise.all(arguments).then(function(args) {
-				return promise(applyPromisified);
+				var d = Promise._defer();
 
-				function applyPromisified(resolve, reject) {
-					var callbackPos, errbackPos;
+				var callbackPos, errbackPos;
 
-					if('callback' in positions) {
-						callbackPos = normalizePosition(args, positions.callback);
-					}
-
-					if('errback' in positions) {
-						errbackPos = normalizePosition(args, positions.errback);
-					}
-
-					if(errbackPos < callbackPos) {
-						insertCallback(args, errbackPos, reject);
-						insertCallback(args, callbackPos, resolve);
-					} else {
-						insertCallback(args, callbackPos, resolve);
-						insertCallback(args, errbackPos, reject);
-					}
-
-					asyncFunction.apply(thisArg, args);
+				if('callback' in positions) {
+					callbackPos = normalizePosition(args, positions.callback);
 				}
 
+				if('errback' in positions) {
+					errbackPos = normalizePosition(args, positions.errback);
+				}
+
+				if(errbackPos < callbackPos) {
+					insertCallback(args, errbackPos, d.resolver.reject, d.resolver);
+					insertCallback(args, callbackPos, d.resolver.resolve, d.resolver);
+				} else {
+					insertCallback(args, callbackPos, d.resolver.resolve, d.resolver);
+					insertCallback(args, errbackPos, d.resolver.reject, d.resolver);
+				}
+
+				asyncFunction.apply(thisArg, args);
+
+				return d.promise;
 			});
 		};
 	}
@@ -227,23 +228,22 @@ define(function(require) {
 		return pos < 0 ? (args.length + pos + 2) : pos;
 	}
 
-	function insertCallback(args, pos, callback) {
+	function insertCallback(args, pos, callback, thisArg) {
 		if(pos != null) {
-			callback = alwaysUnary(callback);
+			callback = alwaysUnary(callback, thisArg);
 			if(pos < 0) {
 				pos = args.length + pos + 2;
 			}
 			args.splice(pos, 0, callback);
 		}
-
 	}
 
-	function alwaysUnary(fn) {
+	function alwaysUnary(fn, thisArg) {
 		return function() {
 			if(arguments.length <= 1) {
-				fn.apply(this, arguments);
+				fn.apply(thisArg, arguments);
 			} else {
-				fn.call(this, slice.call(arguments));
+				fn.call(thisArg, slice.call(arguments));
 			}
 		};
 	}
