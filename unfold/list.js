@@ -10,6 +10,7 @@ define(function(require) {
 	var unfold = require('../unfold');
 
 	/**
+	 * @deprecated
 	 * Given a seed and generator, produces an Array.  Effectively the
 	 * dual (opposite) of when.reduce()
 	 * @param {function} generator function that generates a value (or promise

@@ -21,6 +21,7 @@ define(function() {
 
     /**
      * Makes deferred cancelable, adding a cancel() method.
+	 * @deprecated
      *
      * @param deferred {Deferred} the {@link Deferred} to make cancelable
      * @param canceler {Function} cancel handler function to execute when this deferred
