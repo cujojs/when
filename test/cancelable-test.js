@@ -70,7 +70,6 @@ define('when/cancelable-test', function (require) {
 					assert.same(val, sentinel);
 				},
 				function(e) {
-					console.error(e);
 					fail(e);
 				}
 			).ensure(done);
