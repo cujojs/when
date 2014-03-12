@@ -43,77 +43,69 @@ define('when.some-test', function (require) {
 
 	buster.testCase('when.some', {
 
-		'should resolve empty input': function(done) {
-			when.some([], 1).then(
+		'should resolve empty input': function() {
+			return when.some([], 1).then(
 				function(result) {
 					assert.equals(result, []);
-				},
-				fail
-			).ensure(done);
+				});
 		},
 
-		'should resolve values array': function(done) {
+		'should resolve values array': function() {
 			var input = [1, 2, 3];
-			when.some(input, 2).then(
+			return when.some(input, 2).then(
 				function(results) {
 					assert(isSubset(results, input));
-				},
-				fail
-			).ensure(done);
+				});
 		},
 
-		'should resolve promises array': function(done) {
+		'should resolve promises array': function() {
 			var input = [resolved(1), resolved(2), resolved(3)];
-			when.some(input, 2).then(
+			return when.some(input, 2).then(
 				function(results) {
 					assert(isSubset(results, [1, 2, 3]));
-				},
-				fail
-			).ensure(done);
+				});
 		},
 
-		'should resolve sparse array input': function(done) {
+		'should resolve sparse array input': function() {
 			var input = [, 1, , 2, 3 ];
-			when.some(input, 2).then(
+			return when.some(input, 2).then(
 				function(results) {
 					assert(isSubset(results, input));
-					done();
-				},
-				fail
-			).ensure(done);
+				});
 		},
 
-		'should reject with all rejected input values if resolving howMany becomes impossible': function(done) {
+		'should reject with all rejected input values if resolving howMany becomes impossible': function() {
 			var input = [resolved(1), rejected(2), rejected(3)];
-			when.some(input, 2).then(
+			return when.some(input, 2).then(
 				fail,
 				function(failed) {
 					assert.equals(failed, [2, 3]);
-				}
-			).ensure(done);
+				});
 		},
 
-		'should accept a promise for an array': function(done) {
+		'should accept a promise for an array': function() {
 			var expected, input;
 
 			expected = [1, 2, 3];
 			input = resolved(expected);
 
-			when.some(input, 2).then(
+			return when.some(input, 2).then(
 				function(results) {
 					assert.equals(results.length, 2);
-				},
-				fail
-			).ensure(done);
+				});
 		},
 
-		'should resolve to empty array when input promise does not resolve to array': function(done) {
-			when.some(resolved(1), 1).then(
+		'should resolve to empty array when input promise does not resolve to array': function() {
+			return when.some(resolved(1), 1).then(
 				function(result) {
 					assert.equals(result, []);
-				},
-				fail
-			).ensure(done);
+				});
+		},
+
+		'should resolve to empty array when n is zero': function() {
+			return when.some([1,2,3], 0).then(function(result) {
+				assert.equals(result, []);
+			});
 		}
 
 	});
