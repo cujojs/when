@@ -42,16 +42,16 @@ API
 		* [keys.all(object)](#whenkeys-all)
 		* [keys.map(object, mapper)](#whenkeys-map)
 1. Functions
-	* when/node
-		* [node.lift(nodeFunction)](#nodelift)
-		* [node.liftAll(object)](#nodeliftall)
-		* [node.call(nodeFunction, ...args)](#nodecall)
-		* [node.apply(nodeFunction, argsArray)](#nodeapply)
 	* when/function
 		* [fn.lift(f)](#fnlift)
 		* [fn.liftAll(object)](#fnliftall)
 		* [fn.call(f, ...args)](#fncall)
 		* [fn.apply(f, argsArray)](#fnapply)
+	* when/node
+		* [node.lift(nodeFunction)](#nodelift)
+		* [node.liftAll(object)](#nodeliftall)
+		* [node.call(nodeFunction, ...args)](#nodecall)
+		* [node.apply(nodeFunction, argsArray)](#nodeapply)
 	* when/callbacks
 		* [callbacks.lift(asyncFunction)](#callbackslift)
 		* [callbacks.liftAll(object)](#callbacksliftall)
@@ -66,6 +66,7 @@ API
 	* [when/sequence(tasks, ...args)](#whensequence)
 	* [when/pipeline(tasks, ...args)](#whenpipeline)
 	* [when/parallel(tasks, ...args)](#whenparallel)
+	* [when/poll(task, interval, condition [, initialDelay])](#whenpoll)
 1. Limiting Concurrency
 	* [when/guard(condition, f)](#whenguard)
 	* [Guard conditions](#guard-conditions)
@@ -830,16 +831,19 @@ In these cases, you can use `when/unfold` to iteratively (and asynchronously) pr
 
 ## when.iterate
 
+```js
+var promise = when.iterate(f, condition, handler, seed);
+```
+
+Generates a stream of promises.
 
 ## when.unfold
 
 ```js
-var unfold, promise;
-
-unfold = require('when/unfold');
-
-promise = unfold(unspool, condition, handler, seed);
+var promise = when.unfold(unspool, condition, handler, seed);
 ```
+
+Generates a stream of promises.
 
 Where:
 * `unspool` - function that, given a seed, returns a `[valueToSendToHandler, newSeed]` pair. May return an array, array of promises, promise for an array, or promise for an array of promises.
@@ -952,18 +956,16 @@ function printFirstLine(content) {
 unfold(unspool, condition, printFirstLine, files).catch(console.error);
 ```
 
-# Tasks
+# Task Execution
 
 These modules allow you to execute tasks in series or parallel.  Each module takes an Array of task functions (or a *promise* for an Array), executes the tasks, and returns a promise that resolves when all the tasks have completed.
 
 ## when/sequence
 
 ```js
-var sequence, resultsPromise;
+var sequence = require('when/sequence');
 
-sequence = require('when/sequence');
-
-resultsPromise = sequence(arrayOfTasks, arg1, arg2 /*, ... */);
+var resultsPromise = sequence(arrayOfTasks, arg1, arg2 /*, ... */);
 ```
 
 Run an array of tasks in sequence, without overlap.  Each task will be called with the arguments passed to `when.sequence()`, and each may return a promise or a value.
@@ -973,11 +975,9 @@ When all tasks have completed, the returned promise will resolve to an array con
 ## when/pipeline
 
 ```js
-var pipeline, resultsPromise;
+var pipeline = require('when/pipeline');
 
-pipeline = require('when/pipeline');
-
-resultsPromise = pipeline(arrayOfTasks, arg1, arg2 /*, ... */);
+var resultsPromise = pipeline(arrayOfTasks, arg1, arg2 /*, ... */);
 ```
 
 Run an array of tasks in sequence, without overlap, similarly to [when/sequence](#whensequence).  The *first task* (e.g. `arrayOfTasks[0]`) will be called with the arguments passed to `when.pipeline()`, and each subsequence task will be called with the result of the previous task.
@@ -989,97 +989,21 @@ When all tasks have completed, the returned promise will resolve to the result o
 ## when/parallel
 
 ```js
-var parallel, resultsPromise;
+var parallel = require('when/parallel');
 
-parallel = require('when/parallel');
-
-resultsPromise = parallel(arrayOfTasks, arg1, arg2 /*, ... */);
+var resultsPromise = parallel(arrayOfTasks, arg1, arg2 /*, ... */);
 ```
 
 Run an array of tasks in "parallel".  The tasks are allowed to execute in any order, and may interleave if they are asynchronous. Each task will be called with the arguments passed to `when.parallel()`, and each may return a promise or a value.
 
 When all tasks have completed, the returned promise will resolve to an array containing the result of each task at the corresponding array position.  The returned promise will reject when any task throws or returns a rejection.
 
-## when/guard
-
-```js
-var guard, guarded;
-
-guard = require('when/guard');
-
-guarded = guard(condition, function() {
-	// .. Do important stuff
-});
-```
-
-Where:
-
-* `condition` is a concurrency limiting condition, such as [guard.n](#guardn)
-
-Limit the concurrency of a function.  Creates a new function whose concurrency is limited by `condition`.  This can be useful with operations such as [when.map](#whenmap), [when/parallel](#whenparallel), etc. that allow tasks to execute in "parallel", to limit the number which can be inflight simultanously.
-
-```js
-// Using when/guard with when.map to limit concurrency
-// of the mapFunc
-
-var guard, guardedAsyncOperation, mapped;
-
-guard = require('when/guard');
-
-// Allow only 1 inflight execution of guarded
-guardedAsyncOperation = guard(guard.n(1), asyncOperation);
-
-mapped = when.map(array, guardedAsyncOperation);
-mapped.then(function(results) {
-	// Handle results as usual
-});
-```
-
-```js
-// Using when/guard with when/parallel to limit concurrency
-// across *all tasks*
-
-var guard, parallel, guardTask, tasks, taskResults;
-
-guard = require('when/guard');
-parallel = require('when/parallel');
-
-tasks = [/* Array of async functions to execute as tasks */];
-
-// Use bind() to create a guard that can be applied to any function
-// Only 2 tasks may execute simultaneously
-guardTask = guard.bind(null, guard.n(2));
-
-// Use guardTask to guard all the tasks.
-tasks = tasks.map(guardTask);
-
-// Execute the tasks with concurrency/"parallelism" limited to 2
-taskResults = parallel(tasks);
-taskResults.then(function(results) {
-	// Handle results as usual
-});
-```
-
-## Guard conditions
-
-### `guard.n`
-
-```js
-var condition = guard.n(number);
-```
-
-Creates a condition that allows at most `number` of simultaneous executions inflight.
-
-# Polling with promises
-
 ## when/poll
 
 ```js
-var poll, resultPromise;
+var poll = require('when/poll');
 
-poll = require('when/poll');
-
-resultPromise = poll(work, interval, condition /*, initialDelay */);
+var resultPromise = poll(task, interval, condition /*, initialDelay */);
 ```
 
 Where:
@@ -1239,7 +1163,224 @@ setInterval(function() {
 }, 1000);
 ```
 
-## Asynchronous functions
+# Node-style asynchronous functions
+
+Node.js APIs have their own standard for asynchronous functions: Instead of taking an errback, errors are passed as the first argument to the callback function. To use promises instead of callbacks with node-style asynchronous functions, you can use the `when/node` module, which is very similar to `when/callbacks`, but tuned to this convention.
+
+Note: There are some Node.js functions that are designed to return an event emitter. These functions will emit error events instead of passing an error as the first argument to the callback function. An example being `http.get`. These types of Node.js functions do not work with the below methodologies.
+
+## node.lift
+
+```js
+var promiseFunc = nodefn.lift(nodeStyleFunction, arg1, arg2/*...more args*/);
+```
+
+Function based on the same principles from [`fn.lift()`](#fnlift) and [`callbacks.lift()`](#callbackslift), but tuned to handle nodejs-style async functions.
+
+```js
+var dns, when, nodefn;
+
+dns    = require("dns");
+when   = require("when");
+nodefn = require("when/node");
+
+var resolveAddress = nodefn.lift(dns.resolve);
+
+when.join(
+	resolveAddress("twitter.com"),
+	resolveAddress("facebook.com"),
+	resolveAddress("google.com")
+).then(function(addresses) {
+	// All addresses resolved
+}).catch(function(reason) {
+	// At least one of the lookups failed
+});
+```
+
+## node.liftAll
+
+```js
+var liftedApi = fn.liftAll(srcApi);
+
+var liftedApi = fn.liftAll(srcApi, transform);
+
+var destApi = fn.liftAll(srcApi, transform, destApi);
+```
+
+Lifts all the methods of a source object, returning a new object with all the lifted methods.  The optional `transform` function allows you to rename or otherwise customize how the lifted functions are added to the returned object.  If `destApi` is provided, lifted methods will be added to it, instead of to a new object, and `destApi` will be returned.
+
+```js
+// Lift the entire dns API
+var dns = require("dns");
+var liftedDns = node.liftAll(dns);
+
+when.join(
+	liftedDns.resolve("twitter.com"),
+	liftedDns.resolveNs("facebook.com"),
+	liftedDns.resolveMx("google.com")
+).then(function(addresses) {
+	// All addresses resolved
+}).catch(function(reason) {
+	// At least one of the lookups failed
+});
+```
+
+## node.call
+
+```js
+var promisedResult = nodefn.call(nodeStyleFunction, arg1, arg2/*...more args*/);
+```
+
+Analogous to [`fn.call()`](#fncall) and [`callbacks.call()`](#callbackscall): Takes a function plus optional arguments to that function, and returns a promise for its final value. The promise will be resolved or rejected depending on whether the conventional error argument is passed or not.
+
+```js
+var fs, nodefn;
+
+fs     = require("fs");
+nodefn = require("when/function");
+
+var loadPasswd = nodefn.call(fs.readFile, "/etc/passwd");
+
+loadPasswd.then(function(passwd) {
+	console.log("Contents of /etc/passwd:\n" + passwd);
+}, function(error) {
+	console.log("Something wrong happened: " + error);
+});
+```
+
+## node.apply
+
+```js
+var promisedResult = nodefn.apply(nodeStyleFunction, [arg1, arg2/*...more args*/]);
+```
+
+Following the tradition from `when/function` and `when/callbacks`, `when/node` also provides a array-based alternative to `nodefn.call()`.
+
+```js
+var fs, nodefn;
+
+fs     = require("fs");
+nodefn = require("when/node");
+
+var loadPasswd = nodefn.apply(fs.readFile, ["/etc/passwd"]);
+
+loadPasswd.then(function(passwd) {
+	console.log("Contents of /etc/passwd:\n" + passwd);
+}, function(error) {
+	console.log("Something wrong happened: " + error);
+});
+```
+
+## node.createCallback
+
+```js
+var nodeStyleCallback = nodefn.createCallback(resolver);
+```
+
+The core function on the `when/node` implementation, which might be useful for cases that aren't covered by the higher level API. It takes an object that responds to the [resolver interface](#resolver) and returns a function that can be used with any node-style asynchronous function, and will call `resolve()` or `reject()` on the resolver depending on whether the conventional error argument is passed to it.
+
+```js
+var when, nodefn;
+
+when   = require("when");
+nodefn = require("when/node");
+
+function nodeStyleAsyncFunction(callback) {
+    if(Math.random() * 2 > 1) {
+      callback("Oh no!");
+    } else {
+      callback(null, "Interesting value");
+    }
+}
+
+var deferred = when.defer();
+nodeStyleAsyncFunction(nodefn.createCallback(deferred.resolver));
+
+deferred.promise.then(function(interestingValue) {
+  console.log(interestingValue)
+},function(err) {
+  console.error(err)
+});
+```
+
+## node.liftCallback
+
+```js
+var promiseAcceptingFunction = nodefn.liftCallback(nodeback);
+```
+
+Transforms a node-style callback function into a function that accepts a
+promise.  This allows you to bridge promises and node-style in "the other
+direction".  For example, if you have a node-style callback,
+and a function that returns promises, you can lift the former to allow the
+two functions to be composed.
+
+The lifted function will always returns its input promise, and always executes
+`nodeback` in a future turn of the event loop.  Thus, the outcome of `nodeback`
+has no bearing on the returned promise.
+
+If `nodeback` throws an exception, it will propagate to the host environment,
+just as it would when using node-style callbacks with typical Node.js APIs.
+
+```js
+var nodefn, handlePromisedData, dataPromise;
+
+nodefn = require('when/node');
+
+function fetchData(key) {
+	// go get the data and,
+	return promise;
+}
+
+function handleData(err, result) {
+	if(err) {
+		// handle the error
+	} else {
+		// Use the result
+	}
+}
+
+// Lift handleData
+handlePromisedData = nodefn.liftCallback(handleData);
+
+dataPromise = fetchData(123);
+
+handlePromisedData(dataPromise);
+```
+
+## node.bindCallback
+
+```js
+var resultPromise = nodefn.bindCallback(promise, nodeback);
+```
+
+Lifts and then calls the node-style callback on the provided promise.  This is a one-shot version of [nodefn.liftCallback](nodefn-liftcallback), and the `resultPromise` will behave as described there.
+
+```js
+var nodefn, dataPromise;
+
+nodefn = require('when/node');
+
+function fetchData(key) {
+	// go get the data and,
+	return promise;
+}
+
+function handleData(err, result) {
+	if(err) {
+		// handle the error
+	} else {
+		// Use the result
+	}
+}
+
+// Lift handleData
+dataPromise = fetchData(123);
+
+nodefn.bindCallback(dataPromise, handleData);
+```
+
+# Asynchronous functions
 
 Much of the asynchronous functionality available to javascript developers, be it directly from the environment or via third party libraries, is callback/errback-based. The `when/callbacks` module provides functions to interact with those APIs via promises in a transparent way, without having to write custom wrappers or change existing code. All the functions on this module (with the exception of `callbacks.promisify()`) assume that the callback and errback will be on the "standard" positions - the penultimate and last arguments, respectively.
 
@@ -1386,223 +1527,6 @@ var promisified3 = callbacks.promisify(inverseVariadic, {
 });
 ```
 
-## Node-style asynchronous functions
-
-Node.js APIs have their own standard for asynchronous functions: Instead of taking an errback, errors are passed as the first argument to the callback function. To use promises instead of callbacks with node-style asynchronous functions, you can use the `when/node` module, which is very similar to `when/callbacks`, but tuned to this convention.
-
-Note: There are some Node.js functions that are designed to return an event emitter. These functions will emit error events instead of passing an error as the first argument to the callback function. An example being `http.get`. These types of Node.js functions do not work with the below methodologies.
-
-### `node.lift`
-
-```js
-var promiseFunc = nodefn.lift(nodeStyleFunction, arg1, arg2/*...more args*/);
-```
-
-Function based on the same principles from [`fn.lift()`](#fnlift) and [`callbacks.lift()`](#callbackslift), but tuned to handle nodejs-style async functions.
-
-```js
-var dns, when, nodefn;
-
-dns    = require("dns");
-when   = require("when");
-nodefn = require("when/node");
-
-var resolveAddress = nodefn.lift(dns.resolve);
-
-when.join(
-	resolveAddress("twitter.com"),
-	resolveAddress("facebook.com"),
-	resolveAddress("google.com")
-).then(function(addresses) {
-	// All addresses resolved
-}).catch(function(reason) {
-	// At least one of the lookups failed
-});
-```
-
-### `node.liftAll`
-
-```js
-var liftedApi = fn.liftAll(srcApi);
-
-var liftedApi = fn.liftAll(srcApi, transform);
-
-var destApi = fn.liftAll(srcApi, transform, destApi);
-```
-
-Lifts all the methods of a source object, returning a new object with all the lifted methods.  The optional `transform` function allows you to rename or otherwise customize how the lifted functions are added to the returned object.  If `destApi` is provided, lifted methods will be added to it, instead of to a new object, and `destApi` will be returned.
-
-```js
-// Lift the entire dns API
-var dns = require("dns");
-var liftedDns = node.liftAll(dns);
-
-when.join(
-	liftedDns.resolve("twitter.com"),
-	liftedDns.resolveNs("facebook.com"),
-	liftedDns.resolveMx("google.com")
-).then(function(addresses) {
-	// All addresses resolved
-}).catch(function(reason) {
-	// At least one of the lookups failed
-});
-```
-
-### `node.call`
-
-```js
-var promisedResult = nodefn.call(nodeStyleFunction, arg1, arg2/*...more args*/);
-```
-
-Analogous to [`fn.call()`](#fncall) and [`callbacks.call()`](#callbackscall): Takes a function plus optional arguments to that function, and returns a promise for its final value. The promise will be resolved or rejected depending on whether the conventional error argument is passed or not.
-
-```js
-var fs, nodefn;
-
-fs     = require("fs");
-nodefn = require("when/function");
-
-var loadPasswd = nodefn.call(fs.readFile, "/etc/passwd");
-
-loadPasswd.then(function(passwd) {
-	console.log("Contents of /etc/passwd:\n" + passwd);
-}, function(error) {
-	console.log("Something wrong happened: " + error);
-});
-```
-
-### `node.apply`
-
-```js
-var promisedResult = nodefn.apply(nodeStyleFunction, [arg1, arg2/*...more args*/]);
-```
-
-Following the tradition from `when/function` and `when/callbacks`, `when/node` also provides a array-based alternative to `nodefn.call()`.
-
-```js
-var fs, nodefn;
-
-fs     = require("fs");
-nodefn = require("when/node");
-
-var loadPasswd = nodefn.apply(fs.readFile, ["/etc/passwd"]);
-
-loadPasswd.then(function(passwd) {
-	console.log("Contents of /etc/passwd:\n" + passwd);
-}, function(error) {
-	console.log("Something wrong happened: " + error);
-});
-```
-
-### `node.createCallback`
-
-```js
-var nodeStyleCallback = nodefn.createCallback(resolver);
-```
-
-The core function on the `when/node` implementation, which might be useful for cases that aren't covered by the higher level API. It takes an object that responds to the [resolver interface](#resolver) and returns a function that can be used with any node-style asynchronous function, and will call `resolve()` or `reject()` on the resolver depending on whether the conventional error argument is passed to it.
-
-```js
-var when, nodefn;
-
-when   = require("when");
-nodefn = require("when/node");
-
-function nodeStyleAsyncFunction(callback) {
-    if(Math.random() * 2 > 1) {
-      callback("Oh no!");
-    } else {
-      callback(null, "Interesting value");
-    }
-}
-
-var deferred = when.defer();
-nodeStyleAsyncFunction(nodefn.createCallback(deferred.resolver));
-
-deferred.promise.then(function(interestingValue) {
-  console.log(interestingValue)
-},function(err) {
-  console.error(err)
-});
-```
-
-### `node.liftCallback`
-
-```js
-var promiseAcceptingFunction = nodefn.liftCallback(nodeback);
-```
-
-Transforms a node-style callback function into a function that accepts a
-promise.  This allows you to bridge promises and node-style in "the other
-direction".  For example, if you have a node-style callback,
-and a function that returns promises, you can lift the former to allow the
-two functions to be composed.
-
-The lifted function will always returns its input promise, and always executes
-`nodeback` in a future turn of the event loop.  Thus, the outcome of `nodeback`
-has no bearing on the returned promise.
-
-If `nodeback` throws an exception, it will propagate to the host environment,
-just as it would when using node-style callbacks with typical Node.js APIs.
-
-```js
-var nodefn, handlePromisedData, dataPromise;
-
-nodefn = require('when/node');
-
-function fetchData(key) {
-	// go get the data and,
-	return promise;
-}
-
-function handleData(err, result) {
-	if(err) {
-		// handle the error
-	} else {
-		// Use the result
-	}
-}
-
-// Lift handleData
-handlePromisedData = nodefn.liftCallback(handleData);
-
-dataPromise = fetchData(123);
-
-handlePromisedData(dataPromise);
-```
-
-### `node.bindCallback`
-
-```js
-var resultPromise = nodefn.bindCallback(promise, nodeback);
-```
-
-Lifts and then calls the node-style callback on the provided promise.  This is a one-shot version of [nodefn.liftCallback](nodefn-liftcallback), and the `resultPromise` will behave as described there.
-
-```js
-var nodefn, dataPromise;
-
-nodefn = require('when/node');
-
-function fetchData(key) {
-	// go get the data and,
-	return promise;
-}
-
-function handleData(err, result) {
-	if(err) {
-		// handle the error
-	} else {
-		// Use the result
-	}
-}
-
-// Lift handleData
-dataPromise = fetchData(123);
-
-nodefn.bindCallback(dataPromise, handleData);
-```
-
 # ES6 generators
 
 **Experimental**: Requires an environment that supports ES6 generators and the `yield` keyword.
@@ -1632,23 +1556,7 @@ function getTodosForUser(userId) {
 
 ```
 
-### `generator.call`
-
-```js
-var resultPromise = generator.call(es6generator*, arg1, arg2/*...more args*/);
-```
-
-Immediately calls `es6generator` with the supplied args, and allows it use `yield` to await promises.
-
-### `generator.apply`
-
-```js
-var resultPromise = generator.apply(es6generator*, [arg1, arg2/*...more args*/]);
-```
-
-Similar to `generator.call`, immediately calls `es6generator` with the supplied args array, and allows it use `yield` to await promises.
-
-### `generator.lift`
+## generator.lift
 ```js
 var coroutine = generator.lift(es6generator*, arg1, arg2/*...more args*/);
 ```
@@ -1701,6 +1609,92 @@ function getTodosForUser(userId) {
 // applied `isRecentTodo` filter.
 var filteredTodos = getRecentTodosForUser(123);
 ```
+
+## generator.call
+
+```js
+var resultPromise = generator.call(es6generator*, arg1, arg2/*...more args*/);
+```
+
+Immediately calls `es6generator` with the supplied args, and allows it use `yield` to await promises.
+
+## generator.apply
+
+```js
+var resultPromise = generator.apply(es6generator*, [arg1, arg2/*...more args*/]);
+```
+
+Similar to `generator.call`, immediately calls `es6generator` with the supplied args array, and allows it use `yield` to await promises.
+
+# Limiting Concurrency
+
+## when/guard
+
+```js
+var guard = require('when/guard');
+
+var guarded = guard(condition, function() {
+	// .. Do important stuff
+});
+```
+
+Where:
+
+* `condition` is a concurrency limiting condition, such as [guard.n](#guardn)
+
+Limit the concurrency of a function.  Creates a new function whose concurrency is limited by `condition`.  This can be useful with operations such as [when.map](#whenmap), [when/parallel](#whenparallel), etc. that allow tasks to execute in "parallel", to limit the number which can be inflight simultanously.
+
+```js
+// Using when/guard with when.map to limit concurrency
+// of the mapFunc
+
+var guard, guardedAsyncOperation, mapped;
+
+guard = require('when/guard');
+
+// Allow only 1 inflight execution of guarded
+guardedAsyncOperation = guard(guard.n(1), asyncOperation);
+
+mapped = when.map(array, guardedAsyncOperation);
+mapped.then(function(results) {
+	// Handle results as usual
+});
+```
+
+```js
+// Using when/guard with when/parallel to limit concurrency
+// across *all tasks*
+
+var guard, parallel, guardTask, tasks, taskResults;
+
+guard = require('when/guard');
+parallel = require('when/parallel');
+
+tasks = [/* Array of async functions to execute as tasks */];
+
+// Use bind() to create a guard that can be applied to any function
+// Only 2 tasks may execute simultaneously
+guardTask = guard.bind(null, guard.n(2));
+
+// Use guardTask to guard all the tasks.
+tasks = tasks.map(guardTask);
+
+// Execute the tasks with concurrency/"parallelism" limited to 2
+taskResults = parallel(tasks);
+taskResults.then(function(results) {
+	// Handle results as usual
+});
+```
+
+## Guard conditions
+
+### `guard.n`
+
+```js
+var condition = guard.n(number);
+```
+
+Creates a condition that allows at most `number` of simultaneous executions inflight.
 
 # Debugging promises
 
