@@ -781,11 +781,10 @@ The *competitive race* pattern may be used if one or more of the entire possible
 var promise = when.any(array)
 ```
 
-Where:
+Initiates a competitive race that allows one winner.  The returned promise will:
 
-* array is an Array *or a promise for an array*, which may contain promises and/or values.
-
-Initiates a competitive race that allows one winner.  The returned promise will fulfill with the value of the first input promise to fulfill, or will reject if *all* input promises reject (thus making it impossible for any promise to win the race).
+* fulfill as soon as any one of the input promises fulfills, with the value of the fulfilled input promise, *or*
+* reject only if *all* input promises reject, with an array of all the rejection reasons
 
 ## when.some
 
@@ -793,17 +792,15 @@ Initiates a competitive race that allows one winner.  The returned promise will 
 var promise = when.some(array, n)
 ```
 
-Where:
+Initiates a competitive race that requires `n` winners.  The returned promise will
 
-* array is an Array *or a promise for an array*, which may contain promises and/or values.
-* n is the number of promises from array that must fulfill to end the race succesfully
-
-Initiates a competitive race that requires `n` winners.  The returned promise will fulfill with an array containing the values of the first `n` fulfilled promises.  It will reject if it becomes impossible for `n` items to fulfill--that is, when `(array.length - howMany) + 1` input promises reject.
+* fulfill when `n` promises are fulfilled with an array containing the values of the fulfilled input promises, *or*
+* reject when it becomes impossible for `n` promises to become fulfilled (ie when `(array.length - n) + 1` reject) with an array containing the reasons of the rejected input promises
 
 ```js
-// try all of the p2p servers and fail if at least one doesn't respond
-var remotes = [connect('p2p.cdn.com'), connect('p2p2.cdn.com'), connect('p2p3.cdn.com')];
-when.some(remotes, 1).then(initP2PServer, failGracefully);
+// ping all of the p2p servers and fail if at least two don't respond
+var remotes = [ping('p2p.cdn.com'), ping('p2p2.cdn.com'), ping('p2p3.cdn.com')];
+when.some(remotes, 2).done(itsAllOk, failGracefully);
 ```
 
 ## when.race
@@ -812,12 +809,10 @@ when.some(remotes, 1).then(initP2PServer, failGracefully);
 var promise = when.race(array)
 ```
 
-Initiates a competitive race that allows one winner.  The returned promise will settle in the same way as the first input promise to settle.
+Initiates a competitive race that allows one winner.  The returned promise will settle to the same state as the first input promise to settle:
 
-Note that `when.race` differs from [`when.any`](#whenany) in their rejection behaviors:
-
-* `when.race` will reject when the first input promise rejects. That is, a rejection may win the race.
-* `when.any` will reject only when *all* input promises reject. That is, a rejection cannot win the race, and the race will continue until there is no possibility of a winner.
+* fulfill with the value of the first input promise that fulfills, *or*
+* reject with the reason of the first input promise that rejects
 
 # Unbounded lists
 
