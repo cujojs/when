@@ -22,11 +22,11 @@ define('when/monitor/PromiseMonitor-test', function (require) {
 				return;
 			}
 
-			console.promiseMonitor = new PromiseMonitor(function () {
+			console.promiseMonitor = new PromiseMonitor({ report: function () {
 				console.promiseMonitor = void 0;
 				assert(true);
 				done();
-			});
+			}});
 
 			new Promise(function (_, reject) {
 				reject();
@@ -38,11 +38,11 @@ define('when/monitor/PromiseMonitor-test', function (require) {
 				done();
 				return;
 			}
-			console.promiseMonitor = new PromiseMonitor(function () {
+			console.promiseMonitor = new PromiseMonitor({ report: function () {
 				console.promiseMonitor = void 0;
 				assert(true);
 				done();
-			});
+			}});
 
 			Promise.reject();
 		}
