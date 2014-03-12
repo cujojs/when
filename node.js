@@ -60,7 +60,7 @@ define(function(require) {
 	 * @returns {Promise} promise for the value func passes to its callback
 	 */
 	function apply(func, args) {
-		return _apply(func, this, args);
+		return _apply(func, this, args || []);
 	}
 
 	/**
@@ -68,7 +68,7 @@ define(function(require) {
 	 * @private
 	 */
 	function _apply(func, thisArg, args) {
-		return Promise.all(args || []).then(function(args) {
+		return Promise.all(args).then(function(args) {
 			var d = Promise._defer();
 			args.push(createCallback(d.resolver));
 			func.apply(thisArg, args);
