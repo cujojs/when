@@ -74,7 +74,8 @@ define(function (require) {
 	 *   callback and/or errback is not supplied.
 	 */
 	function when(x, onFulfilled, onRejected, onProgress) {
-		return resolve(x).then(onFulfilled, onRejected, onProgress);
+		var p = resolve(x);
+		return arguments.length < 2 ? p : p.then(onFulfilled, onRejected, onProgress);
 	}
 
 	/**
