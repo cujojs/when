@@ -1,5 +1,8 @@
 (function (global) {
 	'use strict';
+	if(typeof console === 'undefined' && typeof window !== 'undefined') {
+		window.console = {};
+	}
 
 	global.curl = {
 		packages: {
