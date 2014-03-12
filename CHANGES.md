@@ -1,3 +1,11 @@
+### 3.0.0
+
+* New internal architecture
+* Significant performance improvements and memory efficiency
+* New ES6 Promise shim
+* New `when.try` and `when.lift`
+* New [liftAll] for lifting all of an object's functions in one go, eg. `var promisedFs = node.liftAll(require('fs'))`
+
 ### 2.8.0
 
 * Experimental [ES6 generator support](docs/api.md#es6-generators) via new `when/generator` module, with `lift`, `call`, `apply`.
