@@ -3,11 +3,13 @@ Getting Started
 
 [CJS](http://wiki.commonjs.org/wiki/CommonJS) and [AMD](http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition) are the primary targets for `when`, but instructions for a variety of setups are provided below.
 
+As of version 3.0, when.js requires an ES5 environment.  In older environments, an ES5 shim such as [poly](https://github.com/cujojs/poly) or [es5-shim](https://github.com/es-shims/es5-shim)
+
 #### AMD
 
 1. Get it. `bower install when`, `yeoman install when`, or `git clone https://github.com/cujojs/when`
 
-1. Configure your loader. When.js is AMD-compatible out of the box need for shims or anything. Below is an example of how configuring the package might look:
+1. Configure your loader. Here is an example of how configuring the package might look:
 
   ```js
   // using requirejs
@@ -28,7 +30,9 @@ Getting Started
 1. Load when wherever you need it. For example, as part of a module:
 
   ```
-  define(['when', ...], function(when, ...) { ... });
+  define(function(require) {
+  	var when = require('when');
+  });
   ```
 
 #### Node
