@@ -182,7 +182,7 @@ var promise = when.promise(function(resolve, reject, notify) {
 var resolved = when.resolve(x);
 ```
 
-Create a resolved promise for the supplied promiseOrValue. If promiseOrValue is a value, it will be the resolution value of the returned promise.  Returns promiseOrValue if it's a trusted promise. If promiseOrValue is a foreign promise, returns a promise in the same state (resolved or rejected) and with the same value as promiseOrValue.
+Get a promise for the supplied `x`. If `x` is already a trusted promise, it is returned.  If `x` is a value, the returned promise will be fulfilled with `x`.  If `x` is a thenable, the returned promise will follow `x`, adopting its eventual state (fulfilled or rejected).
 
 ## when.reject
 
