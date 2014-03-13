@@ -511,7 +511,7 @@ define(function() {
 		DeferredHandler.prototype = Object.create(Handler.prototype);
 
 		DeferredHandler.prototype.inspect = function() {
-			return this.resolved ? this.join().inspect() : toPendingState();
+			return this.resolved ? this.handler.join().inspect() : toPendingState();
 		};
 
 		DeferredHandler.prototype.resolve = function(x) {
