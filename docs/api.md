@@ -11,6 +11,7 @@ API
 	* [when.resolve(x)](#whenresolve)
 	* [when.reject(error)](#whenreject)
 	* [when.defer()](#whendefer)
+	* [when.isPromiseLike(x)](#whenispromiselike)
 1. Promise
 	* [promise.done(handleResult, handleError)](#promisedone)
 	* [promise.then(onFulfilled)](#promisethen)
@@ -31,12 +32,13 @@ API
 	* [when.map(array, mapper)](#whenmap)
 	* [when.reduce(array, reducer)](#whenreduce)
 	* [when.reduceRight(array, reducer)](#whenreduceright)
-	* [when.iterate(f, condition, handler, seed)](#wheniterate)
-	* [when.unfold(f, condition, handler, seed)](#whenunfold)
 1. Array Races
 	* [when.any(array)](#whenany)
 	* [when.some(array, n)](#whensome)
 	* [when.race(array)](#whenrace)
+1. Asynchronous Iteration
+	* [when.iterate(f, condition, handler, seed)](#wheniterate)
+	* [when.unfold(f, condition, handler, seed)](#whenunfold)
 1. Objects
 	* when/keys
 		* [keys.all(object)](#whenkeys-all)
@@ -110,9 +112,8 @@ Calls `f` with the supplied arguments, returning a promise for the result.  The 
 
 ### See also:
 * [when.lift](#whenlift)
-* Calling node-style functions
-* when/function call
-* when/function apply
+* [when/node call](#nodecall)
+* [when/node apply](#nodeapply)
 
 ## when.lift
 
@@ -126,9 +127,8 @@ Lifting functions provides a convenient way start promise chains without having 
 
 ### See also:
 * [when.try](#whentry)
-* Lifting node-style functions
-* when/function liftAll
-
+* [when/node lift](#nodelift)
+* [when/node liftAll](#nodeliftall)
 
 ## when.join
 
@@ -205,6 +205,17 @@ Create a `{promise, resolver}` pair.  In some scenarios it can be convenient to 
 
 One common use case for creating a deferred is adapting callback-based functions to promises.  In those cases, it's preferable to use the [when/callbacks](#asynchronous-functions) module to [call](#callbackscall) or [lift](#callbackslift) the callback-based functions instead.  For adapting node-style async functions, use the [when/node](#node-style-asynchronous-functions) module.
 
+## when.isPromiseLike
+
+```js
+var is = when.isPromiseLike(x);
+```
+
+Return true if `x` is an object or function with a `then` method.  It does not distinguish trusted when.js promises from other "thenables" (e.g. from some other promise implementation).
+
+Using `isPromiseLike` is discouraged.  In cases where you have an `x` and don't know if it's a promise, typically the best thing to do is to cast it: `var trustedPromise = when(x);` and then use `trustedPromise`.
+
+
 # Promise
 
 A promise is a proxy for a value that isn't available yet allowing you to interact with it as if it is.
@@ -212,24 +223,25 @@ A promise is a proxy for a value that isn't available yet allowing you to intera
 ## promise.done
 
 ```js
-promise.done(handleValue, handleError); // returns undefined
+promise.done(handleValue); // returns undefined
 ```
 
-The simplest API for interacting with a promise, `done` consumes the promise's value once it is available.
+The simplest API for interacting with a promise, `done` consumes the promise's ultimate value if it fulfills, or causes a fatal error with a loud stack trace if it rejects.
+
+```js
+promise.done(handleValue, handleError) // returns undefined
+```
+
+Consume the promise's ultimate value if the promise fulfills, or handle the ultimate error.  It will cause a fatal error if either `handleValue` or `handleError` throw or return a rejected promise.
+
+Since `done`'s purpose is consumption rather than transformation, `done` always returns `undefined`.
 
 One golden rule of promise error handling is:
 
 Either `return` the promise, thereby *passing the error-handling buck* to the caller, or call `done` and *assuming responsibility for errors*.
 
-While `then` is the primary API for transforming a promise's value and producing a new promise for the transformed value, `done` is used to terminate a promise chain, and extract the final value or error.  It signals that you are *taking responsibility* for the final outcome.  If the chain was ultimately successful, `handleValue` will be called with the final value.  If the chain was not successful and an error propagated to the end, `handleError` will be called with that error.
-
-Any error, either a returned rejection or a thrown exception, that propagates out of `handleValue` or `handleError` will be rethrown to the host environment, thereby generating a loud stack trace (and in some cases, such as Node, halting the VM).  This provides immediate feedback for development time errors and mistakes, and greatly reduces the chance of an unhandled promise rejection going silent.
-
-Note that there are still cases that `done` simply cannot catch, such as the case of *forgetting to call `done`*!  Thus, `done` and the [unhandled rejection monitor](#debugging-promises) are complimentary in many ways.  In fact, when the monitor is enabled, any error that escapes `handleValue` or `handleError` will also trigger the monitor.
-
-Since `done`'s purpose is consumption rather than transformation, `done` always returns `undefined`.
-
 ### See also
+* [promise.then vs. promise.done](#promisethen-vs-promisedone)
 * [promise.then](#promisethen)
 
 ## promise.then
@@ -238,7 +250,7 @@ Since `done`'s purpose is consumption rather than transformation, `done` always 
 var transformedPromise = promise.then(onFulfilled);
 ```
 
-[Promises/A+ `then`](http://promisesaplus.com).  Transforms a promise's value by applying a function to the promise's fulfillment value.  Returns a new promise for the transformed result.
+[Promises/A+ `then`](http://promisesaplus.com).  *Transforms* a promise's value by applying a function to the promise's fulfillment value.  Returns a new promise for the transformed result.
 
 ```js
 var transformedPromise = promise.then(onFulfilled, onRejected, onProgress);
@@ -263,6 +275,7 @@ A promise makes the following guarantees about handlers registered in the same c
 ### See also
 * [Promises/A+](http://promisesaplus.com) for extensive information on the behavior of `then`.
 * [promise.done](#promisedone)
+* [promise.spread](#promisespread)
 
 ## promise.spread
 
@@ -319,6 +332,9 @@ try {
 	}
 }
 ```
+
+### See also:
+* [promise.finally](#promisefinally)
 
 ## promise.finally
 
@@ -400,6 +416,7 @@ return p1.catch(function() {
 ### See also:
 * [promise.catch](#promisecatch) - intercept a rejected promise
 * [promise.tap](#promisetap) - execute a side effect in a promise chain
+* [promise.yield](#promiseyield) - execute a side effect in a promise chain
 
 ## promise.tap
 
@@ -455,6 +472,9 @@ delayed = promise.delay(1000);
 promise.delay(1000).then(doSomething).catch(handleRejection);
 ```
 
+### See also:
+* [promise.timeout](#promisetimeout)
+
 ## promise.timeout
 
 ```js
@@ -475,6 +495,9 @@ function readWithTimeout(path) {
 }
 ```
 
+### See also:
+* [promise.delay](#promisedelay)
+
 ## promise.inspect
 
 ```js
@@ -490,7 +513,7 @@ Returns a snapshot descriptor of the current state of `promise`.  This descripto
 While there are use cases where synchronously inspecting a promise's state can be helpful, the use of `inspect` is discouraged.  It is almost always preferable to simply use `when()` or `promise.then` to be notified when the promise fulfills or rejects.
 
 ### See also:
-* [when.settle()](#whensettle) - settling an Array of promises
+* [when.settle](#whensettle) - settling an Array of promises
 
 ## promise.with
 
@@ -618,8 +641,8 @@ Return a promise that will resolve only once all the items in `array` have resol
 If any of the promises is rejected, the returned promise will be rejected with the rejection reason of the first promise that was rejected.
 
 ### See also:
-* [when.join()](#whenjoin) - joining multiple promises
-* [when.settle()](#whensettle) - settling an Array of promises
+* [when.join](#whenjoin)
+* [when.settle](#whensettle)
 
 ## when.map
 
@@ -687,10 +710,6 @@ If any of the promises is rejected, the returned promise will be rejected with t
 var promise = when.settle(array);
 ```
 
-Where:
-
-* array is an Array *or a promise for an array*, which may contain promises and/or values.
-
 Returns a promise for an array containing the same number of elements as the input array.  Each element is a descriptor object describing of the outcome of the corresponding element in the input.  The returned promise will only reject if `array` itself is a rejected promise.  Otherwise, it will always fulfill with an array of descriptors.  This is in contrast to [when.all](#whenall), which will reject if any element of `array` rejects.
 
 If the corresponding input promise is:
@@ -720,8 +739,8 @@ settled.then(function(descriptors) {
 ```
 
 ### See also:
-* [when.all](#whenall) - resolving an Array of promises
-* [promise.inspect](#inspect) - inspecting a promise's state
+* [when.all](#whenall)
+* [promise.inspect](#inspect)
 
 # Objects
 
@@ -814,7 +833,7 @@ Initiates a competitive race that allows one winner.  The returned promise will 
 * fulfill with the value of the first input promise that fulfills, *or*
 * reject with the reason of the first input promise that rejects
 
-# Unbounded lists
+# Asynchronous Iteration
 
 [when.reduce](#whenreduce), [when/sequence](#whensequence), and [when/pipeline](#whenpipeline) are great ways to process asynchronous arrays of promises and tasks.  Sometimes, however, you may not know the array in advance, or may not need or want to process *all* the items in the array.  For example, here are a few situations where you may not know the bounds:
 
@@ -822,46 +841,69 @@ Initiates a competitive race that allows one winner.  The returned promise will 
 1. You need to execute a task repeatedly until a particular condition becomes true
 1. You need to selectively process items in an array, rather than all items
 
-In these cases, you can use `when/unfold` to iteratively (and asynchronously) process items until a particular condition, which you supply, is true.
+In these cases, you can use `when/iterate` and `when/unfold` to iteratively and asynchronously process items until a particular predicate is true.
 
 ## when.iterate
 
 ```js
-var promise = when.iterate(f, condition, handler, seed);
+var promise = when.iterate(f, predicate, handler, seed);
 ```
 
-Generates a stream of promises.
+Generates a potentially infinite stream of promises by repeatedly calling `f` until `predicate` becomes true.
+
+Where:
+* `f` - function that, given a seed, returns the next value or a promise for it.
+* `predicate` - function that should return truthy when the unfold should stop.
+* `handler` - function that receives each value as it is produced by `f`. It may return a promise to delay the next iteration.
+* `seed` - initial value provided to the first `f` invocation. May be a promise.
+
+### Examples
+
+Here is a trivial example of counting up to any arbitrary number using promises and delays. Note that this "iteration" is asynchronous and will not block other code.  It stores no intermediate arrays in memory, and will never blow the call stack.
+
+
+```js
+when.iterate(function(x) {
+	return x+1;
+}, function(x) {
+	// Stop when x >= 100000000000
+	return x >= 100000000000;
+}, function(x) {
+	console.log(x);
+}, 0).done();
+```
+
+Which becomes even nicer with [ES6 arrow functions](http://tc39wiki.calculist.org/es6/arrow-functions/):
+
+```js
+when.iterate(x => x+1, x => x >= 100000000000, x => console.log(x), 0).done();
+```
 
 ## when.unfold
 
 ```js
-var promise = when.unfold(unspool, condition, handler, seed);
+var promise = when.unfold(unspool, predicate, handler, seed);
 ```
 
-Generates a stream of promises.
+Similar to [`when/iterate`](#wheniterate), `when.unfold` generates a potentially infinite stream of promises by repeatedly calling `unspool` until `predicate` becomes true.  `when.unfold` allows you to thread additional state information through the iteration.
 
 Where:
 * `unspool` - function that, given a seed, returns a `[valueToSendToHandler, newSeed]` pair. May return an array, array of promises, promise for an array, or promise for an array of promises.
-* `condition` - function that should return truthy when the unfold should stop
+* `predicate` - function that should return truthy when the unfold should stop
 * `handler` - function that receives the `valueToSendToHandler` of the current iteration. This function can process `valueToSendToHandler` in whatever way you need.  It may return a promise to delay the next iteration of the unfold.
-* `seed` - intial value provided to the first `unspool` invocation. May be a promise.
-
-Send values produced by `unspool` iteratively to `handler` until a `condition` is true.  The `unspool` function acts like a generator, taking a seed and producing a pair of `[value, newSeed]` (or a promised pair, see above).  The `value` will be passed to `handler`, which can do any necessary on or with `value`, and may return a promise.  The `newSeed` will be passed as the seed to the next iteration of `unspool`.
+* `seed` - initial value provided to the first `unspool` invocation. May be a promise.
 
 ### Examples
 
 This example generates random numbers at random intervals for 10 seconds.
 
-The `condition` could easily be modified (to `return false;`) to generate random numbers *forever*.  Interestingly, this would not overflow the call stack, and would not starve application code since it is asynchronous.
+The `condition` could easily be modified (to `return false;`) to generate random numbers *forever*.  This would not overflow the call stack, and would not starve application code since it is asynchronous.
 
 ```js
-var when, delay, unfold, end, start;
+var when = require('when');
 
-when = require('../when');
-delay = require('../delay');
-unfold = require('../unfold');
-
-end = Date.now() + 10000;
+var end = Date.now() + 10000;
+var start = Date.now();
 
 // Generate random numbers at random intervals!
 // Note that we could generate these forever, and never
@@ -874,22 +916,29 @@ function unspool(seed) {
 	var next = [Math.random(), Date.now()];
 
 	// Introduce a delay, just for fun, to show that we can return a promise
-	return delay(next, Math.random() * 1000);
+	return when(next).delay(Math.random() * 1000);
 }
 
 // Stop after 10 seconds
-function condition(time) {
-	return time >= end;
+function predicate(time) {
+	return time > end;
 }
 
 function log(value) {
 	console.log(value);
 }
 
-start = Date.now();
-unfold(unspool, condition, log, start).then(function() {
+when.unfold(unspool, predicate, log, start).then(function() {
 	console.log('Ran for', Date.now() - start, 'ms');
-});
+}).done();
+```
+
+Which again becomes quite compact with [ES6 arrow functions](http://tc39wiki.calculist.org/es6/arrow-functions/):
+
+```js
+when.unfold(unspool, time => time > end, x => console.log(x), start)
+	.then(() => console.log('Ran for', Date.now() - start, 'ms'))
+	.done();
 ```
 
 This example iterates over files in a directory, mapping each file to the first line (or first 80 characters) of its content.  It uses a `condition` to terminate early, which would not be possible with `when.map`.
@@ -899,16 +948,15 @@ Notice that, while the pair returned by `unspool` is an Array (not a promise), i
 Notice also the use of `when/node`'s [`call()`](#node-style-asynchronous-functions) to call Node-style async functions (`fs.readdir` and `fs.readFile`), and return a promise instead of requiring a callback.  This allows node-style functions can be promisified and composed with other promise-aware functions.
 
 ```js
-var when, unfold, nodefn, fs, files;
+var when, nodefn, fs, files;
 
-when = require('when');
-unfold = require('when/unfold');
-nodefn = require('when/node');
-fs = require('fs');
+var when = require('when');
+var node = require('when/node');
 
-// Use when/node to promisify-call fs.readdir
-// files is a promise for the file list
-files = nodefn.call(fs.readdir, '.');
+var fs = node.liftAll(require('fs'));
+
+// Lifted fs methods return promises
+var files = fs.readdir('.');
 
 function unspool(files) {
   // Return the pair [<*promise* for contents of first file>, <remaining files>]
@@ -921,7 +969,7 @@ function unspool(files) {
 	var file, content;
 
 	file = files[0];
-	content = nodefn.call(fs.readFile, file)
+	content = fs.readFile(file)
 		.catch(function(e) {
 			return '[Skipping dir ' + file + ']';
 		});
@@ -930,7 +978,7 @@ function unspool(files) {
 
 function condition(remaining) {
 	// This could be any test we want.  For fun, stop when
-	// the next file name starts with a 'p' stop.
+	// the next file name starts with a 'p'.
 	return remaining[0].charAt(0) === 'p';
 }
 
@@ -948,7 +996,7 @@ function printFirstLine(content) {
 	console.log(content.slice(0, Math.min(80, content.indexOf('\n'))));
 }
 
-unfold(unspool, condition, printFirstLine, files).catch(console.error);
+when.unfold(unspool, condition, printFirstLine, files).done();
 ```
 
 # Task Execution
@@ -1018,7 +1066,7 @@ These modules are aimed at dampening the friction between code that is based on 
 
 The `when/function` module contains functions for calling and adapting "normal" functions (i.e. those that take plain values, return plain values, and throw exceptions on errors). By calling those functions with `fn.call` and `fn.apply`, or by creating a new function with `fn.lift`, the return value will always be a promise, and thrown exceptions will be turned into rejections. As a bonus, promises given as arguments will be transparently resolved before the call.
 
-### `fn.lift`
+### fn.lift
 
 ```js
 var promiseFunction = fn.lift(normalFunction, arg1, arg2/* ...more args */);
@@ -1059,7 +1107,7 @@ var setElementMessage = fn.lift(setText, element);
 setElementMessage(getMessage());
 ```
 
-### `fn.liftAll`
+### fn.liftAll
 
 ```js
 var liftedApi = fn.liftAll(srcApi);
@@ -1076,7 +1124,7 @@ TODO: Need example
 
 ```
 
-### `fn.call`
+### fn.call
 
 ```js
 var promisedResult = fn.call(normalFunction, arg1, arg2/* ...more args */);
@@ -1109,7 +1157,7 @@ fn.call(divideNumbers, 20, promiseForFive).then(console.log);
 fn.call(divideNumbers, 10, 0).then(console.log, console.error);
 ```
 
-### `fn.apply`
+### fn.apply
 
 ```js
 var promisedResult = fn.apply(normalFunction, [arg1, arg2/* ...more args */]);
@@ -1137,7 +1185,7 @@ var shortCircuit = when.reject("something wrong happened");
 fn.apply(sumMultipleNumbers, [10, 20, shortCircuit]).then(console.log, console.error);
 ```
 
-### `fn.compose`
+### fn.compose
 
 ```js
 var composedFunc = fn.compose(func1, func2 /* ...more functions */);
@@ -1380,7 +1428,7 @@ nodefn.bindCallback(dataPromise, handleData);
 Much of the asynchronous functionality available to javascript developers, be it directly from the environment or via third party libraries, is callback/errback-based. The `when/callbacks` module provides functions to interact with those APIs via promises in a transparent way, without having to write custom wrappers or change existing code. All the functions on this module (with the exception of `callbacks.promisify()`) assume that the callback and errback will be on the "standard" positions - the penultimate and last arguments, respectively.
 
 
-### `callbacks.lift`
+### callbacks.lift
 
 ```js
 var promiseFunc = callbacks.lift(callbackTakingFunc, arg1, arg2/* ...more args */);
@@ -1412,7 +1460,7 @@ var myLib = {
 };
 ```
 
-### `callbacks.liftAll`
+### callbacks.liftAll
 
 ```js
 var liftedApi = callbacks.liftAll(srcApi);
@@ -1429,7 +1477,7 @@ TODO: Need example
 
 ```
 
-### `callbacks.call`
+### callbacks.call
 
 ```js
 var promisedResult = callbacks.call(callbackTakingFunc, arg1, arg2/* ...more args */);
@@ -1447,7 +1495,7 @@ waitFiveSeconds.then(function() {
 });
 ```
 
-### `callbacks.apply`
+### callbacks.apply
 
 ```js
 var promisedResult = callbacks.apply(callbackTakingFunc, [arg1, arg2/* ...more args */]);
@@ -1478,7 +1526,7 @@ when.join(venuesLoaded, artistsLoaded, transitionedScreens).then(function() {
 });
 ```
 
-### `callbacks.promisify`
+### callbacks.promisify
 
 ```js
 var promiseFunc = callbacks.promisify(nonStandardFunc, {
@@ -1683,7 +1731,7 @@ taskResults.then(function(results) {
 
 ## Guard conditions
 
-### `guard.n`
+### guard.n
 
 ```js
 var condition = guard.n(number);
@@ -1715,11 +1763,11 @@ return when.promise(function(resolve, reject) {
 });
 ```
 
-## `promise.then` vs. `promise.done`
+## promise.then vs. promise.done
 
 Remember the golden rule: either `return` your promise, or call `done` on it.
 
-At first glance, `then`, and `done` seem very similar, and they are.  The two most important distinctions are:
+At first glance, `then`, and `done` seem very similar.  However, there are important distinctions:
 
 1. The *intent*
 2. The error handling characteristics
@@ -1734,7 +1782,7 @@ The intent of `done` is to *consume* a promise's value, transferring *responsibi
 
 In addition to transforming a value, `then` allows you to recover from, or propagate, *intermediate* errors.  Any errors that are not handled will be caught by the promise machinery and used to reject the promise returned by `then`.
 
-Calling `done` transfers all responsibility for errors to your code.  If an error (either a thrown exception or returned rejection) escapes the `handleValue`, or `handleError` you provide to `done`, it will be rethrown in an uncatchable way to the host environment.
+Calling `done` transfers all responsibility for errors to your code.  If an error (either a thrown exception or returned rejection) escapes the `handleValue`, or `handleError` you provide to `done`, it will be rethrown in an uncatchable way to the host environment, causing a loud stack trace or a crash.
 
 This can be a big help with debugging, since most environments will then generate a loud stack trace.  In some environments, such as Node.js, the VM will also exit immediately, making it very obvious that a fatal error has escaped your promise chain.
 
@@ -1776,49 +1824,12 @@ curl(['my/app']);
 require('when/monitor/console');
 ```
 
-### PrettyMonitor for Node
+### PrettyMonitor for when 2.x and Node
 
 [PrettyMonitor](https://github.com/AriaMinaei/pretty-monitor) by [@AriaMinaei](https://github.com/AriaMinaei) is an alternative promise monitor on Node.  It's built using when.js's own monitoring apis and modules, and provides a very nice visual display of unhandled rejections in Node.
+
+Currently, PrettyMonitor is compatible with when 2.x, and will be updated to work with 3.x soon!
 
 ## Roll your own!
 
 The monitor modules are building blocks.  The [when/monitor/console](../monitor/console.js) module is one particular, and fairly simple, monitor built using the monitoring APIs and tools (PrettyMonitor is another, prettier one!).  Using when/monitor/console as an example, you can build your own promise monitoring tools that look for specific types of errors, or patterns and log or display them in whatever way you need.
-
-
-## Deferred
-
-A deferred is a convenience `{promise, resolver}` pair.  Its `promise` and `resolver` parts can be given out to separate groups of consumers and producers, respectively, to allow safe, one-way communication.
-
-```js
-var promise = deferred.promise;
-var resolver = deferred.resolver;
-```
-
-**Note:** Although a deferred has the full `resolver` API, this should used *for convenience only, by the creator of the deferred*.  Only the `resolver` should be given to consumers and producers.
-
-```js
-deferred.resolve(promiseOrValue);
-deferred.reject(reason);
-deferred.notify(update);
-```
-
-### Resolver
-
-The resolver represents *responsibility*--the responsibility of fulfilling or rejecting the associated promise.  This responsibility may be given out separately from the promise itself.
-
-```js
-var resolver = deferred.resolver;
-resolver.resolve(promiseOrValue);
-resolver.reject(reason);
-resolver.notify(update);
-```
-
-## when.isPromiseLike()
-
-**DEPRECATED ALIAS:** when.isPromise()
-
-```js
-var is = when.isPromiseLike(anything);
-```
-
-Return true if `anything` is an object or function with a `then` method.  It does not distinguish trusted when.js promises from other "thenables" (e.g. from some other promise implementation).
