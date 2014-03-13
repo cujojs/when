@@ -7,7 +7,7 @@ As of version 3.0, when.js requires an ES5 environment.  In older environments, 
 
 #### AMD
 
-1. Get it. `bower install when`, `yeoman install when`, or `git clone https://github.com/cujojs/when`
+1. Get it. `bower install --save when`, or `git clone https://github.com/cujojs/when`
 
 1. Configure your loader. Here is an example of how configuring the package might look:
 
@@ -37,7 +37,7 @@ As of version 3.0, when.js requires an ES5 environment.  In older environments, 
 
 #### Node
 
-1. `npm install when`
+1. `npm install --save when`
 1. `var when = require('when');`
 
 #### RingoJS
