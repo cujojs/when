@@ -853,7 +853,7 @@ Generates a potentially infinite stream of promises by repeatedly calling `f` un
 
 Where:
 * `f` - function that, given a seed, returns the next value or a promise for it.
-* `predicate` - function that should return truthy when the unfold should stop.
+* `predicate` - function that receives the current iteration value, and should return truthy when the unfold should stop
 * `handler` - function that receives each value as it is produced by `f`. It may return a promise to delay the next iteration.
 * `seed` - initial value provided to the first `f` invocation. May be a promise.
 
@@ -889,7 +889,7 @@ Similar to [`when/iterate`](#wheniterate), `when.unfold` generates a potentially
 
 Where:
 * `unspool` - function that, given a seed, returns a `[valueToSendToHandler, newSeed]` pair. May return an array, array of promises, promise for an array, or promise for an array of promises.
-* `predicate` - function that should return truthy when the unfold should stop
+* `predicate` - function that receives the current seed, and should return truthy when the unfold should stop
 * `handler` - function that receives the `valueToSendToHandler` of the current iteration. This function can process `valueToSendToHandler` in whatever way you need.  It may return a promise to delay the next iteration of the unfold.
 * `seed` - initial value provided to the first `unspool` invocation. May be a promise.
 
@@ -897,7 +897,7 @@ Where:
 
 This example generates random numbers at random intervals for 10 seconds.
 
-The `condition` could easily be modified (to `return false;`) to generate random numbers *forever*.  This would not overflow the call stack, and would not starve application code since it is asynchronous.
+The `predicate` could easily be modified (to `return false;`) to generate random numbers *forever*.  This would not overflow the call stack, and would not starve application code since it is asynchronous.
 
 ```js
 var when = require('when');
@@ -941,15 +941,13 @@ when.unfold(unspool, time => time > end, x => console.log(x), start)
 	.done();
 ```
 
-This example iterates over files in a directory, mapping each file to the first line (or first 80 characters) of its content.  It uses a `condition` to terminate early, which would not be possible with `when.map`.
+This example iterates over files in a directory, mapping each file to the first line (or first 80 characters) of its content.  It uses a `predicate` to terminate early, which would not be possible with `when.map`.
 
 Notice that, while the pair returned by `unspool` is an Array (not a promise), it does *contain* a promise as it's 0th element.  The promise will be resolved by the `unfold` machinery.
 
 Notice also the use of `when/node`'s [`call()`](#node-style-asynchronous-functions) to call Node-style async functions (`fs.readdir` and `fs.readFile`), and return a promise instead of requiring a callback.  This allows node-style functions can be promisified and composed with other promise-aware functions.
 
 ```js
-var when, nodefn, fs, files;
-
 var when = require('when');
 var node = require('when/node');
 

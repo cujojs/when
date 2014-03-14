@@ -9,12 +9,14 @@ sentinel = { value: 'sentinel' };
 
 define('when/monitor/PromiseMonitor-test', function (require) {
 
-	var Promise, when, PromiseMonitor;
-
-	Promise = require('when/lib/Promise');
-	PromiseMonitor = require('when/monitor/PromiseMonitor');
+	var Promise = require('when/lib/Promise');
+	var PromiseMonitor = require('when/monitor/PromiseMonitor');
 
 	buster.testCase('when/monitor/PromiseMonitor', {
+
+		tearDown: function() {
+			console.promiseMonitor = void 0;
+		},
 
 		'reject should trigger report': function(done) {
 			if (typeof console === 'undefined') {
@@ -23,7 +25,6 @@ define('when/monitor/PromiseMonitor-test', function (require) {
 			}
 
 			console.promiseMonitor = new PromiseMonitor({ report: function () {
-				console.promiseMonitor = void 0;
 				assert(true);
 				done();
 			}});
@@ -38,8 +39,8 @@ define('when/monitor/PromiseMonitor-test', function (require) {
 				done();
 				return;
 			}
+
 			console.promiseMonitor = new PromiseMonitor({ report: function () {
-				console.promiseMonitor = void 0;
 				assert(true);
 				done();
 			}});
