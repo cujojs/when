@@ -15,8 +15,8 @@ define('when/monitor/PromiseMonitor-test', function (require) {
 	buster.testCase('when/monitor/PromiseMonitor', {
 
 		tearDown: function() {
-			if (typeof console === 'undefined'
-				&& typeof console.promiseMonitor !=='defined') {
+			if (typeof console !== 'undefined'
+				&& console.promiseMonitor instanceof PromiseMonitor) {
 				console.promiseMonitor = void 0;
 			}
 		},
@@ -28,6 +28,7 @@ define('when/monitor/PromiseMonitor-test', function (require) {
 			}
 
 			console.promiseMonitor = new PromiseMonitor({ report: function () {
+				console.promiseMonitor = void 0;
 				assert(true);
 				done();
 			}});
@@ -44,6 +45,7 @@ define('when/monitor/PromiseMonitor-test', function (require) {
 			}
 
 			console.promiseMonitor = new PromiseMonitor({ report: function () {
+				console.promiseMonitor = void 0;
 				assert(true);
 				done();
 			}});
