@@ -73,6 +73,7 @@ API
 	* [when/guard(condition, f)](#whenguard)
 	* [Guard conditions](#guard-conditions)
 1. [Debugging promises](#debugging-promises)
+1. [Upgrading to 3.0 from 2.x](#upgrading-to-30-from-2x)
 
 # Core
 
@@ -1831,3 +1832,27 @@ Currently, PrettyMonitor is compatible with when 2.x, and will be updated to wor
 ## Roll your own!
 
 The monitor modules are building blocks.  The [when/monitor/console](../monitor/console.js) module is one particular, and fairly simple, monitor built using the monitoring APIs and tools (PrettyMonitor is another, prettier one!).  Using when/monitor/console as an example, you can build your own promise monitoring tools that look for specific types of errors, or patterns and log or display them in whatever way you need.
+
+# Upgrading to 3.0 from 2.x
+
+While there have been significant architectural changes in 3.0, it remains almost fully backward compatible.  There are a few things that were deprecated and have now been removed, and functionality that has moved to a new preferred spot.
+
+## Backward incompatible changes
+
+Previously deprecated features that have been removed in 3.0:
+
+* `promise.always` was removed. Use [`promise.finally(cleanup)`](#promisefinally) (or its ES3 alias [`promise.ensure`](#promisefinally), or [`promise.then(cleanup, cleanup)`](#promisethen) instead.
+* `deferred.resolve`, `deferred.reject`, `deferred.resolver.resolve`, and `deferred.resolver.reject` no longer return promises. They always return `undefined`.  You can simply return `d.promise` instead if you need.
+* [`when.all`](#whenall), [`when.any`](#whenany), and [`when.some`](#whensome) no longer directly accept `onFulfilled`, `onRejected`, and `onProgress` callbacks.  Simply use the returned promise instead.
+	* For example, do this: `when.all(array).then(handleResults)` instead of this: `when(array, handleResults)`
+* `when.isPromise` was removed. Use [`when.isPromiseLike`](#whenispromiselike) instead.
+
+## Moved functionality
+
+Some functionality has moved to a new, preferred API.  The old APIs still work, and were left in place for backward compatibility, but will eventually be removed:
+
+* `when/delay` module. Use [`promise.delay`](#promisedelay) instead.
+* `when/timeout` module. Use [`promise.delay`](#promisedelay) instead.
+* `when/node/function` module. Use the [`when/node`](#node-style-asynchronous-functions) module instead.
+* `when/unfold` and `when/unfold/list` modules. Use [`when.unfold`](#whenunfold) instead
+* `when/function` `lift` and `call`. Use [`when.lift`](#whenlift) and [`when.try`](#whentry) instead.

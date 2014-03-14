@@ -1,10 +1,14 @@
 ### 3.0.0
 
-* New internal architecture
-* Significant performance improvements and memory efficiency
-* New ES6 Promise shim
-* New `when.try` and `when.lift`
-* New [liftAll] for lifting all of an object's functions in one go, eg. `var promisedFs = node.liftAll(require('fs'))`
+* New internal architecture with significant performance improvements and memory efficiency
+* New APIs
+	* [`when.try`](docs/api.md#whentry), [`when.lift`](docs/api.md#whenlift), [`when.reduceRight`](docs/api.md#whenreduceRight), [`when.iterate`](docs/api.md#wheniterate), [`when.unfold`](docs/api.md#whenunfold), [`when.race`](docs/api.md#whenrace)
+	* [`promise.with`](docs/api.md#promisewith), [`promise.else`](docs/api.md#promiseelse), [`promise.delay`](docs/api.md#promisedelay), [`promise.timeout`](docs/api.md#promisetimeout), [`promise.progress`](docs/api.md#promiseprogress)
+* New liftAll variants for lifting all of an object's functions in one shot, eg. `var promisedFs = node.liftAll(require('fs'))`
+	* [`fn.liftAll`](docs/api.md#fnliftall), [`node.liftAll`](docs/api.md#nodeliftall), [`callbacks.liftAll`](docs/api.md#callbacksliftall)
+* `when.Promise` public, inheritance-friendly, Promise constructor
+* New [ES6 Promise shim](docs/es6-promise-shim.md)
+* Check out the [tips for upgrading to 3.0 from 2.x](#upgrading-to-30-from-2x)
 
 ### 2.8.0
 
