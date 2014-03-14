@@ -8,7 +8,7 @@
 	* [`fn.liftAll`](docs/api.md#fnliftall), [`node.liftAll`](docs/api.md#nodeliftall), [`callbacks.liftAll`](docs/api.md#callbacksliftall)
 * `when.Promise` public, inheritance-friendly, Promise constructor
 * New [ES6 Promise shim](docs/es6-promise-shim.md)
-* Check out the [tips for upgrading to 3.0 from 2.x](#upgrading-to-30-from-2x)
+* Check out the [tips for upgrading to 3.0 from 2.x](docs/api.md#upgrading-to-30-from-2x)
 
 ### 2.8.0
 
