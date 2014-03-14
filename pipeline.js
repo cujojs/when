@@ -14,10 +14,9 @@
 (function(define) {
 define(function(require) {
 
-	var when, slice;
-
-	when = require('./when');
-	slice = Array.prototype.slice;
+	var when = require('./when');
+	var all = when.Promise.all;
+	var slice = Array.prototype.slice;
 
 	/**
 	 * Run array of tasks in a pipeline where the next
@@ -38,7 +37,7 @@ define(function(require) {
 			return task.apply(null, args);
 		};
 
-		return when.all(slice.call(arguments, 1)).then(function(args) {
+		return all(slice.call(arguments, 1)).then(function(args) {
 			return when.reduce(tasks, function(arg, task) {
 				return runTask(arg, task);
 			}, args);
