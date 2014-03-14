@@ -23,169 +23,243 @@ define('when.reduce-test', function (require) {
 
 	buster.testCase('when.reduce', {
 
-		'should reduce values without initial value': function(done) {
-			when.reduce([1,2,3], plus).then(
-				function(result) {
-					assert.equals(result, 6);
-				},
-				fail
-			).ensure(done);
-		},
+		'reduceRight': {
+			'should reduce from the right': function() {
+				return when.reduceRight(['a', later('b'), resolved('c')], plus).then(
+					function(result) {
+						assert.equals(result, 'cba');
+					});
+			},
 
-		'should reduce values with initial value': function(done) {
-			when.reduce([1,2,3], plus, 1).then(
-				function(result) {
-					assert.equals(result, 7);
-				},
-				fail
-			).ensure(done);
-		},
+			'should reduce from the right with initial value': function() {
+				return when.reduceRight(['a', later('b'), resolved('c')], plus, 'z').then(
+					function(result) {
+						assert.equals(result, 'zcba');
+					});
+			},
 
-		'should reduce values with initial promise': function(done) {
-			when.reduce([1,2,3], plus, resolved(1)).then(
-				function(result) {
-					assert.equals(result, 7);
-				},
-				fail
-			).ensure(done);
-		},
+			'should reduce values with initial promise': function() {
+				return when.reduceRight([1,2,3], plus, resolved(1)).then(
+					function(result) {
+						assert.equals(result, 7);
+					});
+			},
 
-		'should reduce promised values without initial value': function(done) {
-			var input = [resolved(1), resolved(2), resolved(3)];
-			when.reduce(input, plus).then(
-				function(result) {
-					assert.equals(result, 6);
-				},
-				fail
-			).ensure(done);
-		},
+			'should reduce promised values without initial value': function() {
+				var input = [resolved(1), resolved(2), resolved(3)];
+				return when.reduceRight(input, plus).then(
+					function(result) {
+						assert.equals(result, 6);
+					});
+			},
 
-		'should reduce promised values with initial value': function(done) {
-			var input = [resolved(1), resolved(2), resolved(3)];
-			when.reduce(input, plus, 1).then(
-				function(result) {
-					assert.equals(result, 7);
-				},
-				fail
-			).ensure(done);
-		},
+			'should reduce promised values with initial value': function() {
+				var input = [resolved(1), resolved(2), resolved(3)];
+				return when.reduceRight(input, plus, 1).then(
+					function(result) {
+						assert.equals(result, 7);
+					});
+			},
 
-		'should reduce promised values with initial promise': function(done) {
-			var input = [resolved(1), resolved(2), resolved(3)];
-			when.reduce(input, plus, resolved(1)).then(
-				function(result) {
-					assert.equals(result, 7);
-				},
-				fail
-			).ensure(done);
-		},
+			'should reduce promised values with initial promise': function() {
+				var input = [resolved(1), resolved(2), resolved(3)];
+				return when.reduceRight(input, plus, resolved(1)).then(
+					function(result) {
+						assert.equals(result, 7);
+					});
+			},
 
-		'should reduce empty input with initial value': function(done) {
-			var input = [];
-			when.reduce(input, plus, 1).then(
-				function(result) {
-					assert.equals(result, 1);
-				},
-				fail
-			).ensure(done);
-		},
+			'should reduce empty input with initial value': function() {
+				var input = [];
+				return when.reduceRight(input, plus, 1).then(
+					function(result) {
+						assert.equals(result, 1);
+					});
+			},
 
-		'should reduce empty input with initial promise': function(done) {
-			when.reduce([], plus, resolved(1)).then(
-				function(result) {
-					assert.equals(result, 1);
-				},
-				fail
-			).ensure(done);
-		},
+			'should reduce empty input with initial promise': function() {
+				return when.reduceRight([], plus, resolved(1)).then(
+					function(result) {
+						assert.equals(result, 1);
+					});
+			},
 
-		'should reject when input contains rejection': function(done) {
-			var input = [resolved(1), reject(2), resolved(3)];
-			when.reduce(input, plus, resolved(1)).then(
-				fail,
-				function(result) {
-					assert.equals(result, 2);
+			'should reject when input contains rejection': function() {
+				var input = [resolved(1), reject(2), resolved(3)];
+				return when.reduceRight(input, plus, resolved(1)).then(
+					fail,
+					function(result) {
+						assert.equals(result, 2);
+					});
+			},
+
+			'should reject with TypeError when input is empty and no initial value or promise provided': function() {
+				return when.reduceRight([], plus).then(
+					fail,
+					function(e) {
+						assert(e instanceof TypeError);
+					});
+			},
+
+			'should allow sparse array input without initial': function() {
+				return when.reduceRight([ , , 1, , 1, 1], plus).then(
+					function (result) {
+						assert.equals(result, 3);
+					});
+			},
+
+			'should allow sparse array input with initial': function() {
+				return when.reduceRight([ , , 1, , 1, 1], plus, 1).then(
+					function(result) {
+						assert.equals(result, 4);
+					});
+			},
+
+			'should fulfill with initial when input promise does not fulfill with array': function() {
+				return when.reduceRight(resolved(123), plus, 1).then(
+					function(result) {
+						assert.equals(result, 1);
+					});
+			},
+
+			'should provide correct basis value': function() {
+				function insert(arr, val, i) {
+					arr[i] = val;
+					return arr;
 				}
-			).ensure(done);
-		},
 
-		'should reject with TypeError when input is empty and no initial value or promise provided': function(done) {
-			// This test intentionally causes a TypeError to be thrown, and when/debug's
-			// default behavior is to rethrow it in nextTick.  So, we temporarily clobber
-			// the list of exception types to rethrow to allow this test to run
-			// with when/debug enabled.
-			// This has no effect in non-debug mode.
-			var debugSave = when.debug;
-			when.debug = { exceptionsToRethrow: {} };
-
-			when.reduce([], plus).then(
-				fail,
-				function(e) {
-					assert(e instanceof TypeError);
-				}
-			).ensure(function() {
-				when.debug = debugSave;
-				done();
-			});
-		},
-
-		'should allow sparse array input without initial': function(done) {
-			when.reduce([ , , 1, , 1, 1], plus).then(
-				function(result) {
-					assert.equals(result, 3);
-				},
-				fail
-			).ensure(done);
-		},
-
-		'should allow sparse array input with initial': function(done) {
-			when.reduce([ , , 1, , 1, 1], plus, 1).then(
-				function(result) {
-					assert.equals(result, 4);
-				},
-				fail
-			).ensure(done);
-		},
-
-		'should reduce in input order': function(done) {
-			when.reduce([later(1), later(2), later(3)], plus, '').then(
-				function(result) {
-					assert.equals(result, '123');
-				},
-				fail
-			).ensure(done);
-		},
-
-		'should accept a promise for an array': function(done) {
-			when.reduce(resolved([1, 2, 3]), plus, '').then(
-				function(result) {
-					assert.equals(result, '123');
-				},
-				fail
-			).ensure(done);
-		},
-
-		'should resolve to initialValue when input promise does not resolve to an array': function(done) {
-			when.reduce(resolved(123), plus, 1).then(
-				function(result) {
-					assert.equals(result, 1);
-				},
-				fail
-			).ensure(done);
-		},
-
-		'should provide correct basis value': function(done) {
-			function insertIntoArray(arr, val, i) {
-				arr[i] = val;
-				return arr;
+				return when.reduceRight([later(1), later(2), later(3)], insert, []).then(
+					function(result) {
+						assert.equals(result, [1,2,3]);
+					});
 			}
+		},
 
-			when.reduce([later(1), later(2), later(3)], insertIntoArray, []).then(
-				function(result) {
-					assert.equals(result, [1,2,3]);
-				},
-				fail
-			).ensure(done);
+		'reduce': {
+
+			'should reduce values without initial value': function() {
+				return when.reduce([1,2,3], plus).then(
+					function(result) {
+						assert.equals(result, 6);
+					});
+			},
+
+			'should reduce values with initial value': function() {
+				return when.reduce([1,2,3], plus, 1).then(
+					function(result) {
+						assert.equals(result, 7);
+					});
+			},
+
+			'should reduce values with initial promise': function() {
+				return when.reduce([1,2,3], plus, resolved(1)).then(
+					function(result) {
+						assert.equals(result, 7);
+					});
+			},
+
+			'should reduce promised values without initial value': function() {
+				var input = [resolved(1), resolved(2), resolved(3)];
+				return when.reduce(input, plus).then(
+					function(result) {
+						assert.equals(result, 6);
+					});
+			},
+
+			'should reduce promised values with initial value': function() {
+				var input = [resolved(1), resolved(2), resolved(3)];
+				return when.reduce(input, plus, 1).then(
+					function(result) {
+						assert.equals(result, 7);
+					});
+			},
+
+			'should reduce promised values with initial promise': function() {
+				var input = [resolved(1), resolved(2), resolved(3)];
+				return when.reduce(input, plus, resolved(1)).then(
+					function(result) {
+						assert.equals(result, 7);
+					});
+			},
+
+			'should reduce empty input with initial value': function() {
+				var input = [];
+				return when.reduce(input, plus, 1).then(
+					function(result) {
+						assert.equals(result, 1);
+					});
+			},
+
+			'should reduce empty input with initial promise': function() {
+				return when.reduce([], plus, resolved(1)).then(
+					function(result) {
+						assert.equals(result, 1);
+					});
+			},
+
+			'should reject when input contains rejection': function() {
+				var input = [resolved(1), reject(2), resolved(3)];
+				return when.reduce(input, plus, resolved(1)).then(
+					fail,
+					function(result) {
+						assert.equals(result, 2);
+					});
+			},
+
+			'should reject with TypeError when input is empty and no initial value or promise provided': function() {
+				return when.reduce([], plus).then(
+					fail,
+					function(e) {
+						assert(e instanceof TypeError);
+					});
+			},
+
+			'should allow sparse array input without initial': function() {
+				return when.reduce([ , , 1, , 1, 1], plus).then(
+					function (result) {
+						assert.equals(result, 3);
+					});
+			},
+
+			'should allow sparse array input with initial': function() {
+				return when.reduce([ , , 1, , 1, 1], plus, 1).then(
+					function(result) {
+						assert.equals(result, 4);
+					});
+			},
+
+			'should reduce in input order': function() {
+				return when.reduce([later(1), later(2), later(3)], plus, '').then(
+					function(result) {
+						assert.equals(result, '123');
+					});
+			},
+
+			'should accept a promise for an array': function() {
+				return when.reduce(resolved([1, 2, 3]), plus, '').then(
+					function(result) {
+						assert.equals(result, '123');
+					});
+			},
+
+			'should fulfill with initial when input promise does not fulfill with array': function() {
+				return when.reduce(resolved(123), plus, 1).then(
+					function(result) {
+						assert.equals(result, 1);
+					});
+			},
+
+			'should provide correct basis value': function() {
+				function insert(arr, val, i) {
+					arr[i] = val;
+					return arr;
+				}
+
+				return when.reduce([later(1), later(2), later(3)], insert, []).then(
+					function(result) {
+						assert.equals(result, [1,2,3]);
+					});
+			}
 		}
 	});
 

@@ -58,7 +58,7 @@ define(function(require) {
 	 * @returns {Promise} promise for the callback value of asyncFunction
 	 */
 	function apply(asyncFunction, extraAsyncArgs) {
-		return _apply(asyncFunction, this, extraAsyncArgs);
+		return _apply(asyncFunction, this, extraAsyncArgs || []);
 	}
 
 	/**
@@ -66,7 +66,7 @@ define(function(require) {
 	 * @private
 	 */
 	function _apply(asyncFunction, thisArg, extraAsyncArgs) {
-		return Promise.all(extraAsyncArgs || []).then(function(args) {
+		return Promise.all(extraAsyncArgs).then(function(args) {
 			var d = Promise._defer();
 			args.push(alwaysUnary(d.resolver.resolve, d.resolver),
 				alwaysUnary(d.resolver.reject, d.resolver));

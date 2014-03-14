@@ -198,8 +198,34 @@ define('when/iterate-test', function (require) {
 		},
 
 		'iterate': {
-			'//should invoke condition first': function() {
+			'should invoke condition first': function() {
+				var called = false;
 
+				return when.iterate(function(x) {
+					assert(called);
+					return x;
+				}, function() {
+					refute(called);
+					called = true;
+					return true;
+				}, function(x) {
+					assert(called);
+					return x;
+				}, 0).then(function() {
+					assert(called);
+				});
+			},
+
+			'should return a promise for ultimate result': function() {
+				return when.iterate(function(x) {
+					return x+1;
+				}, function(x) {
+					return x >= 10;
+				}, function(x) {
+					return x;
+				}, 0).then(function(x) {
+					assert.equals(x, 10);
+				});
 			}
 		}
 	});

@@ -69,12 +69,20 @@ define(function(require) {
 	 */
 	function _apply(func, thisArg, args) {
 		return Promise.all(args).then(function(args) {
-			var d = Promise._defer();
-			args.push(createCallback(d.resolver));
-			func.apply(thisArg, args);
-
-			return d.promise;
+			return _applyDirect(func, thisArg, args);
 		});
+	}
+
+	/**
+	 * Apply helper that optimizes for small number of arguments
+	 * @private
+	 */
+	function _applyDirect(func, thisArg, args) {
+		var d = Promise._defer();
+		var cb = createCallback(d.resolver);
+		args.push(cb);
+		func.apply(thisArg, args);
+		return d.promise;
 	}
 
 	/**

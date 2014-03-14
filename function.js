@@ -30,14 +30,12 @@ define(function(require) {
 	 * Takes a function and an optional array of arguments (that might be promises),
 	 * and calls the function. The return value is a promise whose resolution
 	 * depends on the value returned by the function.
-	 * @param {function} func function to be called
+	 * @param {function} f function to be called
 	 * @param {Array} [args] array of arguments to func
 	 * @returns {Promise} promise for the return value of func
 	 */
-	function apply(func, promisedArgs) {
-		return arguments.length > 1
-			? attempt.apply(this, [func].concat(promisedArgs))
-			: attempt.call(this, func);
+	function apply(f, args) {
+		return _apply(f, this, args || []);
 	}
 
 	/**
@@ -48,17 +46,25 @@ define(function(require) {
 	 *
 	 * The resulting function is promise-aware, in the sense that it accepts
 	 * promise arguments, and waits for their resolution.
-	 * @param {Function} func function to be bound
+	 * @param {Function} f function to be bound
 	 * @param {...*} [args] arguments to be prepended for the new function
 	 * @returns {Function} a promise-returning function
 	 */
-	function lift(func /*, args... */) {
+	function lift(f /*, args... */) {
 		var args = slice.call(arguments, 1);
 		return function() {
-			args.unshift(func);
-			args.push.apply(args, slice.call(arguments));
-			return attempt.apply(this, args);
+			return _apply(f, this, args.concat(slice.call(arguments)));
 		};
+	}
+
+	/**
+	 * Apply helper that allows specifying thisArg
+	 * @private
+	 */
+	function _apply(f, thisArg, args) {
+		return args.length === 0
+			? attempt.call(thisArg, f)
+			: attempt.apply(thisArg, [f].concat(args));
 	}
 
 	/**
