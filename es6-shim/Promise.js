@@ -179,13 +179,18 @@ define(function(require) {
 (function(define) { 'use strict';
 define(function() {
 
-	var forEach = Array.prototype.forEach;
-
 	return function makePromise(environment) {
 
 		var foreverPendingPromise;
 		var promiseCycleError;
 		var tasks = environment.scheduler;
+
+		var objectCreate = Object.create ||
+			function(proto) {
+				function Child() {}
+				Child.prototype = proto;
+				return new Child();
+			};
 
 		/**
 		 * Create a promise whose fate is determined by resolver
@@ -342,8 +347,8 @@ define(function() {
 			for (i = 0; i < len; ++i) {
 				if (i in promises) {
 					x = promises[i];
-					if (typeof x === 'object' || typeof x === 'function') {
-						resolveOne(resolver, results, getHandler(x), i);
+					if (maybeThenable(x)) {
+						resolveOne(resolver, results, getHandlerChecked(x), i);
 					} else {
 						results[i] = x;
 						--pending;
@@ -391,9 +396,9 @@ define(function() {
 			}
 
 			var h = new DeferredHandler();
-			forEach.call(promises, function(p) {
-				getHandler(p).when(noop, noop, void 0, h, h.resolve, h.reject);
-			});
+			for(var i=0; i<promises.length; ++i) {
+				getHandler(promises[i]).when(noop, noop, void 0, h, h.resolve, h.reject);
+			}
 
 			return new InternalPromise(h);
 		}
@@ -412,7 +417,7 @@ define(function() {
 			this._handler = handler;
 		}
 
-		InternalPromise.prototype = Object.create(Promise.prototype);
+		InternalPromise.prototype = objectCreate(Promise.prototype);
 
 		/**
 		 * Get an appropriate handler for x
@@ -423,17 +428,17 @@ define(function() {
 		 */
 		function getHandler(x, h) {
 			if(x instanceof Promise) {
-				return getHandlerChecked(x, h);
+				return getHandlerPromise(x, h);
 			}
-
-			if(Object(x) === x) {
-				return getHandlerUntrusted(x);
-			}
-
-			return new FulfilledHandler(x);
+			return maybeThenable(x) ? getHandlerUntrusted(x) : new FulfilledHandler(x);
 		}
 
 		function getHandlerChecked(x, h) {
+			return x instanceof Promise
+				? getHandlerPromise(x, h) : getHandlerUntrusted(x);
+		}
+
+		function getHandlerPromise(x, h) {
 			var h2 = x._handler.join();
 			return h === h2 ? promiseCycleError : h2;
 		}
@@ -479,7 +484,7 @@ define(function() {
 			this.handler = handler;
 		}
 
-		DelegateHandler.prototype = Object.create(Handler.prototype);
+		DelegateHandler.prototype = objectCreate(Handler.prototype);
 
 		DelegateHandler.prototype.join = function() {
 			return this.handler.join();
@@ -508,7 +513,7 @@ define(function() {
 			}
 		}
 
-		DeferredHandler.prototype = Object.create(Handler.prototype);
+		DeferredHandler.prototype = objectCreate(Handler.prototype);
 
 		DeferredHandler.prototype.inspect = function() {
 			return this.resolved ? this.handler.join().inspect() : toPendingState();
@@ -581,7 +586,7 @@ define(function() {
 			}
 		}
 
-		AsyncHandler.prototype = Object.create(DelegateHandler.prototype);
+		AsyncHandler.prototype = objectCreate(DelegateHandler.prototype);
 
 		AsyncHandler.prototype.when = function(resolve, notify, t, receiver, f, r, u) {
 			tasks.enqueue(new RunHandlerTask(resolve, notify, t, receiver, f, r, u, this.join()));
@@ -599,7 +604,7 @@ define(function() {
 			this.receiver = receiver;
 		}
 
-		BoundHandler.prototype = Object.create(DelegateHandler.prototype);
+		BoundHandler.prototype = objectCreate(DelegateHandler.prototype);
 
 		BoundHandler.prototype.when = function(resolve, notify, t, receiver, f, r, u) {
 			// Because handlers are allowed to be shared among promises,
@@ -626,7 +631,7 @@ define(function() {
 			this.thenable = thenable;
 		}
 
-		ThenableHandler.prototype = Object.create(DeferredHandler.prototype);
+		ThenableHandler.prototype = objectCreate(DeferredHandler.prototype);
 
 		ThenableHandler.prototype.when = function(resolve, notify, t, receiver, f, r, u) {
 			if(!this.assimilated) {
@@ -663,7 +668,7 @@ define(function() {
 			this.value = x;
 		}
 
-		FulfilledHandler.prototype = Object.create(Handler.prototype);
+		FulfilledHandler.prototype = objectCreate(Handler.prototype);
 
 		FulfilledHandler.prototype.inspect = function() {
 			return toFulfilledState(this.value);
@@ -694,7 +699,7 @@ define(function() {
 			}
 		}
 
-		RejectedHandler.prototype = Object.create(Handler.prototype);
+		RejectedHandler.prototype = objectCreate(Handler.prototype);
 
 		RejectedHandler.prototype.inspect = function() {
 			return toRejectedState(this.value);
@@ -796,6 +801,14 @@ define(function() {
 
 			notify.call(t, x);
 		};
+
+		/**
+		 * @param {*} x
+		 * @returns {boolean} false iff x is guaranteed not to be a thenable
+		 */
+		function maybeThenable(x) {
+			return (typeof x === 'object' || typeof x === 'function') && x !== null;
+		}
 
 		/**
 		 * Return f.call(thisArg, x), or if it throws return a rejected promise for

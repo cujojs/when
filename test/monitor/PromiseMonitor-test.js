@@ -14,13 +14,6 @@ define('when/monitor/PromiseMonitor-test', function (require) {
 
 	buster.testCase('when/monitor/PromiseMonitor', {
 
-		tearDown: function() {
-			if (typeof console !== 'undefined'
-				&& console.promiseMonitor instanceof PromiseMonitor) {
-				console.promiseMonitor = void 0;
-			}
-		},
-
 		'reject should trigger report': function(done) {
 			if (typeof console === 'undefined') {
 				done();

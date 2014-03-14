@@ -1,13 +1,9 @@
 /** @license MIT License (c) copyright B Cavalier & J Hann */
 
-/**
- * unfold
- * @author: brian@hovercraftstudios.com
- */
 (function(define) {
 define(function(require) {
 
-	var unfold = require('../unfold');
+	var unfold = require('../when').unfold;
 
 	/**
 	 * @deprecated
