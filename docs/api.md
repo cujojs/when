@@ -1118,11 +1118,6 @@ var destApi = fn.liftAll(srcApi, transform, destApi);
 
 Lifts all the methods of a source object, returning a new object with all the lifted methods.  The optional `transform` function allows you to rename or otherwise customize how the lifted functions are added to the returned object.  If `destApi` is provided, lifted methods will be added to it, instead of to a new object, and `destApi` will be returned.
 
-TODO: Need example
-```js
-
-```
-
 ### fn.call
 
 ```js
@@ -1471,10 +1466,6 @@ var destApi = callbacks.liftAll(srcApi, transform, destApi);
 
 Lifts all the methods of a source object, returning a new object with all the lifted methods.  The optional `transform` function allows you to rename or otherwise customize how the lifted functions are added to the returned object.  If `destApi` is provided, lifted methods will be added to it, instead of to a new object, and `destApi` will be returned.
 
-TODO: Need example
-```js
-
-```
 
 ### callbacks.call
 
@@ -1856,3 +1847,4 @@ Some functionality has moved to a new, preferred API.  The old APIs still work, 
 * `when/node/function` module. Use the [`when/node`](#node-style-asynchronous-functions) module instead.
 * `when/unfold` and `when/unfold/list` modules. Use [`when.unfold`](#whenunfold) instead
 * `when/function` `lift` and `call`. Use [`when.lift`](#whenlift) and [`when.try`](#whentry) instead.
+* In the [browserify build](installation.md), `when.node` is now the preferred alias over `when.nodefn`.

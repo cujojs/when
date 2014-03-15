@@ -2,33 +2,38 @@
 
 [![Build Status](https://travis-ci.org/cujojs/when.png?branch=master)](https://travis-ci.org/cujojs/when)
 
-# when.js
+when.js
+=======
 
-When.js is cujoJS's lightweight [Promises/A+](http://promises-aplus.github.com/promises-spec) and `when()` implementation that powers the async core of [wire.js](https://github.com/cujojs/wire), cujoJS's IOC Container.  It features:
+When.js is the [Promises/A+](http://promises-aplus.github.com/promises-spec) and `when()` implementation that powers [cujoJS](http://cujojs.com).  It has:
 
 * A rock solid, battle-tested Promise implementation
 * Resolving, settling, mapping, and reducing arrays of promises
 * Executing tasks in parallel and sequence
 * Transforming Node-style and other callback-based APIs into promise-based APIs
+* No external dependencies
 
-It passes the [Promises/A+ Test Suite](https://github.com/promises-aplus/promises-tests), is [very fast](https://github.com/cujojs/promise-perf-tests#test-results) and compact, and has no external dependencies.
+Check it out:
 
 - [What's new](CHANGES.md)
 - [API docs](docs/api.md#api)
-- [Examples](https://github.com/cujojs/when/wiki/Examples)
-- [More info on the wiki](https://github.com/cujojs/when/wiki)
+- Read more about how [promises simplify async programming](http://know.cujojs.com/tutorials/async/simplifying-async-with-promises)
 
 Installation
 ------------
 
 #### AMD
 
-Availble as `when` through [bower](http://bower.io) and [yeoman](https://github.com/yeoman/yo), or just clone the repo and load `when.js` from the root. When.js is AMD-compatible out of the box, so no need for shims.
+Availble as `when` through [bower](http://bower.io), or just clone the repo and load `when.js` from the root.
+
+```
+bower install --save when
+```
 
 #### CommonJS/Node
 
 ```
-npm install when
+npm install --save when
 ```
 
 [More help & other environments &raquo;](docs/installation.md)
@@ -84,13 +89,10 @@ function sum(x, y) { return x + y; }
 function times10(x) {return x * 10; }
 ```
 
-- For more examples, see [examples &raquo;](https://github.com/cujojs/when/wiki/Examples)
-- For the full documentation see [api docs &raquo;](docs/api.md#api)
-
 License
 -------
 
-Licensed under MIT. [See the license here &raquo;](LICENSE.txt)
+Licensed under MIT. [Full license here &raquo;](LICENSE.txt)
 
 Contributing
 ------------
