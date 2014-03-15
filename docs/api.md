@@ -1248,18 +1248,45 @@ Lifts all the methods of a source object, returning a new object with all the li
 
 ```js
 // Lift the entire dns API
-var dns = require("dns");
-var liftedDns = node.liftAll(dns);
+var dns = require('dns');
+var promisedDns = node.liftAll(dns);
 
 when.join(
-	liftedDns.resolve("twitter.com"),
-	liftedDns.resolveNs("facebook.com"),
-	liftedDns.resolveMx("google.com")
+	promisedDns.resolve("twitter.com"),
+	promisedDns.resolveNs("facebook.com"),
+	promisedDns.resolveMx("google.com")
 ).then(function(addresses) {
 	// All addresses resolved
 }).catch(function(reason) {
 	// At least one of the lookups failed
 });
+```
+
+For additional flexibility, you can use the optional `transform` function to do things like renaming:
+
+```js
+// Lift all of the fs methods, but name them with an 'Async' suffix
+var fs = require('fs');
+var promisedFs = node.liftAll(fs, function(promisedFs, liftedFunc, name) {
+	promisedFs[name + 'Async'] = liftedFunc;
+	return promisedFs;
+});
+
+promisedFs.readFileAsync('file.txt').done(console.log.bind(console));
+```
+
+You can also supply your own destination object onto which all of the lifted functions will be added:
+
+```js
+// Lift all of the fs methods, but name them with an 'Async' suffix
+// and add them back onto fs!
+var fs = require('fs');
+var promisedFs = node.liftAll(fs, function(promisedFs, liftedFunc, name) {
+	promisedFs[name + 'Async'] = liftedFunc;
+	return promisedFs;
+}, fs);
+
+fs.readFileAsync('file.txt').done(console.log.bind(console));
 ```
 
 ## node.call
