@@ -877,9 +877,11 @@ unfoldList(unspool, condition, 0).then(console.log.bind(console));
 var delayed = delay(milliseconds [, promiseOrValue]);
 var delayed = delay(milliseconds);
 
-// DEPRECATED, but currently works:
+// DEPRECATED, but currently works. See NOTE below.
 var delayed = delay(promiseOrValue, milliseconds);
 ```
+
+**NOTE:** Due to the API change of swapping the arguments, calling `delay(number, number)` is ambiguous.  To work around this, cast the the second number to a promise: `delay(number, when(number))`.  For example, to create a 1000ms delay for the value `123`, use `delay(1000, when(123))`. This will be resolved in the upcoming 3.0 release.
 
 Create a promise that resolves after a delay, or after a delay following the resolution of another promise.
 
@@ -920,6 +922,9 @@ var timed = timeout(milliseconds, promiseOrValue);
 // DEPRECATED, but currently works:
 var delayed = delay(promiseOrValue, milliseconds);
 ```
+
+**NOTE:** Due to the API change of swapping the arguments, calling `timeout(number, number)` is ambiguous.  Although providing a non-promise as the second argument to `timeout` is a rare use case, but can happen when passing a received value of unknown type from a 3rd party.  If you encounter that situation, you can work around it by casting the second argument to a promise: `timeout(number, when(x))`. This will be resolved in the upcoming 3.0 release.
+
 
 Create a promise that will reject after a timeout if promiseOrValue does not resolved or rejected beforehand.  If promiseOrValue is a value, the returned promise will resolve immediately.  More interestingly, if promiseOrValue is a promise, if it resolved before the timeout period, the returned promise will resolve.  If it doesn't, the returned promise will reject.
 
