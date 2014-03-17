@@ -975,7 +975,7 @@ function unspool(files) {
 	return [content, files.slice(1)];
 }
 
-function condition(remaining) {
+function predicate(remaining) {
 	// This could be any test we want.  For fun, stop when
 	// the next file name starts with a 'p'.
 	return remaining[0].charAt(0) === 'p';
@@ -995,7 +995,7 @@ function printFirstLine(content) {
 	console.log(content.slice(0, Math.min(80, content.indexOf('\n'))));
 }
 
-when.unfold(unspool, condition, printFirstLine, files).done();
+when.unfold(unspool, predicate, printFirstLine, files).done();
 ```
 
 # Task Execution
@@ -1854,6 +1854,10 @@ The monitor modules are building blocks.  The [when/monitor/console](../monitor/
 # Upgrading to 3.0 from 2.x
 
 While there have been significant architectural changes in 3.0, it remains almost fully backward compatible.  There are a few things that were deprecated and have now been removed, and functionality that has moved to a new preferred spot.
+
+## ES5 Required
+
+As of version 3.0, when.js requires an ES5 environment.  In older environments, an ES5 shim such as [poly](https://github.com/cujojs/poly) or [es5-shim](https://github.com/es-shims/es5-shim).  For more information, see the [installation docs](installation.md).
 
 ## Backward incompatible changes
 
