@@ -130,13 +130,13 @@ define(function (require) {
 	}
 
 	function Deferred() {
-		var d = Promise._defer();
+		var p = Promise._defer();
 
-		function resolve(x) { d.resolver.resolve(x); }
-		function reject(x) { d.resolver.reject(x); }
-		function notify(x) { d.resolver.notify(x); }
+		function resolve(x) { p._handler.resolve(x); }
+		function reject(x) { p._handler.reject(x); }
+		function notify(x) { p._handler.notify(x); }
 
-		this.promise = d.promise;
+		this.promise = p;
 		this.resolve = resolve;
 		this.reject = reject;
 		this.notify = notify;

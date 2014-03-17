@@ -67,12 +67,12 @@ define(function(require) {
 	 */
 	function _apply(asyncFunction, thisArg, extraAsyncArgs) {
 		return Promise.all(extraAsyncArgs).then(function(args) {
-			var d = Promise._defer();
-			args.push(alwaysUnary(d.resolver.resolve, d.resolver),
-				alwaysUnary(d.resolver.reject, d.resolver));
+			var p = Promise._defer();
+			args.push(alwaysUnary(p._handler.resolve, p._handler),
+				alwaysUnary(p._handler.reject, p._handler));
 			asyncFunction.apply(thisArg, args);
 
-			return d.promise;
+			return p;
 		});
 	}
 
@@ -208,7 +208,7 @@ define(function(require) {
 		return function() {
 			var thisArg = this;
 			return Promise.all(arguments).then(function(args) {
-				var d = Promise._defer();
+				var p = Promise._defer();
 
 				var callbackPos, errbackPos;
 
@@ -221,16 +221,16 @@ define(function(require) {
 				}
 
 				if(errbackPos < callbackPos) {
-					insertCallback(args, errbackPos, d.resolver.reject, d.resolver);
-					insertCallback(args, callbackPos, d.resolver.resolve, d.resolver);
+					insertCallback(args, errbackPos, p._handler.reject, p._handler);
+					insertCallback(args, callbackPos, p._handler.resolve, p._handler);
 				} else {
-					insertCallback(args, callbackPos, d.resolver.resolve, d.resolver);
-					insertCallback(args, errbackPos, d.resolver.reject, d.resolver);
+					insertCallback(args, callbackPos, p._handler.resolve, p._handler);
+					insertCallback(args, errbackPos, p._handler.reject, p._handler);
 				}
 
 				asyncFunction.apply(thisArg, args);
 
-				return d.promise;
+				return p;
 			});
 		};
 	}

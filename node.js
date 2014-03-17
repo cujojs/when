@@ -78,11 +78,10 @@ define(function(require) {
 	 * @private
 	 */
 	function _applyDirect(func, thisArg, args) {
-		var d = Promise._defer();
-		var cb = createCallback(d.resolver);
-		args.push(cb);
+		var p = Promise._defer();
+		args.push(createCallback(p._handler));
 		func.apply(thisArg, args);
-		return d.promise;
+		return p;
 	}
 
 	/**

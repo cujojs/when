@@ -5,12 +5,13 @@
 when.js
 =======
 
-When.js is the [Promises/A+](http://promises-aplus.github.com/promises-spec) and `when()` implementation that powers [cujoJS](http://cujojs.com).  It has:
+When.js is cujoJS's [Promises/A+](http://promises-aplus.github.com/promises-spec) and `when()` implementation.  It has a powerful combination of small size, broad feature set, and high performance.
 
 * A rock solid, battle-tested Promise implementation
-* Resolving, settling, mapping, and reducing arrays of promises
+* Working with arrays and hashes of promises
 * Executing tasks in parallel and sequence
 * Transforming Node-style and other callback-based APIs into promise-based APIs
+* A la carte usage via modules, or tailor-your-own or kitchen-sink usage via browserify
 * No external dependencies
 
 Check it out:
