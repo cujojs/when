@@ -105,11 +105,21 @@ Get a trusted promise by transforming `x` with `f`.  If `x` is
 
 ## when.try
 
+**ALIAS:** when.attempt() for non-ES5 environments
+
 ```js
 var promise = when.try(f /*, arg1, arg2, ...*/);
 ```
 
 Calls `f` with the supplied arguments, returning a promise for the result.  The arguments may be promises, in which case, `f` will be called after they have fulfilled.  The returned promise will fulfill with the successful result of calling `f`.  If any argument is a rejected promise, or if `f` fails by throwing or returning a rejected promise, the returned promise will also be rejected.
+
+This can be a great way to kick off a promise chain when you want to return a promise, rather than creating a one manually.
+
+```js
+// Try to parse the JSON, capture any failures in the returned promise
+// (This will never throw)
+return when.try(JSON.parse, jsonString);
+```
 
 ### See also:
 * [when.lift](#whenlift)
@@ -124,7 +134,31 @@ var g = when.lift(f);
 
 Creates a "promisified" version of `f`, which always returns promises (`g` will never throw) and accepts promises or values as arguments.  In other words, calling `g(x, y z)` is like calling `when.try(f, x, y, z)` with the added convenience that once you've created `g` you can call it repeatedly or pass it around like any other function.  In addition, `g`'s thisArg will behave in a predictable way, like any other function (you can `.bind()` it, or use `.call()` or `.apply()`, etc.).
 
-Lifting functions provides a convenient way start promise chains without having to explicitly create promises, e.g. `new Promise`
+Like `when.try`, lifting functions provides a convenient way start promise chains without having to explicitly create promises, e.g. `new Promise`
+
+```js
+// Call parse as often as you need now.
+// It will always return a promise, and will never throw
+// Errors will be captured in the returned promise.
+var jsonParse = when.lift(JSON.parse);
+
+// Now use it wherever you need
+return jsonParse(jsonString);
+```
+
+`when.lift` correctly handles `this`, so object methods can be lifted as well:
+
+```js
+var parser = {
+	reviver: ...
+	parse: when.lift(function(str) {
+		return JSON.parse(str, this.reviver);
+	});
+};
+
+// Now use it wherever you need
+return parser.parse(jsonString);
+```
 
 ### See also:
 * [when.try](#whentry)
