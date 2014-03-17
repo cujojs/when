@@ -36,7 +36,7 @@ API
 	* [when.any(array)](#whenany)
 	* [when.some(array, n)](#whensome)
 	* [when.race(array)](#whenrace)
-1. Asynchronous Iteration
+1. Infinite Promise Sequences
 	* [when.iterate(f, condition, handler, seed)](#wheniterate)
 	* [when.unfold(f, condition, handler, seed)](#whenunfold)
 1. Objects
@@ -868,7 +868,7 @@ Initiates a competitive race that allows one winner.  The returned promise will 
 * fulfill with the value of the first input promise that fulfills, *or*
 * reject with the reason of the first input promise that rejects
 
-# Asynchronous Iteration
+# Infinite Promise Sequences
 
 [when.reduce](#whenreduce), [when/sequence](#whensequence), and [when/pipeline](#whenpipeline) are great ways to process asynchronous arrays of promises and tasks.  Sometimes, however, you may not know the array in advance, or may not need or want to process *all* the items in the array.  For example, here are a few situations where you may not know the bounds:
 
@@ -876,7 +876,7 @@ Initiates a competitive race that allows one winner.  The returned promise will 
 1. You need to execute a task repeatedly until a particular condition becomes true
 1. You need to selectively process items in an array, rather than all items
 
-In these cases, you can use `when/iterate` and `when/unfold` to iteratively and asynchronously process items until a particular predicate is true.
+In these cases, you can use `when/iterate` and `when/unfold` to iteratively and asynchronously process items until a particular predicate is true, or even forever without blocking other code.
 
 ## when.iterate
 
