@@ -3,7 +3,7 @@ Getting Started
 
 [CJS](http://wiki.commonjs.org/wiki/CommonJS) and [AMD](http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition) are the primary targets for `when`, but instructions for a variety of setups are provided below.
 
-As of version 3.0, when.js requires an ES5 environment.  In older environments, an ES5 shim such as [poly](https://github.com/cujojs/poly) or [es5-shim](https://github.com/es-shims/es5-shim)
+As of version 3.0, when.js requires an ES5 environment.  In older environments, use an ES5 shim such as [poly](https://github.com/cujojs/poly) or [es5-shim](https://github.com/es-shims/es5-shim)
 
 #### AMD
 

@@ -1857,7 +1857,7 @@ While there have been significant architectural changes in 3.0, it remains almos
 
 ## ES5 Required
 
-As of version 3.0, when.js requires an ES5 environment.  In older environments, an ES5 shim such as [poly](https://github.com/cujojs/poly) or [es5-shim](https://github.com/es-shims/es5-shim).  For more information, see the [installation docs](installation.md).
+As of version 3.0, when.js requires an ES5 environment.  In older environments, use an ES5 shim such as [poly](https://github.com/cujojs/poly) or [es5-shim](https://github.com/es-shims/es5-shim).  For more information, see the [installation docs](installation.md).
 
 ## Backward incompatible changes
 
