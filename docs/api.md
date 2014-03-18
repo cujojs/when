@@ -54,6 +54,9 @@ API
 		* [node.liftAll(object)](#nodeliftall)
 		* [node.call(nodeFunction, ...args)](#nodecall)
 		* [node.apply(nodeFunction, argsArray)](#nodeapply)
+		* [node.bindCallback(promise, nodeback)](#nodebindcallback)
+		* [node.liftCallback(callback)](#nodeliftcallback)
+		* [node.createCallback(resolver)](#nodecreatecallback)
 	* when/callbacks
 		* [callbacks.lift(asyncFunction)](#callbackslift)
 		* [callbacks.liftAll(object)](#callbacksliftall)
@@ -1108,10 +1111,8 @@ var promiseFunction = fn.lift(normalFunction, arg1, arg2/* ...more args */);
 When the same function will be called through `fn.call()` or `fn.apply()` multiple times, it can be more efficient to lift it create a wrapper function that has promise-awareness and exposes the same behavior as the original function. That's what `fn.lift()` does: It takes a normal function and returns a new, promise-aware version of it. As `Function.prototype.bind`, it makes partial application of any additional arguments.
 
 ```js
-var fn, when;
-
-when = require("when");
-fn   = require("when/function");
+var when = require('when');
+var fn   = require('when/function');
 
 function setText(element, text) {
 	element.text = text;
@@ -1161,10 +1162,8 @@ var promisedResult = fn.call(normalFunction, arg1, arg2/* ...more args */);
 A parallel to the `Function.prototype.call` function, that gives promise-awareness to the function given as first argument.
 
 ```js
-var when, fn;
-
-when = require("when");
-fn   = require("when/function");
+var when = require('when');
+var fn   = require('when/function');
 
 function divideNumbers(a, b) {
 	if(b !== 0) {
@@ -1194,10 +1193,8 @@ var promisedResult = fn.apply(normalFunction, [arg1, arg2/* ...more args */]);
 `fn.apply` is to [`fn.call`](#fncall) as `Function.prototype.apply` is to `Function.prototype.call`: what changes is the way the arguments are taken.  While `fn.call` takes the arguments separately, `fn.apply` takes them as an array.
 
 ```js
-var fn, when;
-
-when = require("when");
-fn   = require("when/function");
+var when = require('when');
+var fn   = require('when/function');
 
 function sumMultipleNumbers() {
 	return Array.prototype.reduce.call(arguments, function(prev, n) {
@@ -1249,18 +1246,16 @@ var promiseFunc = nodefn.lift(nodeStyleFunction, arg1, arg2/*...more args*/);
 Function based on the same principles from [`fn.lift()`](#fnlift) and [`callbacks.lift()`](#callbackslift), but tuned to handle nodejs-style async functions.
 
 ```js
-var dns, when, nodefn;
-
-dns    = require("dns");
-when   = require("when");
-nodefn = require("when/node");
+var dns    = require('dns');
+var when   = require('when');
+var nodefn = require('when/node');
 
 var resolveAddress = nodefn.lift(dns.resolve);
 
 when.join(
-	resolveAddress("twitter.com"),
-	resolveAddress("facebook.com"),
-	resolveAddress("google.com")
+	resolveAddress('twitter.com'),
+	resolveAddress('facebook.com'),
+	resolveAddress('google.com')
 ).then(function(addresses) {
 	// All addresses resolved
 }).catch(function(reason) {
@@ -1332,17 +1327,15 @@ var promisedResult = nodefn.call(nodeStyleFunction, arg1, arg2/*...more args*/);
 Analogous to [`fn.call()`](#fncall) and [`callbacks.call()`](#callbackscall): Takes a function plus optional arguments to that function, and returns a promise for its final value. The promise will be resolved or rejected depending on whether the conventional error argument is passed or not.
 
 ```js
-var fs, nodefn;
+var fs     = require('fs');
+var nodefn = require('when/function');
 
-fs     = require("fs");
-nodefn = require("when/function");
+var loadPasswd = nodefn.call(fs.readFile, '/etc/passwd');
 
-var loadPasswd = nodefn.call(fs.readFile, "/etc/passwd");
-
-loadPasswd.then(function(passwd) {
-	console.log("Contents of /etc/passwd:\n" + passwd);
+loadPasswd.done(function(passwd) {
+	console.log('Contents of /etc/passwd:\n' + passwd);
 }, function(error) {
-	console.log("Something wrong happened: " + error);
+	console.log('Something wrong happened: ' + error);
 });
 ```
 
@@ -1355,49 +1348,15 @@ var promisedResult = nodefn.apply(nodeStyleFunction, [arg1, arg2/*...more args*/
 Following the tradition from `when/function` and `when/callbacks`, `when/node` also provides a array-based alternative to `nodefn.call()`.
 
 ```js
-var fs, nodefn;
+var fs     = require('fs');
+var nodefn = require('when/node');
 
-fs     = require("fs");
-nodefn = require("when/node");
+var loadPasswd = nodefn.apply(fs.readFile, ['/etc/passwd']);
 
-var loadPasswd = nodefn.apply(fs.readFile, ["/etc/passwd"]);
-
-loadPasswd.then(function(passwd) {
-	console.log("Contents of /etc/passwd:\n" + passwd);
+loadPasswd.done(function(passwd) {
+	console.log('Contents of /etc/passwd:\n' + passwd);
 }, function(error) {
-	console.log("Something wrong happened: " + error);
-});
-```
-
-## node.createCallback
-
-```js
-var nodeStyleCallback = nodefn.createCallback(resolver);
-```
-
-The core function on the `when/node` implementation, which might be useful for cases that aren't covered by the higher level API. It takes an object that responds to the [resolver interface](#resolver) and returns a function that can be used with any node-style asynchronous function, and will call `resolve()` or `reject()` on the resolver depending on whether the conventional error argument is passed to it.
-
-```js
-var when, nodefn;
-
-when   = require("when");
-nodefn = require("when/node");
-
-function nodeStyleAsyncFunction(callback) {
-    if(Math.random() * 2 > 1) {
-      callback("Oh no!");
-    } else {
-      callback(null, "Interesting value");
-    }
-}
-
-var deferred = when.defer();
-nodeStyleAsyncFunction(nodefn.createCallback(deferred.resolver));
-
-deferred.promise.then(function(interestingValue) {
-  console.log(interestingValue)
-},function(err) {
-  console.error(err)
+	console.log('Something wrong happened: ' + error);
 });
 ```
 
@@ -1421,9 +1380,7 @@ If `nodeback` throws an exception, it will propagate to the host environment,
 just as it would when using node-style callbacks with typical Node.js APIs.
 
 ```js
-var nodefn, handlePromisedData, dataPromise;
-
-nodefn = require('when/node');
+var nodefn = require('when/node');
 
 function fetchData(key) {
 	// go get the data and,
@@ -1439,9 +1396,9 @@ function handleData(err, result) {
 }
 
 // Lift handleData
-handlePromisedData = nodefn.liftCallback(handleData);
+var handlePromisedData = nodefn.liftCallback(handleData);
 
-dataPromise = fetchData(123);
+var dataPromise = fetchData(123);
 
 handlePromisedData(dataPromise);
 ```
@@ -1455,9 +1412,7 @@ var resultPromise = nodefn.bindCallback(promise, nodeback);
 Lifts and then calls the node-style callback on the provided promise.  This is a one-shot version of [nodefn.liftCallback](nodefn-liftcallback), and the `resultPromise` will behave as described there.
 
 ```js
-var nodefn, dataPromise;
-
-nodefn = require('when/node');
+var nodefn = require('when/node');
 
 function fetchData(key) {
 	// go get the data and,
@@ -1473,9 +1428,39 @@ function handleData(err, result) {
 }
 
 // Lift handleData
-dataPromise = fetchData(123);
+var dataPromise = fetchData(123);
 
 nodefn.bindCallback(dataPromise, handleData);
+```
+
+## node.createCallback
+
+```js
+var nodeStyleCallback = nodefn.createCallback(resolver);
+```
+
+A helper function of the `when/node` implementation, which might be useful for cases that aren't covered by the higher level API. It takes an object that responds to the resolver interface (`{ resolve:function, reject:function }`) and returns a function that can be used with any node-style asynchronous function, and will call `resolve()` or `reject()` on the resolver depending on whether the conventional error argument is passed to it.
+
+```js
+var when   = require('when');
+var nodefn = require('when/node;);
+
+function nodeStyleAsyncFunction(callback) {
+    if(Math.random() * 2 > 1) {
+      callback(new Error('Oh no!'));
+    } else {
+      callback(null, "Interesting value");
+    }
+}
+
+var deferred = when.defer();
+nodeStyleAsyncFunction(nodefn.createCallback(deferred.resolver));
+
+deferred.promise.then(function(interestingValue) {
+  console.log(interestingValue)
+},function(err) {
+  console.error(err)
+});
 ```
 
 # Asynchronous functions
