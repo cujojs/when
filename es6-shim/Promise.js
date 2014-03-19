@@ -182,7 +182,6 @@ define(function() {
 	return function makePromise(environment) {
 
 		var foreverPendingPromise;
-		var promiseCycleError;
 		var tasks = environment.scheduler;
 
 		var objectCreate = Object.create ||
@@ -347,7 +346,7 @@ define(function() {
 				if (i in promises) {
 					x = promises[i];
 					if (maybeThenable(x)) {
-						resolveOne(resolver, results, getHandlerChecked(x), i);
+						resolveOne(resolver, results, getHandlerThenable(x), i);
 					} else {
 						results[i] = x;
 						--pending;
@@ -419,7 +418,8 @@ define(function() {
 		InternalPromise.prototype = objectCreate(Promise.prototype);
 
 		/**
-		 * Get an appropriate handler for x
+		 * Get an appropriate handler for x, checking for untrusted thenables
+		 * and promise graph cycles.
 		 * @private
 		 * @param {*} x
 		 * @param {object?} h optional handler to check for cycles
@@ -427,21 +427,36 @@ define(function() {
 		 */
 		function getHandler(x, h) {
 			if(x instanceof Promise) {
-				return getHandlerPromise(x, h);
+				return getHandlerChecked(x, h);
 			}
 			return maybeThenable(x) ? getHandlerUntrusted(x) : new FulfilledHandler(x);
 		}
 
+		/**
+		 * Get an appropriate handler for x, which must be either a thenable
+		 * @param {object} x
+		 * @returns {object} handler
+		 */
+		function getHandlerThenable(x) {
+			return x instanceof Promise ? x._handler.join() : getHandlerUntrusted(x);
+		}
+
+		/**
+		 * Get x's handler, checking for cycles
+		 * @param {Promise} x
+		 * @param {object?} h handler to check for cycles
+		 * @returns {object} handler
+		 */
 		function getHandlerChecked(x, h) {
-			return x instanceof Promise
-				? getHandlerPromise(x, h) : getHandlerUntrusted(x);
+			var xh = x._handler.join();
+			return h === xh ? promiseCycleHandler() : xh;
 		}
 
-		function getHandlerPromise(x, h) {
-			var h2 = x._handler.join();
-			return h === h2 ? promiseCycleError : h2;
-		}
-
+		/**
+		 * Get a handler for potentially untrusted thenable x
+		 * @param {*} x
+		 * @returns {object} handler
+		 */
 		function getHandlerUntrusted(x) {
 			try {
 				var untrustedThen = x.then;
@@ -689,11 +704,11 @@ define(function() {
 		 * @param {*} x rejection reason
 		 * @constructor
 		 */
-		function RejectedHandler(x, observed) {
+		function RejectedHandler(x) {
 			this.value = x;
 
 			if(this._isMonitored()) {
-				this.observed = !!observed;
+				this.observed = false;
 				this.key = this.observed ? -1 : this._env.promiseMonitor.startTrace(x);
 			}
 		}
@@ -726,7 +741,10 @@ define(function() {
 		// Errors and singletons
 
 		foreverPendingPromise = new InternalPromise(new Handler());
-		promiseCycleError = new RejectedHandler(new TypeError('Promise cycle'), true);
+
+		function promiseCycleHandler() {
+			return new RejectedHandler(new TypeError('Promise cycle'));
+		}
 
 		// Snapshot states
 
