@@ -3,7 +3,9 @@
 /** @author John Hann */
 
 (function(define) { 'use strict';
-define(function() {
+define(function(require) {
+
+	var setTimer = require('../lib/timer').set;
 
 	function PromiseMonitor(reporter) {
 		this.key = 0;
@@ -32,8 +34,7 @@ define(function() {
 	PromiseMonitor.prototype.updateTrace = function(key, trace) {
 		var t = this.traces[key];
 		if(typeof t !== 'undefined') {
-			t = t.concat(trace);
-			this.traces[key] = t;
+			t.push(trace);
 			this.logTraces();
 		}
 	};
@@ -47,7 +48,7 @@ define(function() {
 
 	PromiseMonitor.prototype.logTraces = function() {
 		if(!this.traceTask) {
-			this.traceTask = setTimeout(this._doLogTraces, this.logDelay);
+			this.traceTask = setTimer(this._doLogTraces, this.logDelay);
 		}
 	};
 
@@ -58,4 +59,4 @@ define(function() {
 
 	return PromiseMonitor;
 });
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

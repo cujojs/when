@@ -9,98 +9,125 @@ define(function() {
 	var allHandledMsg = '[promises] All previously unhandled rejections have now been handled';
 	var unhandledRejectionsMsg = '[promises] Unhandled rejections: ';
 
-	var warn, groupStart, groupEnd;
-	groupStart = groupEnd = consoleGroupsNotAvailable;
-
-	if(typeof console === 'undefined') {
-		warn = consoleNotAvailable;
-	} else {
-		if(typeof console.warn === 'function'
-			&& typeof console.dir === 'function') {
-			warn = function(s) {
-				console.warn(s);
-			};
-
-			if(typeof console.groupCollapsed === 'function') {
-				groupStart = function(s) {
-					console.groupCollapsed(s);
-				};
-				groupEnd = function() {
-					console.groupEnd();
-				};
-			}
-		} else {
-			// IE8 has console.log and JSON, so we can make a
-			// reasonably useful warn() from those.
-			// Credit to webpro (https://github.com/webpro) for this idea
-			if (typeof console.log ==='function'
-				&& typeof JSON !== 'undefined') {
-				warn = function (x) {
-					console.log(typeof x === 'string' ? x : JSON.stringify(x));
-				};
-			}
-		}
-	}
-
 	function ConsoleReporter(stackFilter) {
-		this._stackFilter = stackFilter;
+		this.stackFilter = stackFilter;
+		this._previouslyReported = false;
 	}
 
-	ConsoleReporter.prototype._warn = warn;
-	ConsoleReporter.prototype._groupStart = groupStart;
-	ConsoleReporter.prototype._groupEnd = groupEnd;
+	ConsoleReporter.prototype = initDefaultLogging();
 
 	ConsoleReporter.prototype.report = function(traces) {
 		var keys = Object.keys(traces);
 
 		if(keys.length === 0) {
-			this._warn(allHandledMsg);
+			if(this._previouslyReported) {
+				this._previouslyReported = false;
+				this.log(allHandledMsg);
+			}
 			return;
 		}
 
-		this._groupStart(unhandledRejectionsMsg + keys.length);
+		this._previouslyReported = true;
+		this.groupStart(unhandledRejectionsMsg + traces.length);
 		try {
-			this._formatTraces(traces, keys);
+			this.formatTraces(traces, keys);
 		} finally {
-			this._groupEnd();
+			this.groupEnd();
 		}
 	};
 
-	ConsoleReporter.prototype._joinLongTrace = function(stackFilter, trace) {
-		return trace.reduce(function (longTrace, e, i) {
-			var stack = e && e.stack;
+	ConsoleReporter.prototype.formatTraces = function(traces, keys) {
+		for(var i=0; i<keys.length; ++i) {
+			var longTrace = this.createLongTrace(traces[keys[i]]);
+			this.log(longTrace);
+		}
+	};
+
+	ConsoleReporter.prototype.createLongTrace = function(trace) {
+		var self = this;
+		var longTrace = '';
+		for(var i=0; i<trace.length; ++i) {
+			var stack = self.getStack(trace[i]);
 			if (stack) {
-				stack = stack.split('\n').filter(function (frame) {
-					return !(stackFilter.test(frame));
-				});
+				stack = self.getFilteredFrames(stack);
 
 				if(i === 0) {
-					longTrace.push.apply(longTrace, stack);
+					longTrace += '\n' + join(stack, 0);
 				} else if (stack.length > 1) {
-					stack[0] = stackJumpSeparator;
-					longTrace.push.apply(longTrace, stack);
+					longTrace += '\n' + stackJumpSeparator
+						+ '\n' + join(stack, 1);
 				}
 			} else {
-				longTrace.push(String(e));
+				longTrace += '\n' + trace[i];
 			}
-			return longTrace;
-		}, []);
+		}
+		return longTrace;
 	};
 
-	ConsoleReporter.prototype._formatTraces = function(traces, keys) {
-		keys.forEach(function (key) {
-			var trace = traces[key];
-			if (typeof trace === 'string') {
-				this._warn(trace);
-				return;
-			}
+	ConsoleReporter.prototype.getStack = function(e) {
+		return e && e.stack;
+	};
 
-			var longTrace = this._joinLongTrace(this._stackFilter, trace);
-			longTrace = traces[key] = longTrace.join('\n');
-
-			this._warn(longTrace);
+	ConsoleReporter.prototype.getFilteredFrames = function(stack) {
+		return stack.split('\n').filter(function (frame) {
+			return !this.stackFilter.test(frame);
 		}, this);
 	};
+
+	// About 5-10x faster than String.prototype.join o_O
+	function join(a, start) {
+		var sep = false;
+		var s = '';
+		for(var i=start; i< a.length; ++i) {
+			if(sep) {
+				s += '\n' + a[i];
+			} else {
+				s+= a[i];
+				sep = true;
+			}
+		}
+		return s;
+	}
+
+	function initDefaultLogging() {
+		var warn, groupStart, groupEnd;
+
+		if(typeof console === 'undefined') {
+			warn = consoleNotAvailable;
+		} else {
+			if(typeof console.warn === 'function'
+				&& typeof console.dir === 'function') {
+				warn = function(s) {
+					console.warn(s);
+				};
+
+				if(typeof console.groupCollapsed === 'function') {
+					groupStart = function(s) {
+						console.groupCollapsed(s);
+					};
+					groupEnd = function() {
+						console.groupEnd();
+					};
+				}
+			} else {
+				// IE8 has console.log and JSON, so we can make a
+				// reasonably useful warn() from those.
+				// Credit to webpro (https://github.com/webpro) for this idea
+				if (typeof console.log ==='function'
+					&& typeof JSON !== 'undefined') {
+					warn = function (x) {
+						console.log(typeof x === 'string' ? x : JSON.stringify(x));
+					};
+				}
+			}
+		}
+
+		return {
+			log: warn,
+			groupStart: groupStart || consoleGroupsNotAvailable,
+			groupEnd: groupEnd || consoleGroupsNotAvailable
+		};
+	}
 
 	function consoleNotAvailable() {}
 	function consoleGroupsNotAvailable() {}
