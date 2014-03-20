@@ -1,3 +1,9 @@
+### 3.0.1
+
+* [API doc](docs/api.md) updates and fixes
+* Improvements to unhandled rejection long stack trace filtering
+* Internal performance improvements
+
 ### 3.0.0
 
 * New internal architecture with significant performance improvements and memory efficiency

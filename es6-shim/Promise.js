@@ -496,6 +496,10 @@ define(function() {
 		 */
 		function DelegateHandler(handler) {
 			this.handler = handler;
+			if(this._isMonitored()) {
+				var trace = this._env.promiseMonitor.captureStack();
+				this.trace = handler._addTrace(trace);
+			}
 		}
 
 		DelegateHandler.prototype = objectCreate(Handler.prototype);
@@ -595,9 +599,6 @@ define(function() {
 		 */
 		function AsyncHandler(handler) {
 			DelegateHandler.call(this, handler);
-			if(this._isMonitored()) {
-				this.trace = handler._addTrace(this._env.promiseMonitor.captureStack());
-			}
 		}
 
 		AsyncHandler.prototype = objectCreate(DelegateHandler.prototype);
@@ -696,8 +697,6 @@ define(function() {
 			resolve.call(t, x);
 		};
 
-		FulfilledHandler.prototype._addTrace = noop;
-
 		/**
 		 * Handler for a rejected promise
 		 * @private
@@ -706,10 +705,10 @@ define(function() {
 		 */
 		function RejectedHandler(x) {
 			this.value = x;
+			this.observed = false;
 
 			if(this._isMonitored()) {
-				this.observed = false;
-				this.key = this.observed ? -1 : this._env.promiseMonitor.startTrace(x);
+				this.key = this._env.promiseMonitor.startTrace(x);
 			}
 		}
 
@@ -721,10 +720,10 @@ define(function() {
 
 		RejectedHandler.prototype.when = function(resolve, notify, t, receiver, f, r) {
 			if(this._isMonitored() && !this.observed) {
-				this.observed = true;
 				this._env.promiseMonitor.removeTrace(this.key);
 			}
 
+			this.observed = true;
 			var x = typeof r === 'function'
 				? tryCatchReject(r, this.value, receiver)
 				: reject(this.value);
