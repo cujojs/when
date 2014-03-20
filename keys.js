@@ -31,6 +31,7 @@ define(function(require) {
 			var pending = 0;
 
 			for(var k in object) {
+				++pending;
 				resolveOne(object[k], k);
 			}
 
@@ -39,10 +40,8 @@ define(function(require) {
 			}
 
 			function resolveOne(x, k) {
-				++pending;
 				toPromise(x).then(function(x) {
 					results[k] = x;
-
 					if(--pending === 0) {
 						resolve(results);
 					}
