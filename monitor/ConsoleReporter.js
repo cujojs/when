@@ -5,7 +5,7 @@
 (function(define) { 'use strict';
 define(function() {
 
-	var stackJumpSeparator = '  ... [from] ...';
+	var stackJumpSeparator = '... from ...';
 	var allHandledMsg = '[promises] All previously unhandled rejections have now been handled';
 	var unhandledRejectionsMsg = '[promises] Unhandled rejections: ';
 
@@ -16,19 +16,19 @@ define(function() {
 
 	ConsoleReporter.prototype = initDefaultLogging();
 
-	ConsoleReporter.prototype.report = function(traces) {
+	ConsoleReporter.prototype.log = function(traces) {
 		var keys = Object.keys(traces);
 
 		if(keys.length === 0) {
 			if(this._previouslyReported) {
 				this._previouslyReported = false;
-				this.log(allHandledMsg);
+				this.warn(allHandledMsg);
 			}
 			return;
 		}
 
 		this._previouslyReported = true;
-		this.groupStart(unhandledRejectionsMsg + traces.length);
+		this.groupStart(unhandledRejectionsMsg + keys.length);
 		try {
 			this.formatTraces(traces, keys);
 		} finally {
@@ -39,28 +39,31 @@ define(function() {
 	ConsoleReporter.prototype.formatTraces = function(traces, keys) {
 		for(var i=0; i<keys.length; ++i) {
 			var longTrace = this.createLongTrace(traces[keys[i]]);
-			this.log(longTrace);
+			this.warn(join(longTrace) + '\n');
 		}
 	};
 
 	ConsoleReporter.prototype.createLongTrace = function(trace) {
 		var self = this;
-		var longTrace = '';
+		var first;
+		var longTrace = [];
+		var seen = {};
 		for(var i=0; i<trace.length; ++i) {
 			var stack = self.getStack(trace[i]);
-			if (stack) {
-				stack = self.getFilteredFrames(stack);
 
-				if(i === 0) {
-					longTrace += '\n' + join(stack, 0);
-				} else if (stack.length > 1) {
-					longTrace += '\n' + stackJumpSeparator
-						+ '\n' + join(stack, 1);
+			if (stack) {
+				stack = stack.split('\n');
+				first = stack[0];
+				stack = self.getFilteredFrames(seen, stack.slice(1));
+				if (stack.length > 0) {
+					longTrace.push(i === 0 ? first : stackJumpSeparator);
+					longTrace.push(join(stack));
 				}
 			} else {
-				longTrace += '\n' + trace[i];
+				longTrace.push(String(trace[i]));
 			}
 		}
+
 		return longTrace;
 	};
 
@@ -68,17 +71,22 @@ define(function() {
 		return e && e.stack;
 	};
 
-	ConsoleReporter.prototype.getFilteredFrames = function(stack) {
-		return stack.split('\n').filter(function (frame) {
-			return !this.stackFilter.test(frame);
-		}, this);
+	ConsoleReporter.prototype.getFilteredFrames = function(seen, stack) {
+		var stackFilter = this.stackFilter;
+		return stack.reduce(function (filtered, frame) {
+			if (!(seen[frame] || stackFilter.test(frame))) {
+				seen[frame] = true;
+				filtered.push(frame);
+			}
+			return filtered;
+		}, []);
 	};
 
 	// About 5-10x faster than String.prototype.join o_O
-	function join(a, start) {
+	function join(a) {
 		var sep = false;
 		var s = '';
-		for(var i=start; i< a.length; ++i) {
+		for(var i=0; i< a.length; ++i) {
 			if(sep) {
 				s += '\n' + a[i];
 			} else {
@@ -123,14 +131,13 @@ define(function() {
 		}
 
 		return {
-			log: warn,
-			groupStart: groupStart || consoleGroupsNotAvailable,
-			groupEnd: groupEnd || consoleGroupsNotAvailable
+			warn: warn,
+			groupStart: groupStart || warn,
+			groupEnd: groupEnd || consoleNotAvailable
 		};
 	}
 
 	function consoleNotAvailable() {}
-	function consoleGroupsNotAvailable() {}
 
 	return ConsoleReporter;
 

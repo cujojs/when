@@ -54,7 +54,7 @@ define(function(require) {
 
 	PromiseMonitor.prototype._logTraces = function() {
 		this.traceTask = void 0;
-		this._reporter.report(this.traces);
+		this._reporter.log(this.traces);
 	};
 
 	return PromiseMonitor;

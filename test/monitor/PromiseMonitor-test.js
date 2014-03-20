@@ -20,7 +20,7 @@ define('when/monitor/PromiseMonitor-test', function (require) {
 				return;
 			}
 
-			console.promiseMonitor = new PromiseMonitor({ report: function () {
+			console.promiseMonitor = new PromiseMonitor({ log: function () {
 				console.promiseMonitor = void 0;
 				assert(true);
 				done();
@@ -37,7 +37,7 @@ define('when/monitor/PromiseMonitor-test', function (require) {
 				return;
 			}
 
-			console.promiseMonitor = new PromiseMonitor({ report: function () {
+			console.promiseMonitor = new PromiseMonitor({ log: function () {
 				console.promiseMonitor = void 0;
 				assert(true);
 				done();
