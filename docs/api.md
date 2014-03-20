@@ -236,10 +236,28 @@ Create a rejected promise with the supplied error as the rejection reason.
 
 ```js
 var deferred = when.defer();
-var promise = deferred.promise;
 ```
 
-Create a `{promise, resolver}` pair.  In some scenarios it can be convenient to have access to both the `promise` and it's associated resolving functions, for example, to give each out to a separate party. In most cases, however, using `when.promise` provides better separation of concerns.
+**Note:** The use of `when.defer` is discouraged.  In most cases, using [`when.promise`](#whenpromise), [`when.try`](#whentry), or [`when.lift`](#whenlift) provides better separation of concerns.
+
+Create a `{promise, resolve, reject, notify}` tuple.  In certain (rare) scenarios it can be convenient to have access to both the `promise` and it's associated resolving functions.
+
+The deferred API:
+
+```js
+var promise = deferred.promise;
+
+// Resolve the promise, x may be a promise or non-promise
+deferred.resolve(x)
+
+// Reject the promise with error as the reason
+deferred.reject(error)
+
+// Notify promise consumers of a progress update
+deferred.notify(x)
+```
+
+Note that `resolve`, `reject`, and `notify` all become no-ops after either `resolve` or `reject` has been called the first time.
 
 One common use case for creating a deferred is adapting callback-based functions to promises.  In those cases, it's preferable to use the [when/callbacks](#asynchronous-functions) module to [call](#callbackscall) or [lift](#callbackslift) the callback-based functions instead.  For adapting node-style async functions, use the [when/node](#node-style-asynchronous-functions) module.
 
