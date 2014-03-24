@@ -12,6 +12,7 @@
   "license": "MIT",
   "ignore": [
     "**/.*",
+	"**/*.md",
     "docs",
     "benchmark",
     "node_modules",
