@@ -307,7 +307,7 @@ define(function() {
 		 * @param {function?} onRejected
 		 * @return {Promise}
 		 */
-		Promise.prototype['catch'] = Promise.prototype.otherwise = function(onRejected) {
+		Promise.prototype['catch'] = function(onRejected) {
 			return this.then(void 0, onRejected);
 		};
 
@@ -534,7 +534,7 @@ define(function() {
 		DeferredHandler.prototype = objectCreate(Handler.prototype);
 
 		DeferredHandler.prototype.inspect = function() {
-			return this.resolved ? this.handler.join().inspect() : toPendingState();
+			return this.resolved ? this.join().inspect() : toPendingState();
 		};
 
 		DeferredHandler.prototype.resolve = function(x) {
@@ -546,7 +546,12 @@ define(function() {
 		};
 
 		DeferredHandler.prototype.join = function() {
-			return this.resolved ? this.handler.join() : this;
+			if (this.resolved) {
+				this.handler = this.handler.join();
+				return this.handler;
+			} else {
+				return this;
+			}
 		};
 
 		DeferredHandler.prototype.run = function() {
@@ -575,7 +580,7 @@ define(function() {
 
 		DeferredHandler.prototype.when = function(resolve, notify, t, receiver, f, r, u) {
 			if(this.resolved) {
-				tasks.enqueue(new RunHandlerTask(resolve, notify, t, receiver, f, r, u, this.handler.join()));
+				tasks.enqueue(new RunHandlerTask(resolve, notify, t, receiver, f, r, u, this.handler));
 			} else {
 				this.consumers.push(resolve, notify, t, receiver, f, r, u);
 			}
@@ -789,7 +794,7 @@ define(function() {
 		}
 
 		RunHandlerTask.prototype.run = function() {
-			this.handler.when(this.a, this.b, this.c, this.d, this.e, this.f, this.g);
+			this.handler.join().when(this.a,this.b,this.c,this.d,this.e,this.f,this.g);
 		};
 
 		/**
