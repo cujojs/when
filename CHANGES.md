@@ -1,3 +1,7 @@
+### 3.0.2
+
+* Clean up bower and npm installs by ignoring more markdown files
+
 ### 3.0.1
 
 * [API doc](docs/api.md) updates and fixes

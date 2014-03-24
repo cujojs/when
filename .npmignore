@@ -1,13 +1,9 @@
-.idea/
-.gitignore/
 test/
 benchmark/
 experiments/
 docs/
 build/
-.npmignore
-.gitmodules
-.travis.yml
-.jshintrc
-.jshintignore
-.editorconfig
+*.md
+.*
+*~
+bower.json
