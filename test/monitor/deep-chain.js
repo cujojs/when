@@ -12,7 +12,6 @@
 	define(function(require) {
 
 		require('../../monitor/console');
-
 		var Promise = require('../../when').Promise;
 
 		Promise.resolve().then(function outer() {
@@ -45,7 +44,7 @@
 		// and this will be logged as well.
 		setTimeout(function() {
 			console.log('*** handling rejection ***');
-			p.otherwise(ok);
+			p.catch(ok);
 		}, 1337);
 
 		function ok(x) {

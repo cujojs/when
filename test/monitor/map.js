@@ -17,8 +17,9 @@
 
 		var p = when.reject(new Error('fail1'));
 
+//		when.map(p, function(x){return x;});
 		when.map([p], function(x){return x;});
-		when.map([123], fail);
+//		when.map([123], fail);
 
 		function fail(x){
 			throw new Error('map failed');

@@ -14,12 +14,15 @@ define(function(require) {
 	require('../../monitor/console');
 
 	var Promise = require('../../when').Promise;
+//	var Promise = require('../../es6-shim/Promise');
 
 	var p = new Promise.reject(new Error('first error'));
 
 	setTimeout(function() {
 		console.log('***Begetting new unhandled error now***');
-		p['catch'](function() { throw new Error('unhandled-begets-unhandled'); });
+		p['catch'](function() {
+			throw new Error('unhandled-begets-unhandled');
+		});
 	}, 2000);
 
 });
