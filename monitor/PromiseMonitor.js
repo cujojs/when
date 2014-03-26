@@ -60,7 +60,7 @@ define(function(require) {
 
 		for(var i=0; i<keys.length; ++i) {
 			var longTrace = this.createLongTrace(traces[keys[i]]);
-			formatted.push(error.format(longTrace));
+			formatted.push(longTrace);
 		}
 
 		return formatted;

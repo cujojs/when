@@ -3,8 +3,9 @@
 /** @author John Hann */
 
 (function(define) { 'use strict';
-define(function() {
+define(function(require) {
 
+	var error = require('./error');
 	var unhandledRejectionsMsg = '[promises] Unhandled rejections: ';
 	var allHandledMsg = '[promises] All previously unhandled rejections have now been handled';
 
@@ -34,7 +35,7 @@ define(function() {
 
 	ConsoleReporter.prototype._log = function(traces) {
 		for(var i=0; i<traces.length; ++i) {
-			this.warn(traces[i]);
+			this.warn(error.format(traces[i]));
 		}
 	};
 
@@ -83,4 +84,4 @@ define(function() {
 	return ConsoleReporter;
 
 });
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
