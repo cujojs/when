@@ -16,7 +16,7 @@ define(function() {
 		};
 
 		format = formatAsString;
-		captureStack = useStackDirectly;
+		captureStack = Error.captureStackTrace;
 
 	} else {
 		parse = function(e) {
@@ -38,17 +38,16 @@ define(function() {
 		}());
 	}
 
-	function captureSpiderMonkeyStack(e) {
+	function captureSpiderMonkeyStack(host) {
 		try {
 			throw new Error();
 		} catch(err) {
-			e.stack = err.stack;
+			host.stack = err.stack;
 		}
-		return e;
 	}
 
-	function useStackDirectly(e) {
-		return e;
+	function useStackDirectly(host) {
+		host.stack = new Error().stack;
 	}
 
 	function formatAsString(longTrace) {

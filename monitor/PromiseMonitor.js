@@ -26,8 +26,8 @@ define(function(require) {
 		};
 	}
 
-	PromiseMonitor.prototype.captureStack = function() {
-		return error.captureStack(new Error());
+	PromiseMonitor.prototype.captureStack = function(host, at) {
+		return error.captureStack(host, at);
 	};
 
 	PromiseMonitor.prototype.addTrace = function(key, trace) {
@@ -72,7 +72,7 @@ define(function(require) {
 		var info, stack, i = 0;
 		// Basically foldr
 		while(trace) {
-			info = error.parse(trace.e);
+			info = error.parse(trace);
 
 			if (info.stack) {
 				stack = this.getFilteredFrames(seen, info.stack);
