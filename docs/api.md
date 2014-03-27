@@ -22,7 +22,7 @@ API
 	* [promise.else(x)](#promiseelse)
 	* [promise.tap(onFulfilledSideEffect)](#promisetap)
 	* [promise.delay(milliseconds)](#promisedelay)
-	* [promise.timeout(milliseconds)](#promisetimeout)
+	* [promise.timeout(milliseconds, reason)](#promisetimeout)
 	* [promise.inspect()](#promiseinspect)
 	* [promise.with(thisArg)](#promisewith)
 	* [promise.progress(onProgress)](#promiseprogress)
@@ -534,10 +534,12 @@ promise.delay(1000).then(doSomething).catch(handleRejection);
 ## promise.timeout
 
 ```js
-var timedPromise = promise.timeout(milliseconds);
+var timedPromise = promise.timeout(milliseconds, reason);
 ```
 
 Create a new promise that will reject after a timeout if `promise` does not fulfill or reject beforehand.
+
+Optionally specify a custom reason for the timeout rejection; the reason defaults to an `Error`.
 
 ```js
 var node = require('when/node');
