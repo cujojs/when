@@ -14,14 +14,6 @@
 		require('../../monitor/console');
 		var Promise = require('../../when').Promise;
 
-		Promise.resolve().then(function outer() {
-			return Promise.resolve().then(function inner() {
-				return Promise.resolve().then(function evenMoreInner() {
-					foo()
-				});
-			});
-		});
-
 		function f1() {
 			return Promise.resolve(123);
 		}
