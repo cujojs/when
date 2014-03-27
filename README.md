@@ -5,7 +5,7 @@
 when.js
 =======
 
-When.js is a rock solid, battle-tested [Promises/A+](http://promises-aplus.github.com/promises-spec) and `when()` implementation, including a complete [ES6 Promise shim](docs/es6-promise-shim.md).  It's a powerful combination of small size, high performance, and rich features:
+When.js is a rock solid, battle-tested [Promises/A+](http://promises-aplus.github.com/promises-spec) and `when()` implementation, including a complete [ES6 Promise shim](docs/es6-promise-shim.md).  It's a powerful combination of small size, high performance, debuggability, and rich features:
 
 * Resolve arrays and hashes of promises, as well as infinite promise sequences
 * Execute tasks in parallel or sequentially

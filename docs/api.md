@@ -1842,11 +1842,37 @@ Calling `done` transfers all responsibility for errors to your code.  If an erro
 
 This can be a big help with debugging, since most environments will then generate a loud stack trace.  In some environments, such as Node.js, the VM will also exit immediately, making it very obvious that a fatal error has escaped your promise chain.
 
-## when/monitor/*
+## when/monitor/console
 
-This dir contains experimental new promise monitoring and debugging utilities for when.js.
+Experimental promise monitoring and debugging utilities for when.js.
 
 ## What does it do?
+
+tl;dr Load `when/monitor/console` and get awesome async stack traces, even if you forget to return promises:
+
+```js
+require('when/monitor/console');
+var Promise = require('when').Promise;
+
+Promise.resolve().then(function f1() {
+	Promise.resolve().then(function f2() {
+		Promise.resolve().then(function f3() {
+			doh();
+		});
+	});
+});
+```
+
+```txt
+ReferenceError: doh is not defined
+    at f3 (/Users/brian/Projects/cujojs/when/experiments/trace.js:7:4)
+from execution context:
+    at f2 (/Users/brian/Projects/cujojs/when/experiments/trace.js:6:21)
+from execution context:
+    at f1 (/Users/brian/Projects/cujojs/when/experiments/trace.js:5:10)
+from execution context:
+    at Object.<anonymous> (/Users/brian/Projects/cujojs/when/experiments/trace.js:4:9)
+```
 
 It monitors promise state transitions and then takes action, such as logging to the console, when certain criteria are met, such as when a promise has been rejected but has no `onRejected` handlers attached to it, and thus the rejection would have been silent.
 
@@ -1878,6 +1904,12 @@ curl(['my/app']);
 
 ```js
 require('when/monitor/console');
+```
+
+### Browserify
+
+```js
+browserify -s PromiseMonitor when/monitor/console.js -o PromiseMonitor.js
 ```
 
 ### PrettyMonitor for when 2.x and Node

@@ -53,7 +53,7 @@ define(function() {
 				stack = getFilteredFrames(stackFilter, seen, stack);
 				appendTrace(longTrace, stack, separator);
 			} else {
-				longTrace.push(''+traceChain);
+				longTrace.push(String(traceChain.error || traceChain));
 			}
 
 			separator = stackJumpSeparator;
