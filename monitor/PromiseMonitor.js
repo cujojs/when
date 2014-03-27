@@ -69,37 +69,47 @@ define(function(require) {
 	PromiseMonitor.prototype.createLongTrace = function(trace) {
 		var seen = {};
 		var longTrace = [];
-		var info, stack, i = 0;
+		var separator = false;
+		var stack;
 		// Basically foldr
 		while(trace) {
-			info = error.parse(trace);
+			stack = error.parse(trace.error || trace);
 
-			if (info.stack) {
-				stack = this.getFilteredFrames(seen, info.stack);
-				if (stack.length > 0) {
-					longTrace.push(i === 0 ? info.message : stackJumpSeparator);
-					longTrace.push.apply(longTrace, stack);
-				}
+			if (stack) {
+				this.appendTrace(longTrace, stack, seen, separator);
 			} else {
-				longTrace.push(String(trace.e));
+				longTrace.push(''+trace);
 			}
 
-			i++;
+			separator = true;
 			trace = trace.next;
 		}
 
 		return longTrace;
 	};
 
+	PromiseMonitor.prototype.appendTrace = function(longTrace, stack, seen, separator) {
+		stack = this.getFilteredFrames(seen, stack);
+		if (stack.length > 1) {
+			if(separator) {
+				stack[0] = stackJumpSeparator;
+			}
+			longTrace.push.apply(longTrace, stack);
+		}
+	};
+
 	PromiseMonitor.prototype.getFilteredFrames = function(seen, stack) {
-		var filter = this.stackFilter;
-		return stack.reduce(function (filtered, frame) {
-			if (!(seen[frame] || filter.test(frame))) {
+		var filtered = stack.slice(0, 1);
+
+		for(var frame, i = 1; i < stack.length; ++i) {
+			frame = stack[i];
+			if (!(seen[frame] || this.stackFilter.test(frame))) {
 				seen[frame] = true;
 				filtered.push(frame);
 			}
-			return filtered;
-		}, []);
+		}
+
+		return filtered;
 	};
 
 

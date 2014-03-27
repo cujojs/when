@@ -8,22 +8,23 @@ define(function() {
 	var parse, captureStack, format;
 
 	if(Error.captureStackTrace) {
+		// Use Error.captureStackTrace if available
 		parse = function(e) {
-			var stack = e && e.stack && e.stack.split('\n');
-			return stack
-				? { message: stack[0], stack: stack.slice(1) }
-				: { message: void 0,   stack: void 0 };
+			return e && e.stack && e.stack.split('\n');
 		};
 
 		format = formatAsString;
 		captureStack = Error.captureStackTrace;
 
 	} else {
+		// Otherwise, do minimal feature detection to determine
+		// how to capture and format reasonable stacks.
 		parse = function(e) {
 			var stack = e && e.stack && e.stack.split('\n');
-			return stack
-				? { message: e.message, stack: stack }
-				: { message: void 0,    stack: void 0 };
+			if(stack && e.message) {
+				stack.unshift(e.message);
+			}
+			return stack;
 		};
 
 		(function() {
