@@ -295,7 +295,7 @@ define(function() {
 		 */
 		Promise.prototype.then = function(onFulfilled, onRejected, onProgress) {
 			var from = this._handler;
-			var to = new DeferredHandler(from.receiver);
+			var to = new DeferredHandler(from.receiver, from.context);
 			from.when(to.resolve, to.notify, to, from.receiver, onFulfilled, onRejected, onProgress);
 
 			return new InternalPromise(to);
@@ -475,24 +475,39 @@ define(function() {
 		 */
 		function Handler() {}
 
+		Handler.prototype.when
+			= Handler.prototype.resolve
+			= Handler.prototype.reject
+			= Handler.prototype.notify
+			= Handler.prototype._fatal
+			= Handler.prototype._removeTrace
+			= Handler.prototype._reportTrace
+			= noop;
+
 		Handler.prototype.inspect = toPendingState;
-		Handler.prototype.when = noop;
-		Handler.prototype.resolve = noop;
-		Handler.prototype.reject = noop;
-		Handler.prototype.notify = noop;
+
 		Handler.prototype.join = function() { return this; };
+
+		// Execution context tracking for long stack traces
+
+		var executionContext = [];
+		var executionKey = 0;
+
+		function Context(next, error) {
+			this.stack = void 0;
+			this.next = next;
+			this.error = error;
+		}
 
 		Handler.prototype._env = environment.monitor || Promise;
 		Handler.prototype._isMonitored = function() {
 			return typeof this._env.promiseMonitor !== 'undefined';
 		};
 
-		var executionContext = [];
-		var executionKey = 0;
-
-		Handler.prototype._createContext = function() {
-			var e = this._env.promiseMonitor.captureStack();
-			return { e: e, next: executionContext[executionContext.length - 1] };
+		Handler.prototype._createContext = function(fromContext) {
+			var parent = fromContext || executionContext[executionContext.length - 1];
+			this.context = new Context(parent);
+			this._env.promiseMonitor.captureStack(this.context, this.constructor);
 		};
 
 		Handler.prototype._enterContext = function() {
@@ -502,9 +517,6 @@ define(function() {
 		Handler.prototype._exitContext = function() {
 			executionContext.pop();
 		};
-
-		Handler.prototype._removeTrace = noop;
-		Handler.prototype._reportTrace = noop;
 
 		/**
 		 * Abstract base for handler that delegates to another handler
@@ -516,7 +528,7 @@ define(function() {
 			this.handler = handler;
 		}
 
-		DelegateHandler.prototype = objectCreate(Handler.prototype);
+		inherit(Handler, DelegateHandler);
 
 		DelegateHandler.prototype.join = function() {
 			return this.handler.join();
@@ -539,17 +551,17 @@ define(function() {
 		 * @private
 		 * @constructor
 		 */
-		function DeferredHandler(receiver) {
+		function DeferredHandler(receiver, inheritedContext) {
 			this.consumers = [];
 			this.receiver = receiver;
 			this.handler = void 0;
 			this.resolved = false;
 			if(this._isMonitored()) {
-				this.context = this._createContext();
+				this._createContext(inheritedContext);
 			}
 		}
 
-		DeferredHandler.prototype = objectCreate(Handler.prototype);
+		inherit(Handler, DeferredHandler);
 
 		DeferredHandler.prototype.inspect = function() {
 			return this.resolved ? this.join().inspect() : toPendingState();
@@ -592,14 +604,13 @@ define(function() {
 			tasks.enqueue(this);
 
 			if(this._isMonitored() && this.context) {
-				handler.join()._reportTrace(this.context);
+				handler._reportTrace(this.context);
+				this.context = void 0;
 			}
 		};
 
 		DeferredHandler.prototype.when = function(resolve, notify, t, receiver, f, r, u) {
-			if(this._isMonitored()) {
-				this.context = void 0;
-			}
+			if(this._isMonitored()) { this.context = void 0; }
 
 			if(this.resolved) {
 				tasks.enqueue(new RunHandlerTask(resolve, notify, t, receiver, f, r, u, this.handler));
@@ -632,7 +643,7 @@ define(function() {
 			DelegateHandler.call(this, handler);
 		}
 
-		AsyncHandler.prototype = objectCreate(DelegateHandler.prototype);
+		inherit(DelegateHandler, AsyncHandler);
 
 		AsyncHandler.prototype.when = function(resolve, notify, t, receiver, f, r, u) {
 			tasks.enqueue(new RunHandlerTask(resolve, notify, t, receiver, f, r, u, this.join()));
@@ -650,7 +661,7 @@ define(function() {
 			this.receiver = receiver;
 		}
 
-		BoundHandler.prototype = objectCreate(DelegateHandler.prototype);
+		inherit(DelegateHandler, BoundHandler);
 
 		BoundHandler.prototype.when = function(resolve, notify, t, receiver, f, r, u) {
 			// Because handlers are allowed to be shared among promises,
@@ -677,7 +688,7 @@ define(function() {
 			this.thenable = thenable;
 		}
 
-		ThenableHandler.prototype = objectCreate(DeferredHandler.prototype);
+		inherit(DeferredHandler, ThenableHandler);
 
 		ThenableHandler.prototype.when = function(resolve, notify, t, receiver, f, r, u) {
 			if(!this.assimilated) {
@@ -714,11 +725,11 @@ define(function() {
 			this.value = x;
 
 			if(this._isMonitored()) {
-				this.context = this._createContext();
+				this._createContext();
 			}
 		}
 
-		FulfilledHandler.prototype = objectCreate(Handler.prototype);
+		inherit(Handler, FulfilledHandler);
 
 		FulfilledHandler.prototype.inspect = function() {
 			return toFulfilledState(this.value);
@@ -747,12 +758,12 @@ define(function() {
 
 			if(this._isMonitored()) {
 				this.key = executionKey++;
-				this.context = this._createContext();
+				this._createContext();
 				this._reportTrace(this.context);
 			}
 		}
 
-		RejectedHandler.prototype = objectCreate(Handler.prototype);
+		inherit(Handler, RejectedHandler);
 
 		RejectedHandler.prototype.inspect = function() {
 			return toRejectedState(this.value);
@@ -774,13 +785,17 @@ define(function() {
 		};
 
 		RejectedHandler.prototype._reportTrace = function(context) {
-			this._env.promiseMonitor.addTrace(this.key, {e:this.value, next:context});
+			context = new Context(context, this.value);
+			this._env.promiseMonitor.addTrace(this.key, context);
 		};
 
 		RejectedHandler.prototype._removeTrace = function() {
 			this._env.promiseMonitor.removeTrace(this.key);
 		};
 
+		RejectedHandler.prototype._fatal = function() {
+			this._env.promiseMonitor.fatal(new Context(this.context, this.value));
+		};
 
 		// Errors and singletons
 
@@ -894,6 +909,11 @@ define(function() {
 			} catch(e) {
 				return e;
 			}
+		}
+
+		function inherit(Parent, Child) {
+			Child.prototype = objectCreate(Parent.prototype);
+			Child.prototype.constructor = Child;
 		}
 
 		function noop() {}

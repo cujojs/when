@@ -39,6 +39,53 @@ define(function() {
 		}());
 	}
 
+	function createLongTrace(traceChain, stackFilter, stackJumpSeparator) {
+		var seen = {};
+		var longTrace = [];
+		var separator = null;
+		var stack;
+
+		// Basically foldr
+		while(traceChain) {
+			stack = parse(traceChain.error || traceChain);
+
+			if (stack) {
+				stack = getFilteredFrames(stackFilter, seen, stack);
+				appendTrace(longTrace, stack, separator);
+			} else {
+				longTrace.push(''+traceChain);
+			}
+
+			separator = stackJumpSeparator;
+			traceChain = traceChain.next;
+		}
+
+		return longTrace;
+	}
+
+	function appendTrace(longTrace, stack, separator) {
+		if (stack.length > 1) {
+			if(separator) {
+				stack[0] = separator;
+			}
+			longTrace.push.apply(longTrace, stack);
+		}
+	}
+
+	function getFilteredFrames(stackFilter, seen, stack) {
+		var filtered = stack.slice(0, 1);
+
+		for(var frame, i = 1; i < stack.length; ++i) {
+			frame = stack[i];
+			if (!(seen[frame] || stackFilter.test(frame))) {
+				seen[frame] = true;
+				filtered.push(frame);
+			}
+		}
+
+		return filtered;
+	}
+
 	function captureSpiderMonkeyStack(host) {
 		try {
 			throw new Error();
@@ -76,11 +123,11 @@ define(function() {
 		return s;
 	}
 
-
 	return {
 		parse: parse,
 		format: format,
-		captureStack: captureStack
+		captureStack: captureStack,
+		createLongTrace: createLongTrace
 	};
 
 });
