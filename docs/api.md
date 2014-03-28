@@ -1348,7 +1348,7 @@ Analogous to [`fn.call()`](#fncall) and [`callbacks.call()`](#callbackscall): Ta
 
 ```js
 var fs     = require('fs');
-var nodefn = require('when/function');
+var nodefn = require('when/node');
 
 var loadPasswd = nodefn.call(fs.readFile, '/etc/passwd');
 
