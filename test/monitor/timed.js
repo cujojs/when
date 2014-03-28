@@ -19,19 +19,8 @@ define(function(require) {
 		throw new Error('error');
 	}
 
-	when('foo').then(function(){
-		return when.resolve(123);
-	}).then(function(){
-		return when.promise(function(resolve){
-			setTimeout(function(){
-				resolve('abc');
-			}, 500);
-		});
-	}).then(function(){
-		return when('bar').then(function(){
-			return 456;
-		});
-	}).then(error);
+	when(1).delay(200).timeout(100);
+
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
 

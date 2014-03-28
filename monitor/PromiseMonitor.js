@@ -22,7 +22,10 @@ define(function(require) {
 	}
 
 	PromiseMonitor.prototype.captureStack = function() {
-		return new Error();
+		var trace = new Error();
+		trace.clone = clone;
+		trace.merge = merge;
+		return trace;
 	};
 
 	PromiseMonitor.prototype.startTrace = function(trace) {
@@ -34,7 +37,11 @@ define(function(require) {
 	PromiseMonitor.prototype.updateTrace = function(key, trace) {
 		var t = this.traces[key];
 		if(typeof t !== 'undefined') {
-			t.push(trace);
+			do
+			  t = t.concat(trace);
+			while(trace = trace.parent);
+
+			this.traces[key] = t;
 			this.logTraces();
 		}
 	};
@@ -56,6 +63,22 @@ define(function(require) {
 		this.traceTask = void 0;
 		this._reporter.log(this.traces);
 	};
+
+	function clone(){
+		var cloned = Object.create(Error.prototype);
+		var me = this;
+		Object.getOwnPropertyNames(me).map(function(i){
+			cloned[i] = me[i];
+		});
+		return cloned;
+	}
+
+	function merge(other){
+		var me = this;
+		Object.getOwnPropertyNames(other).map(function(i){
+			me[i] = other[i];
+		});
+	}
 
 	return PromiseMonitor;
 });
