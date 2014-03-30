@@ -30,8 +30,8 @@ define(function(require) {
 		return error.captureStack(host, at);
 	};
 
-	PromiseMonitor.prototype.addTrace = function(key, trace) {
-		this.traces[key] = trace;
+	PromiseMonitor.prototype.addTrace = function(key, e, context1, context2) {
+		this.traces[key] = [e, context1, context2];
 		this.logTraces();
 	};
 
@@ -42,11 +42,11 @@ define(function(require) {
 		}
 	};
 
-	PromiseMonitor.prototype.fatal = function(trace) {
-		var e = new Error();
-		e.stack = this._createLongTrace(trace).join('\n');
+	PromiseMonitor.prototype.fatal = function(e, context) {
+		var err = new Error();
+		err.stack = this._createLongTrace([e, context]).join('\n');
 		setTimer(function() {
-			throw e;
+			throw err;
 		}, 0);
 	};
 
@@ -65,9 +65,10 @@ define(function(require) {
 	PromiseMonitor.prototype.formatTraces = function(traces) {
 		var keys = Object.keys(traces);
 		var formatted = [];
+		var longTrace;
 
 		for(var i=0; i<keys.length; ++i) {
-			var longTrace = this._createLongTrace(traces[keys[i]]);
+			longTrace = this._createLongTrace(traces[keys[i]]);
 			formatted.push(longTrace);
 		}
 
@@ -75,7 +76,12 @@ define(function(require) {
 	};
 
 	PromiseMonitor.prototype._createLongTrace = function(trace) {
-		return error.createLongTrace(trace, this.stackFilter, this.stackJumpSeparator);
+		var filter = this.stackFilter;
+		var separator = this.stackJumpSeparator;
+		var seen = {};
+		return trace.reduce(function(longTrace, t) {
+			return error.createLongTrace(t, filter, separator, longTrace, seen);
+		}, []);
 	};
 
 	return PromiseMonitor;

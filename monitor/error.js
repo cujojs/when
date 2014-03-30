@@ -39,15 +39,12 @@ define(function() {
 		}());
 	}
 
-	function createLongTrace(traceChain, stackFilter, stackJumpSeparator) {
-		var seen = {};
-		var longTrace = [];
+	function createLongTrace(traceChain, stackFilter, stackJumpSeparator, longTrace, seen) {
 		var separator = null;
 		var stack;
 
-		// Basically foldr
 		while(traceChain) {
-			stack = parse(traceChain.error || traceChain);
+			stack = parse(traceChain);
 
 			if (stack) {
 				stack = getFilteredFrames(stackFilter, seen, stack);
