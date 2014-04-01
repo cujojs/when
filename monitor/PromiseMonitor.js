@@ -17,6 +17,7 @@ define(function(require) {
 		this.logDelay = 100;
 		this.stackFilter = defaultStackFilter;
 		this.stackJumpSeparator = defaultStackJumpSeparator;
+		this.filterDuplicateFrames = true;
 
 		this._reporter = reporter;
 
@@ -85,7 +86,7 @@ define(function(require) {
 		trace = filterFrames(this.stackFilter, trace, 0);
 		this._appendContext(trace, context);
 		this._appendContext(trace, extraContext);
-		return this._removeDuplicates(trace);
+		return this.filterDuplicateFrames ? this._removeDuplicates(trace) : trace;
 	};
 
 	PromiseMonitor.prototype._removeDuplicates = function(trace) {
