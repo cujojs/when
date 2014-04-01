@@ -39,50 +39,6 @@ define(function() {
 		}());
 	}
 
-	function createLongTrace(traceChain, stackFilter, stackJumpSeparator, longTrace, seen) {
-		var separator = null;
-		var stack;
-
-		while(traceChain) {
-			stack = parse(traceChain);
-
-			if (stack) {
-				stack = getFilteredFrames(stackFilter, seen, stack);
-				appendTrace(longTrace, stack, separator);
-			} else {
-				longTrace.push(String(traceChain.error || traceChain));
-			}
-
-			separator = stackJumpSeparator;
-			traceChain = traceChain.next;
-		}
-
-		return longTrace;
-	}
-
-	function appendTrace(longTrace, stack, separator) {
-		if (stack.length > 1) {
-			if(separator) {
-				stack[0] = separator;
-			}
-			longTrace.push.apply(longTrace, stack);
-		}
-	}
-
-	function getFilteredFrames(stackFilter, seen, stack) {
-		var filtered = stack.slice(0, 1);
-
-		for(var frame, i = 1; i < stack.length; ++i) {
-			frame = stack[i];
-			if (!(seen[frame] || stackFilter.test(frame))) {
-				seen[frame] = true;
-				filtered.push(frame);
-			}
-		}
-
-		return filtered;
-	}
-
 	function captureSpiderMonkeyStack(host) {
 		try {
 			throw new Error();
@@ -123,8 +79,7 @@ define(function() {
 	return {
 		parse: parse,
 		format: format,
-		captureStack: captureStack,
-		createLongTrace: createLongTrace
+		captureStack: captureStack
 	};
 
 });

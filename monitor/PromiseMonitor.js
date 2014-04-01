@@ -14,7 +14,7 @@ define(function(require) {
 	function PromiseMonitor(reporter) {
 		this.traces = {};
 		this.traceTask = 0;
-		this.logDelay = 0;
+		this.logDelay = 100;
 		this.stackFilter = defaultStackFilter;
 		this.stackJumpSeparator = defaultStackJumpSeparator;
 
@@ -30,21 +30,25 @@ define(function(require) {
 		return error.captureStack(host, at);
 	};
 
-	PromiseMonitor.prototype.addTrace = function(key, e, context1, context2) {
-		this.traces[key] = [e, context1, context2];
+	PromiseMonitor.prototype.addTrace = function(handler, extraContext) {
+		this.traces[handler.id] = {
+			error: handler.value,
+			context: handler.context,
+			extraContext: extraContext
+		};
 		this.logTraces();
 	};
 
-	PromiseMonitor.prototype.removeTrace = function(key) {
-		if(key in this.traces) {
-			delete this.traces[key];
+	PromiseMonitor.prototype.removeTrace = function(handler) {
+		if(handler.id in this.traces) {
+			delete this.traces[handler.id];
 			this.logTraces();
 		}
 	};
 
-	PromiseMonitor.prototype.fatal = function(e, context) {
+	PromiseMonitor.prototype.fatal = function(handler) {
 		var err = new Error();
-		err.stack = this._createLongTrace([e, context]).join('\n');
+		err.stack = this._createLongTrace(handler.value, handler.context).join('\n');
 		setTimer(function() {
 			throw err;
 		}, 0);
@@ -65,24 +69,80 @@ define(function(require) {
 	PromiseMonitor.prototype.formatTraces = function(traces) {
 		var keys = Object.keys(traces);
 		var formatted = [];
-		var longTrace;
+		var longTrace, t, i;
 
-		for(var i=0; i<keys.length; ++i) {
-			longTrace = this._createLongTrace(traces[keys[i]]);
+		for(i=0; i<keys.length; ++i) {
+			t = traces[keys[i]];
+			longTrace = this._createLongTrace(t.error, t.context, t.extraContext);
 			formatted.push(longTrace);
 		}
 
 		return formatted;
 	};
 
-	PromiseMonitor.prototype._createLongTrace = function(trace) {
-		var filter = this.stackFilter;
-		var separator = this.stackJumpSeparator;
+	PromiseMonitor.prototype._createLongTrace = function(e, context, extraContext) {
+		var trace = error.parse(e) || [];
+		trace = filterFrames(this.stackFilter, trace, 0);
+		this._appendContext(trace, context);
+		this._appendContext(trace, extraContext);
+		return this._removeDuplicates(trace);
+	};
+
+	PromiseMonitor.prototype._removeDuplicates = function(trace) {
 		var seen = {};
-		return trace.reduce(function(longTrace, t) {
-			return error.createLongTrace(t, filter, separator, longTrace, seen);
+		var sep = this.stackJumpSeparator;
+		var count = 0;
+		return trace.reduceRight(function(deduped, line, i) {
+			if(i === 0) {
+				deduped.unshift(line);
+			} else if(line === sep) {
+				if(count > 0) {
+					deduped.unshift(line);
+					count = 0;
+				}
+			} else if(!seen[line]) {
+				seen[line] = true;
+				deduped.unshift(line);
+				++count;
+			}
+			return deduped;
 		}, []);
 	};
+
+	PromiseMonitor.prototype._appendContext = function(trace, context) {
+		trace.push.apply(trace, this._createTrace(context));
+	};
+
+	PromiseMonitor.prototype._createTrace = function(traceChain) {
+		var trace = [];
+		var stack;
+
+		while(traceChain) {
+			stack = error.parse(traceChain);
+
+			if (stack) {
+				stack = filterFrames(this.stackFilter, stack);
+				appendStack(trace, stack, this.stackJumpSeparator);
+			}
+
+			traceChain = traceChain.parent;
+		}
+
+		return trace;
+	};
+
+	function appendStack(trace, stack, separator) {
+		if (stack.length > 1) {
+			stack[0] = separator;
+			trace.push.apply(trace, stack);
+		}
+	}
+
+	function filterFrames(stackFilter, stack) {
+		return stack.filter(function(frame) {
+			return !stackFilter.test(frame);
+		});
+	}
 
 	return PromiseMonitor;
 });
