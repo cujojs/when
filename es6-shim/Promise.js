@@ -181,7 +181,6 @@ define(function() {
 
 	return function makePromise(environment) {
 
-		var foreverPendingPromise;
 		var tasks = environment.scheduler;
 
 		var objectCreate = Object.create ||
@@ -198,10 +197,25 @@ define(function() {
 		 * @name Promise
 		 */
 		function Promise(resolver) {
-			var self = this;
-			this._handler = new DeferredHandler();
+			this._handler = arguments.length === 0
+				? foreverPendingHandler : init(resolver);
+		}
 
-			runResolver(resolver, promiseResolve, promiseReject, promiseNotify);
+		/**
+		 * Run the supplied resolver
+		 * @param resolver
+		 * @returns {makePromise.DeferredHandler}
+		 */
+		function init(resolver) {
+			var handler = new DeferredHandler();
+
+			try {
+				resolver(promiseResolve, promiseReject, promiseNotify);
+			} catch (e) {
+				promiseReject(e);
+			}
+
+			return handler;
 
 			/**
 			 * Transition from pre-resolution state to post-resolution state, notifying
@@ -209,14 +223,15 @@ define(function() {
 			 * @param {*} x resolution value
 			 */
 			function promiseResolve (x) {
-				self._handler.resolve(x);
+				handler.resolve(x);
 			}
 			/**
 			 * Reject this promise with reason, which will be used verbatim
-			 * @param {*} reason reason for the rejection, typically an Error
+			 * @param {Error|*} reason rejection reason, strongly suggested
+			 *   to be an Error type
 			 */
 			function promiseReject (reason) {
-				self._handler.reject(reason);
+				handler.reject(reason);
 			}
 
 			/**
@@ -224,15 +239,7 @@ define(function() {
 			 * @param {*} x progress event payload to pass to all listeners
 			 */
 			function promiseNotify (x) {
-				self._handler.notify(x);
-			}
-		}
-
-		function runResolver(resolver, promiseResolve, promiseReject, promiseNotify) {
-			try {
-				resolver(promiseResolve, promiseReject, promiseNotify);
-			} catch (e) {
-				promiseReject(e);
+				handler.notify(x);
 			}
 		}
 
@@ -252,7 +259,7 @@ define(function() {
 		 */
 		function resolve(x) {
 			return x instanceof Promise ? x
-				: new InternalPromise(new AsyncHandler(getHandler(x)));
+				: promiseFromHandler(new AsyncHandler(getHandler(x)));
 		}
 
 		/**
@@ -261,7 +268,7 @@ define(function() {
 		 * @returns {Promise} rejected promise
 		 */
 		function reject(x) {
-			return new InternalPromise(new AsyncHandler(new RejectedHandler(x)));
+			return promiseFromHandler(new AsyncHandler(new RejectedHandler(x)));
 		}
 
 		/**
@@ -275,10 +282,25 @@ define(function() {
 		/**
 		 * Creates an internal {promise, resolver} pair
 		 * @private
-		 * @returns {{resolver: DeferredHandler, promise: InternalPromise}}
+		 * @returns {{_handler: DeferredHandler, promise: Promise}}
 		 */
 		function defer() {
-			return new InternalPromise(new DeferredHandler());
+			return promiseFromHandler(new DeferredHandler());
+		}
+
+		/**
+		 * Create a new promise with the supplied handler
+		 * @private
+		 * @param {object} handler
+		 * @returns {Promise}
+		 */
+		function promiseFromHandler(handler) {
+			return configurePromise(handler, new Promise());
+		}
+
+		function configurePromise(handler, p) {
+			p._handler = handler;
+			return p;
 		}
 
 		// Transformation and flow control
@@ -294,11 +316,14 @@ define(function() {
 		 * @return {Promise} new promise
 		 */
 		Promise.prototype.then = function(onFulfilled, onRejected, onProgress) {
-			var from = this._handler;
-			var to = new DeferredHandler(from.receiver, from.context);
-			from.when(to.resolve, to.notify, to, from.receiver, onFulfilled, onRejected, onProgress);
+			var p = this._beget();
+			var parent = this._handler;
+			var child = p._handler;
 
-			return new InternalPromise(to);
+			parent.when(child.resolve, child.notify, child,
+				parent.receiver, onFulfilled, onRejected, onProgress);
+
+			return p;
 		};
 
 		/**
@@ -319,7 +344,19 @@ define(function() {
 		 * @returns {Promise}
 		 */
 		Promise.prototype._bindContext = function(thisArg) {
-			return new InternalPromise(new BoundHandler(this._handler, thisArg));
+			return promiseFromHandler(new BoundHandler(this._handler, thisArg));
+		};
+
+		/**
+		 * Creates a new, pending promise of the same type as this promise
+		 * @private
+		 * @returns {Promise}
+		 */
+		Promise.prototype._beget = function() {
+			var p = new this.constructor();
+			var parent = this._handler;
+			var child = new DeferredHandler(parent.receiver, parent.join().context);
+			return configurePromise(child, p);
 		};
 
 		// Array combinators
@@ -340,16 +377,19 @@ define(function() {
 			var len = promises.length >>> 0;
 			var pending = len;
 			var results = [];
-			var i, x;
+			var i, h;
 
 			for (i = 0; i < len; ++i) {
 				if (i in promises) {
-					x = promises[i];
-					if (maybeThenable(x)) {
-						resolveOne(resolver, results, getHandlerThenable(x), i);
-					} else {
-						results[i] = x;
+					h = getHandlerUnchecked(promises[i]);
+					if(h.state === 0) {
+						resolveOne(resolver, results, h, i);
+					} else if (h.state === 1) {
+						results[i] = h.value;
 						--pending;
+					} else {
+						h.chain(resolver, void 0, resolver.reject);
+						break;
 					}
 				} else {
 					--pending;
@@ -360,10 +400,10 @@ define(function() {
 				resolver.resolve(results);
 			}
 
-			return new InternalPromise(resolver);
+			return promiseFromHandler(resolver);
 
 			function resolveOne(resolver, results, handler, i) {
-				handler.when(noop, noop, void 0, resolver, function(x) {
+				handler.chain(resolver, function(x) {
 					results[i] = x;
 					if(--pending === 0) {
 						this.resolve(results);
@@ -395,27 +435,13 @@ define(function() {
 
 			var h = new DeferredHandler();
 			for(var i=0; i<promises.length; ++i) {
-				getHandler(promises[i]).when(noop, noop, void 0, h, h.resolve, h.reject);
+				getHandler(promises[i]).chain(h, h.resolve, h.reject);
 			}
 
-			return new InternalPromise(h);
+			return promiseFromHandler(h);
 		}
 
 		// Promise internals
-
-		/**
-		 * InternalPromise represents a promise that is either already
-		 * fulfilled or reject, or is following another promise, based
-		 * on the provided handler.
-		 * @private
-		 * @param {object} handler
-		 * @constructor
-		 */
-		function InternalPromise(handler) {
-			this._handler = handler;
-		}
-
-		InternalPromise.prototype = objectCreate(Promise.prototype);
 
 		/**
 		 * Get an appropriate handler for x, checking for untrusted thenables
@@ -433,12 +459,16 @@ define(function() {
 		}
 
 		/**
-		 * Get an appropriate handler for x, which must be either a thenable
-		 * @param {object} x
+		 * Get an appropriate handler for x, without checking for cycles
+		 * @private
+		 * @param {*} x
 		 * @returns {object} handler
 		 */
-		function getHandlerThenable(x) {
-			return x instanceof Promise ? x._handler.join() : getHandlerUntrusted(x);
+		function getHandlerUnchecked(x) {
+			if(x instanceof Promise) {
+				return x._handler.join();
+			}
+			return maybeThenable(x) ? getHandlerUntrusted(x) : new FulfilledHandler(x);
 		}
 
 		/**
@@ -473,7 +503,9 @@ define(function() {
 		 * @private
 		 * @constructor
 		 */
-		function Handler() {}
+		function Handler() {
+			this.state = 0;
+		}
 
 		Handler.prototype.when
 			= Handler.prototype.resolve
@@ -488,16 +520,9 @@ define(function() {
 
 		Handler.prototype.join = function() { return this; };
 
-		// Execution context tracking for long stack traces
-
-		var executionContext = [];
-		var executionKey = 0;
-
-		function Context(next, error) {
-			this.stack = void 0;
-			this.next = next;
-			this.error = error;
-		}
+		Handler.prototype.chain = function(to, f, r, u) {
+			this.when(noop, noop, void 0, to, f, r, u);
+		};
 
 		Handler.prototype._env = environment.monitor || Promise;
 		Handler.prototype._isMonitored = function() {
@@ -506,7 +531,7 @@ define(function() {
 
 		Handler.prototype._createContext = function(fromContext) {
 			var parent = fromContext || executionContext[executionContext.length - 1];
-			this.context = new Context(parent);
+			this.context = { stack: void 0, parent: parent };
 			this._env.promiseMonitor.captureStack(this.context, this.constructor);
 		};
 
@@ -519,34 +544,6 @@ define(function() {
 		};
 
 		/**
-		 * Abstract base for handler that delegates to another handler
-		 * @private
-		 * @param {object} handler
-		 * @constructor
-		 */
-		function DelegateHandler(handler) {
-			this.handler = handler;
-		}
-
-		inherit(Handler, DelegateHandler);
-
-		DelegateHandler.prototype.join = function() {
-			return this.handler.join();
-		};
-
-		DelegateHandler.prototype.inspect = function() {
-			return this.handler.inspect();
-		};
-
-		DelegateHandler.prototype._reportTrace = function(context) {
-			this.handler._reportTrace(context);
-		};
-
-		DelegateHandler.prototype._removeTrace = function() {
-			this.handler._removeTrace();
-		};
-
-		/**
 		 * Handler that manages a queue of consumers waiting on a pending promise
 		 * @private
 		 * @constructor
@@ -556,6 +553,7 @@ define(function() {
 			this.receiver = receiver;
 			this.handler = void 0;
 			this.resolved = false;
+			this.state = 0;
 			if(this._isMonitored()) {
 				this._createContext(inheritedContext);
 			}
@@ -603,7 +601,7 @@ define(function() {
 			this.handler = handler;
 			tasks.enqueue(this);
 
-			if(this._isMonitored() && this.context) {
+			if(this._isMonitored()) {
 				handler._reportTrace(this.context);
 				this.context = void 0;
 			}
@@ -631,6 +629,35 @@ define(function() {
 
 		DeferredHandler.prototype._removeTrace = function() {
 			this.resolved && this.handler.join()._removeTrace();
+		};
+
+		/**
+		 * Abstract base for handler that delegates to another handler
+		 * @private
+		 * @param {object} handler
+		 * @constructor
+		 */
+		function DelegateHandler(handler) {
+			this.handler = handler;
+			this.state = 0;
+		}
+
+		inherit(Handler, DelegateHandler);
+
+		DelegateHandler.prototype.join = function() {
+			return this.handler.join();
+		};
+
+		DelegateHandler.prototype.inspect = function() {
+			return this.join().inspect();
+		};
+
+		DelegateHandler.prototype._reportTrace = function(context) {
+			this.join()._reportTrace(context);
+		};
+
+		DelegateHandler.prototype._removeTrace = function() {
+			this.join()._removeTrace();
 		};
 
 		/**
@@ -723,6 +750,7 @@ define(function() {
 		 */
 		function FulfilledHandler(x) {
 			this.value = x;
+			this.state = 1;
 
 			if(this._isMonitored()) {
 				this._createContext();
@@ -732,7 +760,7 @@ define(function() {
 		inherit(Handler, FulfilledHandler);
 
 		FulfilledHandler.prototype.inspect = function() {
-			return toFulfilledState(this.value);
+			return { state: 'fulfilled', value: this.value };
 		};
 
 		FulfilledHandler.prototype.when = function(resolve, notify, t, receiver, f) {
@@ -755,18 +783,19 @@ define(function() {
 		 */
 		function RejectedHandler(x) {
 			this.value = x;
+			this.state = -1;
 
 			if(this._isMonitored()) {
-				this.key = executionKey++;
+				this.id = errorId++;
 				this._createContext();
-				this._reportTrace(this.context);
+				this._reportTrace();
 			}
 		}
 
 		inherit(Handler, RejectedHandler);
 
 		RejectedHandler.prototype.inspect = function() {
-			return toRejectedState(this.value);
+			return { state: 'rejected', reason: this.value };
 		};
 
 		RejectedHandler.prototype.when = function(resolve, notify, t, receiver, f, r) {
@@ -777,7 +806,7 @@ define(function() {
 
 			var x = typeof r === 'function'
 				? tryCatchReject(r, this.value, receiver)
-				: new InternalPromise(this);
+				: promiseFromHandler(this);
 
 			if(this._isMonitored()) { this._exitContext(); }
 
@@ -785,47 +814,32 @@ define(function() {
 		};
 
 		RejectedHandler.prototype._reportTrace = function(context) {
-			context = new Context(context, this.value);
-			this._env.promiseMonitor.addTrace(this.key, context);
+			this._env.promiseMonitor.addTrace(this, context);
 		};
 
 		RejectedHandler.prototype._removeTrace = function() {
-			this._env.promiseMonitor.removeTrace(this.key);
+			this._env.promiseMonitor.removeTrace(this);
 		};
 
 		RejectedHandler.prototype._fatal = function() {
-			this._env.promiseMonitor.fatal(new Context(this.context, this.value));
+			this._env.promiseMonitor.fatal(this);
 		};
+
+		// Execution context tracking for long stack traces
+
+		var executionContext = [];
+		var errorId = 0;
 
 		// Errors and singletons
 
-		foreverPendingPromise = new InternalPromise(new Handler());
+		var foreverPendingHandler = new Handler();
+		var foreverPendingPromise = promiseFromHandler(foreverPendingHandler);
 
 		function promiseCycleHandler() {
 			return new RejectedHandler(new TypeError('Promise cycle'));
 		}
 
 		// Snapshot states
-
-		/**
-		 * Creates a fulfilled state snapshot
-		 * @private
-		 * @param {*} x any value
-		 * @returns {{state:'fulfilled',value:*}}
-		 */
-		function toFulfilledState(x) {
-			return { state: 'fulfilled', value: x };
-		}
-
-		/**
-		 * Creates a rejected state snapshot
-		 * @private
-		 * @param {*} x any reason
-		 * @returns {{state:'rejected',reason:*}}
-		 */
-		function toRejectedState(x) {
-			return { state: 'rejected', reason: x };
-		}
 
 		/**
 		 * Creates a pending state snapshot
@@ -877,6 +891,8 @@ define(function() {
 
 			notify.call(t, x);
 		};
+
+		// Other helpers
 
 		/**
 		 * @param {*} x
