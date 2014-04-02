@@ -10,13 +10,13 @@
 (function(define) { 'use strict';
 define(function (require) {
 
-	var timed = require('./lib/timed');
-	var array = require('./lib/array');
-	var flow = require('./lib/flow');
-	var inspect = require('./lib/inspect');
-	var generate = require('./lib/iterate');
-	var progress = require('./lib/progress');
-	var withThis = require('./lib/with');
+	var timed = require('./lib/decorators/timed');
+	var array = require('./lib/decorators/array');
+	var flow = require('./lib/decorators/flow');
+	var inspect = require('./lib/decorators/inspect');
+	var generate = require('./lib/decorators/iterate');
+	var progress = require('./lib/decorators/progress');
+	var withThis = require('./lib/decorators/with');
 
 	var Promise = [array, flow, generate, progress, inspect, withThis, timed]
 		.reduceRight(function(Promise, feature) {

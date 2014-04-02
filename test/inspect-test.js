@@ -23,7 +23,7 @@ function assertRejected(s, reason) {
 
 define('when/inspect-test', function (require) {
 
-	var inspect = require('when/lib/inspect');
+	var inspect = require('when/lib/decorators/inspect');
 	var Promise = inspect(require('when/lib/Promise'));
 
 	buster.testCase('inspect', {
