@@ -10,7 +10,6 @@
 (function(define) { 'use strict';
 define(function (require) {
 
-	var timer = require('./lib/timer');
 	var timed = require('./lib/timed');
 	var array = require('./lib/array');
 	var flow = require('./lib/flow');
@@ -19,11 +18,10 @@ define(function (require) {
 	var progress = require('./lib/progress');
 	var withThis = require('./lib/with');
 
-	var Promise = require('./lib/Promise');
-	Promise = [array, flow, generate, progress, inspect, withThis]
+	var Promise = [array, flow, generate, progress, inspect, withThis, timed]
 		.reduceRight(function(Promise, feature) {
 			return feature(Promise);
-		}, timed(timer.set, timer.clear, Promise));
+		}, require('./lib/Promise'));
 
 	var resolve = Promise.resolve;
 	var slice = Array.prototype.slice;
