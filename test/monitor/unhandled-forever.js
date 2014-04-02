@@ -21,17 +21,17 @@
 			});
 		}
 
-		function f2(p) {
-			return p.then(function() {});
-		}
+//		function f2(p) {
+//			return p.then(function() {});
+//		}
+//
+//		function f3(p) {
+//			return p.then(function() {});
+//		}
 
-		function f3(p) {
-			return p.then(function() {});
-		}
-
-//		f1();
+		f1();
 //		f2(f1());
-		f3(f2(f1()));
+//		f3(f2(f1()));
 	});
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
 

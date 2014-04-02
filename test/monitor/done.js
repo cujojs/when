@@ -12,11 +12,9 @@
 define(function(require) {
 
 	require('../../monitor/console');
+	var Promise = require('../../when').Promise;
 
-	var when = require('../../when');
-
-//	when.resolve('abc').catch(123, function(){});
-	when.resolve(123)
+	Promise.resolve(123)
 		.then(function(x) {
 			throw new Error(x);
 		})

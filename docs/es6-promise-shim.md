@@ -1,6 +1,8 @@
 # ES6 Promise shim
 
-When 3.0.0 includes a shim for [ES6 Promise](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-promise-constructor).  To use it, simply load `when/es6-shim/Promise.js` via script tag or as a module.  The shim will create a global `Promise` constructor.
+When 3.x includes a shim for [ES6 Promise](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-promise-constructor).  To use it, simply load `when/es6-shim/Promise.js` via script tag or as a module.  The shim will create a global `Promise` constructor.
+
+Since it's built on the when.js core, you get [debuggability with long stack traces](api.md#whenmonitorconsole), too!  Just load `when/monitor/console` as usual.
 
 ## Global script
 

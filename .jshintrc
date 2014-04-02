@@ -20,6 +20,7 @@
 	"noempty": true,
 	"nonew": true,
 	"quotmark": "single",
+	"smarttabs": true,
 	"strict": false,
 	"sub": true,
 	"trailing": true,

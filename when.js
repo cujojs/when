@@ -5,25 +5,23 @@
  * when is part of the cujoJS family of libraries (http://cujojs.com/)
  * @author Brian Cavalier
  * @author John Hann
- * @version 3.0.1
+ * @version 3.1.0
  */
 (function(define) { 'use strict';
 define(function (require) {
 
-	var timer = require('./lib/timer');
-	var timed = require('./lib/timed');
-	var array = require('./lib/array');
-	var flow = require('./lib/flow');
-	var inspect = require('./lib/inspect');
-	var generate = require('./lib/iterate');
-	var progress = require('./lib/progress');
-	var withThis = require('./lib/with');
+	var timed = require('./lib/decorators/timed');
+	var array = require('./lib/decorators/array');
+	var flow = require('./lib/decorators/flow');
+	var inspect = require('./lib/decorators/inspect');
+	var generate = require('./lib/decorators/iterate');
+	var progress = require('./lib/decorators/progress');
+	var withThis = require('./lib/decorators/with');
 
-	var Promise = require('./lib/Promise');
-	Promise = [array, flow, generate, progress, inspect, withThis]
+	var Promise = [array, flow, generate, progress, inspect, withThis, timed]
 		.reduceRight(function(Promise, feature) {
 			return feature(Promise);
-		}, timed(timer.set, timer.clear, Promise));
+		}, require('./lib/Promise'));
 
 	var resolve = Promise.resolve;
 	var slice = Array.prototype.slice;
