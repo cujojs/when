@@ -1,5 +1,8 @@
-### 3.0.2
+### 3.1.0
 
+* Added [optional `reason` param to `promise.timeout`](docs/api.md#promisetimeout) to specify your own timeout value.
+* Another significant speed bump for `when.all` (and es6-shim `Promise.all`)
+* More `when/monitor/console` long stack trace improvements. Traces can track nested async functions [even if you forget to return a promise](docs/api.md#whenmonitorconsole).
 * Clean up bower and npm installs by ignoring more markdown files
 
 ### 3.0.1
