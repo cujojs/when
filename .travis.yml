@@ -2,12 +2,11 @@ language: node_js
 node_js:
   - '0.10'
   - '0.8'
-script: npm run ci
+script: npm test
 branches:
   only:
     - dev
     - master
-    - when3
 env:
   global:
     - SAUCE_USERNAME="cujojs-when"
