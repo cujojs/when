@@ -35,7 +35,6 @@ API
 1. Array Races
 	* [when.any(array)](#whenany)
 	* [when.some(array, n)](#whensome)
-	* [when.race(array)](#whenrace)
 1. Infinite Promise Sequences
 	* [when.iterate(f, condition, handler, seed)](#wheniterate)
 	* [when.unfold(f, condition, handler, seed)](#whenunfold)
@@ -879,17 +878,6 @@ Initiates a competitive race that requires `n` winners.  The returned promise wi
 var remotes = [ping('p2p.cdn.com'), ping('p2p2.cdn.com'), ping('p2p3.cdn.com')];
 when.some(remotes, 2).done(itsAllOk, failGracefully);
 ```
-
-## when.race
-
-```js
-var promise = when.race(array)
-```
-
-Initiates a competitive race that allows one winner.  The returned promise will settle to the same state as the first input promise to settle:
-
-* fulfill with the value of the first input promise that fulfills, *or*
-* reject with the reason of the first input promise that rejects
 
 # Infinite Promise Sequences
 
