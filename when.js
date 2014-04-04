@@ -1,7 +1,7 @@
 /** @license MIT License (c) copyright 2010-2014 original author or authors */
 
 /**
- * A lightweight CommonJS Promises/A and when() implementation
+ * Promises/A+ and when() implementation
  * when is part of the cujoJS family of libraries (http://cujojs.com/)
  * @author Brian Cavalier
  * @author John Hann
