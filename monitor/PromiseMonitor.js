@@ -12,7 +12,7 @@ define(function(require) {
 	var error = require('./error');
 
 	function PromiseMonitor(reporter) {
-		this.traces = {};
+		this._traces = {};
 		this.traceTask = 0;
 		this.logDelay = 100;
 		this.stackFilter = defaultStackFilter;
@@ -20,6 +20,10 @@ define(function(require) {
 		this.filterDuplicateFrames = true;
 
 		this._reporter = reporter;
+
+		if(typeof reporter.configurePromiseMonitor === 'function') {
+			reporter.configurePromiseMonitor(this);
+		}
 
 		var self = this;
 		this._doLogTraces = function() {
@@ -32,7 +36,7 @@ define(function(require) {
 	};
 
 	PromiseMonitor.prototype.addTrace = function(handler, extraContext) {
-		this.traces[handler.id] = {
+		this._traces[handler.id] = {
 			error: handler.value,
 			context: handler.context,
 			extraContext: extraContext
@@ -41,8 +45,8 @@ define(function(require) {
 	};
 
 	PromiseMonitor.prototype.removeTrace = function(handler) {
-		if(handler.id in this.traces) {
-			delete this.traces[handler.id];
+		if(handler.id in this._traces) {
+			delete this._traces[handler.id];
 			this.logTraces();
 		}
 	};
@@ -63,7 +67,7 @@ define(function(require) {
 
 	PromiseMonitor.prototype._logTraces = function() {
 		this.traceTask = void 0;
-		this._reporter.log(this.formatTraces(this.traces));
+		this._reporter.log(this.formatTraces(this._traces));
 	};
 
 

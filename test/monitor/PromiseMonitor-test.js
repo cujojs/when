@@ -44,6 +44,15 @@ define('when/monitor/PromiseMonitor-test', function (require) {
 			}});
 
 			Promise.reject();
+		},
+
+		'should call reporter.configurePromiseMonitor with self': function() {
+			var spy = this.spy();
+			var m = new PromiseMonitor({
+				configurePromiseMonitor: spy
+			});
+
+			assert.calledOnceWith(spy, m);
 		}
 	});
 
