@@ -259,7 +259,7 @@ define(function() {
 		 */
 		function resolve(x) {
 			return x instanceof Promise ? x
-				: promiseFromHandler(new AsyncHandler(getHandler(x)));
+				: promiseFromHandler(new AsyncHandler(getHandlerUnchecked(x)));
 		}
 
 		/**
