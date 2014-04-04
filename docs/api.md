@@ -1840,11 +1840,11 @@ tl;dr Load `when/monitor/console` and get awesome async stack traces, even if yo
 
 ```js
 require('when/monitor/console');
-var Promise = require('when').Promise;
+var when = require('when');
 
-Promise.resolve().then(function f1() {
-	Promise.resolve().then(function f2() {
-		Promise.resolve().then(function f3() {
+when.resolve().then(function f1() {
+	when.resolve().then(function f2() {
+		when.resolve().then(function f3() {
 			doh();
 		});
 	});
@@ -1864,7 +1864,7 @@ from execution context:
 
 It monitors promise state transitions and then takes action, such as logging to the console, when certain criteria are met, such as when a promise has been rejected but has no `onRejected` handlers attached to it, and thus the rejection would have been silent.
 
-Since promises are asynchronous and their execution may span multiple disjoint stacks, it can also attempt to stitch together a more complete stack trace.  This synthesized trace includes the point at which a promise chain was created, through all promises in the chain to the point where the rejection "escaped" the end of the chain without being handled.
+Since promises are asynchronous and their execution may span multiple disjoint stacks, it will also attempt to stitch together a more complete stack trace.  This synthesized trace includes the point at which a promise chain was created, through other promises in the chain to the point where the rejection "escaped" the end of the chain without being handled.
 
 ## Using it
 
@@ -1900,11 +1900,9 @@ require('when/monitor/console');
 browserify -s PromiseMonitor when/monitor/console.js -o PromiseMonitor.js
 ```
 
-### PrettyMonitor for when 2.x and Node
+### PrettyMonitor for when.js and Node
 
 [PrettyMonitor](https://github.com/AriaMinaei/pretty-monitor) by [@AriaMinaei](https://github.com/AriaMinaei) is an alternative promise monitor on Node.  It's built using when.js's own monitoring apis and modules, and provides a very nice visual display of unhandled rejections in Node.
-
-Currently, PrettyMonitor is compatible with when 2.x, and will be updated to work with 3.x soon!
 
 ## Roll your own!
 
