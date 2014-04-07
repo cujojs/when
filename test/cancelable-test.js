@@ -1,103 +1,82 @@
-(function(buster, define) {
+var buster = typeof window !== 'undefined' ? window.buster : require('buster');
+var assert = buster.assert;
+var fail = buster.referee.fail;
 
-var assert, fail, sentinel, other;
+var when = require('../when');
+var cancelable = require('../cancelable');
 
-assert = buster.assert;
-fail = buster.assertions.fail;
+var sentinel = {};
+var other = {};
 
-sentinel = {};
-other = {};
+buster.testCase('when/cancelable', {
+	'should decorate deferred with a cancel() method': function() {
+		var c = cancelable(when.defer(), function() {});
+		assert(typeof c.cancel == 'function');
+	},
 
-define('when/cancelable-test', function (require) {
+	'should propagate a rejection when a cancelable deferred is canceled': function(done) {
+		var c = cancelable(when.defer(), function() { return sentinel; });
+		c.cancel();
 
-	var cancelable, when;
+		c.promise.then(
+			fail,
+			function(v) {
+				assert.equals(v, sentinel);
+			}
+		).ensure(done);
+	},
 
-	cancelable = require('when/cancelable');
-	when = require('when');
+	'should return a promise for canceled value when canceled': function(done) {
+		var c, promise;
 
-	buster.testCase('when/cancelable', {
-		'should decorate deferred with a cancel() method': function() {
-			var c = cancelable(when.defer(), function() {});
-			assert(typeof c.cancel == 'function');
-		},
+		c = cancelable(when.defer(), function() { return sentinel; });
+		promise = c.cancel();
 
-		'should propagate a rejection when a cancelable deferred is canceled': function(done) {
-			var c = cancelable(when.defer(), function() { return sentinel; });
-			c.cancel();
+		promise.then(
+			fail,
+			function(v) {
+				assert.equals(v, sentinel);
+			}
+		).ensure(done);
+	},
 
-			c.promise.then(
-				fail,
-				function(v) {
-					assert.equals(v, sentinel);
-				}
-			).ensure(done);
-		},
+	'should not invoke canceler when rejected normally': function(done) {
+		var c = cancelable(when.defer(), function() { return other; });
+		c.reject(sentinel);
+		c.cancel();
 
-		'should return a promise for canceled value when canceled': function(done) {
-			var c, promise;
+		c.promise.then(
+			fail,
+			function(v) {
+				assert.equals(v, sentinel);
+			}
+		).ensure(done);
+	},
 
-			c = cancelable(when.defer(), function() { return sentinel; });
-			promise = c.cancel();
+	'should propagate the unaltered resolution value': function(done) {
+		var c = cancelable(when.defer(), function() { return other; });
+		c.resolve(sentinel);
+		c.cancel();
 
-			promise.then(
-				fail,
-				function(v) {
-					assert.equals(v, sentinel);
-				}
-			).ensure(done);
-		},
+		c.promise.then(
+			function(val) {
+				assert.same(val, sentinel);
+			},
+			function(e) {
+				fail(e);
+			}
+		).ensure(done);
+	},
 
-		'should not invoke canceler when rejected normally': function(done) {
-			var c = cancelable(when.defer(), function() { return other; });
-			c.reject(sentinel);
-			c.cancel();
+	'should call progback for cancelable deferred': function(done) {
+		var c = cancelable(when.defer());
 
-			c.promise.then(
-				fail,
-				function(v) {
-					assert.equals(v, sentinel);
-				}
-			).ensure(done);
-		},
+		c.promise.then(null, null, function (status) {
+			assert.same(status, sentinel);
+			done();
+		});
 
-		'should propagate the unaltered resolution value': function(done) {
-			var c = cancelable(when.defer(), function() { return other; });
-			c.resolve(sentinel);
-			c.cancel();
-
-			c.promise.then(
-				function(val) {
-					assert.same(val, sentinel);
-				},
-				function(e) {
-					fail(e);
-				}
-			).ensure(done);
-		},
-
-		'should call progback for cancelable deferred': function(done) {
-			var c = cancelable(when.defer());
-
-			c.promise.then(null, null, function (status) {
-				assert.same(status, sentinel);
-				done();
-			});
-
-			c.notify(sentinel);
-		}
-
-	});
+		c.notify(sentinel);
+	}
 
 });
-
-}(
-	this.buster || require('buster'),
-	typeof define === 'function' && define.amd ? define : function (id, factory) {
-		var packageName = id.split(/[\/\-\.]/)[0], pathToRoot = id.replace(/[^\/]+/g, '..');
-		pathToRoot = pathToRoot.length > 2 ? pathToRoot.substr(3) : pathToRoot;
-		factory(function (moduleId) {
-			return require(moduleId.indexOf(packageName) === 0 ? pathToRoot + moduleId.substr(packageName.length) : moduleId);
-		});
-	}
-	// Boilerplate for AMD and Node
-));

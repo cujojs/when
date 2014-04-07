@@ -40,6 +40,7 @@ define(function(require) {
 	};
 
 	function initDefaultLogging() {
+		/*jshint maxcomplexity:7*/
 		var log, warn, groupStart, groupEnd;
 
 		if(typeof console === 'undefined') {

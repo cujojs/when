@@ -1,99 +1,79 @@
-(function(buster, define) {
+var buster = typeof window !== 'undefined' ? window.buster : require('buster');
+var assert = buster.assert;
+var fail = buster.referee.fail;
 
-var assert, fail, sentinel;
+var when = require('../when');
+var delay = require('../delay');
 
-assert = buster.assert;
-fail = buster.assertions.fail;
+var sentinel = {};
 
 function now() {
 	return (new Date()).getTime();
 }
 
-sentinel = {};
 
-define('when/delay-test', function (require) {
+buster.testCase('when/delay', {
+	'should resolve after delay': function(done) {
+		delay(0).then(
+			function() {
+				assert(true);
+			},
+			fail
+		).ensure(done);
+	},
 
-	var delay, when;
+	'should resolve with provided value after delay': function(done) {
+		delay(0, sentinel).then(
+			function(val) {
+				assert.same(val, sentinel);
+				done();
+			},
+			fail
+		).ensure(done);
+	},
 
-	delay = require('when/delay');
-	when = require('when');
+	'should delay by the provided value': function(done) {
+		var start = now();
 
-	buster.testCase('when/delay', {
-		'should resolve after delay': function(done) {
-			delay(0).then(
-				function() {
-					assert(true);
-				},
-				fail
-			).ensure(done);
-		},
+		delay(100).then(
+			function() {
+				assert((now() - start) > 50);
+			},
+			fail
+		).ensure(done);
+	},
 
-		'should resolve with provided value after delay': function(done) {
-			delay(0, sentinel).then(
-				function(val) {
-					assert.same(val, sentinel);
-					done();
-				},
-				fail
-			).ensure(done);
-		},
+	'should resolve after input promise plus delay': function(done) {
+		when.resolve(sentinel).delay(10).then(
+			function(val) {
+				assert.equals(val, sentinel);
+			},
+			fail
+		).ensure(done);
+	},
 
-		'should delay by the provided value': function(done) {
-			var start = now();
+	'should not delay if rejected': function(done) {
+		var d = when.defer();
+		d.reject(sentinel);
 
-			delay(100).then(
-				function() {
-					assert((now() - start) > 50);
-				},
-				fail
-			).ensure(done);
-		},
+		d.promise.delay(0).then(
+			fail,
+			function(val) {
+				assert.equals(val, sentinel);
+			}
+		).ensure(done);
+	},
 
-		'should resolve after input promise plus delay': function(done) {
-			when.resolve(sentinel).delay(10).then(
-				function(val) {
-					assert.equals(val, sentinel);
-				},
-				fail
-			).ensure(done);
-		},
+	'should propagate progress': function(done) {
+		var d = when.defer();
 
-		'should not delay if rejected': function(done) {
-			var d = when.defer();
-			d.reject(sentinel);
+		d.promise.delay(0).then(null, null,
+			function(val) {
+				assert.same(val, sentinel);
+				d.resolve();
+			}
+		).ensure(done);
 
-			d.promise.delay(0).then(
-				fail,
-				function(val) {
-					assert.equals(val, sentinel);
-				}
-			).ensure(done);
-		},
-
-		'should propagate progress': function(done) {
-			var d = when.defer();
-
-			d.promise.delay(0).then(null, null,
-				function(val) {
-					assert.same(val, sentinel);
-					d.resolve();
-				}
-			).ensure(done);
-
-			d.notify(sentinel);
-		}
-	});
-
-});
-
-}(
-	this.buster || require('buster'),
-	typeof define === 'function' && define.amd ? define : function (id, factory) {
-		var packageName = id.split(/[\/\-\.]/)[0], pathToRoot = id.replace(/[^\/]+/g, '..');
-		pathToRoot = pathToRoot.length > 2 ? pathToRoot.substr(3) : pathToRoot;
-		factory(function (moduleId) {
-			return require(moduleId.indexOf(packageName) === 0 ? pathToRoot + moduleId.substr(packageName.length) : moduleId);
-		});
+		d.notify(sentinel);
 	}
-	// Boilerplate for AMD and Node
-));
+});
