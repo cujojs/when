@@ -2,6 +2,7 @@ node_modules/
 .git/
 .idea/
 experiments/
-test/monitor
+test/monitor/
+test/browser/
 es6-shim/
 build/when.js

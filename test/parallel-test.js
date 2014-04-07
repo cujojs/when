@@ -1,10 +1,8 @@
-(function(buster, define) {
+var buster = typeof window !== 'undefined' ? window.buster : require('buster');
+var assert = buster.assert;
 
-var assert, refute, fail;
-
-assert = buster.assert;
-refute = buster.refute;
-fail = buster.assertions.fail;
+var when = require('../when');
+var parallel = require('../parallel');
 
 function createTask(y) {
 	return function() {
@@ -19,60 +17,39 @@ function expectArgs(expected) {
 	};
 }
 
-define('when/parallel-test', function (require) {
+buster.testCase('when/parallel', {
 
-	var when, parallel;
+	'should execute all tasks': function() {
+		return parallel([createTask(1), createTask(2), createTask(3)]).then(
+			function(result) {
+				assert.equals(result, [1, 2, 3]);
+			}
+		);
+	},
 
-	when = require('when');
-	parallel = require('when/parallel');
+	'should resolve to empty array when no tasks supplied': function() {
+		return parallel([], 1, 2, 3).then(
+			function(result) {
+				assert.equals(result, []);
+			}
+		);
+	},
 
-	buster.testCase('when/parallel', {
+	'should pass args to all tasks': function(done) {
+		var expected, tasks;
 
-		'should execute all tasks': function() {
-			return parallel([createTask(1), createTask(2), createTask(3)]).then(
-				function(result) {
-					assert.equals(result, [1, 2, 3]);
-				}
-			);
-		},
+		expected = [1, 2, 3];
+		tasks = [expectArgs(expected), expectArgs(expected), expectArgs(expected)];
 
-		'should resolve to empty array when no tasks supplied': function() {
-			return parallel([], 1, 2, 3).then(
-				function(result) {
-					assert.equals(result, []);
-				}
-			);
-		},
+		parallel.apply(void 0, [tasks].concat(expected)).ensure(done);
+	},
 
-		'should pass args to all tasks': function(done) {
-			var expected, tasks;
+	'should accept promises for args': function(done) {
+		var expected, tasks;
 
-			expected = [1, 2, 3];
-			tasks = [expectArgs(expected), expectArgs(expected), expectArgs(expected)];
+		expected = [1, 2, 3];
+		tasks = [expectArgs(expected), expectArgs(expected), expectArgs(expected)];
 
-			parallel.apply(void 0, [tasks].concat(expected)).ensure(done);
-		},
-
-		'should accept promises for args': function(done) {
-			var expected, tasks;
-
-			expected = [1, 2, 3];
-			tasks = [expectArgs(expected), expectArgs(expected), expectArgs(expected)];
-
-			parallel.apply(void 0, [tasks].concat(expected.map(when))).ensure(done);
-		}
-	});
-
-});
-
-}(
-	this.buster || require('buster'),
-	typeof define === 'function' && define.amd ? define : function (id, factory) {
-		var packageName = id.split(/[\/\-\.]/)[0], pathToRoot = id.replace(/[^\/]+/g, '..');
-		pathToRoot = pathToRoot.length > 2 ? pathToRoot.substr(3) : pathToRoot;
-		factory(function (moduleId) {
-			return require(moduleId.indexOf(packageName) === 0 ? pathToRoot + moduleId.substr(packageName.length) : moduleId);
-		});
+		parallel.apply(void 0, [tasks].concat(expected.map(when))).ensure(done);
 	}
-	// Boilerplate for AMD and Node
-));
+});
