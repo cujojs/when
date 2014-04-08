@@ -31,8 +31,10 @@ define(function(require) {
 		};
 	}
 
-	PromiseMonitor.prototype.captureStack = function(host, at) {
-		return error.captureStack(host, at);
+	PromiseMonitor.prototype.captureStack = function(at, parent) {
+		var context = { stack: void 0, parent: parent };
+		error.captureStack(context, at);
+		return context;
 	};
 
 	PromiseMonitor.prototype.addTrace = function(handler, extraContext) {
