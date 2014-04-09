@@ -1920,10 +1920,10 @@ As of version 3.0, when.js requires an ES5 environment.  In older environments, 
 
 Previously deprecated features that have been removed in 3.0:
 
-* `promise.always` was removed. Use [`promise.finally(cleanup)`](#promisefinally) (or its ES3 alias [`promise.ensure`](#promisefinally), or [`promise.then(cleanup, cleanup)`](#promisethen) instead.
+* `promise.always` was removed. Use [`promise.finally(cleanup)`](#promisefinally) (or its ES3 alias [`promise.ensure`](#promisefinally)), or [`promise.then(cleanup, cleanup)`](#promisethen) instead.
 * `deferred.resolve`, `deferred.reject`, `deferred.resolver.resolve`, and `deferred.resolver.reject` no longer return promises. They always return `undefined`.  You can simply return `d.promise` instead if you need.
 * [`when.all`](#whenall), [`when.any`](#whenany), and [`when.some`](#whensome) no longer directly accept `onFulfilled`, `onRejected`, and `onProgress` callbacks.  Simply use the returned promise instead.
-	* For example, do this: `when.all(array).then(handleResults)` instead of this: `when(array, handleResults)`
+	* For example, do this: `when.all(array).then(handleResults)` instead of this: `when.all(array, handleResults)`
 * `when.isPromise` was removed. Use [`when.isPromiseLike`](#whenispromiselike) instead.
 
 ## Moved functionality
