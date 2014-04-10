@@ -13,6 +13,7 @@ define(function(require) {
 
 	function PromiseMonitor(reporter) {
 		this._traces = {};
+		this._id = 0;
 		this.traceTask = 0;
 		this.logDelay = 100;
 		this.stackFilter = defaultStackFilter;
@@ -32,13 +33,13 @@ define(function(require) {
 	}
 
 	PromiseMonitor.prototype.captureStack = function(at, parent) {
-		var context = { stack: void 0, parent: parent };
+		var context = { id: this._id++, stack: void 0, parent: parent };
 		error.captureStack(context, at);
 		return context;
 	};
 
 	PromiseMonitor.prototype.addTrace = function(handler, extraContext) {
-		this._traces[handler.id] = {
+		this._traces[handler.context.id] = {
 			error: handler.value,
 			context: handler.context,
 			extraContext: extraContext
@@ -47,8 +48,8 @@ define(function(require) {
 	};
 
 	PromiseMonitor.prototype.removeTrace = function(handler) {
-		if(handler.id in this._traces) {
-			delete this._traces[handler.id];
+		if(handler.context.id in this._traces) {
+			delete this._traces[handler.context.id];
 			this.logTraces();
 		}
 	};
