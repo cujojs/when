@@ -12,19 +12,18 @@ define(function(require) {
 	var error = require('./error');
 
 	function PromiseMonitor(reporter) {
-		this._traces = {};
-		this._id = 0;
-		this.traceTask = 0;
-		this.logDelay = 100;
+		this.logDelay = 0;
 		this.stackFilter = defaultStackFilter;
 		this.stackJumpSeparator = defaultStackJumpSeparator;
 		this.filterDuplicateFrames = true;
 
 		this._reporter = reporter;
-
 		if(typeof reporter.configurePromiseMonitor === 'function') {
 			reporter.configurePromiseMonitor(this);
 		}
+
+		this._traces = [];
+		this._traceTask = 0;
 
 		var self = this;
 		this._doLogTraces = function() {
@@ -33,25 +32,36 @@ define(function(require) {
 	}
 
 	PromiseMonitor.prototype.captureStack = function(at, parent) {
-		var context = { id: this._id++, stack: void 0, parent: parent };
+		var context = { stack: void 0, parent: parent };
 		error.captureStack(context, at);
 		return context;
 	};
 
 	PromiseMonitor.prototype.addTrace = function(handler, extraContext) {
-		this._traces[handler.context.id] = {
-			error: handler.value,
-			context: handler.context,
-			extraContext: extraContext
-		};
+		var t, i = 0;
+		for(; i<this._traces.length; ++i) {
+			t = this._traces[i];
+			if(t.handler === handler) {
+				break;
+			}
+		}
+
+		if(i < this._traces.length) {
+			t.extraContext = extraContext;
+		} else {
+			this._traces.push({
+				handler: handler,
+				error: handler.value,
+				context: handler.context,
+				extraContext: extraContext
+			});
+		}
+
 		this.logTraces();
 	};
 
-	PromiseMonitor.prototype.removeTrace = function(handler) {
-		if(handler.context.id in this._traces) {
-			delete this._traces[handler.context.id];
-			this.logTraces();
-		}
+	PromiseMonitor.prototype.removeTrace = function(/*handler*/) {
+		this.logTraces();
 	};
 
 	PromiseMonitor.prototype.fatal = function(handler) {
@@ -63,29 +73,22 @@ define(function(require) {
 	};
 
 	PromiseMonitor.prototype.logTraces = function() {
-		if(!this.traceTask) {
-			this.traceTask = setTimer(this._doLogTraces, this.logDelay);
+		if(!this._traceTask) {
+			this._traceTask = setTimer(this._doLogTraces, this.logDelay);
 		}
 	};
 
 	PromiseMonitor.prototype._logTraces = function() {
-		this.traceTask = void 0;
+		this._traceTask = void 0;
+		this._traces = this._traces.filter(filterHandled);
 		this._reporter.log(this.formatTraces(this._traces));
 	};
 
 
 	PromiseMonitor.prototype.formatTraces = function(traces) {
-		var keys = Object.keys(traces);
-		var formatted = [];
-		var longTrace, t, i;
-
-		for(i=0; i<keys.length; ++i) {
-			t = traces[keys[i]];
-			longTrace = this._createLongTrace(t.error, t.context, t.extraContext);
-			formatted.push(longTrace);
-		}
-
-		return formatted;
+		return traces.map(function(t) {
+			return this._createLongTrace(t.error, t.context, t.extraContext);
+		}, this);
 	};
 
 	PromiseMonitor.prototype._createLongTrace = function(e, context, extraContext) {
@@ -150,6 +153,10 @@ define(function(require) {
 		return stack.filter(function(frame) {
 			return !stackFilter.test(frame);
 		});
+	}
+
+	function filterHandled(t) {
+		return !t.handler.handled;
 	}
 
 	return PromiseMonitor;
