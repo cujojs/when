@@ -2,7 +2,7 @@ exports.node = {
 	environment: 'node',
 	rootPath: '../',
 	tests: [
-		'test/inspect-test.js'
+		'test/**/*-test.js'
 	]
 };
 
