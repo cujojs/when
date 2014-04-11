@@ -13,15 +13,15 @@ define(function (require) {
 	var timed = require('./lib/decorators/timed');
 	var array = require('./lib/decorators/array');
 	var flow = require('./lib/decorators/flow');
+	var fold = require('./lib/decorators/fold');
 	var inspect = require('./lib/decorators/inspect');
 	var generate = require('./lib/decorators/iterate');
 	var progress = require('./lib/decorators/progress');
 	var withThis = require('./lib/decorators/with');
 	var unhandledRejection = require('./lib/decorators/unhandledRejection');
-
 	var TimeoutError = require('./lib/TimeoutError');
 
-	var Promise = [array, flow, generate, progress,
+	var Promise = [array, flow, fold, generate, progress,
 		inspect, withThis, timed, unhandledRejection]
 		.reduce(function(Promise, feature) {
 			return feature(Promise);
