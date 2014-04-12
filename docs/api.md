@@ -1931,7 +1931,7 @@ Previously deprecated features that have been removed in 3.0:
 Some functionality has moved to a new, preferred API.  The old APIs still work, and were left in place for backward compatibility, but will eventually be removed:
 
 * `when/delay` module. Use [`promise.delay`](#promisedelay) instead.
-* `when/timeout` module. Use [`promise.delay`](#promisedelay) instead.
+* `when/timeout` module. Use [`promise.timeout`](#promisetimeout) instead.
 * `when/node/function` module. Use the [`when/node`](#node-style-asynchronous-functions) module instead.
 * `when/unfold` and `when/unfold/list` modules. Use [`when.unfold`](#whenunfold) instead
 * `when/function` `lift` and `call`. Use [`when.lift`](#whenlift) and [`when.try`](#whentry) instead.
