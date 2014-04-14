@@ -1,46 +1,27 @@
-(function(buster, define) {
+var buster = typeof window !== 'undefined' ? window.buster : require('buster');
+var assert = buster.assert;
 
-var assert, fail;
+var when = require('../when');
 
-assert = buster.assert;
-fail = buster.assertions.fail;
+var input = {};
+var sentinel = { value: 'sentinel' };
 
-define('when/else-test', function (require) {
+buster.testCase('promise.else', {
+	'should resolve normally if previous promise doesnt fail': function () {
 
-  var when = require('when'),
-      input = {},
-      sentinel = { value: 'sentinel' };
+		return when.resolve(input)
+			['else'](sentinel)
+			.then(function (val) {
+				assert.same(val, input);
+			});
+	},
 
-  buster.testCase('promise.else', {
-    'should resolve normally if previous promise doesnt fail': function() {
+	'should resolve with else value if previous promise fails': function () {
 
-      return when.resolve(input)
-        ['else'](sentinel)
-        .then(function(val) {
-          assert.same(val, input);
-        });
-    },
-
-    'should resolve with else value if previous promise fails': function() {
-
-      return when.reject(input)
-        ['else'](sentinel)
-        .then(function(val) {
-          assert.same(val, sentinel);
-        });
-    }
-  });
-
+		return when.reject(input)
+			['else'](sentinel)
+			.then(function (val) {
+				assert.same(val, sentinel);
+			});
+	}
 });
-
-}(
-  this.buster || require('buster'),
-  typeof define === 'function' && define.amd ? define : function (id, factory) {
-    var packageName = id.split(/[\/\-\.]/)[0], pathToRoot = id.replace(/[^\/]+/g, '..');
-    pathToRoot = pathToRoot.length > 2 ? pathToRoot.substr(3) : pathToRoot;
-    factory(function (moduleId) {
-      return require(moduleId.indexOf(packageName) === 0 ? pathToRoot + moduleId.substr(packageName.length) : moduleId);
-    });
-  }
-  // Boilerplate for AMD and Node
-));

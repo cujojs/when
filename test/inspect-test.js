@@ -1,11 +1,11 @@
-(function(buster, define) {
+var buster = typeof window !== 'undefined' ? window.buster : require('buster');
+var assert = buster.assert;
+var fail = buster.referee.fail;
 
-var assert, fail, sentinel;
+var inspect = require('../lib/decorators/inspect');
+var Promise = inspect(require('../lib/Promise'));
 
-assert = buster.assert;
-fail = buster.assertions.fail;
-
-sentinel = { value: 'sentinel' };
+var sentinel = { value: 'sentinel' };
 
 function assertPending(s) {
 	assert.equals(s.state, 'pending');
@@ -21,79 +21,62 @@ function assertRejected(s, reason) {
 	assert.same(s.reason, reason);
 }
 
-define('when/inspect-test', function (require) {
+buster.testCase('inspect', {
 
-	var inspect = require('when/lib/decorators/inspect');
-	var Promise = inspect(require('when/lib/Promise'));
+	'when inspecting promises': {
+		'should return pending state for pending promise': function() {
+			var promise = new Promise(function() {});
 
-	buster.testCase('inspect', {
-
-		'when inspecting promises': {
-			'should return pending state for pending promise': function() {
-				var promise = new Promise(function() {});
-
-				assertPending(promise.inspect());
-			},
-
-			'should immediately return fulfilled state for fulfilled promise': function() {
-				assertFulfilled(Promise.resolve(sentinel).inspect(), sentinel);
-			},
-
-			'should return fulfilled state for fulfilled promise': function() {
-				var promise = Promise.resolve(sentinel);
-
-				return promise.then(function() {
-					assertFulfilled(promise.inspect(), sentinel);
-				});
-			},
-
-			'should immediately return rejected state for rejected promise': function() {
-				assertRejected(Promise.reject(sentinel).inspect(), sentinel);
-			},
-
-			'should return rejected state for rejected promise': function() {
-				var promise = Promise.reject(sentinel);
-
-				return promise.then(fail, function() {
-					assertRejected(promise.inspect(), sentinel);
-				});
-			}
+			assertPending(promise.inspect());
 		},
 
-		'when inspecting thenables': {
-			'should return pending state for pending thenable': function() {
-				var p = Promise.resolve({ then: function() {} });
+		'should immediately return fulfilled state for fulfilled promise': function() {
+			assertFulfilled(Promise.resolve(sentinel).inspect(), sentinel);
+		},
 
-				assertPending(p.inspect());
-			},
+		'should return fulfilled state for fulfilled promise': function() {
+			var promise = Promise.resolve(sentinel);
 
-			'should return fulfilled state for fulfilled thenable': function() {
-				var p = Promise.resolve({ then: function(fulfill) { fulfill(sentinel); } });
+			return promise.then(function() {
+				assertFulfilled(promise.inspect(), sentinel);
+			});
+		},
 
-				return p.then(function() {
-					assertFulfilled(p.inspect(), sentinel);
-				});
-			},
+		'should immediately return rejected state for rejected promise': function() {
+			assertRejected(Promise.reject(sentinel).inspect(), sentinel);
+		},
 
-			'should return rejected state for rejected thenable': function() {
-				var p = Promise.resolve({ then: function(_, rejected) { rejected(sentinel); } });
+		'should return rejected state for rejected promise': function() {
+			var promise = Promise.reject(sentinel);
 
-				return p.then(fail, function() {
-					assertRejected(p.inspect(), sentinel);
-				});
-			}
+			return promise.then(fail, function() {
+				assertRejected(promise.inspect(), sentinel);
+			});
 		}
-	});
+	},
 
-});
-}(
-	this.buster || require('buster'),
-	typeof define === 'function' && define.amd ? define : function (id, factory) {
-		var packageName = id.split(/[\/\-\.]/)[0], pathToRoot = id.replace(/[^\/]+/g, '..');
-		pathToRoot = pathToRoot.length > 2 ? pathToRoot.substr(3) : pathToRoot;
-		factory(function (moduleId) {
-			return require(moduleId.indexOf(packageName) === 0 ? pathToRoot + moduleId.substr(packageName.length) : moduleId);
-		});
+	'when inspecting thenables': {
+		'should return pending state for pending thenable': function() {
+			var p = Promise.resolve({ then: function() {} });
+
+			assertPending(p.inspect());
+		},
+
+		'should return fulfilled state for fulfilled thenable': function() {
+			var p = Promise.resolve({ then: function(fulfill) { fulfill(sentinel); } });
+
+			return p.then(function() {
+				assertFulfilled(p.inspect(), sentinel);
+			});
+		},
+
+		'should return rejected state for rejected thenable': function() {
+			var p = Promise.resolve({ then: function(_, rejected) { rejected(sentinel); } });
+
+			return p.then(fail, function() {
+				assertRejected(p.inspect(), sentinel);
+			});
+		}
 	}
-	// Boilerplate for AMD and Node
-));
+});
+

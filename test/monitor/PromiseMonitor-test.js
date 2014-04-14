@@ -1,70 +1,52 @@
-(function(buster, define) {
+var buster = typeof window !== 'undefined' ? window.buster : require('buster');
+var assert = buster.assert;
+var fail = buster.referee.fail;
 
-var assert, fail, sentinel;
+var Promise = require('../../lib/Promise');
+var PromiseMonitor = require('../..//monitor/PromiseMonitor');
 
-assert = buster.assert;
-fail = buster.assertions.fail;
+var sentinel = { value: 'sentinel' };
 
-sentinel = { value: 'sentinel' };
+buster.testCase('when/monitor/PromiseMonitor', {
 
-define('when/monitor/PromiseMonitor-test', function (require) {
-
-	var Promise = require('when/lib/Promise');
-	var PromiseMonitor = require('when/monitor/PromiseMonitor');
-
-	buster.testCase('when/monitor/PromiseMonitor', {
-
-		'reject should trigger report': function(done) {
-			if (typeof console === 'undefined') {
-				done();
-				return;
-			}
-
-			console.promiseMonitor = new PromiseMonitor({ log: function () {
-				console.promiseMonitor = void 0;
-				assert(true);
-				done();
-			}});
-
-			new Promise(function (_, reject) {
-				reject();
-			});
-		},
-
-		'Promise.reject should trigger report': function(done) {
-			if (typeof console === 'undefined') {
-				done();
-				return;
-			}
-
-			console.promiseMonitor = new PromiseMonitor({ log: function () {
-				console.promiseMonitor = void 0;
-				assert(true);
-				done();
-			}});
-
-			Promise.reject();
-		},
-
-		'should call reporter.configurePromiseMonitor with self': function() {
-			var spy = this.spy();
-			var m = new PromiseMonitor({
-				configurePromiseMonitor: spy
-			});
-
-			assert.calledOnceWith(spy, m);
+	'reject should trigger report': function(done) {
+		if (typeof console === 'undefined') {
+			done();
+			return;
 		}
-	});
 
-});
-}(
-	this.buster || require('buster'),
-	typeof define === 'function' && define.amd ? define : function (id, factory) {
-		var packageName = id.split(/[\/\-\.]/)[0], pathToRoot = id.replace(/[^\/]+/g, '..');
-		pathToRoot = pathToRoot.length > 2 ? pathToRoot.substr(3) : pathToRoot;
-		factory(function (moduleId) {
-			return require(moduleId.indexOf(packageName) === 0 ? pathToRoot + moduleId.substr(packageName.length) : moduleId);
+		console.promiseMonitor = new PromiseMonitor({ log: function () {
+			console.promiseMonitor = void 0;
+			assert(true);
+			done();
+		}});
+
+		new Promise(function (_, reject) {
+			reject();
 		});
+	},
+
+	'Promise.reject should trigger report': function(done) {
+		if (typeof console === 'undefined') {
+			done();
+			return;
+		}
+
+		console.promiseMonitor = new PromiseMonitor({ log: function () {
+			console.promiseMonitor = void 0;
+			assert(true);
+			done();
+		}});
+
+		Promise.reject();
+	},
+
+	'should call reporter.configurePromiseMonitor with self': function() {
+		var spy = this.spy();
+		var m = new PromiseMonitor({
+			configurePromiseMonitor: spy
+		});
+
+		assert.calledOnceWith(spy, m);
 	}
-	// Boilerplate for AMD and Node
-));
+});

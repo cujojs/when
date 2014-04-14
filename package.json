@@ -51,13 +51,18 @@
 		}
 	],
 	"devDependencies": {
-		"curl": "git://github.com/cujojs/curl",
-		"poly": "git://github.com/cujojs/poly",
-		"test-support": "~0.3",
 		"promises-aplus-tests": "~2",
 		"benchmark": "~1",
 		"microtime": "~0",
-		"browserify": "~2"
+		"browserify": "~2",
+		"buster": "~0.7",
+		"jshint": "~2",
+		"rest": "~1",
+		"optimist": "~0.6",
+		"sauce-connect-launcher": "~0.4",
+		"wd": "~0.2",
+		"json5": "~0.2",
+		"poly": "git://github.com/cujojs/poly#0.6.0"
 	},
 	"main": "when",
 	"ender": { "files": ["*.js", "lib/*.js", "node/*.js", "unfold/*.js", "monitor/*.js"] },
@@ -65,10 +70,12 @@
 		"test": "test"
 	},
 	"scripts": {
-		"test": "jshint . && buster test -e node -r specification && promises-aplus-tests test/promises-aplus-adapter.js --reporter spec",
-		"ci": "npm test && sauceme -b test/browsers.json",
-		"tunnel": "sauceme -m",
-		"start": "buster static -e browser",
+		"test": "jshint . && buster-test -e node && promises-aplus-tests test/promises-aplus-adapter.js",
+		"build-browser-test": "browserify ./node_modules/poly/es5.js -o test/browser/es5.js && browserify ./test/*-test.js ./test/**/*-test.js -o test/browser/tests.js -x buster ",
+		"browser-test": "npm run build-browser-test && buster-static -e browser -p 8080",
+		"ci": "npm test && node test/sauce.js",
+		"tunnel": "node test/sauce.js -m",
+		"start": "buster-static -e browser",
 		"benchmark": "node benchmark/promise && node benchmark/map",
 		"browserify-es6": "browserify -s Promise es6-shim/Promise.browserify-es6.js --no-detect-globals -o es6-shim/Promise.js",
 		"browserify": "browserify -s when build/when.browserify.js --no-detect-globals -o build/when.js",
