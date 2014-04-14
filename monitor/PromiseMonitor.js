@@ -51,8 +51,6 @@ define(function(require) {
 		} else {
 			this._traces.push({
 				handler: handler,
-				error: handler.value,
-				context: handler.context,
 				extraContext: extraContext
 			});
 		}
@@ -87,7 +85,7 @@ define(function(require) {
 
 	PromiseMonitor.prototype.formatTraces = function(traces) {
 		return traces.map(function(t) {
-			return this._createLongTrace(t.error, t.context, t.extraContext);
+			return this._createLongTrace(t.handler.value, t.handler.context, t.extraContext);
 		}, this);
 	};
 
