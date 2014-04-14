@@ -3,8 +3,8 @@ var assert = buster.assert;
 var fail = buster.referee.fail;
 
 var when = require('../when');
-var sentinel = {};
-var other = {};
+var sentinel = { value: 'sentinel' };
+var other = { value: 'other' };
 
 function hasGetters() {
 	try {
