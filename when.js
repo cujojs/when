@@ -17,9 +17,11 @@ define(function (require) {
 	var generate = require('./lib/decorators/iterate');
 	var progress = require('./lib/decorators/progress');
 	var withThis = require('./lib/decorators/with');
+	var unhandledRejection = require('./lib/decorators/unhandledRejection');
 
-	var Promise = [array, flow, generate, progress, inspect, withThis, timed]
-		.reduceRight(function(Promise, feature) {
+	var Promise = [array, flow, generate, progress,
+		inspect, withThis, timed, unhandledRejection]
+		.reduce(function(Promise, feature) {
 			return feature(Promise);
 		}, require('./lib/Promise'));
 

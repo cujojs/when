@@ -15,14 +15,14 @@ define(function(require) {
 	var Promise = require('../../when').Promise;
 //	var Promise = require('bluebird');
 
-	new Promise(function(r, reject) {
-		reject(123);
-	})
-//	Promise.resolve(123)
-//		.then(function(x) {
-//			throw new TypeError(x);
-//		})
-		.then(void 0, function() { console.log(123);})
+//	new Promise(function(r, reject) {
+//		reject(123);
+//	})
+	Promise.resolve(123)
+		.then(function(x) {
+			throw new TypeError(x);
+		})
+//		.then(void 0, function() { console.log(123);})
 //		.done(console.log);
 
 });
