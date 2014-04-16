@@ -86,8 +86,7 @@ define(function(require) {
 
 	PromiseMonitor.prototype.formatTraces = function(traces) {
 		return traces.map(function(t) {
-			return this._createLongTrace(
-				t.handler.value, t.handler.context, t.extraContext);
+			return this._createLongTrace(t.handler.value, t.handler.context, t.extraContext);
 		}, this);
 	};
 
