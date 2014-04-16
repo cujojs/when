@@ -19,11 +19,10 @@ define(function (require) {
 	var withThis = require('./lib/decorators/with');
 
 	var Promise = [array, flow, generate, progress, inspect, withThis, timed]
-		.reduceRight(function(Promise, feature) {
+		.reduce(function(Promise, feature) {
 			return feature(Promise);
 		}, require('./lib/Promise'));
 
-	var resolve = Promise.resolve;
 	var slice = Array.prototype.slice;
 
 	// Public API
@@ -33,8 +32,8 @@ define(function (require) {
 	when.reject      = Promise.reject;       // Create a rejected promise
 
 	when.lift        = lift;                 // lift a function to return promises
-	when['try']      = tryCall;              // call a function and return a promise
-	when.attempt     = tryCall;              // alias for when.try
+	when['try']      = attempt;              // call a function and return a promise
+	when.attempt     = attempt;              // alias for when.try
 
 	when.iterate     = Promise.iterate;      // Generate a stream of promises
 	when.unfold      = Promise.unfold;       // Generate a stream of promises
@@ -72,7 +71,7 @@ define(function (require) {
 	 *   callback and/or errback is not supplied.
 	 */
 	function when(x, onFulfilled, onRejected, onProgress) {
-		var p = resolve(x);
+		var p = Promise.resolve(x);
 		return arguments.length < 2 ? p : p.then(onFulfilled, onRejected, onProgress);
 	}
 
@@ -103,7 +102,7 @@ define(function (require) {
 	 * @param {function} f
 	 * @returns {Promise}
 	 */
-	function tryCall(f /*, args... */) {
+	function attempt(f /*, args... */) {
 		/*jshint validthis:true */
 		return _apply(f, this, slice.call(arguments, 1));
 	}
