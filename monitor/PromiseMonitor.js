@@ -38,21 +38,20 @@ define(function(require) {
 	};
 
 	PromiseMonitor.prototype.addTrace = function(handler, extraContext) {
-		var t, i = 0;
-		for(; i<this._traces.length; ++i) {
+		var t, i;
+
+		for(i = this._traces.length-1; i >= 0; --i) {
 			t = this._traces[i];
 			if(t.handler === handler) {
 				break;
 			}
 		}
 
-		if(i < this._traces.length) {
+		if(i >= 0) {
 			t.extraContext = extraContext;
 		} else {
 			this._traces.push({
 				handler: handler,
-				error: handler.value,
-				context: handler.context,
 				extraContext: extraContext
 			});
 		}
@@ -87,7 +86,8 @@ define(function(require) {
 
 	PromiseMonitor.prototype.formatTraces = function(traces) {
 		return traces.map(function(t) {
-			return this._createLongTrace(t.error, t.context, t.extraContext);
+			return this._createLongTrace(
+				t.handler.value, t.handler.context, t.extraContext);
 		}, this);
 	};
 
