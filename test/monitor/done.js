@@ -11,14 +11,19 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	require('../../monitor/console');
+//	require('../../monitor/console');
 	var Promise = require('../../when').Promise;
+//	var Promise = require('bluebird');
 
+//	new Promise(function(r, reject) {
+//		reject(123);
+//	})
 	Promise.resolve(123)
 		.then(function(x) {
-			throw new Error(x);
+			throw new TypeError(x);
 		})
-		.done(console.log);
+//		.then(void 0, function() { console.log(123);})
+//		.done(console.log);
 
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
