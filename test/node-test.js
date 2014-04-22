@@ -258,7 +258,7 @@ buster.testCase('when/node', {
 				}, fail);
 			},
 
-			'should reject the resolver when called with errors': function() {
+			'should reject the resolver when called with errors': function(done) {
 				var deferred = when.defer();
 				var callback = nodefn.createCallback(deferred.resolver);
 
@@ -266,7 +266,7 @@ buster.testCase('when/node', {
 
 				return deferred.promise.then(fail, function(reason) {
 					assert.same(reason, sentinel);
-				});
+				}).done(done);
 			},
 
 			'should pass multiple arguments as an array': function() {

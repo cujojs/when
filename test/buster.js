@@ -1,3 +1,8 @@
+var unhandledRejections = require('../lib/decorators/unhandledRejection');
+unhandledRejections(require('../when').Promise, function(f) {
+	setTimeout(f, 1000);
+});
+
 exports.node = {
 	environment: 'node',
 	rootPath: '../',
