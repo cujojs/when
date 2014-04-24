@@ -11,6 +11,8 @@ define(function(require) {
 	var setTimer = require('../lib/timer').set;
 	var error = require('./error');
 
+	var executionContext = [];
+
 	function PromiseMonitor(reporter) {
 		this.logDelay = 0;
 		this.stackFilter = defaultStackFilter;
@@ -31,9 +33,41 @@ define(function(require) {
 		};
 	}
 
-	PromiseMonitor.prototype.captureStack = function(at, parent) {
-		var context = { stack: void 0, parent: parent };
-		error.captureStack(context, at);
+	PromiseMonitor.prototype.monitor = function(Promise) {
+		var self = this;
+		Promise.createContext = function(p, context) {
+			p.context = self.createContext(p, context);
+		};
+
+		Promise.enterContext = function(p) {
+			executionContext.push(p.context);
+		};
+
+		Promise.exitContext = function() {
+			executionContext.pop();
+		};
+
+		Promise.onUnhandledRejection = function(rejection, extraContext) {
+			return self.addTrace(rejection, extraContext);
+		};
+
+		Promise.onUnhandledRejectionHandled = function(rejection) {
+			return self.removeTrace(rejection);
+		};
+
+		Promise.onFatalRejection = function(rejection) {
+			return self.fatal(rejection);
+		};
+
+		return this;
+	};
+
+	PromiseMonitor.prototype.createContext = function(at, parentContext) {
+		var context = {
+			parent: parentContext || executionContext[executionContext.length - 1],
+			stack: void 0
+		};
+		error.captureStack(context, at.constructor);
 		return context;
 	};
 
