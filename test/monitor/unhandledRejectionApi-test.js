@@ -15,7 +15,7 @@ function replace(target, method, replacement) {
 buster.testCase('when/unhandledRejectionApi', {
 
 	'reject should trigger report': function(done) {
-		replace(Promise, 'onUnhandledRejection', function () {
+		replace(Promise, 'onPotentiallyUnhandledRejection', function () {
 			assert(true);
 			done();
 		});
@@ -26,7 +26,7 @@ buster.testCase('when/unhandledRejectionApi', {
 	},
 
 	'Promise.reject should trigger report': function(done) {
-		replace(Promise, 'onUnhandledRejection', function () {
+		replace(Promise, 'onPotentiallyUnhandledRejection', function () {
 			assert(true);
 			done();
 		});

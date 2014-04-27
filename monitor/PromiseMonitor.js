@@ -47,11 +47,11 @@ define(function(require) {
 			executionContext.pop();
 		};
 
-		Promise.onUnhandledRejection = function(rejection, extraContext) {
+		Promise.onPotentiallyUnhandledRejection = function(rejection, extraContext) {
 			return self.addTrace(rejection, extraContext);
 		};
 
-		Promise.onUnhandledRejectionHandled = function(rejection) {
+		Promise.onPotentiallyUnhandledRejectionHandled = function(rejection) {
 			return self.removeTrace(rejection);
 		};
 
