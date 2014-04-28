@@ -55,8 +55,8 @@ define(function(require) {
 			return self.removeTrace(rejection);
 		};
 
-		Promise.onFatalRejection = function(rejection) {
-			return self.fatal(rejection);
+		Promise.onFatalRejection = function(rejection, extraContext) {
+			return self.fatal(rejection, extraContext);
 		};
 
 		return this;
@@ -97,9 +97,9 @@ define(function(require) {
 		this.logTraces();
 	};
 
-	PromiseMonitor.prototype.fatal = function(handler) {
+	PromiseMonitor.prototype.fatal = function(handler, extraContext) {
 		var err = new Error();
-		err.stack = this._createLongTrace(handler.value, handler.context).join('\n');
+		err.stack = this._createLongTrace(handler.value, handler.context, extraContext).join('\n');
 		setTimer(function() {
 			throw err;
 		}, 0);
