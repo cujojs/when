@@ -8,7 +8,7 @@ define(function(require) {
 
 	var Promise, tests, run, ok;
 
-	Promise = require('../when').Promise;
+	Promise = require('../lib/Promise');
 	run = require('./run');
 	ok = 0;
 
@@ -67,21 +67,21 @@ define(function(require) {
 
 	function resolvePromise(deferred) {
 		/*jshint nonew:false*/
-		new Promise(resolve).done(function() {
+		new Promise(resolve).then(function() {
 			deferred.resolve();
 		});
 	}
 
 	function rejectPromise(deferred) {
 		/*jshint nonew:false*/
-		new Promise(reject).done(null, function() {
+		new Promise(reject).then(null, function() {
 			deferred.resolve();
 		});
 	}
 
 	function rejectThenResolve(deferred) {
 		/*jshint nonew:false*/
-		new Promise(reject).then(null, identity).done(function() {
+		new Promise(reject).then(null, identity).then(function() {
 			deferred.resolve();
 		});
 	}
@@ -111,7 +111,7 @@ define(function(require) {
 				p = p.then(identity);
 			}
 
-			p.done(function() {
+			p.then(function() {
 				deferred.resolve();
 			});
 		};
@@ -124,7 +124,7 @@ define(function(require) {
 				p = p.then(null);
 			}
 
-			p.then(identity).done(function() {
+			p.then(identity).then(function() {
 				deferred.resolve();
 			});
 		};
@@ -137,7 +137,7 @@ define(function(require) {
 				p = p.then(null, rethrow);
 			}
 
-			p.done(null, function() {
+			p.then(null, function() {
 				deferred.resolve();
 			});
 		};
@@ -150,7 +150,7 @@ define(function(require) {
 				p = p.then(null, rethrow);
 			}
 
-			p.then(null, identity).done(function() {
+			p.then(null, identity).then(function() {
 				deferred.resolve();
 			});
 		};
