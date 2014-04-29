@@ -7,7 +7,7 @@ var input = {};
 var sentinel = { value: 'sentinel' };
 
 buster.testCase('promise.else', {
-	'should resolve normally if previous promise doesnt fail': function () {
+	'should resolve normally if previous promise doesn\'t fail': function () {
 
 		return when.resolve(input)
 			['else'](sentinel)
