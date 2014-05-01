@@ -74,6 +74,7 @@ API
 1. Limiting Concurrency
 	* [when/guard(condition, f)](#whenguard)
 	* [Guard conditions](#guard-conditions)
+1. [Error types](#errortypes)
 1. [Debugging promises](#debugging-promises)
 1. [Upgrading to 3.0 from 2.x](#upgrading-to-30-from-2x)
 
@@ -536,9 +537,7 @@ promise.delay(1000).then(doSomething).catch(handleRejection);
 var timedPromise = promise.timeout(milliseconds, reason);
 ```
 
-Create a new promise that will reject after a timeout if `promise` does not fulfill or reject beforehand.
-
-Optionally specify a custom reason for the timeout rejection; the reason defaults to an `Error`.
+Create a new promise that will reject with a [`TimeoutError`](#timeouterror) or a custom `reason` after a timeout if `promise` does not fulfill or reject beforehand.
 
 ```js
 var node = require('when/node');
@@ -550,6 +549,16 @@ var readFile = node.lift(fs.readFile);
 function readWithTimeout(path) {
 	return readFile(path).timeout(500);
 }
+```
+
+You can [pattern-match using `catch`](#promisecatch) to specifically handle `TimeoutError`s:
+
+```js
+var when = require('when');
+
+var p = readWithTimeout('/etc/passwd')
+	.catch(when.TimeoutError, handleTimeout) // handle only TimeoutError
+	.catch(handleFailure) // handle other errors
 ```
 
 ### See also:
@@ -1782,6 +1791,18 @@ var condition = guard.n(number);
 ```
 
 Creates a condition that allows at most `number` of simultaneous executions inflight.
+
+# Error types
+
+### TimeoutError
+
+```js
+var TimeoutError = when.TimeoutError;
+// or
+var TimeoutError = require('when/lib/TimeoutError');
+```
+
+[Timeout promises](#promisetimeout) reject with `TimeoutError` unless a custom reason is provided.
 
 # Debugging promises
 
