@@ -57,6 +57,10 @@ define(function (require) {
 	when.Promise     = Promise;              // Promise constructor
 	when.defer       = defer;                // Create a {promise, resolve, reject} tuple
 
+	// Error types
+
+	when.TimeoutError = require('./lib/TimeoutError');
+
 	/**
 	 * When x, which may be a promise, thenable, or non-promise value,
 	 *
