@@ -19,6 +19,8 @@ define(function (require) {
 	var withThis = require('./lib/decorators/with');
 	var unhandledRejection = require('./lib/decorators/unhandledRejection');
 
+	var TimeoutError = require('./lib/TimeoutError');
+
 	var Promise = [array, flow, generate, progress,
 		inspect, withThis, timed, unhandledRejection]
 		.reduce(function(Promise, feature) {
@@ -56,6 +58,10 @@ define(function (require) {
 
 	when.Promise     = Promise;              // Promise constructor
 	when.defer       = defer;                // Create a {promise, resolve, reject} tuple
+
+	// Error types
+
+	when.TimeoutError = TimeoutError;
 
 	/**
 	 * Get a trusted promise for x, or by transforming x with onFulfilled

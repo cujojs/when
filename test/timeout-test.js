@@ -2,7 +2,8 @@ var buster = typeof window !== 'undefined' ? window.buster : require('buster');
 var assert = buster.assert;
 var fail = buster.referee.fail;
 
-var when = require('../when');
+var Promise = require('../lib/Promise');
+var TimeoutError = require('../lib/TimeoutError');
 var timeout = require('../timeout');
 
 var sentinel = {};
@@ -14,17 +15,17 @@ function FakePromise() {
 }
 
 buster.testCase('when/timeout', {
-	'should reject after timeout': function(done) {
+	'should reject with TimeoutError': function(done) {
 		timeout(10, new FakePromise()).then(
 			fail,
 			function(e) {
-				assert(e instanceof Error);
+				assert(e instanceof TimeoutError);
 			}
 		).ensure(done);
 	},
 
 	'should not timeout when rejected before timeout': function(done) {
-		timeout(10, when.reject(sentinel)).then(
+		timeout(10, Promise.reject(sentinel)).then(
 			fail,
 			function(val) {
 				assert.same(val, sentinel);
@@ -32,8 +33,8 @@ buster.testCase('when/timeout', {
 		).ensure(done);
 	},
 
-	'should not timeout when forcibly resolved before timeout': function(done) {
-		timeout(10, when.resolve(sentinel)).then(
+	'should not timeout when resolved before timeout': function(done) {
+		timeout(10, Promise.resolve(sentinel)).then(
 			function(val) {
 				assert.same(val, sentinel);
 			},
@@ -41,77 +42,67 @@ buster.testCase('when/timeout', {
 		).ensure(done);
 	},
 
-	'should propagate progress': function(done) {
-		var d = when.defer();
-
-		timeout(10, d.promise).then(null, null,
-			function(val) {
-				assert.same(val, sentinel);
-				d.resolve();
-			}
-		).ensure(done);
-
-		d.notify(sentinel);
-	},
-
 	'promise.timeout': {
 
-		'should reject after timeout': function(done) {
-			when.defer().promise.timeout(10).then(
+		'should reject with TimeoutError': function() {
+			return Promise.never().timeout(0).then(
 				fail,
 				function(e) {
-					assert(e instanceof Error);
+					assert(e instanceof TimeoutError);
 				}
-			).ensure(done);
+			);
 		},
 
-		'should reject after timeout with the provided reason': function(done) {
-			when.defer().promise.timeout(10, sentinel).then(
+		'should pattern match': function() {
+			return Promise.never().timeout(0).catch(TimeoutError, function(e) {
+				assert(e instanceof TimeoutError);
+			});
+		},
+
+		'should reject after timeout with the provided reason': function() {
+			return Promise.never().timeout(0, sentinel).then(
 				fail,
 				function(reason) {
 					assert.same(reason, sentinel);
 				}
-			).ensure(done);
+			);
 		},
 
-		'should reject after timeout with the provided reason, even if undefined': function(done) {
-			when.defer().promise.timeout(10, void 0).then(
+		'should reject after timeout with undefined reason': function() {
+			return Promise.never().timeout(0, void 0).then(
 				fail,
 				function(reason) {
 					assert.same(reason, void 0);
 				}
-			).ensure(done);
+			);
 		},
 
-		'should not timeout when rejected before timeout': function(done) {
-			when.reject(sentinel).timeout(10).then(
+		'should not timeout when rejected before timeout': function() {
+			return Promise.reject(sentinel).timeout(0).then(
 				fail,
 				function(val) {
 					assert.same(val, sentinel);
 				}
-			).ensure(done);
+			);
 		},
 
-		'should not timeout when forcibly resolved before timeout': function(done) {
-			when.resolve(sentinel).timeout(10).then(
+		'should not timeout when resolved before timeout': function() {
+			return Promise.resolve(sentinel).timeout(0).then(
 				function(val) {
 					assert.same(val, sentinel);
-				},
-				fail
-			).ensure(done);
+				}
+			);
 		},
 
 		'should propagate progress': function(done) {
-			var d = when.defer();
-
-			d.promise.timeout(10).then(null, null,
-				function(val) {
-					assert.same(val, sentinel);
-					d.resolve();
-				}
-			).ensure(done);
-
-			d.notify(sentinel);
+			return new Promise(function(resolve, _, notify) {
+				notify(sentinel);
+			})
+				.timeout(10)
+				.then(void 0, void 0, function(x) {
+					assert.same(x, sentinel);
+					done();
+				});
 		}
 
 	}
