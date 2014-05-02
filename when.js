@@ -58,7 +58,7 @@ define(function (require) {
 	when.defer       = defer;                // Create a {promise, resolve, reject} tuple
 
 	/**
-	 * When x, which may be a promise, thenable, or non-promise value,
+	 * Get a trusted promise for x, or by transforming x with onFulfilled
 	 *
 	 * @param {*} x
 	 * @param {function?} onFulfilled callback to be called when x is
@@ -66,15 +66,21 @@ define(function (require) {
 	 *   will be invoked immediately.
 	 * @param {function?} onRejected callback to be called when x is
 	 *   rejected.
-	 * @param {function?} onProgress callback to be called when progress updates
+	 * @deprecated @param {function?} onProgress callback to be called when progress updates
 	 *   are issued for x.
 	 * @returns {Promise} a new promise that will fulfill with the return
 	 *   value of callback or errback or the completion value of promiseOrValue if
 	 *   callback and/or errback is not supplied.
 	 */
-	function when(x, onFulfilled, onRejected, onProgress) {
+	function when(x, onFulfilled, onRejected) {
 		var p = Promise.resolve(x);
-		return arguments.length < 2 ? p : p.then(onFulfilled, onRejected, onProgress);
+		if(arguments.length < 2) {
+			return p;
+		}
+
+		return arguments.length > 3
+			? p.then(onFulfilled, onRejected, arguments[3])
+			: p.then(onFulfilled, onRejected);
 	}
 
 	/**

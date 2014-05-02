@@ -284,7 +284,7 @@ promise.done(handleValue); // returns undefined
 The simplest API for interacting with a promise, `done` consumes the promise's ultimate value if it fulfills, or causes a fatal error with a loud stack trace if it rejects.
 
 ```js
-promise.done(handleValue, handleError) // returns undefined
+promise.done(handleValue, handleError); // returns undefined
 ```
 
 Consume the promise's ultimate value if the promise fulfills, or handle the ultimate error.  It will cause a fatal error if either `handleValue` or `handleError` throw or return a rejected promise.
@@ -308,18 +308,45 @@ var transformedPromise = promise.then(onFulfilled);
 [Promises/A+ `then`](http://promisesaplus.com).  *Transforms* a promise's value by applying a function to the promise's fulfillment value.  Returns a new promise for the transformed result.
 
 ```js
-var transformedPromise = promise.then(onFulfilled, onRejected, onProgress);
+var transformedPromise = promise.then(onFulfilled, onRejected);
 ```
 
-`then` may also be used to recover from intermediate errors and to listen to progress events in a promise chain.  However, the dedicated methods, [`catch`](#promisecatch) and [`progress`](#promiseprogress) are often better (and more readable) choices.
+`then` may also be used to recover from intermediate errors. However, [`promise.catch`](#promisecatch) is almost always a better, and more readable choice.  When `onRejected` is provided, it only handles errors from `promise`, and *will not* handle errors thrown by `onFulfilled`.  Compare:
+
+```js
+// Using only then(): onRejected WILL NOT handle errors thrown by onFulfilled
+var transformedPromise = promise
+	.then(onFulfilled, onRejected);
+
+// Using catch(): onRejected will handled errors thrown by onFulfilled
+var transformedPromise = promise
+	.then(onFulfilled)
+	.catch(onRejected);
+
+// Using catch() is equivalent to:
+var transformedPromise = promise
+	.then(onFulfilled)
+	.then(void 0, onRejected);
+```
+
+**DEPRECATED**: `then` may also be used to listen to progress events in a promise chain.  Use [`promise.progress`](#promiseprogress) instead.
+
+```js
+// Instead of this:
+var transformedPromise = promise.then(onFulfilled, onRejected, onProgress);
+
+// Do this:
+var transformedPromise = promise
+	.progress(onProgress)
+	.then(onFulfilled)
+	.catch(onRejected)
+```
 
 `then` arranges for:
 
 * `onFulfilled` to be called with the value after `promise` is fulfilled, or
 * `onRejected` to be called with the rejection reason after `promise` is rejected.
-* `onProgress` to be called with any progress updates issued by `promise`.
-
-Returns a trusted promise that will fulfill with the return value of either `onFulfilled` or `onRejected`, whichever is called, or will reject with the thrown exception if either throws.
+* **DEPRECATED**: `onProgress` to be called with any progress updates issued by `promise`.
 
 A promise makes the following guarantees about handlers registered in the same call to `.then()`:
 
@@ -331,6 +358,7 @@ A promise makes the following guarantees about handlers registered in the same c
 * [Promises/A+](http://promisesaplus.com) for extensive information on the behavior of `then`.
 * [promise.done](#promisedone)
 * [promise.spread](#promisespread)
+* [promise.progress](#promiseprogress)
 
 ## promise.spread
 
