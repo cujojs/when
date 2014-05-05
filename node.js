@@ -55,33 +55,48 @@ define(function(require) {
 	 *    // Logs 'Calculation failed'
 	 *    nodefn.apply(onlySmallNumbers, [15]).then(console.log, console.error);
 	 *
-	 * @param {function} func node-style function that will be called
+	 * @param {function} f node-style function that will be called
 	 * @param {Array} [args] array of arguments to func
 	 * @returns {Promise} promise for the value func passes to its callback
 	 */
-	function apply(func, args) {
-		return _apply(func, this, args || []);
+	function apply(f, args) {
+		return run(f, this, args || []);
 	}
 
 	/**
 	 * Apply helper that allows specifying thisArg
 	 * @private
 	 */
-	function _apply(func, thisArg, args) {
-		return Promise.all(args).then(function(args) {
-			return _applyDirect(func, thisArg, args);
+	function run(f, thisArg, args) {
+		var p = Promise._defer();
+		switch(args.length) {
+			case 2:  apply2(p, f, thisArg, args); break;
+			case 1:  apply1(p, f, thisArg, args); break;
+			default: applyN(p, f, thisArg, args);
+		}
+
+		return p;
+	}
+
+	function applyN(p, f, thisArg, args) {
+		Promise.all(args)._handler.chain(thisArg, function(args) {
+			args.push(createCallback(p._handler));
+			f.apply(this, args);
 		});
 	}
 
-	/**
-	 * Apply helper that optimizes for small number of arguments
-	 * @private
-	 */
-	function _applyDirect(func, thisArg, args) {
-		var p = Promise._defer();
-		args.push(createCallback(p._handler));
-		func.apply(thisArg, args);
-		return p;
+	function apply2(p, f, thisArg, args) {
+		Promise.resolve(args[0]).then(function(x) {
+			Promise.resolve(args[1])._handler.chain(thisArg, function(y) {
+				f.call(this, x, y, createCallback(p._handler));
+			});
+		});
+	}
+
+	function apply1(p, f, thisArg, args) {
+		Promise.resolve(args[0])._handler.chain(thisArg, function(x) {
+			f.call(this, x, createCallback(p._handler));
+		});
 	}
 
 	/**
@@ -105,12 +120,12 @@ define(function(require) {
 	 *    // Logs 'Calculation failed'
 	 *    nodefn.call(sumSmallNumbers, 5, 10).then(console.log, console.error);
 	 *
-	 * @param {function} func node-style function that will be called
+	 * @param {function} f node-style function that will be called
 	 * @param {...*} [args] arguments that will be forwarded to the function
 	 * @returns {Promise} promise for the value func passes to its callback
 	 */
-	function call(func /*, args... */) {
-		return _apply(func, this, slice.call(arguments, 1));
+	function call(f /*, args... */) {
+		return run(f, this, slice.call(arguments, 1));
 	}
 
 	/**
@@ -139,14 +154,14 @@ define(function(require) {
 	 *    promiseRead('doesnt_exist.txt').then(console.log, console.error);
 	 *
 	 *
-	 * @param {Function} func node-style function to be bound
+	 * @param {Function} f node-style function to be lifted
 	 * @param {...*} [args] arguments to be prepended for the new function
 	 * @returns {Function} a promise-returning function
 	 */
-	function lift(func /*, args... */) {
+	function lift(f /*, args... */) {
 		var args = slice.call(arguments, 1);
 		return function() {
-			return _apply(func, this, args.concat(slice.call(arguments)));
+			return run(f, this, args.concat(slice.call(arguments)));
 		};
 	}
 

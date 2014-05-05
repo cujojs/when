@@ -125,9 +125,9 @@ define(function (require) {
 	 * try/lift helper that allows specifying thisArg
 	 * @private
 	 */
-	function _apply(func, thisArg, args) {
+	function _apply(f, thisArg, args) {
 		return Promise.all(args).then(function(args) {
-			return func.apply(thisArg, args);
+			return f.apply(thisArg, args);
 		});
 	}
 
