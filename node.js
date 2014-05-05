@@ -159,7 +159,7 @@ define(function(require) {
 	 * @returns {Function} a promise-returning function
 	 */
 	function lift(f /*, args... */) {
-		var args = slice.call(arguments, 1);
+		var args = arguments.length > 1 ? slice.call(arguments, 1) : [];
 		return function() {
 			return run(f, this, args.concat(slice.call(arguments)));
 		};
