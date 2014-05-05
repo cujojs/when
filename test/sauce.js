@@ -99,8 +99,8 @@ function drive(opts) {
 	}
 
 	var sauceRestClient = rest.chain(mimeInterceptor, { mime: 'application/json' })
-		.chain(basicAuthInterceptor, { username: username, password: accessKey })
-		.chain(pathPrefixInterceptor, { prefix: 'http://saucelabs.com/rest/v1' });
+		.wrap(basicAuthInterceptor, { username: username, password: accessKey })
+		.wrap(pathPrefixInterceptor, { prefix: 'http://saucelabs.com/rest/v1' });
 	var passedStatusInterceptor = interceptor({
 		request: function (passed, config) {
 			return {
@@ -212,7 +212,7 @@ function drive(opts) {
 		return browser.init(initEnvironment(environment))
 			.then(function(sessionID) {
 				console.log('Testing ' + environment.name);
-				updateEnvironmentPassedStatus = sauceRestClient.chain(passedStatusInterceptor, { username: username, jobId: sessionID });
+				updateEnvironmentPassedStatus = sauceRestClient.wrap(passedStatusInterceptor, { username: username, jobId: sessionID });
 				return sessionID;
 			})
 			.setImplicitWaitTimeout(3e4)

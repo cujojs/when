@@ -57,7 +57,7 @@
 		"browserify": "~2",
 		"buster": "~0.7",
 		"jshint": "~2",
-		"rest": "~1",
+		"rest": "1.1.x",
 		"optimist": "~0.6",
 		"sauce-connect-launcher": "~0.4",
 		"wd": "~0.2",
