@@ -347,6 +347,15 @@ promise.then(function(array) {
 });
 ```
 
+## promise.fold
+
+```js
+function (x, y){ return x + y; }
+when.resolve(2).fold(sum, 3) // 5
+```
+
+`promise.fold` is a pairwise combinator for two different promies. Given a function and a value or promise, it binds the chained promise's result to the provided function's first argument and the value/promise result passed as the second argument, returning a promise for the overall result. A couple more simple usage examples [can be seen here](https://gist.github.com/briancavalier/9791127).
+
 ## promise.catch
 
 **ALIAS:** otherwise() for non-ES5 environments
