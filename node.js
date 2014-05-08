@@ -155,7 +155,7 @@ define(function(require) {
 	 *
 	 *
 	 * @param {Function} f node-style function to be lifted
-	 * @param {...*} [args] arguments to be prepended for the new function
+	 * @param {...*} [args] arguments to be prepended for the new function @deprecated
 	 * @returns {Function} a promise-returning function
 	 */
 	function lift(f /*, args... */) {

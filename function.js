@@ -47,7 +47,7 @@ define(function(require) {
 	 * The resulting function is promise-aware, in the sense that it accepts
 	 * promise arguments, and waits for their resolution.
 	 * @param {Function} f function to be bound
-	 * @param {...*} [args] arguments to be prepended for the new function
+	 * @param {...*} [args] arguments to be prepended for the new function @deprecated
 	 * @returns {Function} a promise-returning function
 	 */
 	function lift(f /*, args... */) {

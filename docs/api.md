@@ -1150,10 +1150,15 @@ The `when/function` module contains functions for calling and adapting "normal" 
 ### fn.lift
 
 ```js
+var promiseFunction = fn.lift(normalFunction);
+
+// Deprecated: using lift to partially apply while lifting
 var promiseFunction = fn.lift(normalFunction, arg1, arg2/* ...more args */);
 ```
 
-When the same function will be called through `fn.call()` or `fn.apply()` multiple times, it can be more efficient to lift it create a wrapper function that has promise-awareness and exposes the same behavior as the original function. That's what `fn.lift()` does: It takes a normal function and returns a new, promise-aware version of it. As `Function.prototype.bind`, it makes partial application of any additional arguments.
+When the same function will be called through `fn.call()` or `fn.apply()` multiple times, it can be more efficient to lift it create a wrapper function that has promise-awareness and exposes the same behavior as the original function. That's what `fn.lift()` does: It takes a normal function and returns a new, promise-aware version of it.
+
+Note: Use [`when.lift`](#whenlift) instead: `when.lift` is equivalent to, but also slightly faster than `fn.lift` when used without the (now deprecated) partial application feature.
 
 ```js
 var when = require('when');
@@ -1280,11 +1285,14 @@ setInterval(function() {
 
 Node.js APIs have their own standard for asynchronous functions: Instead of taking an errback, errors are passed as the first argument to the callback function. To use promises instead of callbacks with node-style asynchronous functions, you can use the `when/node` module, which is very similar to `when/callbacks`, but tuned to this convention.
 
-Note: There are some Node.js functions that are designed to return an event emitter. These functions will emit error events instead of passing an error as the first argument to the callback function. An example being `http.get`. These types of Node.js functions do not work with the below methodologies.
+Note: There are some Node.js functions that don't follow the typical Node-style async function conventions, such as `http.get`.  These functions will not work with `when/node`.
 
 ## node.lift
 
 ```js
+var promiseFunc = nodefn.lift(nodeStyleFunction);
+
+// Deprecated: using lift to partially apply while lifting
 var promiseFunc = nodefn.lift(nodeStyleFunction, arg1, arg2/*...more args*/);
 ```
 
@@ -1516,6 +1524,9 @@ Much of the asynchronous functionality available to javascript developers, be it
 ### callbacks.lift
 
 ```js
+var promiseFunc = callbacks.lift(callbackTakingFunc);
+
+// Deprecated: using lift to partially apply while lifting
 var promiseFunc = callbacks.lift(callbackTakingFunc, arg1, arg2/* ...more args */);
 ```
 
@@ -1682,6 +1693,9 @@ function getTodosForUser(userId) {
 
 ## generator.lift
 ```js
+var coroutine = generator.lift(es6generator*);
+
+// Deprecated: using lift to partially apply while lifting
 var coroutine = generator.lift(es6generator*, arg1, arg2/*...more args*/);
 ```
 
@@ -1695,22 +1709,21 @@ Here is a revised version of the above example using `generator.lift`.  Note tha
 var gen = require('when/generator');
 
 // Use generator.lift to create a function that acts as a coroutine
-var getRecentTodosForUser = gen.lift(function*(todosFilter, userId) {
+var getRecentTodosForUser = gen.lift(function*(userId) {
 	var todos;
 	try {
 		todos = yield getTodosForUser(userId);
-		showTodos(todos.filter(todosFilter));
+		showTodos(todos.filter(isRecentTodo));
 	} catch(e) {
 		showError(e);
 	}
-}, isRecentTodo);
+});
 
 function getTodosForUser(userId) {
 	// returns a promise for an array of the user's todos
 }
 
-// Get the todos for user 123, and filter them using the partially
-// applied `isRecentTodo` filter.
+// Get the recent todos for user 123.
 getRecentTodosForUser(123);
 ```
 
@@ -1720,17 +1733,16 @@ In addition to `try`, `catch`, and `finally`, `return` also works as expected.  
 var gen = require('when/generator');
 
 // Use generator.lift to create a function that acts as a coroutine
-var getRecentTodosForUser = gen.lift(function*(todosFilter, userId) {
+var getRecentTodosForUser = gen.lift(function*(userId) {
 	var todos = yield getTodosForUser(userId);
-	return todos.filter(todosFilter);
-}, isRecentTodo);
+	return todos.filter(isRecentTodo);
+});
 
 function getTodosForUser(userId) {
 	// returns a promise for an array of the user's todos
 }
 
-// Get the todos for user 123, and filter them using the partially
-// applied `isRecentTodo` filter.
+// Get the recent todos for user 123
 var filteredTodos = getRecentTodosForUser(123);
 ```
 
@@ -1834,6 +1846,8 @@ var TimeoutError = require('when/lib/TimeoutError');
 
 # Debugging promises
 
+By default, when.js logs *potentially unhandled rejections* to `console.error`, with regular stack traces.
+
 ### A Note on Errors
 
 JavaScript allows `throw`ing and `catch`ing any value, not just the various builtin Error types (Error, TypeError, ReferenceError, etc).  However, in most VMs, *only Error types* will produce a usable stack trace.  If at all possible, you should always `throw` Error types, and likewise always reject promises with Error types.
@@ -1855,6 +1869,8 @@ return when.promise(function(resolve, reject) {
 	reject("Oops!");
 });
 ```
+
+## Potentially unhandled rejections
 
 ## promise.then vs. promise.done
 
