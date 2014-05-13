@@ -125,7 +125,7 @@ define(function(require) {
 	};
 
 	PromiseMonitor.prototype._createLongTrace = function(e, context, extraContext) {
-		var trace = error.parse(e) || [];
+		var trace = error.parse(e) || [String(e) + ' (WARNING: non-Error detected)'];
 		trace = filterFrames(this.stackFilter, trace, 0);
 		this._appendContext(trace, context);
 		this._appendContext(trace, extraContext);
