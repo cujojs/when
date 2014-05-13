@@ -5,7 +5,7 @@
  * when is part of the cujoJS family of libraries (http://cujojs.com/)
  * @author Brian Cavalier
  * @author John Hann
- * @version 3.1.0
+ * @version 3.2.0
  */
 (function(define) { 'use strict';
 define(function (require) {

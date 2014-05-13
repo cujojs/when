@@ -379,11 +379,38 @@ promise.then(function(array) {
 ## promise.fold
 
 ```js
-function (x, y){ return x + y; }
-when.resolve(2).fold(sum, 3) // 5
+var resultPromise = when.resolve(y).fold(combine, x)
 ```
 
-`promise.fold` is a pairwise combinator for two different promies. Given a function and a value or promise, it binds the chained promise's result to the provided function's first argument and the value/promise result passed as the second argument, returning a promise for the overall result. A couple more simple usage examples [can be seen here](https://gist.github.com/briancavalier/9791127).
+`promise.fold` is a pairwise combinator for two different promises. Just as `promise.then` allows you to easily re-use existing one-argument functions to transform promises, `promise.fold` allows you to reuse two-argument functions.  I can also be useful when you need to thread one extra piece of information into a promise chain, *without* having to capture it in a closure.
+
+For, example, with an existing `sum` function, you can easily sum the value of two promises:
+
+```js
+function sum(x, y) {
+	return x + y;
+}
+
+var promiseFor5 = promiseFor2.fold(sum, promiseFor3);
+```
+
+Or get object properties or array values:
+
+```js
+function get(k, o) {
+	return o[k];
+}
+
+when.resolve({ name: 'Bob' })
+	.fold(get, 'name')
+	.done(console.log); // logs 'Bob'
+ 
+when.resolve(['a', 'b', 'c'])
+	.fold(get, 1)
+	.done(console.log); // logs 'b'
+```
+
+In both cases, `sum` and `get` are generic, *reusable* functions, and no closures were required.
 
 ## promise.catch
 
