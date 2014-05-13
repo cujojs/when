@@ -1882,31 +1882,9 @@ var TimeoutError = require('when/lib/TimeoutError');
 
 # Debugging promises
 
-By default, when.js logs *potentially unhandled rejections* to `console.error`, with regular stack traces.
+By default, when.js logs *potentially unhandled rejections* to `console.error`, with regular stack traces.  This works even if you don't call `promise.done`, and is much like uncaught synchronous exceptions, but it's important to remember that they are *potentially* unhandled because an rejected promise can be handled at a later time (e.g. if someone calls `promise.catch` on it later).
 
-### A Note on Errors
-
-JavaScript allows `throw`ing and `catch`ing any value, not just the various builtin Error types (Error, TypeError, ReferenceError, etc).  However, in most VMs, *only Error types* will produce a usable stack trace.  If at all possible, you should always `throw` Error types, and likewise always reject promises with Error types.
-
-To get good stack traces when using [`promise.done`](#done) and the [unhandled rejection monitor](#whenmonitor), do this:
-
-```js
-return when.promise(function(resolve, reject) {
-	// ...
-	reject(new Error("Oops!"));
-});
-```
-
-And not this:
-
-```js
-return when.promise(function(resolve, reject) {
-	// ...
-	reject("Oops!");
-});
-```
-
-## Potentially unhandled rejections
+Tracking down asynchronous failures can be tricky, so to get richer debugging information, including long, asynchronous, stack traces, you can enable [`when/monitor/console`](#whenmonitorconsole).
 
 ## promise.then vs. promise.done
 
@@ -1930,6 +1908,46 @@ In addition to transforming a value, `then` allows you to recover from, or propa
 Calling `done` transfers all responsibility for errors to your code.  If an error (either a thrown exception or returned rejection) escapes the `handleValue`, or `handleError` you provide to `done`, it will be rethrown in an uncatchable way to the host environment, causing a loud stack trace or a crash.
 
 This can be a big help with debugging, since most environments will then generate a loud stack trace.  In some environments, such as Node.js, the VM will also exit immediately, making it very obvious that a fatal error has escaped your promise chain.
+
+### A Note on JavaScript Errors
+
+JavaScript allows `throw`ing and `catch`ing any value, not just the various builtin Error types (Error, TypeError, ReferenceError, etc).  However, in most VMs, *only Error types* will produce a usable stack trace.  If at all possible, you should always `throw` Error types, and likewise always reject promises with Error types.
+
+To get good stack traces, do this:
+
+```js
+return when.promise(function(resolve, reject) {
+	// ...
+	reject(new Error('Oops!'));
+});
+```
+
+And not this:
+
+```js
+return when.promise(function(resolve, reject) {
+	// ...
+	reject('Oops!');
+});
+```
+
+Do this:
+
+```js
+return promise.then(function(x) {
+	// ...
+	throw new Error('Oops!');
+})
+```
+
+And not this:
+
+```js
+return promise.then(function(x) {
+	// ...
+	throw 'Oops!';
+})
+```
 
 ## when/monitor/console
 
