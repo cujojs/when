@@ -11,12 +11,10 @@
 (function(define) {
 define(function(require) {
 
-	var when, slice, attempt, _liftAll;
-
-	when = require('./when');
-	attempt = when['try'];
-	_liftAll = require('./lib/liftAll');
-	slice = Array.prototype.slice;
+	var when = require('./when');
+	var attempt = when['try'];
+	var _liftAll = require('./lib/liftAll');
+	var slice = Array.prototype.slice;
 
 	return {
 		lift: lift,
@@ -99,11 +97,9 @@ define(function(require) {
 		var funcs = slice.call(arguments, 1);
 
 		return function() {
-			var thisArg, args, firstPromise;
-
-			thisArg = this;
-			args = slice.call(arguments);
-			firstPromise = attempt.apply(thisArg, [f].concat(args));
+			var thisArg = this;
+			var args = slice.call(arguments);
+			var firstPromise = attempt.apply(thisArg, [f].concat(args));
 
 			return when.reduce(funcs, function(arg, func) {
 				return func.call(thisArg, arg);

@@ -11,13 +11,10 @@
 (function(define) {
 define(function(require) {
 
-	var when, Promise, promise, slice, _liftAll;
-
-	when = require('./when');
-	Promise = when.Promise;
-	_liftAll = require('./lib/liftAll');
-	promise = when.promise;
-	slice = Array.prototype.slice;
+	var when = require('./when');
+	var Promise = when.Promise;
+	var _liftAll = require('./lib/liftAll');
+	var slice = Array.prototype.slice;
 
 	return {
 		lift: lift,
@@ -253,10 +250,10 @@ define(function(require) {
 
 	function alwaysUnary(fn, thisArg) {
 		return function() {
-			if(arguments.length <= 1) {
-				fn.apply(thisArg, arguments);
-			} else {
+			if (arguments.length > 1) {
 				fn.call(thisArg, slice.call(arguments));
+			} else {
+				fn.apply(thisArg, arguments);
 			}
 		};
 	}

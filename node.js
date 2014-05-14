@@ -11,13 +11,11 @@
 (function(define) {
 define(function(require) {
 
-	var when, Promise, slice, setTimer, _liftAll;
-
-	when = require('./when');
-	Promise = when.Promise;
-	_liftAll = require('./lib/liftAll');
-	setTimer = require('./lib/timer').set;
-	slice = Array.prototype.slice;
+	var when = require('./when');
+	var Promise = when.Promise;
+	var _liftAll = require('./lib/liftAll');
+	var setTimer = require('./lib/timer').set;
+	var slice = Array.prototype.slice;
 
 	return {
 		lift: lift,

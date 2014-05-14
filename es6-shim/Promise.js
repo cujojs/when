@@ -29,8 +29,7 @@ define(function (require) {
 	var async = require('./async');
 
 	return makePromise({
-		scheduler: new Scheduler(async),
-		monitor: typeof console !== 'undefined' ? console : void 0
+		scheduler: new Scheduler(async)
 	});
 
 });
@@ -182,7 +181,6 @@ define(function() {
 	return function makePromise(environment) {
 
 		var tasks = environment.scheduler;
-		var monitor = environment.monitor || Promise;
 
 		var objectCreate = Object.create ||
 			function(proto) {
@@ -283,7 +281,7 @@ define(function() {
 		/**
 		 * Creates an internal {promise, resolver} pair
 		 * @private
-		 * @returns {{_handler: DeferredHandler, promise: Promise}}
+		 * @returns {Promise}
 		 */
 		function defer() {
 			return promiseFromHandler(new DeferredHandler());
@@ -311,14 +309,20 @@ define(function() {
 		 * for the transformed result.  If the promise cannot be fulfilled, onRejected
 		 * is called with the reason.  onProgress *may* be called with updates toward
 		 * this promise's fulfillment.
-		 * @param [onFulfilled] {Function} fulfillment handler
-		 * @param [onRejected] {Function} rejection handler
-		 * @param [onProgress] {Function} progress handler
+		 * @param {function=} onFulfilled fulfillment handler
+		 * @param {function=} onRejected rejection handler
+		 * @deprecated @param {function=} onProgress progress handler
 		 * @return {Promise} new promise
 		 */
-		Promise.prototype.then = function(onFulfilled, onRejected, onProgress) {
-			var p = this._beget();
+		Promise.prototype.then = function(onFulfilled, onRejected) {
 			var parent = this._handler;
+
+			if (typeof onFulfilled !== 'function' && parent.join().state > 0) {
+				// Short circuit: value will not change, simply share handler
+				return promiseFromHandler(parent);
+			}
+
+			var p = this._beget();
 			var child = p._handler;
 
 			parent.when({
@@ -328,7 +332,7 @@ define(function() {
 				receiver: parent.receiver,
 				fulfilled: onFulfilled,
 				rejected: onRejected,
-				progress: onProgress
+				progress: arguments.length > 2 ? arguments[2] : void 0
 			});
 
 			return p;
@@ -367,6 +371,23 @@ define(function() {
 			return configurePromise(child, p);
 		};
 
+		/**
+		 * Check if x is a rejected promise, and if so, delegate to handler._fatal
+		 * @private
+		 * @param {*} x
+		 */
+		Promise.prototype._maybeFatal = function(x) {
+			if(!maybeThenable(x)) {
+				return;
+			}
+
+			var handler = getHandlerUnchecked(x);
+			handler.context = this._handler.context;
+			handler.chain(handler, void 0, function() {
+				this._fatal(this.context);
+			});
+		};
+
 		// Array combinators
 
 		Promise.all = all;
@@ -380,37 +401,38 @@ define(function() {
 		 * @returns {Promise} promise for array of fulfillment values
 		 */
 		function all(promises) {
-			/*jshint maxcomplexity:7, maxdepth:4*/
+			/*jshint maxcomplexity:8, maxdepth:4*/
 			var resolver = new DeferredHandler();
 			var len = promises.length >>> 0;
 			var pending = len;
 			var results = [];
+
 			var i, h, x;
-
 			for (i = 0; i < len; ++i) {
-				if (i in promises) {
+				x = promises[i];
 
-					x = promises[i];
+				if (x === void 0 && !(i in promises)) {
+					--pending;
+					continue;
+				}
 
-					if(maybeThenable(x)) {
-						h = x instanceof Promise ? x._handler.join()
-							: getHandlerUntrusted(x);
+				if (maybeThenable(x)) {
+					h = x instanceof Promise
+						? x._handler.join()
+						: getHandlerUntrusted(x);
 
-						if(h.state === 0) {
-							resolveOne(resolver, results, h, i);
-						} else if (h.state === 1) {
-							results[i] = h.value;
-							--pending;
-						} else {
-							h.chain(resolver, void 0, resolver.reject);
-							break;
-						}
-
-					} else {
-						results[i] = x;
+					if (h.state === 0) {
+						resolveOne(resolver, results, h, i);
+					} else if (h.state > 0) {
+						results[i] = h.value;
 						--pending;
+					} else {
+						h.chain(resolver, void 0, resolver.reject);
+						break;
 					}
+
 				} else {
+					results[i] = x;
 					--pending;
 				}
 			}
@@ -453,10 +475,13 @@ define(function() {
 			}
 
 			var h = new DeferredHandler();
-			for(var i=0; i<promises.length; ++i) {
-				getHandler(promises[i]).chain(h, h.resolve, h.reject);
+			var i, x;
+			for(i=0; i<promises.length; ++i) {
+				x = promises[i];
+				if (x !== void 0 && i in promises) {
+					getHandler(x).chain(h, h.resolve, h.reject);
+				}
 			}
-
 			return promiseFromHandler(h);
 		}
 
@@ -508,6 +533,19 @@ define(function() {
 		}
 
 		/**
+		 * Recursively collapse handler chain to find the handler
+		 * nearest to the fully resolved value.
+		 * @param {Handler} h
+		 * @returns {*}
+		 */
+		function join(h) {
+			while(h.handler !== void 0) {
+				h = h.handler;
+			}
+			return h;
+		}
+
+		/**
 		 * Handler for a promise that is pending forever
 		 * @private
 		 * @constructor
@@ -527,11 +565,26 @@ define(function() {
 
 		Handler.prototype.inspect = toPendingState;
 
-		Handler.prototype.join = function() { return this; };
+		Handler.prototype.join = function() { return join(this); };
 
 		Handler.prototype.chain = function(to, fulfilled, rejected, progress) {
-			this.when({ resolve: noop, notify: noop, context: void 0,
-				receiver: to, fulfilled: fulfilled, rejected: rejected, progress: progress });
+			this.when({
+				resolve: noop,
+				notify: noop,
+				context: void 0,
+				receiver: to,
+				fulfilled: fulfilled,
+				rejected: rejected,
+				progress: progress
+			});
+		};
+
+		Handler.prototype.fold = function(to, f, z) {
+			join(this).chain(to, function(x) {
+				getHandler(z).chain(this, function(z) {
+					this.resolve(tryCatchReject2(f, z, x, this.receiver));
+				}, this.reject, this.notify);
+			}, to.reject, to.notify);
 		};
 
 		/**
@@ -540,14 +593,13 @@ define(function() {
 		 * @constructor
 		 */
 		function DeferredHandler(receiver, inheritedContext) {
+			Promise.createContext(this, inheritedContext);
+
 			this.consumers = [];
 			this.receiver = receiver;
 			this.handler = void 0;
 			this.resolved = false;
 			this.state = 0;
-			if(isMonitored()) {
-				this.context = createContext(this, inheritedContext);
-			}
 		}
 
 		inherit(Handler, DeferredHandler);
@@ -557,17 +609,20 @@ define(function() {
 		};
 
 		DeferredHandler.prototype.resolve = function(x) {
-			this._join(getHandler(x, this));
+			if(!this.resolved) {
+				this._resolve(getHandler(x, this));
+			}
 		};
 
 		DeferredHandler.prototype.reject = function(x) {
-			this._join(new RejectedHandler(x));
+			if(!this.resolved) {
+				this._resolve(new RejectedHandler(x));
+			}
 		};
 
 		DeferredHandler.prototype.join = function() {
 			if (this.resolved) {
-				this.handler = this.handler.join();
-				return this.handler;
+				return this.handler = join(this.handler);
 			} else {
 				return this;
 			}
@@ -575,7 +630,7 @@ define(function() {
 
 		DeferredHandler.prototype.run = function() {
 			var q = this.consumers;
-			var handler = this.handler = this.handler.join();
+			var handler = this.handler.join();
 			this.consumers = void 0;
 
 			for (var i = 0; i < q.length; ++i) {
@@ -583,24 +638,17 @@ define(function() {
 			}
 		};
 
-		DeferredHandler.prototype._join = function(handler) {
-			if(this.resolved) {
-				return;
-			}
-
+		DeferredHandler.prototype._resolve = function(handler) {
 			this.resolved = true;
 			this.handler = handler;
 			tasks.enqueue(this);
 
-			if(isMonitored()) {
+			if(this.context !== void 0) {
 				handler._reportTrace(this.context);
-				this.context = void 0;
 			}
 		};
 
 		DeferredHandler.prototype.when = function(continuation) {
-			if(isMonitored()) { this.context = void 0; }
-
 			if(this.resolved) {
 				tasks.enqueue(new ContinuationTask(continuation, this.handler));
 			} else {
@@ -622,6 +670,11 @@ define(function() {
 			this.resolved && this.handler.join()._removeTrace();
 		};
 
+		DeferredHandler.prototype._fatal = function(context) {
+			var c = typeof context === 'undefined' ? this.context : context;
+			this.resolved && this.handler.join()._fatal(c);
+		};
+
 		/**
 		 * Abstract base for handler that delegates to another handler
 		 * @private
@@ -634,10 +687,6 @@ define(function() {
 		}
 
 		inherit(Handler, DelegateHandler);
-
-		DelegateHandler.prototype.join = function() {
-			return this.handler.join();
-		};
 
 		DelegateHandler.prototype.inspect = function() {
 			return this.join().inspect();
@@ -711,27 +760,26 @@ define(function() {
 		ThenableHandler.prototype.when = function(continuation) {
 			if(!this.assimilated) {
 				this.assimilated = true;
-				this._assimilate();
+				assimilate(this);
 			}
 			DeferredHandler.prototype.when.call(this, continuation);
 		};
 
-		ThenableHandler.prototype._assimilate = function() {
-			var h = this;
-			this._try(this.untrustedThen, this.thenable, _resolve, _reject, _notify);
+		function assimilate(h) {
+			tryAssimilate(h.untrustedThen, h.thenable, _resolve, _reject, _notify);
 
 			function _resolve(x) { h.resolve(x); }
 			function _reject(x)  { h.reject(x); }
 			function _notify(x)  { h.notify(x); }
-		};
+		}
 
-		ThenableHandler.prototype._try = function(then, thenable, resolve, reject, notify) {
+		function tryAssimilate(then, thenable, resolve, reject, notify) {
 			try {
 				then.call(thenable, resolve, reject, notify);
 			} catch (e) {
 				reject(e);
 			}
-		};
+		}
 
 		/**
 		 * Handler for a fulfilled promise
@@ -740,12 +788,10 @@ define(function() {
 		 * @constructor
 		 */
 		function FulfilledHandler(x) {
+			Promise.createContext(this);
+
 			this.value = x;
 			this.state = 1;
-
-			if(isMonitored()) {
-				this.context = createContext(this);
-			}
 		}
 
 		inherit(Handler, FulfilledHandler);
@@ -754,16 +800,18 @@ define(function() {
 			return { state: 'fulfilled', value: this.value };
 		};
 
-		FulfilledHandler.prototype.when = function(continuation) {
-			if(isMonitored()) { enterContext(this.context); }
+		FulfilledHandler.prototype.when = function(cont) {
+			var x;
 
-			var x = typeof continuation.fulfilled === 'function'
-				? tryCatchReject(continuation.fulfilled, this.value, continuation.receiver)
-				: this.value;
+			if (typeof cont.fulfilled === 'function') {
+				Promise.enterContext(this);
+				x = tryCatchReject(cont.fulfilled, this.value, cont.receiver);
+				Promise.exitContext();
+			} else {
+				x = this.value;
+			}
 
-			if(isMonitored()) { exitContext(); }
-
-			continuation.resolve.call(continuation.context, x);
+			cont.resolve.call(cont.context, x);
 		};
 
 		/**
@@ -773,14 +821,13 @@ define(function() {
 		 * @constructor
 		 */
 		function RejectedHandler(x) {
+			Promise.createContext(this);
+
 			this.value = x;
 			this.state = -1;
+			this.handled = false;
 
-			if(isMonitored()) {
-				this.handled = false;
-				this.context = createContext(this);
-				this._reportTrace();
-			}
+			this._reportTrace();
 		}
 
 		inherit(Handler, RejectedHandler);
@@ -789,54 +836,46 @@ define(function() {
 			return { state: 'rejected', reason: this.value };
 		};
 
-		RejectedHandler.prototype.when = function(continuation) {
-			if(isMonitored()) {
-				this.handled = true;
+		RejectedHandler.prototype.when = function(cont) {
+			var x;
+
+			if (typeof cont.rejected === 'function') {
 				this._removeTrace();
-				enterContext(this.context);
+				Promise.enterContext(this);
+				x = tryCatchReject(cont.rejected, this.value, cont.receiver);
+				Promise.exitContext();
+			} else {
+				x = promiseFromHandler(this);
 			}
 
-			var x = typeof continuation.rejected === 'function'
-				? tryCatchReject(continuation.rejected, this.value, continuation.receiver)
-				: promiseFromHandler(this);
 
-			if(isMonitored()) { exitContext(); }
-
-			continuation.resolve.call(continuation.context, x);
+			cont.resolve.call(cont.context, x);
 		};
 
 		RejectedHandler.prototype._reportTrace = function(context) {
-			monitor.promiseMonitor.addTrace(this, context);
+			Promise.onPotentiallyUnhandledRejection(this, context);
 		};
 
 		RejectedHandler.prototype._removeTrace = function() {
-			monitor.promiseMonitor.removeTrace(this);
+			this.handled = true;
+			Promise.onPotentiallyUnhandledRejectionHandled(this);
 		};
 
-		RejectedHandler.prototype._fatal = function() {
-			monitor.promiseMonitor.fatal(this);
+		RejectedHandler.prototype._fatal = function(context) {
+			Promise.onFatalRejection(this, context);
 		};
 
-		// Execution context tracking for long stack traces
+		// Unhandled rejection hooks
+		// By default, everything is a noop
 
-		var executionContext = [];
-
-		function createContext(at, fromContext) {
-			var parent = fromContext || executionContext[executionContext.length - 1];
-			return monitor.promiseMonitor.captureStack(at.constructor, parent);
-		}
-
-		function enterContext(c) {
-			executionContext.push(c);
-		}
-
-		function exitContext() {
-			executionContext.pop();
-		}
-
-		function isMonitored() {
-			return typeof monitor.promiseMonitor !== 'undefined';
-		}
+		// TODO: Better names: "annotate"?
+		Promise.createContext
+			= Promise.enterContext
+			= Promise.exitContext
+			= Promise.onPotentiallyUnhandledRejection
+			= Promise.onPotentiallyUnhandledRejectionHandled
+			= Promise.onFatalRejection
+			= noop;
 
 		// Errors and singletons
 
@@ -924,6 +963,18 @@ define(function() {
 		}
 
 		/**
+		 * Same as above, but includes the extra argument parameter.
+		 * @private
+		 */
+		function tryCatchReject2(f, x, y, thisArg) {
+			try {
+				return f.call(thisArg, x, y);
+			} catch(e) {
+				return reject(e);
+			}
+		}
+
+		/**
 		 * Return f.call(thisArg, x), or if it throws, *return* the exception
 		 * @private
 		 */
@@ -976,9 +1027,10 @@ define(function(require) {
 	 * @param {function} task
 	 */
 	Scheduler.prototype.enqueue = function(task) {
-		if(this._handlerQueue.push(task) === 1) {
+		if(this._handlerQueue.length === 0) {
 			this._enqueue(this.drainQueue);
 		}
+		this._handlerQueue.push(task);
 	};
 
 	/**

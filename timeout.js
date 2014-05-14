@@ -13,13 +13,13 @@
 (function(define) {
 define(function(require) {
 
-	var resolve = require('./when').resolve;
+	var when = require('./when');
 
     /**
 	 * @deprecated Use when(trigger).timeout(ms)
      */
     return function timeout(msec, trigger) {
-		return resolve(trigger).timeout(msec);
+		return when(trigger).timeout(msec);
     };
 });
 })(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });

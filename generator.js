@@ -11,10 +11,8 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	var when, slice;
-
-	when = require('./when');
-	slice = Array.prototype.slice;
+	var when = require('./when');
+	var slice = Array.prototype.slice;
 
 	return {
 		apply: apply,
