@@ -56,6 +56,20 @@ function doAsyncStuff() {
 }
 ```
 
+## Debugging
+
+You can use when.js's promise monitor with the ES6 shim to report unhandled rejections with long stack traces.  After loading the shim, ie global `Promise` is now the when.js ES6 shim: 
+
+```js
+var monitor = require('when/monitor');
+// Safety check to ensure Promise is the when.js ES6 shim
+if(typeof Promise.onPotentiallyUnhandledRejection === 'function') {
+	monitor(Promise);
+}
+```
+
+Note: `when/monitor` can't monitor native promises (they don't provide any public hooks for doing so).  It can only monitor when.js promises.
+
 ## Promise API
 
 Brief descriptions of the ES6 Promise API are provided here for quick reference.  For complete documentation, see the [ES6 Draft Spec](https://people.mozilla.org/~jorendorff/es6-draft.html#sec-promise-constructor)

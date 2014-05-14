@@ -1,8 +1,8 @@
 ### 3.2.0
 
-* Potentially unhandled rejections are now logged to `console.error` by default, even without using `done` or `when/monitor/console`.  As before, enabling `when/monitor/console` still adds long async stack traces, and using `done` still makes errors fatal
+* Potentially unhandled rejections are now logged to `console.error` by default, even without using `done` or `when/monitor/console`.  As before, enabling `when/monitor/console` still adds long async stack traces, and using `done` still makes errors fatal. See [Debugging Promises](docs/api.md#debugging-promises) for more info.
 * [`promise.timeout`](docs/api.md#promisetimeout) now rejects with a [`TimeoutError`](docs/api.md#timeouterror) by default (unless you specify a custom reason) for better pattern matching with [`promise.catch`](docs/api.md#promisecatch).
-* Performance improvements to `node.lift`: lifted functions and lift*ing* are faster now.
+* Performance improvements across the board, especially to `when.all` (and `Promise.all` in the ES6-shim) and `node.lift`: lifted functions and lift*ing* are faster now.
 * Deprecated:
 	* Using `when/node.lift`, `when/function.lift`, and `when/callbacks.lift` to provide partial arguments
 	* `promise.then`'s 3rd argument, and `when()`'s 4th argument. Use the dedicated [`promise.progress`](docs/api.md#promiseprogress) API to listen to promise progress events.
