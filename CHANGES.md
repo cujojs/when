@@ -6,6 +6,8 @@
 * Deprecated:
 	* Using `when/node.lift`, `when/function.lift`, and `when/callbacks.lift` to provide partial arguments
 	* `promise.then`'s 3rd argument, and `when()`'s 4th argument. Use the dedicated [`promise.progress`](docs/api.md#promiseprogress) API to listen to promise progress events.
+	* `when.some`. See https://github.com/cujojs/when/issues/288
+	* `when/callbacks.promisify` See https://github.com/cujojs/when/issues/318
 
 ### 3.1.0
 

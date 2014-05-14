@@ -202,6 +202,8 @@ define(function(require) {
 	 * @param {number} [positions.errback] index at which asyncFunction expects to
 	 *  receive an error callback
 	 *  @returns {function} promisified function that accepts
+	 *
+	 * @deprecated
 	 */
 	function promisify(asyncFunction, positions) {
 
