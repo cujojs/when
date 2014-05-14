@@ -11,18 +11,16 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	require('../../monitor/console');
+//	require('../../monitor/console');
 	var Promise = require('../../when').Promise;
-//	var Promise = require('bluebird');
 
-//	new Promise(function(r, reject) {
-//		reject(123);
-//	})
 	Promise.resolve(123)
 		.then(function(x) {
 			throw x;
+//			return Promise.reject(x);
+//			foo();
 //			throw new TypeError(x);
-		})
+		});
 //		.then(void 0, function() { console.log(123);})
 //		.done(console.log);
 

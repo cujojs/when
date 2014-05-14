@@ -6,7 +6,7 @@
 define(function(require) {
 
 	var defaultStackJumpSeparator = 'from execution context:';
-	var defaultStackFilter = /(node|module|timers)\.js:|when([\/\\]{1,2}(lib|monitor|es6-shim)[\/\\]{1,2}|\.js)|(new\sPromise)\b|(\b(PromiseMonitor|ConsoleReporter|Scheduler|RunHandlerTask|ProgressTask|Promise|.*Handler)\.[\w_]\w\w+\b)|\b(tryCatch\w+|getHandler\w*)\b/i;
+	var defaultStackFilter = /[\s\(\/\\](node|module|timers)\.js:|when([\/\\]{1,2}(lib|monitor|es6-shim)[\/\\]{1,2}|\.js)|(new\sPromise)\b|(\b(PromiseMonitor|ConsoleReporter|Scheduler|RunHandlerTask|ProgressTask|Promise|.*Handler)\.[\w_]\w\w+\b)|\b(tryCatch\w+|getHandler\w*)\b/i;
 
 	var setTimer = require('../lib/timer').set;
 	var error = require('./error');
@@ -125,7 +125,7 @@ define(function(require) {
 	};
 
 	PromiseMonitor.prototype._createLongTrace = function(e, context, extraContext) {
-		var trace = error.parse(e) || [String(e) + ' (WARNING: non-Error detected)'];
+		var trace = error.parse(e) || [String(e) + ' (WARNING: non-Error used)'];
 		trace = filterFrames(this.stackFilter, trace, 0);
 		this._appendContext(trace, context);
 		this._appendContext(trace, extraContext);
