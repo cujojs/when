@@ -16,6 +16,7 @@ API
 	* [promise.done(handleResult, handleError)](#promisedone)
 	* [promise.then(onFulfilled)](#promisethen)
 	* [promise.spread(onFulfilledArray)](#promisespread)
+	* [promise.fold(combine, promise2)](#promisefold)
 	* [promise.catch(onRejected)](#promisecatch)
 	* [promise.finally(cleanup)](#promisefinally)
 	* [promise.yield(x)](#promiseyield)
@@ -379,10 +380,10 @@ promise.then(function(array) {
 ## promise.fold
 
 ```js
-var resultPromise = when.resolve(y).fold(combine, x)
+var resultPromise = promise1.fold(combine, promise2)
 ```
 
-`promise.fold` is a pairwise combinator for two different promises. Just as `promise.then` allows you to easily re-use existing one-argument functions to transform promises, `promise.fold` allows you to reuse two-argument functions.  I can also be useful when you need to thread one extra piece of information into a promise chain, *without* having to capture it in a closure.
+`promise.fold` is a pairwise combinator for two promises. Just as `promise.then` allows you to easily re-use existing one-argument functions to transform promises, `promise.fold` allows you to reuse two-argument functions.  It can also be useful when you need to thread one extra piece of information into a promise chain, *without* having to capture it in a closure.
 
 For, example, with an existing `sum` function, you can easily sum the value of two promises:
 
@@ -401,11 +402,11 @@ function get(k, o) {
 	return o[k];
 }
 
-when.resolve({ name: 'Bob' })
+when({ name: 'Bob' })
 	.fold(get, 'name')
 	.done(console.log); // logs 'Bob'
  
-when.resolve(['a', 'b', 'c'])
+when(['a', 'b', 'c'])
 	.fold(get, 1)
 	.done(console.log); // logs 'b'
 ```
@@ -851,7 +852,7 @@ If the corresponding input promise is:
 // Process all successful results, and also log all errors
 
 // Input array
-var array = [when.reject(1), 2, when.resolve(3), when.reject(4)];
+var array = [when.reject(1), 2, when(3), when.reject(4)];
 
 // Settle all inputs
 var settled = when.settle(array);
@@ -1263,7 +1264,7 @@ function divideNumbers(a, b) {
 fn.call(divideNumbers, 10, 5).then(console.log);
 
 // Prints '4'
-var promiseForFive = when.resolve(5);
+var promiseForFive = when(5);
 fn.call(divideNumbers, 20, promiseForFive).then(console.log);
 
 // Prints "Can't divide by zero!"
@@ -1955,15 +1956,15 @@ Experimental promise monitoring and debugging utilities for when.js.
 
 ## What does it do?
 
-tl;dr Load `when/monitor/console` and get awesome async stack traces, even if you forget to return promises:
+tl;dr Load `when/monitor/console` and get awesome async stack traces, even if you forget to return promises or forget to call `promise.done`:
 
 ```js
 require('when/monitor/console');
 var when = require('when');
 
-when.resolve().then(function f1() {
-	when.resolve().then(function f2() {
-		when.resolve().then(function f3() {
+when().then(function f1() {
+	when().then(function f2() {
+		when().then(function f3() {
 			doh();
 		});
 	});
@@ -1987,7 +1988,7 @@ Since promises are asynchronous and their execution may span multiple disjoint s
 
 ## Using it
 
-Using it is easy: Load `when/monitor/console` in your environment as early as possible.  That's it.  If you have no unhandled rejections, it will be silent, but when you do have them, it will report them to the console, complete with synthetic stack traces.
+Load `when/monitor/console` in your environment as early as possible.  That's it.  If you have no unhandled rejections, it will be silent, but when you do have them, it will report them to the console, complete with synthetic stack traces.
 
 It works in modern browsers (AMD), and in Node and RingoJS (CommonJS).
 
