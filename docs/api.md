@@ -938,6 +938,8 @@ Initiates a competitive race that allows one winner.  The returned promise will:
 
 ## when.some
 
+**DEPRECATED**
+
 ```js
 var promise = when.some(array, n)
 ```
@@ -1656,6 +1658,8 @@ when.join(venuesLoaded, artistsLoaded, transitionedScreens).then(function() {
 ```
 
 ### callbacks.promisify
+
+**DEPRECATED**
 
 ```js
 var promiseFunc = callbacks.promisify(nonStandardFunc, {
