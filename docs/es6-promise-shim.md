@@ -58,7 +58,9 @@ function doAsyncStuff() {
 
 ## Debugging
 
-You can use when.js's promise monitor with the ES6 shim to report unhandled rejections with long stack traces.  After loading the shim, ie global `Promise` is now the when.js ES6 shim: 
+By default, the es6 shim logs *potentially unhandled rejections* to `console.error`, with regular stack traces.  This is much like uncaught synchronous exceptions, but it's important to remember that they are *potentially* unhandled because a rejected promise can be handled at a later time (e.g. if someone calls `promise.catch` on it later).
+
+For even deeper debugging, you can use when.js's promise monitor with the ES6 shim to report unhandled rejections with long stack traces.  After loading the shim, ie global `Promise` is now the when.js ES6 shim: 
 
 ```js
 var monitor = require('when/monitor');
