@@ -1894,7 +1894,7 @@ var TimeoutError = require('when/lib/TimeoutError');
 
 # Debugging promises
 
-By default, when.js logs *potentially unhandled rejections* to `console.error`, with regular stack traces.  This works even if you don't call `promise.done`, and is much like uncaught synchronous exceptions, but it's important to remember that they are *potentially* unhandled because an rejected promise can be handled at a later time (e.g. if someone calls `promise.catch` on it later).
+By default, when.js logs *potentially unhandled rejections* to `console.error`, with regular stack traces.  This works even if you don't call `promise.done`, and is much like uncaught synchronous exceptions, but it's important to remember that they are *potentially* unhandled because a rejected promise can be handled at a later time (e.g. if someone calls `promise.catch` on it later).
 
 Tracking down asynchronous failures can be tricky, so to get richer debugging information, including long, asynchronous, stack traces, you can enable [`when/monitor/console`](#whenmonitorconsole).
 
@@ -1982,7 +1982,7 @@ when().then(function f1() {
 });
 ```
 
-```txt
+```
 ReferenceError: doh is not defined
     at f3 (/Users/brian/Projects/cujojs/when/experiments/trace.js:7:4)
 from execution context:

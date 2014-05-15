@@ -6,17 +6,10 @@
 /**
  * ES6 global Promise shim
  */
-var PromiseConstructor = module.exports = require('../lib/Promise');
+var unhandledRejections = require('../lib/decorators/unhandledRejection');
+module.exports = unhandledRejections(require('../lib/Promise'));
 
-var g = typeof global !== 'undefined' && global
-	|| typeof window !== 'undefined' && window
-	|| typeof self !== 'undefined' && self;
-
-if(typeof g !== 'undefined' && typeof g.Promise === 'undefined') {
-	g.Promise = PromiseConstructor;
-}
-
-},{"../lib/Promise":2}],2:[function(require,module,exports){
+},{"../lib/Promise":2,"../lib/decorators/unhandledRejection":5}],2:[function(require,module,exports){
 /** @license MIT License (c) copyright 2010-2014 original author or authors */
 /** @author Brian Cavalier */
 /** @author John Hann */
@@ -35,7 +28,7 @@ define(function (require) {
 });
 })(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
 
-},{"./async":4,"./makePromise":5,"./scheduler":6}],3:[function(require,module,exports){
+},{"./async":4,"./makePromise":6,"./scheduler":7}],3:[function(require,module,exports){
 /** @license MIT License (c) copyright 2010-2014 original author or authors */
 /** @author Brian Cavalier */
 /** @author John Hann */
@@ -171,6 +164,88 @@ define(function(require) {
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
 
 },{}],5:[function(require,module,exports){
+/** @license MIT License (c) copyright 2010-2014 original author or authors */
+/** @author Brian Cavalier */
+/** @author John Hann */
+
+(function(define) { 'use strict';
+define(function(require) {
+
+	var timer = require('../timer');
+
+	var logError = (function() {
+		if(typeof console !== 'undefined') {
+			if(typeof console.error !== 'undefined') {
+				return function(e) {
+					console.error(e);
+				};
+			}
+
+			if(typeof console.log !== 'undefined') {
+				return function(e) {
+					console.log(e);
+				};
+			}
+		}
+
+		return noop;
+	}());
+
+	return function unhandledRejection(Promise, enqueue) {
+		var unhandledRejections = [];
+
+		if(typeof enqueue !== 'function') {
+			enqueue = function(f) {
+				timer.set(f, 0);
+			};
+		}
+
+		function reportUnhandledRejections() {
+			unhandledRejections.forEach(function (r) {
+				if(!r.handled) {
+					logError('Potentially unhandled rejection ' + formatError(r.value));
+				}
+			});
+			unhandledRejections = [];
+		}
+
+		Promise.onPotentiallyUnhandledRejection = function(rejection) {
+			if(unhandledRejections.length === 0) {
+				enqueue(reportUnhandledRejections);
+			}
+			unhandledRejections.push(rejection);
+		};
+
+		Promise.onFatalRejection = function(rejection) {
+			enqueue(function() {
+				throw rejection.value;
+			});
+		};
+
+		return Promise;
+	};
+
+	function formatError(e) {
+		var s;
+		if(typeof e === 'object' && e.stack) {
+			s = e.stack;
+		} else {
+			s = String(e);
+			if(s === '[object Object]' && typeof JSON !== 'undefined') {
+				s = JSON.stringify(e);
+			}
+		}
+
+		return e instanceof Error ? s : s + ' (WARNING: non-Error used)';
+
+	}
+
+	function noop() {}
+
+});
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
+
+},{"../timer":8}],6:[function(require,module,exports){
 /** @license MIT License (c) copyright 2010-2014 original author or authors */
 /** @author Brian Cavalier */
 /** @author John Hann */
@@ -998,7 +1073,7 @@ define(function() {
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /** @license MIT License (c) copyright 2010-2014 original author or authors */
 /** @author Brian Cavalier */
 /** @author John Hann */
@@ -1050,7 +1125,36 @@ define(function(require) {
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
 
-},{"./Queue":3}]},{},[1])
+},{"./Queue":3}],8:[function(require,module,exports){
+/** @license MIT License (c) copyright 2010-2014 original author or authors */
+/** @author Brian Cavalier */
+/** @author John Hann */
+
+(function(define) { 'use strict';
+define(function(require) {
+	/*global setTimeout,clearTimeout*/
+	var cjsRequire, vertx, setTimer, clearTimer;
+
+	cjsRequire = require;
+
+	try {
+		vertx = cjsRequire('vertx');
+		setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
+		clearTimer = vertx.cancelTimer;
+	} catch (e) {
+		setTimer = function(f, ms) { return setTimeout(f, ms); };
+		clearTimer = function(t) { return clearTimeout(t); };
+	}
+
+	return {
+		set: setTimer,
+		clear: clearTimer
+	};
+
+});
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
+
+},{}]},{},[1])
 (1)
 });
 ;
