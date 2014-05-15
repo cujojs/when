@@ -401,7 +401,7 @@ define(function() {
 		 * @returns {Promise} promise for array of fulfillment values
 		 */
 		function all(promises) {
-			/*jshint maxcomplexity:8, maxdepth:4*/
+			/*jshint maxcomplexity:8*/
 			var resolver = new DeferredHandler();
 			var len = promises.length >>> 0;
 			var pending = len;
