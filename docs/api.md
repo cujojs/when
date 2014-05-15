@@ -380,10 +380,12 @@ promise.then(function(array) {
 ## promise.fold
 
 ```js
-var resultPromise = promise1.fold(combine, promise2)
+var resultPromise = promise2.fold(combine, promise1)
 ```
 
-`promise.fold` is a pairwise combinator for two promises. Just as `promise.then` allows you to easily re-use existing one-argument functions to transform promises, `promise.fold` allows you to reuse two-argument functions.  It can also be useful when you need to thread one extra piece of information into a promise chain, *without* having to capture it in a closure.
+Combine `promise1` and `promise2` to produce a `resultPromise`.  The `combine` function will be called once both `promise1` and `promise2` have fulfilled: `combine(promise1, promise2)`, and like `then` et al, it may return a promise or a value.
+
+Just as `promise.then` allows you to easily re-use existing one-argument functions to transform promises, `promise.fold` allows you to reuse two-argument functions.  It can also be useful when you need to thread one extra piece of information into a promise chain, *without* having to capture it in a closure or use `promise.with`.
 
 For, example, with an existing `sum` function, you can easily sum the value of two promises:
 
@@ -392,14 +394,19 @@ function sum(x, y) {
 	return x + y;
 }
 
-var promiseFor5 = promiseFor2.fold(sum, promiseFor3);
+var promiseFor3 = when(3);
+
+var promiseFor5 = promiseFor3.fold(sum, promiseFor2);
+
+// Of course, it accepts values as well:
+var promiseFor5 = promiseFor3.fold(sum, 2);
 ```
 
 Or get object properties or array values:
 
 ```js
-function get(k, o) {
-	return o[k];
+function get(key, object) {
+	return object[key];
 }
 
 when({ name: 'Bob' })
