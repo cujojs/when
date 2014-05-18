@@ -3,17 +3,14 @@ var unhandledRejection = require('../lib/decorators/unhandledRejection');
 
 buster.testCase('unhandledRejection', {
 
-	'should not fail if JSON.stringify throws': function(done) {
-		var fixture = unhandledRejection({}, function(f) {
-			setTimeout(function() {
-				buster.refute.exception(f);
-				done();
-			});
-		});
-		var circular = {};
-		circular.self = circular;
+	'should not fail if JSON.stringify throws': function() {
+		var fixture = unhandledRejection({});
+		var circle = {};
+		circle.self = circle;
 
-		fixture.onPotentiallyUnhandledRejection({ handled: false, value: circular });
+		buster.refute.exception(function() {
+			fixture.onPotentiallyUnhandledRejection({ handled: false, value: circle });
+		});
 	}
 
 });

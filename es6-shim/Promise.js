@@ -178,53 +178,35 @@ define(function(require) {
 (function(define) { 'use strict';
 define(function(require) {
 
-	var timer = require('../timer');
+	var async = require('../async');
 
-	var logError = (function() {
-		if(typeof console !== 'undefined') {
-			if(typeof console.error !== 'undefined') {
-				return function(e) {
-					console.error(e);
-				};
-			}
+	return function unhandledRejection(Promise) {
+		var logError = (function() {
+			if(typeof console !== 'undefined') {
+				if(typeof console.error !== 'undefined') {
+					return function(e) {
+						console.error(e);
+					};
+				}
 
-			if(typeof console.log !== 'undefined') {
 				return function(e) {
 					console.log(e);
 				};
 			}
-		}
 
-		return noop;
-	}());
-
-	return function unhandledRejection(Promise, enqueue) {
-		var unhandledRejections = [];
-
-		if(typeof enqueue !== 'function') {
-			enqueue = function(f) {
-				timer.set(f, 0);
-			};
-		}
-
-		function reportUnhandledRejections() {
-			unhandledRejections.forEach(function (r) {
-				if(!r.handled) {
-					logError('Potentially unhandled rejection ' + formatError(r.value));
-				}
-			});
-			unhandledRejections = [];
-		}
+			return noop;
+		}());
 
 		Promise.onPotentiallyUnhandledRejection = function(rejection) {
-			if(unhandledRejections.length === 0) {
-				enqueue(reportUnhandledRejections);
-			}
-			unhandledRejections.push(rejection);
+			logError('Potentially unhandled rejection ' + formatError(rejection.value));
+		};
+
+		Promise.onPotentiallyUnhandledRejectionHandled = function(rejection) {
+			logError('Potentially unhandled rejection handled ' + String(rejection.value));
 		};
 
 		Promise.onFatalRejection = function(rejection) {
-			enqueue(function() {
+			async(function() {
 				throw rejection.value;
 			});
 		};
@@ -244,7 +226,6 @@ define(function(require) {
 		}
 
 		return e instanceof Error ? s : s + ' (WARNING: non-Error used)';
-
 	}
 
 	function noop() {}
@@ -252,7 +233,7 @@ define(function(require) {
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
 
-},{"../timer":8}],6:[function(require,module,exports){
+},{"../async":4}],6:[function(require,module,exports){
 /** @license MIT License (c) copyright 2010-2014 original author or authors */
 /** @author Brian Cavalier */
 /** @author John Hann */
@@ -935,17 +916,30 @@ define(function() {
 		};
 
 		RejectedHandler.prototype._reportTrace = function(context) {
-			Promise.onPotentiallyUnhandledRejection(this, context);
+			tasks.afterQueue(reportUnhandled, this, context);
 		};
 
 		RejectedHandler.prototype._removeTrace = function() {
 			this.handled = true;
-			Promise.onPotentiallyUnhandledRejectionHandled(this);
+			tasks.afterQueue(reportHandled, this);
 		};
 
 		RejectedHandler.prototype._fatal = function(context) {
 			Promise.onFatalRejection(this, context);
 		};
+
+		function reportUnhandled(rejection, context) {
+			if(!rejection.handled) {
+				rejection.state -= 1;
+				Promise.onPotentiallyUnhandledRejection(rejection, context);
+			}
+		}
+
+		function reportHandled(rejection) {
+			if(rejection.state < -1) {
+				Promise.onPotentiallyUnhandledRejectionHandled(rejection);
+			}
+		}
 
 		// Unhandled rejection hooks
 		// By default, everything is a noop
@@ -1096,6 +1090,8 @@ define(function(require) {
 	function Scheduler(enqueue) {
 		this._enqueue = enqueue;
 		this._handlerQueue = new Queue(15);
+		this._afterQueue = [];
+		this._running = false;
 
 		var self = this;
 		this.drainQueue = function() {
@@ -1109,10 +1105,19 @@ define(function(require) {
 	 * @param {function} task
 	 */
 	Scheduler.prototype.enqueue = function(task) {
-		if(this._handlerQueue.length === 0) {
+		if(!this._running) {
+			this._running = true;
 			this._enqueue(this.drainQueue);
 		}
 		this._handlerQueue.push(task);
+	};
+
+	Scheduler.prototype.afterQueue = function(f, x, y) {
+		if(!this._running) {
+			this._running = true;
+			this._enqueue(this.drainQueue);
+		}
+		this._afterQueue.push(f, x, y);
 	};
 
 	/**
@@ -1121,9 +1126,16 @@ define(function(require) {
 	 * processing until it is truly empty.
 	 */
 	Scheduler.prototype._drainQueue = function() {
+		this._running = false;
+
 		var q = this._handlerQueue;
 		while(q.length > 0) {
 			q.shift().run();
+		}
+
+		q = this._afterQueue;
+		while(q.length > 0) {
+			q.shift()(q.shift(), q.shift());
 		}
 	};
 
@@ -1132,36 +1144,7 @@ define(function(require) {
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
 
-},{"./Queue":3}],8:[function(require,module,exports){
-/** @license MIT License (c) copyright 2010-2014 original author or authors */
-/** @author Brian Cavalier */
-/** @author John Hann */
-
-(function(define) { 'use strict';
-define(function(require) {
-	/*global setTimeout,clearTimeout*/
-	var cjsRequire, vertx, setTimer, clearTimer;
-
-	cjsRequire = require;
-
-	try {
-		vertx = cjsRequire('vertx');
-		setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
-		clearTimer = vertx.cancelTimer;
-	} catch (e) {
-		setTimer = function(f, ms) { return setTimeout(f, ms); };
-		clearTimer = function(t) { return clearTimeout(t); };
-	}
-
-	return {
-		set: setTimer,
-		clear: clearTimer
-	};
-
-});
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
-
-},{}]},{},[1])
+},{"./Queue":3}]},{},[1])
 (1)
 });
 ;
