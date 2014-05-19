@@ -14,7 +14,7 @@ API
 	* [when.isPromiseLike(x)](#whenispromiselike)
 1. Promise
 	* [promise.done(handleResult, handleError)](#promisedone)
-	* [promise.then(onFulfilled)](#promisethen)
+	* [promise.then(onFulfilled, onRejected)](#promisethen)
 	* [promise.spread(onFulfilledArray)](#promisespread)
 	* [promise.fold(combine, promise2)](#promisefold)
 	* [promise.catch(onRejected)](#promisecatch)
