@@ -469,10 +469,14 @@ try {
 **ALIAS:** `ensure()` for non-ES5 environments
 
 ```js
-promise.finally(cleanup);
+var promise2 = promise1.finally(cleanup);
 ```
 
-Finally allows you to execute "cleanup" type tasks in a promise chain.  It arranges for `onFulfilledOrRejected` to be called, *with no arguments*, when promise is either fulfilled or rejected.  `onFulfilledOrRejected` cannot modify `promise`'s fulfillment value, but may signal a new or additional error by throwing an exception or returning a rejected promise.
+Finally allows you to execute "cleanup" type tasks in a promise chain.  It arranges for `cleanup` to be called, *with no arguments*, when `promise1` is either fulfilled or rejected.  It behaves similarly the synchronous `finally` statement:
+
+* If `promise1` fulfills, and `cleanup` returns successfully, `promise2` will fulfill with the same value as `promise1`.
+* If `promise1` rejects, and `cleanup` returns successfully, `promise2` will reject with the same reason as `promise1`.
+* If `promise1` rejects, and `cleanup` throws or returns a rejected promise, `promise2` will reject with the thrown exception or rejected promise's reason.
 
 When combined with `promise.catch`, `promise.finally` allows you to write code that is similar to the familiar synchronous `catch`/`finally` pair.  Consider the following synchronous code:
 
