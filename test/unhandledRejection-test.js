@@ -1,7 +1,7 @@
 var buster = typeof window !== 'undefined' ? window.buster : require('buster');
 var unhandledRejection = require('../lib/decorators/unhandledRejection');
 
-buster.testCase('=>unhandledRejection', {
+buster.testCase('unhandledRejection', {
 
 	'should not fail if JSON.stringify throws': function(done) {
 		var fixture = unhandledRejection({}, function(f) {
