@@ -1,3 +1,7 @@
+### 3.2.1
+
+* Defend against `JSON.stringify` exceptions when formatting unhandled rejection output.
+
 ### 3.2.0
 
 * Potentially unhandled rejections are now logged to `console.error` by default, even without using `done` or `when/monitor/console`.  As before, enabling `when/monitor/console` still adds long async stack traces, and using `done` still makes errors fatal. See [Debugging Promises](docs/api.md#debugging-promises) for more info.

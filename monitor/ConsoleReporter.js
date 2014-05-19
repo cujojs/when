@@ -71,7 +71,12 @@ define(function(require) {
 				if (typeof console.log ==='function'
 					&& typeof JSON !== 'undefined') {
 					log = warn = function (x) {
-						console.log(typeof x === 'string' ? x : JSON.stringify(x));
+						if(typeof x !== 'string') {
+							try {
+								x = JSON.stringify(x);
+							} catch(e) {}
+						}
+						console.log(x);
 					};
 				}
 			}
