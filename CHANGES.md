@@ -1,5 +1,6 @@
 ### 3.2.1
 
+* Minor mem and perf tweaks for `when.all`
 * Defend against `JSON.stringify` exceptions when formatting unhandled rejection output.
 
 ### 3.2.0
