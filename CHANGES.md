@@ -1,3 +1,8 @@
+### 3.2.2
+
+* More mem and perf improvements
+* Improvements to unhandled rejection reporting
+
 ### 3.2.1
 
 * Minor mem and perf tweaks for `when.all`
