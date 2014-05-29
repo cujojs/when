@@ -67,36 +67,35 @@ define(function(require) {
 	 */
 	function run(f, thisArg, args) {
 		var p = Promise._defer();
-		var h = p._handler;
-
 		switch(args.length) {
-			case 2:  apply2(h, f, thisArg, args); break;
-			case 1:  apply1(h, f, thisArg, args); break;
-			default: applyN(h, f, thisArg, args);
+			case 2:  apply2(p._handler, f, thisArg, args); break;
+			case 1:  apply1(p._handler, f, thisArg, args); break;
+			default: applyN(p._handler, f, thisArg, args);
 		}
 
 		return p;
 	}
 
 	function applyN(h, f, thisArg, args) {
-		Promise.all(args)._handler.fold(function(h, args) {
-			args.push(createCallback(h));
+		Promise.all(args)._handler.fold(function(f, args, to) {
+			args.push(createCallback(to));
 			f.apply(this, args);
-		}, h, thisArg, h);
+		}, f, thisArg, h);
 	}
 
 	function apply2(h, f, thisArg, args) {
-		Promise._handler(args[0]).fold(function(h, x) {
-			Promise._handler(args[1]).fold(function(h, y) {
-				f.call(this, x, y, createCallback(h));
-			}, h, this, h);
-		}, h, thisArg, h);
+		var y = args[1];
+		Promise._handler(args[0]).fold(function(f, x, to) {
+			Promise._handler(y).fold(function(f, y, to) {
+				f.call(this, x, y, createCallback(to));
+			}, f, this, to);
+		}, f, thisArg, h);
 	}
 
 	function apply1(h, f, thisArg, args) {
-		Promise._handler(args[0]).fold(function(h, x) {
-			f.call(this, x, createCallback(h));
-		}, h, thisArg, h);
+		Promise._handler(args[0]).fold(function(f, x, to) {
+			f.call(this, x, createCallback(to));
+		}, f, thisArg, h);
 	}
 
 	/**

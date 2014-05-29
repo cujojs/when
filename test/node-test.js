@@ -28,7 +28,7 @@ buster.testCase('when/node', {
 		},
 
 		'the returned promise': {
-			'=>should be resolved with the 2nd arg to the callback': function() {
+			'should be resolved with the 2nd arg to the callback': function() {
 				function async(cb) {
 					setTimeout(function() {
 						cb(null, sentinel);
