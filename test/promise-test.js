@@ -44,7 +44,7 @@ buster.testCase('promise', {
 		},
 
 		tearDown: function() {
-			Promise.onFatalRejection = this.onFatalRejection;
+			Promise.onFatalRejection = this.origOnFatalRejection;
 		},
 
 		'should return undefined': function() {
