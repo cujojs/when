@@ -1546,7 +1546,7 @@ A helper function of the `when/node` implementation, which might be useful for c
 
 ```js
 var when   = require('when');
-var nodefn = require('when/node;);
+var nodefn = require('when/node');
 
 function nodeStyleAsyncFunction(callback) {
     if(Math.random() * 2 > 1) {
