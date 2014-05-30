@@ -76,26 +76,25 @@ define(function(require) {
 		return p;
 	}
 
-	function applyN(h, f, thisArg, args) {
-		Promise.all(args)._handler.fold(function(f, args, to) {
-			args.push(createCallback(to));
+	function applyN(resolver, f, thisArg, args) {
+		Promise.all(args)._handler.fold(function(f, args, resolver) {
+			args.push(createCallback(resolver));
 			f.apply(this, args);
-		}, f, thisArg, h);
+		}, f, thisArg, resolver);
 	}
 
-	function apply2(h, f, thisArg, args) {
-		var y = args[1];
-		Promise._handler(args[0]).fold(function(f, x, to) {
-			Promise._handler(y).fold(function(f, y, to) {
-				f.call(this, x, y, createCallback(to));
-			}, f, this, to);
-		}, f, thisArg, h);
+	function apply2(resolver, f, thisArg, args) {
+		Promise._handler(args[0]).fold(function(y, x, resolver) {
+			Promise._handler(x).fold(function(x, y, resolver) {
+				f.call(this, x, y, createCallback(resolver));
+			}, y, this, resolver);
+		}, args[1], thisArg, resolver);
 	}
 
-	function apply1(h, f, thisArg, args) {
-		Promise._handler(args[0]).fold(function(f, x, to) {
-			f.call(this, x, createCallback(to));
-		}, f, thisArg, h);
+	function apply1(resolver, f, thisArg, args) {
+		Promise._handler(args[0]).fold(function(f, x, resolver) {
+			f.call(this, x, createCallback(resolver));
+		}, f, thisArg, resolver);
 	}
 
 	/**

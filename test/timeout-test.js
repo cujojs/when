@@ -62,17 +62,17 @@ buster.testCase('when/timeout', {
 		'should reject after timeout with the provided reason': function() {
 			return Promise.never().timeout(0, sentinel).then(
 				fail,
-				function(reason) {
-					assert.same(reason, sentinel);
+				function(e) {
+					assert.same(e, sentinel);
 				}
 			);
 		},
 
-		'should reject after timeout with undefined reason': function() {
+		'should reject after timeout with default reason when undefined': function() {
 			return Promise.never().timeout(0, void 0).then(
 				fail,
-				function(reason) {
-					assert.same(reason, void 0);
+				function(e) {
+					assert(e instanceof TimeoutError);
 				}
 			);
 		},
