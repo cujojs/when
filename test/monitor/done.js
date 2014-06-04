@@ -16,13 +16,14 @@ define(function(require) {
 
 	Promise.resolve(123)
 		.then(function(x) {
-			throw x;
+//			throw x;
+			throw new Error(x);
 //			return Promise.reject(x);
 //			foo();
 //			throw new TypeError(x);
-		});
+		})
 //		.then(void 0, function() { console.log(123);})
-//		.done(console.log);
+		.done(console.log);
 
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
