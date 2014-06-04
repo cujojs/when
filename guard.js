@@ -28,11 +28,10 @@ define(function(require) {
 	 */
 	function guard(condition, f) {
 		return function() {
-			var self = this;
 			var args = slice.call(arguments);
 
-			return when(condition(), function(exit) {
-				return when(f.apply(self, args))['finally'](exit);
+			return when(condition()).withThis(this).then(function(exit) {
+				return when(f.apply(this, args))['finally'](exit);
 			});
 		};
 	}
@@ -58,15 +57,15 @@ define(function(require) {
 					waiting.push(resolve);
 				}
 				count += 1;
-
-				function exit() {
-					count = Math.max(count - 1, 0);
-					if(waiting.length > 0) {
-						waiting.shift()(exit);
-					}
-				}
 			});
 		};
+
+		function exit() {
+			count = Math.max(count - 1, 0);
+			if(waiting.length > 0) {
+				waiting.shift()(exit);
+			}
+		}
 	}
 
 });
