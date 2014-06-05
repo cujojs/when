@@ -1,3 +1,8 @@
+### 3.2.3
+
+* Report when previously unhandled rejections become handled, with an ID to correlate the two.
+* Improve unhandled rejection reporting for cases where multiple different promise implementations interleave.
+
 ### 3.2.2
 
 * More mem and perf improvements
