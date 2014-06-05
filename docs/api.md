@@ -1898,9 +1898,93 @@ var TimeoutError = require('when/lib/TimeoutError');
 
 # Debugging promises
 
-By default, when.js logs *potentially unhandled rejections* to `console.error`, with regular stack traces.  This works even if you don't call `promise.done`, and is much like uncaught synchronous exceptions, but it's important to remember that they are *potentially* unhandled because a rejected promise can be handled at a later time (e.g. if someone calls `promise.catch` on it later).
+By default, when.js logs *potentially unhandled rejections* to `console.error`, with regular stack traces.  This works even if you don't call `promise.done`, and is much like uncaught synchronous exceptions.
 
 Tracking down asynchronous failures can be tricky, so to get richer debugging information, including long, asynchronous, stack traces, you can enable [`when/monitor/console`](#whenmonitorconsole).
+
+## Potentially unhandled rejections
+
+When.js logs potentially unhandled rejections.  For example:
+
+```js
+var when = require('when');
+
+when.resolve(123).then(function(x) {
+	oops(x); // ReferenceError!
+});
+```
+
+```
+Potentially unhandled rejection [1] ReferenceError: oops is not defined
+    at /Users/brian/Projects/cujojs/when/experiments/unhandled.js:4:2
+    at tryCatchReject (/Users/brian/Projects/cujojs/when/lib/makePromise.js:806:14)
+    at FulfilledHandler.when (/Users/brian/Projects/cujojs/when/lib/makePromise.js:602:9)
+    at ContinuationTask.run (/Users/brian/Projects/cujojs/when/lib/makePromise.js:726:24)
+    at Scheduler._drain (/Users/brian/Projects/cujojs/when/lib/scheduler.js:56:14)
+    at Scheduler.drain (/Users/brian/Projects/cujojs/when/lib/scheduler.js:21:9)
+    at process._tickCallback (node.js:419:13)
+    at Function.Module.runMain (module.js:499:11)
+    at startup (node.js:119:16)
+    at node.js:906:3
+```
+
+The error is tagged with "Potentially unhandled rejection" and an *id*, `[1]` in this case, to visually call out that it is potentially unhandled.
+
+### Rejections handled later
+
+It's important to remember that potentially unhandled rejections are, well, *potentially* unhandled. Due to their asynchronous nature, rejected promises may be handled at a later time.  For example, a rejection could be handled after a call to `setTimeout`, even though this is very rare in practice.
+
+Promise rejections fall into 3 categories:
+
+#### Typical usage
+
+In typical usage, rejections should be handled quickly (by calling `then`, `catch`, etc.) either by code higher in the current call stack as a promise is returned, or by code in the current promise chain.
+
+In these most common cases, where all rejections are handled, no errors will be logged just as you expect in synchronous code where all exceptions are caught and handled using `try/catch`.
+
+#### Developer errors
+
+These cases typically represent coding mistakes, such as `ReferenceError`s.  In these cases, the errors will be logged as potentially unhandled rejections, again just as you expect in synchronous code where there is an uncaught exception.
+
+#### Edge cases
+
+In rare cases, application code may leave a rejected promise unobserved for a longer period of time, and then at some point later (for example, after a `setTimeout`), handle it.
+
+In such cases, the rejection may be reported as being potentially unhandled.  When that rejection *is* handled, when.js will log a second message to let you know. For example:
+
+```js
+var when = require('when');
+
+var p = when.resolve(123).then(function() {
+	throw new Error('this rejection will be handled later');
+});
+
+setTimeout(function() {
+	p.catch(function(e) {
+		// ... handled ...
+	});
+}, 1000);
+```
+
+```
+Potentially unhandled rejection [1] Error: this rejection will be handled later
+    at /Users/brian/Projects/cujojs/when/experiments/unhandled.js:4:8
+    at tryCatchReject (/Users/brian/Projects/cujojs/when/lib/makePromise.js:806:14)
+    at FulfilledHandler.when (/Users/brian/Projects/cujojs/when/lib/makePromise.js:602:9)
+    at ContinuationTask.run (/Users/brian/Projects/cujojs/when/lib/makePromise.js:726:24)
+    at Scheduler._drain (/Users/brian/Projects/cujojs/when/lib/scheduler.js:56:14)
+    at Scheduler.drain (/Users/brian/Projects/cujojs/when/lib/scheduler.js:21:9)
+    at process._tickCallback (node.js:419:13)
+    at Function.Module.runMain (module.js:499:11)
+    at startup (node.js:119:16)
+    at node.js:906:3
+    
+... one second later ...
+
+Handled previous rejection [1] Error: this rejection will be handled later
+```
+
+In this case, the rejection was handled later.  The second message includes the id and the original message to correlate with the original error.
 
 ## promise.then vs. promise.done
 
@@ -1920,6 +2004,8 @@ The intent of `done` is to *consume* a promise's value, transferring *responsibi
 ### Errors
 
 In addition to transforming a value, `then` allows you to recover from, or propagate, *intermediate* errors.  Any errors that are not handled will be caught by the promise machinery and used to reject the promise returned by `then`.
+
+**Note:** [`catch`](#promisecatch) is almost always a better choice for handling errors than `then`. It is more readable, and accepts a `predicate` for matching particular error types. 
 
 Calling `done` transfers all responsibility for errors to your code.  If an error (either a thrown exception or returned rejection) escapes the `handleValue`, or `handleError` you provide to `done`, it will be rethrown in an uncatchable way to the host environment, causing a loud stack trace or a crash.
 
