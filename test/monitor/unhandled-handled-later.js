@@ -11,18 +11,29 @@
 (function(define) { 'use strict';
 define(function(require) {
 
-	require('../../monitor/console');
+//	require('../../monitor/console');
 
 	var Promise = require('../../when').Promise;
+//	var Promise = require('bluebird');
 
-	var p = new Promise(function(_, reject) {
-		reject(new Error('unhandled-handled-later'));
-	});
+	function run() {
+		var p = new Promise(function(_, reject) {
+			reject(new Error('unhandled-handled-later'));
+		});
 
-	setTimeout(function() {
-		console.log('***Handling error now***');
-		p['catch'](function() { /* handled by squelching */ });
-	}, 1000);
+		setTimeout(function() {
+//			console.log('***Handling error now***');
+			p['catch'](function() { /* handled by squelching */ });
+		}, 1000);
+	}
+
+	run();
+//	run();
+//	run();
+//	run();
+//	run();
+//	run();
+//	run();
 
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));

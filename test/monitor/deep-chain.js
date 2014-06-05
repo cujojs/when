@@ -11,7 +11,7 @@
 (function(define) { 'use strict';
 	define(function(require) {
 
-		require('../../monitor/console');
+//		require('../../monitor/console');
 		var Promise = require('../../when').Promise;
 
 		function f1() {
@@ -36,8 +36,8 @@
 		// and this will be logged as well.
 		setTimeout(function() {
 			console.log('*** handling rejection ***');
-			p.done();
-//			p.catch(ok);
+//			p.done();
+			p.catch(ok);
 		}, 1337);
 
 		function ok(x) {

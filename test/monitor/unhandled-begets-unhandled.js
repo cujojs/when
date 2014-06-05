@@ -19,7 +19,7 @@ define(function(require) {
 	var p = new Promise.reject(new Error('first error'));
 
 	setTimeout(function() {
-		console.log('***Begetting new unhandled error now***');
+//		console.log('***Begetting new unhandled error now***');
 		p['catch'](function() {
 			throw new Error('unhandled-begets-unhandled');
 		});

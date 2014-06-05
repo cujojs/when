@@ -11,7 +11,7 @@
 (function(define) { 'use strict';
 	define(function(require) {
 
-		require('../../monitor/console');
+//		require('../../monitor/console');
 
 		var when = require('../../when');
 
