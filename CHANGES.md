@@ -1,6 +1,7 @@
 ### 3.2.3
 
-* Report when previously unhandled rejections become handled, with an ID to correlate the two.
+* Updated [debugging docs](docs/api.md#debugging-promises)
+* Report when previously unhandled rejections become handled, with an ID to correlate the two messages.
 * Improve unhandled rejection reporting for cases where multiple different promise implementations interleave.
 
 ### 3.2.2
