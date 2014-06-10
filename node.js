@@ -159,7 +159,18 @@ define(function(require) {
 	function lift(f /*, args... */) {
 		var args = arguments.length > 1 ? slice.call(arguments, 1) : [];
 		return function() {
-			return run(f, this, args.concat(slice.call(arguments)));
+			// TODO: Simplify once partialing has been removed
+			var l = args.length;
+			var al = arguments.length;
+			var a = new Array(al + l);
+			var i;
+			for(i=0; i<l; ++i) {
+				a[i] = args[i];
+			}
+			for(i=0; i<al; ++i) {
+				a[i+l] = arguments[i];
+			}
+			return run(f, this, a);
 		};
 	}
 
