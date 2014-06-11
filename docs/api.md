@@ -1898,21 +1898,29 @@ var TimeoutError = require('when/lib/TimeoutError');
 
 # Debugging promises
 
-By default, when.js logs *potentially unhandled rejections* to `console.error`, with regular stack traces.  This works even if you don't call `promise.done`, and is much like uncaught synchronous exceptions.
+Errors in an asynchronous operation always occur in a different call stack than the the one that initiated the operation.  Because of that, such errors cannot be caught using synchronous `try/catch`.  Promises help to manage that process by capturing the error and rejecting the associated promise, so that application code can handle the error using promise error handling features, such as [`promise.catch`](#promisecatch).  This is generally a good thing.  If promises *didn't* do this, *any* thrown exception would be uncatchable, even those errors that could have been handled by the application, would instead cause a crash.
 
-Tracking down asynchronous failures can be tricky, so to get richer debugging information, including long, asynchronous, stack traces, you can enable [`when/monitor/console`](#whenmonitorconsole).
+However, this also means that errors captured in rejected promises often go silent until observed by calling `promise.catch`.  In nearly all promise implementations, if application code never calls `promise.catch`, the error will be silent.
+
+By default, when.js logs *potentially unhandled rejections* to `console.error`, along with stack traces.  This works even if you don't call [`promise.done`](#promisedone), or if you never call `promise.catch`, and is much like uncaught synchronous exceptions.
+
+Tracking down asynchronous failures can be tricky, so to get even richer debugging information, including long, asynchronous, stack traces, you can enable [`when/monitor/console`](#whenmonitorconsole).
 
 ## Potentially unhandled rejections
 
-When.js logs potentially unhandled rejections.  For example:
+For example, the following error will be completely silent in most promise implementations.
 
 ```js
 var when = require('when');
 
 when.resolve(123).then(function(x) {
-	oops(x); // ReferenceError!
+	// This code executes in a future call stack, and the
+	// ReferenceError cannot be caught with try/catch
+	oops(x);
 });
 ```
+
+In when.js, you will get an error stack trace to the console:
 
 ```
 Potentially unhandled rejection [1] ReferenceError: oops is not defined
@@ -1928,7 +1936,7 @@ Potentially unhandled rejection [1] ReferenceError: oops is not defined
     at node.js:906:3
 ```
 
-The error is tagged with "Potentially unhandled rejection" and an *id*, `[1]` in this case, to visually call out that it is potentially unhandled.
+The error is tagged with "Potentially unhandled rejection" and an *id*, `[1]` in this case, to visually call out that it is potentially unhandled.  If the rejection is handled at a later time, a second message including the same id will be logged to help correlate which rejection was handled.  Read on to find out why this might happen.
 
 ### Rejections handled later
 
@@ -1984,7 +1992,7 @@ Potentially unhandled rejection [1] Error: this rejection will be handled later
 Handled previous rejection [1] Error: this rejection will be handled later
 ```
 
-In this case, the rejection was handled later.  The second message includes the id and the original message to correlate with the original error.
+In this case, the rejection was handled later.  As mentioned above, the second message includes the id and the original message to correlate with the original error.
 
 ## promise.then vs. promise.done
 
@@ -2142,7 +2150,7 @@ As of version 3.0, when.js requires an ES5 environment.  In older environments, 
 Previously deprecated features that have been removed in 3.0:
 
 * `promise.always` was removed. Use [`promise.finally(cleanup)`](#promisefinally) (or its ES3 alias [`promise.ensure`](#promisefinally)), or [`promise.then(cleanup, cleanup)`](#promisethen) instead.
-* `deferred.resolve`, `deferred.reject`, `deferred.resolver.resolve`, and `deferred.resolver.reject` no longer return promises. They always return `undefined`.  You can simply return `d.promise` instead if you need.
+* `deferred.resolve`, `deferred.reject`, `deferred.resolver.resolve`, and `deferred.resolver.reject` no longer return promises. They always return `undefined`.  You can simply return `deferred.promise` instead if you need.
 * [`when.all`](#whenall), [`when.any`](#whenany), and [`when.some`](#whensome) no longer directly accept `onFulfilled`, `onRejected`, and `onProgress` callbacks.  Simply use the returned promise instead.
 	* For example, do this: `when.all(array).then(handleResults)` instead of this: `when.all(array, handleResults)`
 * `when.isPromise` was removed. Use [`when.isPromiseLike`](#whenispromiselike) instead.
