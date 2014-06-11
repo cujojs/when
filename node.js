@@ -157,20 +157,20 @@ define(function(require) {
 	 * @returns {Function} a promise-returning function
 	 */
 	function lift(f /*, args... */) {
-		var args = arguments.length > 1 ? slice.call(arguments, 1) : [];
+		var args1 = arguments.length > 1 ? slice.call(arguments, 1) : [];
 		return function() {
 			// TODO: Simplify once partialing has been removed
-			var l = args.length;
+			var l = args1.length;
 			var al = arguments.length;
-			var a = new Array(al + l);
+			var args = new Array(al + l);
 			var i;
 			for(i=0; i<l; ++i) {
-				a[i] = args[i];
+				args[i] = args1[i];
 			}
 			for(i=0; i<al; ++i) {
-				a[i+l] = arguments[i];
+				args[i+l] = arguments[i];
 			}
-			return run(f, this, a);
+			return run(f, this, args);
 		};
 	}
 
