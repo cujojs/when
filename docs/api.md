@@ -75,7 +75,7 @@ API
 1. Limiting Concurrency
 	* [when/guard(condition, f)](#whenguard)
 	* [Guard conditions](#guard-conditions)
-1. [Error types](#errortypes)
+1. [Error types](#error-types)
 1. [Debugging promises](#debugging-promises)
 1. [Upgrading to 3.0 from 2.x](#upgrading-to-30-from-2x)
 
