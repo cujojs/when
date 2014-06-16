@@ -34,10 +34,38 @@ function isSubset(subset, superset) {
 
 buster.testCase('when.some', {
 
-	'should resolve empty input': function() {
-		return when.some([], 1).then(
-			function(result) {
-				assert.equals(result, []);
+	'should reject with RangeError': {
+		'when n > number of inputs': {
+			'for base case of zero inputs': function() {
+				return when.some([], 1)['catch'](
+					function (e) {
+						assert(e instanceof RangeError);
+					});
+			},
+
+			'for m inputs requesting n > m winners': function() {
+				var input = [1,,2];
+				return when.some(input, input.length+1)['catch'](
+					function (e) {
+						assert(e instanceof RangeError);
+					});
+			}
+		},
+
+		'when input promise does not resolve to array': function() {
+			return when.some(when.resolve(1), 1)['catch'](
+				function(e) {
+					assert(e instanceof RangeError);
+				});
+		}
+	},
+
+	'should reject with all rejected input values if resolving howMany becomes impossible': function() {
+		var input = [when.resolve(1), when.reject(2), when.reject(3)];
+		return when.some(input, 2).then(
+			fail,
+			function(failed) {
+				assert.equals(failed, [2, 3]);
 			});
 	},
 
@@ -65,15 +93,6 @@ buster.testCase('when.some', {
 			});
 	},
 
-	'should reject with all rejected input values if resolving howMany becomes impossible': function() {
-		var input = [when.resolve(1), when.reject(2), when.reject(3)];
-		return when.some(input, 2).then(
-			fail,
-			function(failed) {
-				assert.equals(failed, [2, 3]);
-			});
-	},
-
 	'should accept a promise for an array': function() {
 		var expected, input;
 
@@ -83,13 +102,6 @@ buster.testCase('when.some', {
 		return when.some(input, 2).then(
 			function(results) {
 				assert.equals(results.length, 2);
-			});
-	},
-
-	'should resolve to empty array when input promise does not resolve to array': function() {
-		return when.some(when.resolve(1), 1).then(
-			function(result) {
-				assert.equals(result, []);
 			});
 	},
 
