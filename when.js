@@ -49,6 +49,7 @@ define(function (require) {
 
 	when.any         = lift(Promise.any);    // One-winner race
 	when.some        = lift(Promise.some);   // Multi-winner race
+	when.race        = lift(Promise.race);   // First-to-settle race
 
 	when.map         = map;                  // Array.map() for promises
 	when.reduce      = reduce;               // Array.reduce() for promises
@@ -72,8 +73,8 @@ define(function (require) {
 	 *   will be invoked immediately.
 	 * @param {function?} onRejected callback to be called when x is
 	 *   rejected.
-	 * @deprecated @param {function?} onProgress callback to be called when progress updates
-	 *   are issued for x.
+	 * @param {function?} onProgress callback to be called when progress updates
+	 *   are issued for x. @deprecated
 	 * @returns {Promise} a new promise that will fulfill with the return
 	 *   value of callback or errback or the completion value of promiseOrValue if
 	 *   callback and/or errback is not supplied.

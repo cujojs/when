@@ -942,12 +942,16 @@ The *competitive race* pattern may be used if one or more of the entire possible
 var promise = when.any(array)
 ```
 
-Initiates a competitive race that allows one winner.  The returned promise will:
+A competitive race that allows one winner.  The returned promise will:
 
 * fulfill as soon as any one of the input promises fulfills, with the value of the fulfilled input promise, *or*
 * reject:
 	* with a `RangeError` if the input array is empty--i.e. it is impossible to have one winner.
 	* with an array of all the rejection reasons, if the input array is non-empty, and *all* input promises reject.
+
+### See also:
+* [when.race](#whenrace)
+* [when.some](#whensome)
 
 ## when.some
 
@@ -957,7 +961,7 @@ Initiates a competitive race that allows one winner.  The returned promise will:
 var promise = when.some(array, n)
 ```
 
-Initiates a competitive race that requires `n` winners.  The returned promise will
+A competitive race that requires `n` winners.  The returned promise will
 
 * fulfill when `n` promises are fulfilled with an array containing the values of the fulfilled input promises, *or*
 * reject:
@@ -969,6 +973,25 @@ Initiates a competitive race that requires `n` winners.  The returned promise wi
 var remotes = [ping('p2p.cdn.com'), ping('p2p2.cdn.com'), ping('p2p3.cdn.com')];
 when.some(remotes, 2).done(itsAllOk, failGracefully);
 ```
+
+### See also:
+* [when.any](#whenany)
+
+## when.race
+
+```js
+var promise = when.race(array);
+```
+
+A competitive race to settle. The returned promise will settle in the same way as the earliest promise in `array` to settle.  That is, it will
+
+* fulfill if the earliest promise in array fulfills, with the same value, *or*
+* reject if the earliest promise in array rejects, with the same reason.
+
+**WARNING:** As per the ES6 spec, the returned promise will *remain pending forever* if `array` is empty.
+
+### See also:
+* [when.any](#whenany)
 
 # Infinite Promise Sequences
 
