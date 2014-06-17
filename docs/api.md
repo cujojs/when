@@ -945,7 +945,9 @@ var promise = when.any(array)
 Initiates a competitive race that allows one winner.  The returned promise will:
 
 * fulfill as soon as any one of the input promises fulfills, with the value of the fulfilled input promise, *or*
-* reject only if *all* input promises reject, with an array of all the rejection reasons
+* reject:
+	* with a `RangeError` if the input array is empty--i.e. it is impossible to have one winner.
+	* with an array of all the rejection reasons, if the input array is non-empty, and *all* input promises reject.
 
 ## when.some
 
@@ -958,7 +960,9 @@ var promise = when.some(array, n)
 Initiates a competitive race that requires `n` winners.  The returned promise will
 
 * fulfill when `n` promises are fulfilled with an array containing the values of the fulfilled input promises, *or*
-* reject when it becomes impossible for `n` promises to become fulfilled (ie when `(array.length - n) + 1` reject) with an array containing the reasons of the rejected input promises
+* reject:
+	* with a `RangeError` if the input contains fewer than `n` items--i.e. it is impossible to have `n` winners.
+	* with an array containing the reasons of the rejected input promises when it becomes impossible for `n` promises to become fulfilled (ie when `(array.length - n) + 1` reject).
 
 ```js
 // ping all of the p2p servers and fail if at least two don't respond

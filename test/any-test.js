@@ -19,13 +19,29 @@ function contains(array, item) {
 
 buster.testCase('when.any', {
 
-	'should resolve to undefined with empty input array': function(done) {
-		when.any([]).then(
+	'should reject with RangeError': {
+		'when zero inputs': function() {
+			return when.any([])['catch'](
+				function (e) {
+					assert(e instanceof RangeError);
+				});
+		},
+
+		'when input promise does not resolve to array': function() {
+			return when.any(when.resolve(1))['catch'](
+				function(e) {
+					assert(e instanceof RangeError);
+				});
+		}
+	},
+
+	'should reject with all rejected input values if all inputs are rejected': function() {
+		var input = [rejected(1), rejected(2), rejected(3)];
+		return when.any(input)['catch'](
 			function(result) {
-				refute.defined(result);
-			},
-			fail
-		).ensure(done);
+				assert.equals(result, [1, 2, 3]);
+			}
+		);
 	},
 
 	'should resolve with an input value': function() {
@@ -38,47 +54,26 @@ buster.testCase('when.any', {
 		);
 	},
 
-	'should resolve with a promised input value': function(done) {
+	'should resolve with a promised input value': function() {
 		var input = [resolved(1), resolved(2), resolved(3)];
-		when.any(input).then(
+		return when.any(input).then(
 			function(result) {
 				assert(contains([1, 2, 3], result));
-			},
-			fail
-		).ensure(done);
-	},
-
-	'should reject with all rejected input values if all inputs are rejected': function(done) {
-		var input = [rejected(1), rejected(2), rejected(3)];
-		when.any(input).then(
-			fail,
-			function(result) {
-				assert.equals(result, [1, 2, 3]);
 			}
-		).ensure(done);
+		);
 	},
 
-	'should accept a promise for an array': function(done) {
+	'should accept a promise for an array': function() {
 		var expected, input;
 
 		expected = [1, 2, 3];
 		input = resolved(expected);
 
-		when.any(input).then(
+		return when.any(input).then(
 			function(result) {
 				refute.equals(expected.indexOf(result), -1);
-			},
-			fail
-		).ensure(done);
-	},
-
-	'should resolve to undefined when input promise does not resolve to array': function(done) {
-		when.any(resolved(1)).then(
-			function(result) {
-				refute.defined(result);
-			},
-			fail
-		).ensure(done);
+			}
+		);
 	}
 
 });
