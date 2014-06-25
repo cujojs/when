@@ -1,3 +1,8 @@
+### 3.3.0
+
+* Promote [`when.race`](docs/api.md#whenrace) to public API.
+* `when.any` and `when.some` now reject with a `RangeError` if the race is obviously unwinnable, for example: `when.some([1,2,3], 4)`.  See the [`when.any`](docs/api.md#whenany) and [`when.some`](docs/api.md#whensome) docs for more info.
+
 ### 3.2.3
 
 * Updated [debugging docs](docs/api.md#debugging-promises)
