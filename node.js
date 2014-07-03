@@ -84,7 +84,7 @@ define(function(require) {
 	}
 
 	function apply2(resolver, f, thisArg, args) {
-		Promise._handler(args[0]).fold(function(y, x, resolver) {
+		Promise._handler(args[0]).fold(function(x, y, resolver) {
 			Promise._handler(x).fold(function(x, y, resolver) {
 				f.call(this, x, y, createCallback(resolver));
 			}, y, this, resolver);
