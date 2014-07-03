@@ -1,3 +1,7 @@
+### 3.3.1
+
+* Fix argument ordering bug in `when/node` introduced in 3.3.0.
+
 ### 3.3.0
 
 * Promote [`when.race`](docs/api.md#whenrace) to public API.
