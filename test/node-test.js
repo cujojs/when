@@ -69,9 +69,9 @@ buster.testCase('when/node', {
 				cb(null, x + y);
 			}
 
-			var promise = nodefn.apply(async, [10, 20]);
+			var promise = nodefn.apply(async, ['a', 'b']);
 			return promise.then(function(value) {
-				assert.equals(value, 30);
+				assert.equals(value, 'ab');
 			});
 		},
 
@@ -80,9 +80,9 @@ buster.testCase('when/node', {
 				cb(null, x + y);
 			}
 
-			var promise = nodefn.apply(async, [when(10), 20]);
+			var promise = nodefn.apply(async, [when('a'), 'b']);
 			return promise.then(function(value) {
-				assert.equals(value, 30);
+				assert.equals(value, 'ab');
 			});
 		}
 	},
@@ -139,9 +139,9 @@ buster.testCase('when/node', {
 				cb(null, x + y);
 			}
 
-			var promise = nodefn.call(async, 10, 20);
+			var promise = nodefn.call(async, 'a', 'b');
 			return promise.then(function(value) {
-				assert.equals(value, 30);
+				assert.equals(value, 'ab');
 			});
 		},
 
@@ -150,9 +150,9 @@ buster.testCase('when/node', {
 				cb(null, x + y);
 			}
 
-			var promise = nodefn.call(async, when(10), 20);
+			var promise = nodefn.call(async, when('a'), 'b');
 			return promise.then(function(value) {
-				assert.equals(value, 30);
+				assert.equals(value, 'ab');
 			});
 		}
 	},
@@ -219,26 +219,26 @@ buster.testCase('when/node', {
 		},
 
 		'should accept leading arguments': function() {
-			function fancySum(x, y, callback) {
+			function async(x, y, callback) {
 				callback(null, x + y);
 			}
 
-			var partiallyApplied = nodefn.lift(fancySum, 5);
+			var partiallyApplied = nodefn.lift(async, 'a');
 
-			return partiallyApplied(10).then(function(value) {
-				assert.equals(value, 15);
+			return partiallyApplied('b').then(function(value) {
+				assert.equals(value, 'ab');
 			}, fail);
 		},
 
 		'should accept promises as leading arguments': function() {
-			function fancySum(x, y, callback) {
+			function async(x, y, callback) {
 				callback(null, x + y);
 			}
 
-			var partiallyApplied = nodefn.lift(fancySum, when(5));
+			var partiallyApplied = nodefn.lift(async, when('a'));
 
-			return partiallyApplied(10).then(function(value) {
-				assert.equals(value, 15);
+			return partiallyApplied('b').then(function(value) {
+				assert.equals(value, 'ab');
 			});
 		}
 	},
