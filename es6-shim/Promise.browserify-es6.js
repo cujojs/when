@@ -6,11 +6,8 @@
  * ES6 global Promise shim
  */
 var unhandledRejections = require('../lib/decorators/unhandledRejection');
-var PromiseConstructor = module.exports = unhandledRejections(require('../lib/Promise'));
+var PromiseConstructor = unhandledRejections(require('../lib/Promise'));
 
-var g = typeof global !== 'undefined' && global
-	|| typeof self !== 'undefined' && self;
-
-if(typeof g !== 'undefined' && typeof g.Promise === 'undefined') {
-	g['Promise'] = PromiseConstructor;
-}
+module.exports = typeof global != 'undefined' ? (global.Promise = PromiseConstructor)
+	           : typeof self   != 'undefined' ? (self.Promise   = PromiseConstructor)
+	           : PromiseConstructor;

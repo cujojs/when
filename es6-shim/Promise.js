@@ -7,14 +7,11 @@
  * ES6 global Promise shim
  */
 var unhandledRejections = require('../lib/decorators/unhandledRejection');
-var PromiseConstructor = module.exports = unhandledRejections(require('../lib/Promise'));
+var PromiseConstructor = unhandledRejections(require('../lib/Promise'));
 
-var g = typeof global !== 'undefined' && global
-	|| typeof self !== 'undefined' && self;
-
-if(typeof g !== 'undefined' && typeof g.Promise === 'undefined') {
-	g['Promise'] = PromiseConstructor;
-}
+module.exports = typeof global != 'undefined' ? (global.Promise = PromiseConstructor)
+	           : typeof self   != 'undefined' ? (self.Promise   = PromiseConstructor)
+	           : PromiseConstructor;
 
 },{"../lib/Promise":2,"../lib/decorators/unhandledRejection":6}],2:[function(require,module,exports){
 /** @license MIT License (c) copyright 2010-2014 original author or authors */
@@ -521,9 +518,9 @@ define(function() {
 		 *  the returned promise.
 		 * @returns {Promise}
 		 */
-		Promise.prototype._bindContext = function(thisArg) {
-			return new Promise(Handler, new Bound(this._handler, thisArg));
-		};
+//		Promise.prototype._bindContext = function(thisArg) {
+//			return new Promise(Handler, new Bound(this._handler, thisArg));
+//		};
 
 		/**
 		 * Creates a new, pending promise of the same type as this promise
@@ -677,8 +674,6 @@ define(function() {
 			= Handler.prototype._report
 			= noop;
 
-		Handler.prototype.inspect = toPendingState;
-
 		Handler.prototype._state = 0;
 
 		Handler.prototype.state = function() {
@@ -748,10 +743,6 @@ define(function() {
 		inherit(Handler, Pending);
 
 		Pending.prototype._state = 0;
-
-		Pending.prototype.inspect = function() {
-			return this.resolved ? this.join().inspect() : toPendingState();
-		};
 
 		Pending.prototype.resolve = function(x) {
 			this.become(getHandler(x));
@@ -850,10 +841,6 @@ define(function() {
 
 		inherit(Handler, Delegating);
 
-		Delegating.prototype.inspect = function() {
-			return this.join().inspect();
-		};
-
 		Delegating.prototype._report = function(context) {
 			this.join()._report(context);
 		};
@@ -875,30 +862,6 @@ define(function() {
 
 		Async.prototype.when = function(continuation) {
 			tasks.enqueue(new ContinuationTask(continuation, this));
-		};
-
-		/**
-		 * Handler that follows another handler, injecting a receiver
-		 * @param {object} handler another handler to follow
-		 * @param {object=undefined} receiver
-		 * @constructor
-		 */
-		function Bound(handler, receiver) {
-			Delegating.call(this, handler);
-			this.receiver = receiver;
-		}
-
-		inherit(Delegating, Bound);
-
-		Bound.prototype.when = function(continuation) {
-			// Because handlers are allowed to be shared among promises,
-			// each of which possibly having a different receiver, we have
-			// to insert our own receiver into the chain if it has been set
-			// so that callbacks (f, r, u) will be called using our receiver
-			if(this.receiver !== void 0) {
-				continuation.receiver = this.receiver;
-			}
-			this.join().when(continuation);
 		};
 
 		/**
@@ -927,10 +890,6 @@ define(function() {
 		inherit(Handler, Fulfilled);
 
 		Fulfilled.prototype._state = 1;
-
-		Fulfilled.prototype.inspect = function() {
-			return { state: 'fulfilled', value: this.value };
-		};
 
 		Fulfilled.prototype.fold = function(f, z, c, to) {
 			runContinuation3(f, z, this, c, to);
@@ -961,10 +920,6 @@ define(function() {
 		inherit(Handler, Rejected);
 
 		Rejected.prototype._state = -1;
-
-		Rejected.prototype.inspect = function() {
-			return { state: 'rejected', reason: this.value };
-		};
 
 		Rejected.prototype.fold = function(f, z, c, to) {
 			this._unreport();
@@ -1030,16 +985,6 @@ define(function() {
 
 		function cycle() {
 			return new Rejected(new TypeError('Promise cycle'));
-		}
-
-		// Snapshot states
-
-		/**
-		 * Creates a pending state snapshot
-		 * @returns {{state:'pending'}}
-		 */
-		function toPendingState() {
-			return { state: 'pending' };
 		}
 
 		// Task runners
