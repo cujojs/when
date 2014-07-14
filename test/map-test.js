@@ -22,6 +22,13 @@ function identity(x) {
 
 buster.testCase('when.map', {
 
+	'should pass index to predicate as second param': function() {
+		return when.map(['a','b','c'], function(x, i) {
+			assert(typeof i === 'number');
+			return x;
+		});
+	},
+
 	'should map input values array': function(done) {
 		var input = [1, 2, 3];
 		when.map(input, mapper).then(
