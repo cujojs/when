@@ -1,6 +1,6 @@
 ### 3.4.0
 
-* New [`when.filter`](docs/api.md#whenfilter) for filtering array of promises
+* New [`when.filter`](docs/api.md#whenfilter) for filtering arrays of promises.
 * [`when.map`](docs/api.md#whenmap) and [`when.filter`](docs/api.md#whenfilter) now provide the array index as the second param to their mapping and filtering functions.
 * [`when/keys.map`](docs/api.md#whenkeys-map) now provides the associated key to its mapping function.
 * Smaller ES6 shim.
