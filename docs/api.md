@@ -1743,10 +1743,10 @@ var promisified3 = callbacks.promisify(inverseVariadic, {
 
 ### Which one should I use?
 
-|                          | fn | node | callback |
-|--------------------------|----|------|----------|
-|The function looks like:|```doStuff(x, y);```<br/> Synchronous, no callbacks.| ```doStuff(x,y, callback);```<br/>The last parameter is a callback like ```function(err, result)```. | ```doStuff(x, y, callback, errback);```<br/>The next-to-last is callback, last is errback.|
-|Use this:        | ```var fn = require('when/function');```<br/>```fn.lift(doStuff)(x,y);```|```nodefn = require('when/node');```<br/>```nodefn.lift(doStuff)(x,y);```|```callbacks = require('when/callbacks');```<br/>```callbacks.lift(doStuff)(x,y);```|
+|                            | fn | node | callback |
+|----------------------------|----|------|----------|
+|**The function looks like:**|```doStuff(x, y);```<br/> Synchronous, no callbacks.| ```doStuff(x,y, callback);```<br/>The last parameter is a callback like ```function(err, result)```. | ```doStuff(x, y, callback, errback);```<br/>The next-to-last is callback, last is errback.|
+|**Use this:**               | ```require('when');```<br/>```when.lift(doStuff)(x,y).then(...);```|```nodefn = require('when/node');```<br/>```nodefn.lift(doStuff)(x,y).then(...);```|```callbacks = require('when/callbacks');```<br/>```callbacks.lift(doStuff)(x,y).then(...);```|
 
 
 # ES6 generators
