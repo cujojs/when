@@ -98,7 +98,7 @@ function drive(opts) {
 		projectName = 'unknown';
 	}
 
-	var sauceRestClient = rest.chain(mimeInterceptor, { mime: 'application/json' })
+	var sauceRestClient = rest.wrap(mimeInterceptor, { mime: 'application/json' })
 		.wrap(basicAuthInterceptor, { username: username, password: accessKey })
 		.wrap(pathPrefixInterceptor, { prefix: 'http://saucelabs.com/rest/v1' });
 	var passedStatusInterceptor = interceptor({
