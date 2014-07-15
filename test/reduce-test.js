@@ -119,7 +119,7 @@ buster.testCase('when.reduce', {
 				return arr;
 			}
 
-			return when.reduceRight([later(1), later(2), later(3)], insert, []).then(
+			return when.reduceRight([when(1), when(2), when(3)], insert, []).then(
 				function(result) {
 					assert.equals(result, [1,2,3]);
 				});
@@ -220,7 +220,7 @@ buster.testCase('when.reduce', {
 		},
 
 		'should reduce in input order': function() {
-			return when.reduce([later(1), later(2), later(3)], plus, '').then(
+			return when.reduce([later(1), when(2), when(3)], plus, '').then(
 				function(result) {
 					assert.equals(result, '123');
 				});
@@ -246,7 +246,7 @@ buster.testCase('when.reduce', {
 				return arr;
 			}
 
-			return when.reduce([later(1), later(2), later(3)], insert, []).then(
+			return when.reduce([when(1), when(2), when(3)], insert, []).then(
 				function(result) {
 					assert.equals(result, [1,2,3]);
 				});

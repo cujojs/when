@@ -79,6 +79,15 @@ buster.testCase('when/keys', {
 	},
 
 	'map': {
+		'should pass key as second param': function() {
+			var input = { a:1, b:2, c:3 };
+			return keys.map(input, function(x, k) {
+				assert(typeof k === 'string' && input.hasOwnProperty(k));
+				return x;
+			});
+
+		},
+
 		'should resolve empty input': function() {
 			return keys.map({}).then(assertNoKeys);
 		},

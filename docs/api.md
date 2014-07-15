@@ -31,6 +31,7 @@ API
 	* [when.all(array)](#whenall)
 	* [when.settle(array)](#whensettle)
 	* [when.map(array, mapper)](#whenmap)
+	* [when.filter(array, predicate)](#whenfilter)
 	* [when.reduce(array, reducer)](#whenreduce)
 	* [when.reduceRight(array, reducer)](#whenreduceright)
 1. Array Races
@@ -794,7 +795,7 @@ var promise = when.map(array, mapper)
 
 Where:
 
-* array is an Array *or a promise for an array*, which may contain promises and/or values.
+* array is an Array or promise for an Array, which may contain promises and/or values
 
 Traditional array map function, similar to `Array.prototype.map()`, but allows input to contain promises and/or values, and mapFunc may return either a value or a promise.
 
@@ -803,12 +804,38 @@ If any of the promises is rejected, the returned promise will be rejected with t
 The map function should have the signature:
 
 ```js
-mapFunc(item)
+mapFunc(value:*, index:Number):*
 ```
 
 Where:
 
-* `item` is a fully resolved value
+* `value` fulfilled value
+* `index` array index of `value`
+
+## when.filter
+
+```js
+var promise = when.filter(array, predicate);
+```
+
+Where:
+
+* array is an Array or promise for an Array, which may contain promises and/or values
+
+Filters the input array, returning a promise for the filtered array.  The filtering `predicate` may return a boolean or promise for boolean.
+
+If any of the promises is rejected, the returned promise will be rejected with the rejection reason of the first promise that was rejected.
+
+The predicate should have the signature:
+
+```js
+predicate(value:*, index:Number):boolean
+```
+
+Where:
+
+* `value` fulfilled value
+* `index` array index of `value`
 
 ## when.reduce
 ## when.reduceRight
@@ -827,7 +854,7 @@ Traditional array reduce function, similar to `Array.prototype.reduce()` and `Ar
 The reduce function should have the signature:
 
 ```js
-reducer(currentResult, value, index, total)
+reducer(currentResult, value, index)
 ```
 
 Where:
@@ -835,7 +862,6 @@ Where:
 * `currentResult` is the current accumulated reduce value
 * `value` is the fully resolved value at `index` in `array`
 * `index` is the *basis* of `value` ... practically speaking, this is the array index of the array corresponding to `value`
-* `total` is the total number of items in `array`
 
 ```js
 // sum the eventual values of several promises
@@ -922,12 +948,13 @@ If any of the promises is rejected, the returned promise will be rejected with t
 The map function should have the signature:
 
 ```js
-mapFunc(value)
+mapFunc(value:*, key:String):*
 ```
 
 Where:
 
-* `value` is a fully resolved value
+* `value` fulfilled value
+* `key` key corresponding to `value`
 
 ### See also:
 * [when.map](#whenmap)

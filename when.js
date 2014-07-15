@@ -5,7 +5,7 @@
  * when is part of the cujoJS family of libraries (http://cujojs.com/)
  * @author Brian Cavalier
  * @author John Hann
- * @version 3.3.1
+ * @version 3.4.0
  */
 (function(define) { 'use strict';
 define(function (require) {
@@ -52,6 +52,7 @@ define(function (require) {
 	when.race        = lift(Promise.race);   // First-to-settle race
 
 	when.map         = map;                  // Array.map() for promises
+	when.filter      = filter;               // Array.filter() for promises
 	when.reduce      = reduce;               // Array.reduce() for promises
 	when.reduceRight = reduceRight;          // Array.reduceRight() for promises
 
@@ -193,7 +194,7 @@ define(function (require) {
 	 * the outcome states of all input promises.  The returned promise
 	 * will only reject if `promises` itself is a rejected promise.
 	 * @param {array|Promise} promises array (or promise for an array) of promises
-	 * @returns {Promise}
+	 * @returns {Promise} promise for array of settled state descriptors
 	 */
 	function settle(promises) {
 		return when(promises, Promise.settle);
@@ -203,7 +204,8 @@ define(function (require) {
 	 * Promise-aware array map function, similar to `Array.prototype.map()`,
 	 * but input array may contain promises or values.
 	 * @param {Array|Promise} promises array of anything, may contain promises and values
-	 * @param {function} mapFunc map function which may return a promise or value
+	 * @param {function(x:*, index:Number):*} mapFunc map function which may
+	 *  return a promise or value
 	 * @returns {Promise} promise that will fulfill with an array of mapped values
 	 *  or reject if any input promise rejects.
 	 */
@@ -214,14 +216,28 @@ define(function (require) {
 	}
 
 	/**
+	 * Filter the provided array of promises using the provided predicate.  Input may
+	 * contain promises and values
+	 * @param {Array|Promise} promises array of promises and values
+	 * @param {function(x:*, index:Number):boolean} predicate filtering predicate.
+	 *  Must return truthy (or promise for truthy) for items to retain.
+	 * @returns {Promise} promise that will fulfill with an array containing all items
+	 *  for which predicate returned truthy.
+	 */
+	function filter(promises, predicate) {
+		return when(promises, function(promises) {
+			return Promise.filter(promises, predicate);
+		});
+	}
+
+	/**
 	 * Traditional reduce function, similar to `Array.prototype.reduce()`, but
 	 * input may contain promises and/or values, and reduceFunc
 	 * may return either a value or a promise, *and* initialValue may
 	 * be a promise for the starting value.
-	 *
 	 * @param {Array|Promise} promises array or promise for an array of anything,
 	 *      may contain a mix of promises and values.
-	 * @param {function} f reduce function reduce(currentValue, nextValue, index)
+	 * @param {function(accumulated:*, x:*, index:Number):*} f reduce function
 	 * @returns {Promise} that will resolve to the final reduced value
 	 */
 	function reduce(promises, f /*, initialValue */) {
@@ -238,10 +254,9 @@ define(function (require) {
 	 * input may contain promises and/or values, and reduceFunc
 	 * may return either a value or a promise, *and* initialValue may
 	 * be a promise for the starting value.
-	 *
 	 * @param {Array|Promise} promises array or promise for an array of anything,
 	 *      may contain a mix of promises and values.
-	 * @param {function} f reduce function reduce(currentValue, nextValue, index)
+	 * @param {function(accumulated:*, x:*, index:Number):*} f reduce function
 	 * @returns {Promise} that will resolve to the final reduced value
 	 */
 	function reduceRight(promises, f /*, initialValue */) {
