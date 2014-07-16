@@ -17,7 +17,7 @@ define(function(require) {
 	function lift(generator) {
 		return function() {
 			return run(generator, this, arguments);
-		}
+		};
 	}
 
 	/**
