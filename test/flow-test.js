@@ -91,6 +91,20 @@ buster.testCase('when/lib/flow', {
 				);
 			},
 
+			'should await returned promise': function() {
+				var awaited = false;
+				return Promise.resolve(sentinel).ensure(function() {
+					return new Promise(function(resolve) {
+						setTimeout(function() {
+							awaited = true;
+							resolve();
+						}, 1);
+					});
+				}).then(function() {
+					assert(awaited);
+				});
+			},
+
 			'should propagate rejection on throw': function() {
 				return Promise.resolve(other).ensure(
 					function() {
@@ -117,6 +131,20 @@ buster.testCase('when/lib/flow', {
 						assert.same(val, sentinel);
 					}
 				);
+			},
+
+			'should await returned promise': function() {
+				var awaited = false;
+				return Promise.resolve(sentinel).ensure(function() {
+					return new Promise(function(resolve, reject) {
+						setTimeout(function() {
+							awaited = true;
+							reject();
+						}, 1);
+					});
+				})['catch'](function() {
+					assert(awaited);
+				});
 			},
 
 			'should propagate rejection on throw': function() {
