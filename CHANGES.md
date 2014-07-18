@@ -1,3 +1,7 @@
+### 3.4.1
+
+* Fix for `promise.finally` not waiting on returned promises.
+
 ### 3.4.0
 
 * New [`when.filter`](docs/api.md#whenfilter) for filtering arrays of promises.
