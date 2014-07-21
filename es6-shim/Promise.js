@@ -911,12 +911,13 @@ define(function() {
 		Rejected.prototype._state = -1;
 
 		Rejected.prototype.fold = function(f, z, c, to) {
-			this._unreport();
 			to.become(this);
 		};
 
 		Rejected.prototype.when = function(cont) {
-			this._unreport();
+			if(typeof cont.rejected === 'function') {
+				this._unreport();
+			}
 			runContinuation1(cont.rejected, this, cont.receiver, cont.resolver);
 		};
 
