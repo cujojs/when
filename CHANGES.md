@@ -1,3 +1,7 @@
+### 3.4.2
+
+* Fix for rare false negative in [unhandled rejection reporting](docs/api.md#debugging-promises).
+
 ### 3.4.1
 
 * Fix for `promise.finally` not waiting on returned promises.
