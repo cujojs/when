@@ -1,6 +1,6 @@
 <a href="http://promises-aplus.github.com/promises-spec"><img src="http://promises-aplus.github.com/promises-spec/assets/logo-small.png" alt="Promises/A+ logo" align="right" /></a>
 
-[![Build Status](https://travis-ci.org/cujojs/when.png?branch=master)](https://travis-ci.org/cujojs/when)
+[![Build Status](https://travis-ci.org/cujojs/when.svg?branch=master)](https://travis-ci.org/cujojs/when)
 
 when.js
 =======
