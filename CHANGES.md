@@ -1,3 +1,8 @@
+### 3.4.3
+
+* Improve error handling for [predicate catch](docs/api.md#promisecatch)
+* Simplify internals and reduce code size
+
 ### 3.4.2
 
 * Fix for rare false negative in [unhandled rejection reporting](docs/api.md#debugging-promises).

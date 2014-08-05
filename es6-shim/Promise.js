@@ -820,37 +820,26 @@ define(function() {
 		};
 
 		/**
-		 * Abstract base for handler that delegates to another handler
-		 * @param {object} handler
-		 * @constructor
-		 */
-		function Delegating(handler) {
-			this.handler = handler;
-		}
-
-		inherit(Handler, Delegating);
-
-		Delegating.prototype._report = function(context) {
-			this.join()._report(context);
-		};
-
-		Delegating.prototype._unreport = function() {
-			this.join()._unreport();
-		};
-
-		/**
 		 * Wrap another handler and force it into a future stack
 		 * @param {object} handler
 		 * @constructor
 		 */
 		function Async(handler) {
-			Delegating.call(this, handler);
+			this.handler = handler;
 		}
 
-		inherit(Delegating, Async);
+		inherit(Handler, Async);
 
 		Async.prototype.when = function(continuation) {
 			tasks.enqueue(new ContinuationTask(continuation, this));
+		};
+
+		Async.prototype._report = function(context) {
+			this.join()._report(context);
+		};
+
+		Async.prototype._unreport = function() {
+			this.join()._unreport();
 		};
 
 		/**
