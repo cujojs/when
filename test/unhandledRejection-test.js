@@ -5,11 +5,15 @@ buster.testCase('unhandledRejection', {
 
 	'should not fail if JSON.stringify throws': function() {
 		var fixture = unhandledRejection({});
-		var circle = {};
+		var circle = { self: void 0 };
 		circle.self = circle;
 
 		buster.refute.exception(function() {
-			fixture.onPotentiallyUnhandledRejection({ handled: false, value: circle });
+			fixture.onPotentiallyUnhandledRejection({
+				id: 'JSON.stringify circular ref test',
+				handled: false,
+				value: circle
+			});
 		});
 	}
 
