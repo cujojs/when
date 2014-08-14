@@ -1,3 +1,7 @@
+### 3.4.4
+
+* Workaround for node 0.10.30 setTimeout bug. See [this issue](https://github.com/joyent/node/issues/8167)
+
 ### 3.4.3
 
 * Improve error handling for [predicate catch](docs/api.md#promisecatch)
