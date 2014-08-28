@@ -1566,7 +1566,7 @@ handlePromisedData(dataPromise);
 var resultPromise = nodefn.bindCallback(promise, nodeback);
 ```
 
-Lifts and then calls the node-style callback on the provided promise.  This is a one-shot version of [nodefn.liftCallback](nodefn-liftcallback), and the `resultPromise` will behave as described there.
+Lifts and then calls the node-style callback on the provided promise.  This is a one-shot version of [nodefn.liftCallback](#nodeliftcallback), and the `resultPromise` will behave as described there.
 
 ```js
 var nodefn = require('when/node');
