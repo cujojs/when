@@ -3,7 +3,7 @@ var assert = buster.assert;
 var fail = buster.referee.fail;
 
 var inspect = require('../lib/decorators/inspect');
-var Promise = inspect(require('../lib/Promise'));
+var CorePromise = inspect(require('../lib/Promise'));
 
 var sentinel = { value: 'sentinel' };
 
@@ -25,17 +25,17 @@ buster.testCase('inspect', {
 
 	'when inspecting promises': {
 		'should return pending state for pending promise': function() {
-			var promise = new Promise(function() {});
+			var promise = new CorePromise(function() {});
 
 			assertPending(promise.inspect());
 		},
 
 		'should immediately return fulfilled state for fulfilled promise': function() {
-			assertFulfilled(Promise.resolve(sentinel).inspect(), sentinel);
+			assertFulfilled(CorePromise.resolve(sentinel).inspect(), sentinel);
 		},
 
 		'should return fulfilled state for fulfilled promise': function() {
-			var promise = Promise.resolve(sentinel);
+			var promise = CorePromise.resolve(sentinel);
 
 			return promise.then(function() {
 				assertFulfilled(promise.inspect(), sentinel);
@@ -43,11 +43,11 @@ buster.testCase('inspect', {
 		},
 
 		'should immediately return rejected state for rejected promise': function() {
-			assertRejected(Promise.reject(sentinel).inspect(), sentinel);
+			assertRejected(CorePromise.reject(sentinel).inspect(), sentinel);
 		},
 
 		'should return rejected state for rejected promise': function() {
-			var promise = Promise.reject(sentinel);
+			var promise = CorePromise.reject(sentinel);
 
 			return promise.then(fail, function() {
 				assertRejected(promise.inspect(), sentinel);
@@ -57,13 +57,13 @@ buster.testCase('inspect', {
 
 	'when inspecting thenables': {
 		'should return pending state for pending thenable': function() {
-			var p = Promise.resolve({ then: function() {} });
+			var p = CorePromise.resolve({ then: function() {} });
 
 			assertPending(p.inspect());
 		},
 
 		'should return fulfilled state for fulfilled thenable': function() {
-			var p = Promise.resolve({ then: function(fulfill) { fulfill(sentinel); } });
+			var p = CorePromise.resolve({ then: function(fulfill) { fulfill(sentinel); } });
 
 			return p.then(function() {
 				assertFulfilled(p.inspect(), sentinel);
@@ -71,7 +71,7 @@ buster.testCase('inspect', {
 		},
 
 		'should return rejected state for rejected thenable': function() {
-			var p = Promise.resolve({ then: function(_, rejected) { rejected(sentinel); } });
+			var p = CorePromise.resolve({ then: function(_, rejected) { rejected(sentinel); } });
 
 			return p.then(fail, function() {
 				assertRejected(p.inspect(), sentinel);

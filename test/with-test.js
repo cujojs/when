@@ -1,24 +1,24 @@
 var buster = typeof window !== 'undefined' ? window.buster : require('buster');
 var assert = buster.assert;
 
-var Promise = require('../lib/Promise');
+var CorePromise = require('../lib/Promise');
 var sentinel = { value: 'sentinel' };
 
 buster.testCase('promise.with', {
 	'should set thisArg': function() {
-		return Promise.resolve()['with'](sentinel).then(function() {
+		return CorePromise.resolve()['with'](sentinel).then(function() {
 			assert.same(this, sentinel);
 		});
 	},
 
 	'should set thisArg when rejected': function() {
-		return Promise.reject()['with'](sentinel).then(void 0, function() {
+		return CorePromise.reject()['with'](sentinel).then(void 0, function() {
 			assert.same(this, sentinel);
 		});
 	},
 
 	'should set thisArg for derived promises': function() {
-		return Promise.resolve()['with'](sentinel).then(function(x) {
+		return CorePromise.resolve()['with'](sentinel).then(function(x) {
 			return x;
 		}).then(function() {
 			assert.same(this, sentinel);
@@ -26,7 +26,7 @@ buster.testCase('promise.with', {
 	},
 
 	'should set thisArg for derived promises when rejected': function() {
-		return Promise.resolve()['with'](sentinel).then(function(x) {
+		return CorePromise.resolve()['with'](sentinel).then(function(x) {
 			throw x;
 		}).then(void 0, function() {
 			assert.same(this, sentinel);
@@ -36,7 +36,7 @@ buster.testCase('promise.with', {
 	'when called with no args': {
 		'should set default thisArg': function() {
 			var expected;
-			return Promise.resolve().then(function() {
+			return CorePromise.resolve().then(function() {
 				expected = this;
 			})
 			['with'](sentinel).then(function() {
@@ -49,7 +49,7 @@ buster.testCase('promise.with', {
 
 		'should set default thisArg when rejected': function() {
 			var expected;
-			return Promise.resolve().then(function() {
+			return CorePromise.resolve().then(function() {
 				expected = this;
 			})
 			['with'](sentinel).then(function() {
@@ -63,7 +63,7 @@ buster.testCase('promise.with', {
 
 		'should set default thisArg for derived promises': function() {
 			var expected;
-			return Promise.resolve().then(function() {
+			return CorePromise.resolve().then(function() {
 				expected = this;
 			})
 			['with'](sentinel).then(function() {
@@ -79,7 +79,7 @@ buster.testCase('promise.with', {
 
 		'should set default thisArg for derived promises when rejected': function() {
 			var expected;
-			return Promise.resolve().then(function() {
+			return CorePromise.resolve().then(function() {
 				expected = this;
 			})
 			['with'](sentinel).then(function() {
@@ -102,7 +102,7 @@ buster.testCase('promise.with', {
 				return this;
 			}).call(thisArg);
 
-			return Promise.resolve()['with'](thisArg).then(function() {
+			return CorePromise.resolve()['with'](thisArg).then(function() {
 				assert.equals(this, expected);
 			});
 		},
@@ -114,7 +114,7 @@ buster.testCase('promise.with', {
 				return this;
 			}).call(thisArg);
 
-			return Promise.reject()['with'](thisArg).then(void 0, function() {
+			return CorePromise.reject()['with'](thisArg).then(void 0, function() {
 				assert.equals(this, expected);
 			});
 		}

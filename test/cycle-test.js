@@ -1,7 +1,7 @@
 var buster = typeof window !== 'undefined' ? window.buster : require('buster');
 var assert = buster.assert;
 
-var Promise = require('../lib/Promise');
+var CorePromise = require('../lib/Promise');
 
 function assertCycle(p) {
 	return p.then(buster.referee.fail, function(e) {
@@ -13,7 +13,8 @@ buster.testCase('cycle detection', {
 
 	'should detect self-cycles': {
 		'when resolving':  function() {
-			var p = new Promise(function(resolve) {
+			/*global setTimeout*/
+			var p = new CorePromise(function(resolve) {
 				setTimeout(function() {
 					resolve(p);
 				}, 0);
@@ -23,7 +24,7 @@ buster.testCase('cycle detection', {
 		},
 
 		'when returning from handler': function() {
-			var p = Promise.resolve();
+			var p = CorePromise.resolve();
 			p = p.then(function() {
 				return p;
 			});
@@ -32,9 +33,9 @@ buster.testCase('cycle detection', {
 		},
 
 		'when returning resolved from handler': function() {
-			var p = Promise.resolve();
+			var p = CorePromise.resolve();
 			p = p.then(function() {
-				return Promise.resolve(p);
+				return CorePromise.resolve(p);
 			});
 
 			return assertCycle(p);
@@ -42,19 +43,19 @@ buster.testCase('cycle detection', {
 	},
 
 	'should detect long cycles': function() {
-		var p1 = new Promise(function(resolve) {
+		var p1 = new CorePromise(function(resolve) {
 			setTimeout(function() {
 				resolve(p2);
 			}, 0);
 		});
 
-		var p2 = new Promise(function(resolve) {
+		var p2 = new CorePromise(function(resolve) {
 			setTimeout(function() {
 				resolve(p3);
 			}, 0);
 		});
 
-		var p3 = new Promise(function(resolve) {
+		var p3 = new CorePromise(function(resolve) {
 			setTimeout(function() {
 				resolve(p1);
 			}, 0);

@@ -4,7 +4,7 @@ var refute = buster.refute;
 var fail = buster.referee.fail;
 
 var when = require('../when');
-var Promise = when.Promise;
+var CorePromise = when.Promise;
 
 var sentinel = { value: 'sentinel' };
 var other = { value: 'other' };
@@ -40,11 +40,11 @@ buster.testCase('promise', {
 	'done': {
 
 		setUp: function() {
-			this.origOnFatalRejection = Promise.onFatalRejection;
+			this.origOnFatalRejection = CorePromise.onFatalRejection;
 		},
 
 		tearDown: function() {
-			Promise.onFatalRejection = this.origOnFatalRejection;
+			CorePromise.onFatalRejection = this.origOnFatalRejection;
 		},
 
 		'should return undefined': function() {
@@ -63,7 +63,7 @@ buster.testCase('promise', {
 			'should be fatal': {
 				'when handleValue throws': function(done) {
 					var p = when.resolve();
-					Promise.onFatalRejection = function testFatal(e) {
+					CorePromise.onFatalRejection = function testFatal(e) {
 						assert.same(e.value, sentinel);
 						done();
 					};
@@ -75,7 +75,7 @@ buster.testCase('promise', {
 
 				'when handleValue rejects': function(done) {
 					var p = when.resolve();
-					Promise.onFatalRejection = function testFatal(e) {
+					CorePromise.onFatalRejection = function testFatal(e) {
 						assert.same(e.value, sentinel);
 						done();
 					};
@@ -98,7 +98,7 @@ buster.testCase('promise', {
 			'should be fatal': {
 				'when no handleFatalError provided': function(done) {
 					var p = when.reject(sentinel);
-					Promise.onFatalRejection = function testFatal(e) {
+					CorePromise.onFatalRejection = function testFatal(e) {
 						assert.same(e.value, sentinel);
 						done();
 					};
@@ -108,7 +108,7 @@ buster.testCase('promise', {
 
 				'when handleFatalError throws': function(done) {
 					var p = when.reject(other);
-					Promise.onFatalRejection = function testFatal(e) {
+					CorePromise.onFatalRejection = function testFatal(e) {
 						assert.same(e.value, sentinel);
 						done();
 					};
@@ -120,7 +120,7 @@ buster.testCase('promise', {
 
 				'when handleFatalError rejects': function(done) {
 					var p = when.reject();
-					Promise.onFatalRejection = function testFatal(e) {
+					CorePromise.onFatalRejection = function testFatal(e) {
 						assert.same(e.value, sentinel);
 						done();
 					};

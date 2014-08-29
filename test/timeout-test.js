@@ -2,7 +2,7 @@ var buster = typeof window !== 'undefined' ? window.buster : require('buster');
 var assert = buster.assert;
 var fail = buster.referee.fail;
 
-var Promise = require('../lib/Promise');
+var CorePromise = require('../lib/Promise');
 var TimeoutError = require('../lib/TimeoutError');
 var timeout = require('../timeout');
 
@@ -25,7 +25,7 @@ buster.testCase('when/timeout', {
 	},
 
 	'should not timeout when rejected before timeout': function(done) {
-		timeout(10, Promise.reject(sentinel)).then(
+		timeout(10, CorePromise.reject(sentinel)).then(
 			fail,
 			function(val) {
 				assert.same(val, sentinel);
@@ -34,7 +34,7 @@ buster.testCase('when/timeout', {
 	},
 
 	'should not timeout when resolved before timeout': function(done) {
-		timeout(10, Promise.resolve(sentinel)).then(
+		timeout(10, CorePromise.resolve(sentinel)).then(
 			function(val) {
 				assert.same(val, sentinel);
 			},
@@ -45,7 +45,7 @@ buster.testCase('when/timeout', {
 	'promise.timeout': {
 
 		'should reject with TimeoutError': function() {
-			return Promise.never().timeout(0).then(
+			return CorePromise.never().timeout(0).then(
 				fail,
 				function(e) {
 					assert(e instanceof TimeoutError);
@@ -54,13 +54,13 @@ buster.testCase('when/timeout', {
 		},
 
 		'should pattern match': function() {
-			return Promise.never().timeout(0).catch(TimeoutError, function(e) {
+			return CorePromise.never().timeout(0).catch(TimeoutError, function(e) {
 				assert(e instanceof TimeoutError);
 			});
 		},
 
 		'should reject after timeout with the provided reason': function() {
-			return Promise.never().timeout(0, sentinel).then(
+			return CorePromise.never().timeout(0, sentinel).then(
 				fail,
 				function(e) {
 					assert.same(e, sentinel);
@@ -69,7 +69,7 @@ buster.testCase('when/timeout', {
 		},
 
 		'should reject after timeout with default reason when undefined': function() {
-			return Promise.never().timeout(0, void 0).then(
+			return CorePromise.never().timeout(0, void 0).then(
 				fail,
 				function(e) {
 					assert(e instanceof TimeoutError);
@@ -78,7 +78,7 @@ buster.testCase('when/timeout', {
 		},
 
 		'should not timeout when rejected before timeout': function() {
-			return Promise.reject(sentinel).timeout(0).then(
+			return CorePromise.reject(sentinel).timeout(0).then(
 				fail,
 				function(val) {
 					assert.same(val, sentinel);
@@ -87,7 +87,7 @@ buster.testCase('when/timeout', {
 		},
 
 		'should not timeout when resolved before timeout': function() {
-			return Promise.resolve(sentinel).timeout(0).then(
+			return CorePromise.resolve(sentinel).timeout(0).then(
 				function(val) {
 					assert.same(val, sentinel);
 				}
@@ -95,7 +95,7 @@ buster.testCase('when/timeout', {
 		},
 
 		'should propagate progress': function(done) {
-			return new Promise(function(resolve, _, notify) {
+			return new CorePromise(function(resolve, _, notify) {
 				notify(sentinel);
 			})
 				.timeout(10)
