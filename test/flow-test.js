@@ -77,6 +77,32 @@ buster.testCase('when/lib/flow', {
 			assert.isFunction(CorePromise.resolve().ensure().then);
 		},
 
+		'should not suppress unhandled rejection': {
+			'when handler returns non-promise': function(done) {
+				var origOnUnhandled = CorePromise.onPotentiallyUnhandledRejection;
+				CorePromise.onPotentiallyUnhandledRejection = function() {
+					CorePromise.onPotentiallyUnhandledRejection = origOnUnhandled;
+					assert(true);
+					done();
+				};
+
+				CorePromise.reject(sentinel).ensure(function() {});
+			},
+
+			'when handler returns promise': function(done) {
+				var origOnUnhandled = CorePromise.onPotentiallyUnhandledRejection;
+				CorePromise.onPotentiallyUnhandledRejection = function() {
+					CorePromise.onPotentiallyUnhandledRejection = origOnUnhandled;
+					assert(true);
+					done();
+				};
+
+				CorePromise.reject(sentinel).ensure(function() {
+					return CorePromise.resolve(other);
+				});
+			}
+		},
+
 		'when fulfilled': {
 			'should ignore callback return value': function() {
 				return CorePromise.resolve(sentinel).ensure(
