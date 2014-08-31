@@ -84,7 +84,7 @@ buster.testCase('when.all', {
 		).ensure(done);
 	},
 
-	'should not report unhandled rejection': {
+	'should report only 1 unhandled rejection': {
 		'when array contains > 1 rejection': function(done) {
 			/*global setTimeout*/
 			var origOnUnhandled = CorePromise.onPotentiallyUnhandledRejection;
@@ -93,6 +93,24 @@ buster.testCase('when.all', {
 			};
 
 			when.all([rejected(sentinel), resolved(123), rejected(other)])
+				['catch'](function(e) {
+					assert.same(e, sentinel);
+					setTimeout(function() {
+						CorePromise.onPotentiallyUnhandledRejection = origOnUnhandled;
+						done();
+					}, 100);
+				});
+		},
+
+		'when array contains same rejection multiple times': function(done) {
+			/*global setTimeout*/
+			var origOnUnhandled = CorePromise.onPotentiallyUnhandledRejection;
+			CorePromise.onPotentiallyUnhandledRejection = function() {
+				fail(new Error('should not report unhandled rejection'));
+			};
+
+			var r = rejected(sentinel);
+			when.all([r, r.then()])
 				['catch'](function(e) {
 					assert.same(e, sentinel);
 					setTimeout(function() {
