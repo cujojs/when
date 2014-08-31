@@ -3,8 +3,12 @@ var assert = buster.assert;
 var fail = buster.referee.fail;
 
 var when = require('../when');
+var CorePromise = when.Promise;
 var resolved = when.resolve;
 var rejected = when.reject;
+
+var sentinel = { value: 'sentinel' };
+var other = { value: 'other' };
 
 buster.testCase('when.all', {
 
@@ -78,5 +82,25 @@ buster.testCase('when.all', {
 			},
 			fail
 		).ensure(done);
+	},
+
+	'should not report unhandled rejection': {
+		'when array contains > 1 rejection': function(done) {
+			/*global setTimeout*/
+			var origOnUnhandled = CorePromise.onPotentiallyUnhandledRejection;
+			CorePromise.onPotentiallyUnhandledRejection = function() {
+				fail(new Error('should not report unhandled rejection'));
+			};
+
+			when.all([rejected(sentinel), resolved(123), rejected(other)])
+				['catch'](function(e) {
+					assert.same(e, sentinel);
+					setTimeout(function() {
+						CorePromise.onPotentiallyUnhandledRejection = origOnUnhandled;
+						done();
+					}, 100);
+				});
+		}
 	}
+
 });
