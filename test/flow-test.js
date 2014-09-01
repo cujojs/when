@@ -7,7 +7,11 @@ var CorePromise = require('../when').Promise;
 var sentinel = { value: 'sentinel' };
 var other = { value: 'other' };
 
+var origOnUnhandled = CorePromise.onPotentiallyUnhandledRejection;
+var origOnHandled = CorePromise.onPotentiallyUnhandledRejectionHandled;
+
 buster.testCase('when/lib/flow', {
+
 	'otherwise': {
 		'should be an alias for catch': function() {
 			assert.same(CorePromise.prototype['catch'], CorePromise.prototype.otherwise);
@@ -78,10 +82,13 @@ buster.testCase('when/lib/flow', {
 		},
 
 		'should not suppress unhandled rejection': {
+			tearDown: function() {
+				CorePromise.onPotentiallyUnhandledRejection = origOnUnhandled;
+				CorePromise.onPotentiallyUnhandledRejectionHandled = origOnHandled;
+			},
+
 			'when handler returns non-promise': function(done) {
-				var origOnUnhandled = CorePromise.onPotentiallyUnhandledRejection;
 				CorePromise.onPotentiallyUnhandledRejection = function() {
-					CorePromise.onPotentiallyUnhandledRejection = origOnUnhandled;
 					assert(true);
 					done();
 				};
@@ -90,9 +97,7 @@ buster.testCase('when/lib/flow', {
 			},
 
 			'when handler returns promise': function(done) {
-				var origOnUnhandled = CorePromise.onPotentiallyUnhandledRejection;
 				CorePromise.onPotentiallyUnhandledRejection = function() {
-					CorePromise.onPotentiallyUnhandledRejection = origOnUnhandled;
 					assert(true);
 					done();
 				};
@@ -100,6 +105,46 @@ buster.testCase('when/lib/flow', {
 				CorePromise.reject(sentinel).ensure(function() {
 					return CorePromise.resolve(other);
 				});
+			},
+
+			'when finally handler throws': function(done) {
+				/*global setTimeout*/
+				var errors = {};
+				CorePromise.onPotentiallyUnhandledRejection = function(rej) {
+					errors[rej.errorId] = rej;
+				};
+
+				CorePromise.onPotentiallyUnhandledRejectionHandled = function(rej) {
+					delete errors[rej.errorId];
+				};
+
+				CorePromise.reject(other).ensure(function() {
+					throw sentinel;
+				});
+
+				setTimeout(done(function() {
+					assert.equals(Object.keys(errors).length, 1);
+				}), 100);
+			},
+
+			'when finally handler rejects': function(done) {
+				/*global setTimeout*/
+				var errors = {};
+				CorePromise.onPotentiallyUnhandledRejection = function(rej) {
+					errors[rej.errorId] = rej;
+				};
+
+				CorePromise.onPotentiallyUnhandledRejectionHandled = function(rej) {
+					delete errors[rej.errorId];
+				};
+
+				CorePromise.reject(other).ensure(function() {
+					return Promise.reject(sentinel);
+				});
+
+				setTimeout(done(function() {
+					assert.equals(Object.keys(errors).length, 1);
+				}), 100);
 			}
 		},
 
