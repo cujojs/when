@@ -111,7 +111,7 @@ buster.testCase('when/lib/flow', {
 				/*global setTimeout*/
 				var errors = {};
 				CorePromise.onPotentiallyUnhandledRejection = function(rej) {
-					errors[rej.errorId] = rej;
+					errors[rej.errorId] = rej.value;
 				};
 
 				CorePromise.onPotentiallyUnhandledRejectionHandled = function(rej) {
@@ -123,7 +123,9 @@ buster.testCase('when/lib/flow', {
 				});
 
 				setTimeout(done(function() {
-					assert.equals(Object.keys(errors).length, 1);
+					var keys = Object.keys(errors);
+					assert.equals(keys.length, 1);
+					assert.same(errors[keys[0]], sentinel);
 				}), 100);
 			},
 
@@ -131,7 +133,7 @@ buster.testCase('when/lib/flow', {
 				/*global setTimeout*/
 				var errors = {};
 				CorePromise.onPotentiallyUnhandledRejection = function(rej) {
-					errors[rej.errorId] = rej;
+					errors[rej.errorId] = rej.value;
 				};
 
 				CorePromise.onPotentiallyUnhandledRejectionHandled = function(rej) {
@@ -139,11 +141,13 @@ buster.testCase('when/lib/flow', {
 				};
 
 				CorePromise.reject(other).ensure(function() {
-					return Promise.reject(sentinel);
+					return CorePromise.reject(sentinel);
 				});
 
 				setTimeout(done(function() {
-					assert.equals(Object.keys(errors).length, 1);
+					var keys = Object.keys(errors);
+					assert.equals(keys.length, 1);
+					assert.same(errors[keys[0]], sentinel);
 				}), 100);
 			}
 		},
