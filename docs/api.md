@@ -1856,7 +1856,7 @@ function getTodosForUser(userId) {
 	// returns a promise for an array of the user's todos
 }
 
-// Get the recent todos for user 123
+// filteredTodos is a promise for the recent todos for user 123
 var filteredTodos = getRecentTodosForUser(123);
 ```
 
