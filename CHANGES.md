@@ -1,3 +1,7 @@
+### 3.4.5
+
+* Fixes for edge cases for unhandled rejection reporting
+
 ### 3.4.4
 
 * Workaround for node 0.10.30 setTimeout bug. See [this issue](https://github.com/joyent/node/issues/8167)
