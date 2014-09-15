@@ -81,7 +81,7 @@
 		"browserify": "browserify -s when build/when.browserify.js --no-detect-globals -o build/when.js",
 		"browserify-debug": "browserify -s when build/when.browserify-debug.js --no-detect-globals -o build/when.js"
 	},
-  "browser": {
-    "vertx": false
-  }
+	"browser": {
+		"vertx": false
+	}
 }
