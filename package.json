@@ -1,6 +1,6 @@
 {
 	"name": "when",
-	"version": "3.5.0",
+	"version": "3.4.6",
 	"description": "A lightweight Promises/A+ and when() implementation, plus other async goodies.",
 	"keywords": [
 		"cujo",

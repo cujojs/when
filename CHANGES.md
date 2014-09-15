@@ -1,6 +1,6 @@
-### 3.5.0
+### 3.4.6
 
-* Webpack compatibility
+* Fix webpack compatibility by excluding `vertx` from browser bundles
 
 ### 3.4.5
 
