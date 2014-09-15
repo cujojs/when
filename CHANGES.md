@@ -1,3 +1,7 @@
+### 3.5.0
+
+* Webpack compatibility
+
 ### 3.4.5
 
 * Fixes for edge cases for unhandled rejection reporting

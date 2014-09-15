@@ -1,6 +1,6 @@
 {
 	"name": "when",
-	"version": "3.4.5",
+	"version": "3.5.0",
 	"description": "A lightweight Promises/A+ and when() implementation, plus other async goodies.",
 	"keywords": [
 		"cujo",
@@ -66,6 +66,9 @@
 	},
 	"main": "when",
 	"ender": { "files": ["*.js", "lib/*.js", "node/*.js", "unfold/*.js", "monitor/*.js"] },
+	"browser": {
+		"vertx": false
+	},
 	"directories": {
 		"test": "test"
 	},
@@ -80,8 +83,5 @@
 		"browserify-es6": "browserify -s Promise es6-shim/Promise.browserify-es6.js --no-detect-globals -o es6-shim/Promise.js",
 		"browserify": "browserify -s when build/when.browserify.js --no-detect-globals -o build/when.js",
 		"browserify-debug": "browserify -s when build/when.browserify-debug.js --no-detect-globals -o build/when.js"
-	},
-	"browser": {
-		"vertx": false
 	}
 }

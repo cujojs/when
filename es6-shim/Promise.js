@@ -233,10 +233,20 @@ define(function(require) {
 
 	} else {
 		nextTick = (function(cjsRequire) {
+			var vertx;
 			try {
 				// vert.x 1.x || 2.x
-				return cjsRequire('vertx').runOnLoop || cjsRequire('vertx').runOnContext;
+				vertx = cjsRequire('vertx');
 			} catch (ignore) {}
+
+			if (vertx) {
+				if (typeof vertx.runOnLoop === 'function') {
+					return vertx.runOnLoop;
+				}
+				if (typeof vertx.runOnContext === 'function') {
+					return vertx.runOnContext;
+				}
+			}
 
 			// capture setTimeout to avoid being caught by fake timers
 			// used in time based tests
@@ -1167,9 +1177,12 @@ define(function(require) {
 
 	try {
 		vertx = cjsRequire('vertx');
+	} catch (e) { }
+
+	if (vertx && typeof vertx.setTimer === 'function') {
 		setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
 		clearTimer = vertx.cancelTimer;
-	} catch (e) {
+	} else {
 		// NOTE: Truncate decimals to workaround node 0.10.30 bug:
 		// https://github.com/joyent/node/issues/8167
 		setTimer = function(f, ms) { return setTimeout(f, ms|0); };
