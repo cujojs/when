@@ -39,8 +39,8 @@ define(function (require) {
 	when['try']      = attempt;              // call a function and return a promise
 	when.attempt     = attempt;              // alias for when.try
 
-	when.iterate     = Promise.iterate;      // Generate a stream of promises
-	when.unfold      = Promise.unfold;       // Generate a stream of promises
+	when.iterate     = Promise.iterate;      // DEPRECATED (use cujojs/most streams) Generate a stream of promises
+	when.unfold      = Promise.unfold;       // DEPRECATED (use cujojs/most streams) Generate a stream of promises
 
 	when.join        = join;                 // Join 2 or more promises
 
