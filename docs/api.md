@@ -1084,7 +1084,7 @@ Where:
 * `unspool` - function that, given a seed, returns a `[valueToSendToHandler, newSeed]` pair. May return an array, array of promises, promise for an array, or promise for an array of promises.
 * `predicate` - function that receives the current seed, and should return truthy when the unfold should stop
 * `handler` - function that receives the `valueToSendToHandler` of the current iteration. This function can process `valueToSendToHandler` in whatever way you need.  It may return a promise to delay the next iteration of the unfold.
-* `seed` - initial value provided to the handler, and first `unspool` invocation. May be a promise.
+* `seed` - initial value provided to the first `unspool` invocation. May be a promise.
 
 ### Examples
 
