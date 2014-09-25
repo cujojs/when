@@ -79,6 +79,7 @@ API
 1. [Error types](#error-types)
 1. [Debugging promises](#debugging-promises)
 1. [Upgrading to 3.0 from 2.x](#upgrading-to-30-from-2x)
+1. [Refactoring progress](#refactoring-progress)
 
 # Core
 
@@ -201,7 +202,9 @@ Create a [Promise](#promise), whose fate is determined by running the supplied r
 ```js
 var promise = when.promise(function(resolve, reject, notify) {
 	// Do some work, possibly asynchronously, and then
-	// resolve or reject.  You can notify of progress events
+	// resolve or reject.
+
+	// DEPRECATED: You can notify of progress events
 	// along the way if you want/need.
 
 	resolve(awesomeResult);
@@ -214,7 +217,7 @@ var promise = when.promise(function(resolve, reject, notify) {
 	* When called with a non-promise value, fulfills `promise` with that value.
 	* When called with another promise, e.g. `resolve(otherPromise)`, `promise`'s fate will be equivalent to that that of `otherPromise`.
 * `reject(reason)` - function that rejects `promise`.
-* `notify(update)` - function that issues progress events for `promise`.
+* `notify(update)` - **DEPRECATED** function that issues progress events for `promise`.  See [Refactoring progress](#refactoring-progress) for more info.
 
 ## when.resolve
 
@@ -255,7 +258,7 @@ deferred.resolve(x)
 // Reject the promise with error as the reason
 deferred.reject(error)
 
-// Notify promise consumers of a progress update
+// DEPRECATED Notify promise consumers of a progress update
 deferred.notify(x)
 ```
 
@@ -332,13 +335,13 @@ var transformedPromise = promise
 	.then(void 0, onRejected);
 ```
 
-**DEPRECATED**: `then` may also be used to listen to progress events in a promise chain.  Use [`promise.progress`](#promiseprogress) instead.
+**DEPRECATED**: Progress events are deprecated and will be removed in a future release.  Until that release.  See [Refactoring progress](#refactoring-progress).
 
 ```js
-// Instead of this:
-var transformedPromise = promise.then(onFulfilled, onRejected, onProgress);
+// Deprecated use of then() and promise.progress() to listen for progress events
 
-// Do this:
+var transformedPromise = promise.then(onFulfilled, onRejected, onProgress);
+// or
 var transformedPromise = promise
 	.progress(onProgress)
 	.then(onFulfilled)
@@ -349,7 +352,7 @@ var transformedPromise = promise
 
 * `onFulfilled` to be called with the value after `promise` is fulfilled, or
 * `onRejected` to be called with the rejection reason after `promise` is rejected.
-* **DEPRECATED**: `onProgress` to be called with any progress updates issued by `promise`.
+* **DEPRECATED**: `onProgress` to be called with any progress updates issued by `promise`. See [Refactoring progress](#refactoring-progress).
 
 A promise makes the following guarantees about handlers registered in the same call to `.then()`:
 
@@ -715,6 +718,8 @@ Thing.prototype.doSomething = function(x) {
 ```
 
 ## promise.progress
+
+**DEPRECATED** Progress events are deprecated. See [Refactoring progress](#refactoring-progress)
 
 ```js
 promise.progress(onProgress);
@@ -2233,3 +2238,47 @@ Some functionality has moved to a new, preferred API.  The old APIs still work, 
 * `when/unfold` and `when/unfold/list` modules. Use [`when.unfold`](#whenunfold) instead
 * `when/function` `lift` and `call`. Use [`when.lift`](#whenlift) and [`when.try`](#whentry) instead.
 * In the [browserify build](installation.md), `when.node` is now the preferred alias over `when.nodefn`.
+
+# Progress events are deprecated
+
+Progress events are now deprecated, and will be removed in a future release.  They are problematic for several reasons, including:
+
+1. They're implemented in inconsistent ways across promise libraries, making them unreliable when mixing promises.
+1. They don't work in a predictable way when combining promises with `all`, `race`, `any`, etc.
+1. Returning a promise from a progress handler doesn't have the expected effect of making a promise chain wait.
+
+## Refactoring progress
+
+There is a simple alternative using `promise.tap` that can replace many usages of progress.  Here's an example of the pattern using `tap` to issue progress updates.
+
+```js
+var progressBar = //...;
+
+function showProgressUpdate(update) {
+	progressBar.setValue(update);
+}
+
+functionThatUsesPromiseProgress(showProgressUpdate)
+	.then(showCompletedMessage);
+
+// Accept the progress update function as an argument and use
+// tap() to call it with progress values
+function functionThatUsesPromiseProgress(notify) {
+	return doFirstTask()
+		.tap(function() {
+			// `return` is optional, depending on your needs.
+			// Returning allows notify to delay subsequent steps if it returns
+			// a promise.  If you don't want that, just call notify and discard
+			// its return value.
+			return notify(0.333);
+		})
+		.then(doSecondTask)
+		.tap(function() {
+			return notify(0.667);
+		}
+		.then(doThirdTask)
+		.tap(function() {
+			return notify(1.0);
+		});
+}
+```
