@@ -1,6 +1,7 @@
 ### 3.5.0
 
 * Improve `when.race` & `Promise.race` performance.
+* Internal changes to start paving the way toward 4.0.0.
 * Deprecate `when.iterate` and `when.unfold`.  Use [cujoJS/most](https://github.com/cujojs/most) for streaming asynchronous values.
 * Deprecate progress events. See [the docs for more information](docs/api.md#progress-events-are-deprecated) and [tips on refactoring](docs/api.md#refactoring-progress) code that uses promise progress.
 
