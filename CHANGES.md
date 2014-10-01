@@ -1,3 +1,9 @@
+### 3.5.0
+
+* Improve `when.race` & `Promise.race` performance.
+* Deprecate `when.iterate` and `when.unfold`.  Use [cujoJS/most](https://github.com/cujojs/most) for streaming asynchronous values.
+* Deprecate progress events. See [the docs for more information](docs/api.md#progress-events-are-deprecated) and [tips on refactoring](docs/api.md#refactoring-progress) code that uses promise progress.
+
 ### 3.4.6
 
 * Fix webpack compatibility by excluding `vertx` from browser bundles
