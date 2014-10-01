@@ -428,6 +428,7 @@ define(function() {
 			}
 
 			/**
+			 * @deprecated
 			 * Issue a progress event, notifying all progress listeners
 			 * @param {*} x progress event payload to pass to all listeners
 			 */
@@ -571,8 +572,7 @@ define(function() {
 						results[i] = h.value;
 						--pending;
 					} else {
-						unreportRemaining(promises, i+1, h);
-						resolver.become(h);
+						resolveAndObserveRemaining(promises, i+1, h, resolver);
 						break;
 					}
 
@@ -597,14 +597,15 @@ define(function() {
 			}
 		}
 
-		function unreportRemaining(promises, start, rejectedHandler) {
+		function resolveAndObserveRemaining(promises, start, handler, resolver) {
+			resolver.become(handler);
+
 			var i, h, x;
 			for(i=start; i<promises.length; ++i) {
 				x = promises[i];
 				if(maybeThenable(x)) {
 					h = getHandlerMaybeThenable(x);
-
-					if(h !== rejectedHandler) {
+					if(h !== handler) {
 						h.visit(h, void 0, h._unreport);
 					}
 				}
@@ -632,15 +633,23 @@ define(function() {
 				return never();
 			}
 
-			var h = new Pending();
-			var i, x;
+			var resolver = new Pending();
+			var i, x, h;
 			for(i=0; i<promises.length; ++i) {
 				x = promises[i];
-				if (x !== void 0 && i in promises) {
-					getHandler(x).visit(h, h.resolve, h.reject);
+				if (x === void 0 && !(i in promises)) {
+					continue;
 				}
+
+				h = getHandler(x);
+				if(h.state() !== 0) {
+					resolveAndObserveRemaining(promises, i+1, h, resolver);
+					break;
+				}
+
+				h.visit(resolver, resolver.resolve, resolver.reject);
 			}
-			return new Promise(Handler, h);
+			return new Promise(Handler, resolver);
 		}
 
 		// Promise internals
@@ -692,7 +701,7 @@ define(function() {
 
 		Handler.prototype.when
 			= Handler.prototype.become
-			= Handler.prototype.notify
+			= Handler.prototype.notify // deprecated
 			= Handler.prototype.fail
 			= Handler.prototype._unreport
 			= Handler.prototype._report
@@ -835,6 +844,9 @@ define(function() {
 			}
 		};
 
+		/**
+		 * @deprecated
+		 */
 		Pending.prototype.notify = function(x) {
 			if(!this.resolved) {
 				tasks.enqueue(new ProgressTask(x, this));
@@ -1107,6 +1119,9 @@ define(function() {
 			Promise.exitContext();
 		}
 
+		/**
+		 * @deprecated
+		 */
 		function runNotify(f, x, h, receiver, next) {
 			if(typeof f !== 'function') {
 				return next.notify(x);
@@ -1141,6 +1156,7 @@ define(function() {
 		}
 
 		/**
+		 * @deprecated
 		 * Return f.call(thisArg, x), or if it throws, *return* the exception
 		 */
 		function tryCatchReturn(f, x, thisArg, next) {
@@ -1173,12 +1189,17 @@ define(function(require) {
 	/*global setTimeout,clearTimeout*/
 	var cjsRequire, vertx, setTimer, clearTimer;
 
+	// Check for vertx environment by attempting to load vertx module.
+	// Doing the check in two steps ensures compatibility with RaveJS,
+	// which will return an empty module when browser: { vertx: false }
+	// is set in package.json
 	cjsRequire = require;
 
 	try {
 		vertx = cjsRequire('vertx');
-	} catch (e) { }
+	} catch (ignored) {}
 
+	// If vertx loaded and has the timer features we expect, try to support it
 	if (vertx && typeof vertx.setTimer === 'function') {
 		setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
 		clearTimer = vertx.cancelTimer;
