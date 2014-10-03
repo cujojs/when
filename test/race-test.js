@@ -23,6 +23,12 @@ buster.testCase('CorePromise.race', {
 		assert.equals(never, CorePromise.race([]));
 	},
 
+	'should reject with TypeError when passed a non-iterable (array in es5)': function() {
+		return CorePromise.race(null).then(fail, function(e) {
+			assert(e instanceof TypeError);
+		});
+	},
+
 	'should be identity for length 1': {
 		'when fulfilled with value': function() {
 			return CorePromise.race([sentinel]).then(function(x) {
