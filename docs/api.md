@@ -71,6 +71,7 @@ API
 1. Task Execution
 	* [when/sequence(tasks, ...args)](#whensequence)
 	* [when/pipeline(tasks, ...args)](#whenpipeline)
+	* [when/distribute(tasks, ...args)](#whendistribute)
 	* [when/parallel(tasks, ...args)](#whenparallel)
 	* [when/poll(task, interval, condition [, initialDelay])](#whenpoll)
 1. Limiting Concurrency
@@ -1027,7 +1028,7 @@ A competitive race to settle. The returned promise will settle in the same way a
 
 # Infinite Promise Sequences
 
-[when.reduce](#whenreduce), [when/sequence](#whensequence), and [when/pipeline](#whenpipeline) are great ways to process asynchronous arrays of promises and tasks.  Sometimes, however, you may not know the array in advance, or may not need or want to process *all* the items in the array.  For example, here are a few situations where you may not know the bounds:
+[when.reduce](#whenreduce), [when/sequence](#whensequence), [when/pipeline](#whenpipeline), and [when/distribute](#whendistribute) are great ways to process asynchronous arrays of promises and tasks.  Sometimes, however, you may not know the array in advance, or may not need or want to process *all* the items in the array.  For example, here are a few situations where you may not know the bounds:
 
 1. You need to process a queue to which items are still being added as you process it
 1. You need to execute a task repeatedly until a particular condition becomes true
@@ -1224,6 +1225,20 @@ Run an array of tasks in sequence, without overlap, similarly to [when/sequence]
 Again, each may return a promise or a value.  When a task returns a promise, the fully resolved value will be passed to the next task.
 
 When all tasks have completed, the returned promise will resolve to the result of the last task.  The returned promise will reject when any task throws or returns a rejection.
+
+## when/distribute
+
+```js
+var distribute = require('when/distribute');
+
+var resultsPromise = distribute(arrayOfTasks, initialArg1, initialArg2 /*, ... */);
+```
+
+Run an array of tasks in sequence, without overlap, similarly to [when/sequence](#whensequence).  The *first task* (e.g. `arrayOfTasks[0]`) will be called with the arguments passed to `when.distribute()`, and each subsequent task will be called with the results of *all* the previous tasks.
+
+Again, each may return a promise or a value.  When a task returns a promise, the fully resolved value will be passed to the next task.
+
+When all tasks have completed, the returned promise will resolve to an array containing the results of every task in-order.  The returned promise will reject when any task throws or returns a rejection.
 
 ## when/parallel
 
