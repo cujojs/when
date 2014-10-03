@@ -1,3 +1,7 @@
+### 3.5.1
+
+* `when.race` & `Promise.race` now reject with a `TypeError` if you pass something that is not iterable.
+
 ### 3.5.0
 
 * Improve `when.race` & `Promise.race` performance.
