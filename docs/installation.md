@@ -5,6 +5,13 @@ Getting Started
 
 As of version 3.0, when.js requires an ES5 environment.  In older environments, use an ES5 shim such as [poly](https://github.com/cujojs/poly) or [es5-shim](https://github.com/es-shims/es5-shim)
 
+#### RaveJS
+
+If you're already using [RaveJS](https://github.com/RaveJS/rave), just install when.js and start coding:
+
+1. `npm install --save when` or `bower install --save when`
+1. `var when = require('when');
+
 #### AMD
 
 1. Get it. `bower install --save when`, or `git clone https://github.com/cujojs/when`
@@ -32,6 +39,8 @@ As of version 3.0, when.js requires an ES5 environment.  In older environments, 
   ```
   define(function(require) {
   	var when = require('when');
+
+  	// your code...
   });
   ```
 
