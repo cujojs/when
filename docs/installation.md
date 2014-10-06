@@ -10,7 +10,7 @@ As of version 3.0, when.js requires an ES5 environment.  In older environments, 
 If you're already using [RaveJS](https://github.com/RaveJS/rave), just install when.js and start coding:
 
 1. `npm install --save when` or `bower install --save when`
-1. `var when = require('when');
+1. `var when = require('when');`
 
 #### AMD
 
