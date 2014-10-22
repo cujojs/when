@@ -2,7 +2,7 @@
 define(function(require) {
 
 	var when = require('../../when');
-	var async = require('../../lib/async');
+	var async = require('../../lib/env').asap;
 
 	var p = when.reject(new Error('TEST FAILED, should not see this'));
 
