@@ -1,6 +1,8 @@
 ### 3.5.1
 
 * `when.race` & `Promise.race` now reject with a `TypeError` if you pass something that is not iterable.
+* Improve scheduler compatibility with MutationObserver shims
+* Simplify checks for vert.x environment
 
 ### 3.5.0
 
