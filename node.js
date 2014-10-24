@@ -14,7 +14,7 @@ define(function(require) {
 	var when = require('./when');
 	var Promise = when.Promise;
 	var _liftAll = require('./lib/liftAll');
-	var setTimer = require('./lib/timer').set;
+	var setTimer = require('./lib/env').setTimer;
 	var slice = Array.prototype.slice;
 
 	return {
