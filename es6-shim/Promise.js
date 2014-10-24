@@ -13,7 +13,7 @@ module.exports = typeof global != 'undefined' ? (global.Promise = PromiseConstru
 	           : typeof self   != 'undefined' ? (self.Promise   = PromiseConstructor)
 	           : PromiseConstructor;
 
-},{"../lib/Promise":2,"../lib/decorators/unhandledRejection":6}],2:[function(require,module,exports){
+},{"../lib/Promise":2,"../lib/decorators/unhandledRejection":5}],2:[function(require,module,exports){
 /** @license MIT License (c) copyright 2010-2014 original author or authors */
 /** @author Brian Cavalier */
 /** @author John Hann */
@@ -23,7 +23,7 @@ define(function (require) {
 
 	var makePromise = require('./makePromise');
 	var Scheduler = require('./Scheduler');
-	var async = require('./async');
+	var async = require('./env').asap;
 
 	return makePromise({
 		scheduler: new Scheduler(async)
@@ -32,7 +32,7 @@ define(function (require) {
 });
 })(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
 
-},{"./Scheduler":4,"./async":5,"./makePromise":7}],3:[function(require,module,exports){
+},{"./Scheduler":4,"./env":6,"./makePromise":7}],3:[function(require,module,exports){
 /** @license MIT License (c) copyright 2010-2014 original author or authors */
 /** @author Brian Cavalier */
 /** @author John Hann */
@@ -196,80 +196,7 @@ define(function(require) {
 (function(define) { 'use strict';
 define(function(require) {
 
-	// Sniff "best" async scheduling option
-	// Prefer process.nextTick or MutationObserver, then check for
-	// vertx and finally fall back to setTimeout
-
-	/*jshint maxcomplexity:6*/
-	/*global process,document,setTimeout,MutationObserver,WebKitMutationObserver*/
-	var nextTick, MutationObs;
-
-	if (typeof process !== 'undefined' && process !== null &&
-		typeof process.nextTick === 'function') {
-		nextTick = function(f) {
-			process.nextTick(f);
-		};
-
-	} else if (MutationObs =
-		(typeof MutationObserver === 'function' && MutationObserver) ||
-		(typeof WebKitMutationObserver === 'function' && WebKitMutationObserver)) {
-		nextTick = (function (document, MutationObserver) {
-			var scheduled;
-			var el = document.createElement('div');
-			var o = new MutationObserver(run);
-			o.observe(el, { attributes: true });
-
-			function run() {
-				var f = scheduled;
-				scheduled = void 0;
-				f();
-			}
-
-			return function (f) {
-				scheduled = f;
-				el.setAttribute('class', 'x');
-			};
-		}(document, MutationObs));
-
-	} else {
-		nextTick = (function(cjsRequire) {
-			var vertx;
-			try {
-				// vert.x 1.x || 2.x
-				vertx = cjsRequire('vertx');
-			} catch (ignore) {}
-
-			if (vertx) {
-				if (typeof vertx.runOnLoop === 'function') {
-					return vertx.runOnLoop;
-				}
-				if (typeof vertx.runOnContext === 'function') {
-					return vertx.runOnContext;
-				}
-			}
-
-			// capture setTimeout to avoid being caught by fake timers
-			// used in time based tests
-			var capturedSetTimeout = setTimeout;
-			return function (t) {
-				capturedSetTimeout(t, 0);
-			};
-		}(require));
-	}
-
-	return nextTick;
-});
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
-
-},{}],6:[function(require,module,exports){
-/** @license MIT License (c) copyright 2010-2014 original author or authors */
-/** @author Brian Cavalier */
-/** @author John Hann */
-
-(function(define) { 'use strict';
-define(function(require) {
-
-	var timer = require('../timer');
+	var setTimer = require('../env').setTimer;
 
 	return function unhandledRejection(Promise) {
 		var logError = noop;
@@ -320,7 +247,7 @@ define(function(require) {
 			tasks.push(f, x);
 			if(!running) {
 				running = true;
-				running = timer.set(flush, 0);
+				running = setTimer(flush, 0);
 			}
 		}
 
@@ -365,7 +292,82 @@ define(function(require) {
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
 
-},{"../timer":8}],7:[function(require,module,exports){
+},{"../env":6}],6:[function(require,module,exports){
+/** @license MIT License (c) copyright 2010-2014 original author or authors */
+/** @author Brian Cavalier */
+/** @author John Hann */
+
+/*global process,document,setTimeout,clearTimeout,MutationObserver,WebKitMutationObserver*/
+(function(define) { 'use strict';
+define(function(require) {
+	/*jshint maxcomplexity:6*/
+
+	// Sniff "best" async scheduling option
+	// Prefer process.nextTick or MutationObserver, then check for
+	// setTimeout, and finally vertx, since its the only env that doesn't
+	// have setTimeout
+
+	var MutationObs;
+	var capturedSetTimeout = typeof setTimeout !== 'undefined' && setTimeout;
+
+	// Default env
+	var setTimer = function(f, ms) { return setTimeout(f, ms); };
+	var clearTimer = function(t) { return clearTimeout(t); };
+	var asap = function (f) { return capturedSetTimeout(f, 0); };
+
+	// Detect specific env
+	if (isNode()) { // Node
+		asap = function (f) { return process.nextTick(f); };
+
+	} else if (MutationObs = hasMutationObserver()) { // Modern browser
+		asap = initMutationObserver(MutationObs);
+
+	} else if (!capturedSetTimeout) { // vert.x
+		var vertxRequire = require;
+		var vertx = vertxRequire('vertx');
+		setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
+		clearTimer = vertx.cancelTimer;
+		asap = vertx.runOnLoop || vertx.runOnContext;
+	}
+
+	return {
+		setTimer: setTimer,
+		clearTimer: clearTimer,
+		asap: asap
+	};
+
+	function isNode () {
+		return typeof process !== 'undefined' && process !== null &&
+			typeof process.nextTick === 'function';
+	}
+
+	function hasMutationObserver () {
+		return (typeof MutationObserver === 'function' && MutationObserver) ||
+			(typeof WebKitMutationObserver === 'function' && WebKitMutationObserver);
+	}
+
+	function initMutationObserver(MutationObserver) {
+		var scheduled;
+		var node = document.createTextNode('');
+		var o = new MutationObserver(run);
+		o.observe(node, { characterData: true });
+
+		function run() {
+			var f = scheduled;
+			scheduled = void 0;
+			f();
+		}
+
+		var i = 0;
+		return function (f) {
+			scheduled = f;
+			node.data = (i ^= 1);
+		};
+	}
+});
+}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
+
+},{}],7:[function(require,module,exports){
 /** @license MIT License (c) copyright 2010-2014 original author or authors */
 /** @author Brian Cavalier */
 /** @author John Hann */
@@ -627,12 +629,18 @@ define(function() {
 		 * is empty, returns a promise that will never settle.
 		 */
 		function race(promises) {
-			// Sigh, race([]) is untestable unless we return *something*
-			// that is recognizable without calling .then() on it.
-			if(Object(promises) === promises && promises.length === 0) {
-				return never();
+			if(typeof promises !== 'object' || promises === null) {
+				return reject(new TypeError('non-iterable passed to race()'));
 			}
 
+			// Sigh, race([]) is untestable unless we return *something*
+			// that is recognizable without calling .then() on it.
+			return promises.length === 0 ? never()
+				 : promises.length === 1 ? resolve(promises[0])
+				 : runRace(promises);
+		}
+
+		function runRace(promises) {
 			var resolver = new Pending();
 			var i, x, h;
 			for(i=0; i<promises.length; ++i) {
@@ -1178,45 +1186,6 @@ define(function() {
 	};
 });
 }(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(); }));
-
-},{}],8:[function(require,module,exports){
-/** @license MIT License (c) copyright 2010-2014 original author or authors */
-/** @author Brian Cavalier */
-/** @author John Hann */
-
-(function(define) { 'use strict';
-define(function(require) {
-	/*global setTimeout,clearTimeout*/
-	var cjsRequire, vertx, setTimer, clearTimer;
-
-	// Check for vertx environment by attempting to load vertx module.
-	// Doing the check in two steps ensures compatibility with RaveJS,
-	// which will return an empty module when browser: { vertx: false }
-	// is set in package.json
-	cjsRequire = require;
-
-	try {
-		vertx = cjsRequire('vertx');
-	} catch (ignored) {}
-
-	// If vertx loaded and has the timer features we expect, try to support it
-	if (vertx && typeof vertx.setTimer === 'function') {
-		setTimer = function (f, ms) { return vertx.setTimer(ms, f); };
-		clearTimer = vertx.cancelTimer;
-	} else {
-		// NOTE: Truncate decimals to workaround node 0.10.30 bug:
-		// https://github.com/joyent/node/issues/8167
-		setTimer = function(f, ms) { return setTimeout(f, ms|0); };
-		clearTimer = function(t) { return clearTimeout(t); };
-	}
-
-	return {
-		set: setTimer,
-		clear: clearTimer
-	};
-
-});
-}(typeof define === 'function' && define.amd ? define : function(factory) { module.exports = factory(require); }));
 
 },{}]},{},[1])
 (1)
