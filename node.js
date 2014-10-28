@@ -15,7 +15,7 @@ define(function(require) {
 	var Promise = when.Promise;
 	var _liftAll = require('./lib/liftAll');
 	var setTimer = require('./lib/env').setTimer;
-	var slice = Array.prototype.slice;
+	var list = require('./lib/list');
 
 	return {
 		lift: lift,
@@ -123,7 +123,7 @@ define(function(require) {
 	 * @returns {Promise} promise for the value func passes to its callback
 	 */
 	function call(f /*, args... */) {
-		return run(f, this, slice.call(arguments, 1));
+		return run(f, this, list.tail(arguments, 1));
 	}
 
 	/**
@@ -157,20 +157,10 @@ define(function(require) {
 	 * @returns {Function} a promise-returning function
 	 */
 	function lift(f /*, args... */) {
-		var args1 = arguments.length > 1 ? slice.call(arguments, 1) : [];
+		var args1 = list.tail(arguments);
 		return function() {
 			// TODO: Simplify once partialing has been removed
-			var l = args1.length;
-			var al = arguments.length;
-			var args = new Array(al + l);
-			var i;
-			for(i=0; i<l; ++i) {
-				args[i] = args1[i];
-			}
-			for(i=0; i<al; ++i) {
-				args[i+l] = arguments[i];
-			}
-			return run(f, this, args);
+			return run(f, this, list.concat(args1, arguments));
 		};
 	}
 
@@ -219,7 +209,7 @@ define(function(require) {
 			if(err) {
 				resolver.reject(err);
 			} else if(arguments.length > 2) {
-				resolver.resolve(slice.call(arguments, 1));
+				resolver.resolve(list.tail(arguments));
 			} else {
 				resolver.resolve(value);
 			}

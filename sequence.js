@@ -14,8 +14,8 @@
 define(function(require) {
 
 	var when = require('./when');
+	var list = require('./lib/list');
 	var all = when.Promise.all;
-	var slice = Array.prototype.slice;
 
 	/**
 	 * Run array of tasks in sequence with no overlap
@@ -28,7 +28,7 @@ define(function(require) {
 	return function sequence(tasks /*, args... */) {
 		var results = [];
 
-		return all(slice.call(arguments, 1)).then(function(args) {
+		return all(list.tail(arguments)).then(function(args) {
 			return when.reduce(tasks, function(results, task) {
 				return when(task.apply(void 0, args), addResult);
 			}, results);

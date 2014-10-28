@@ -20,14 +20,13 @@ define(function (require) {
 	var withThis = require('./lib/decorators/with');
 	var unhandledRejection = require('./lib/decorators/unhandledRejection');
 	var TimeoutError = require('./lib/TimeoutError');
+	var list = require('./lib/list');
 
 	var Promise = [array, flow, fold, generate, progress,
 		inspect, withThis, timed, unhandledRejection]
 		.reduce(function(Promise, feature) {
 			return feature(Promise);
 		}, require('./lib/Promise'));
-
-	var slice = Array.prototype.slice;
 
 	// Public API
 
@@ -108,7 +107,7 @@ define(function (require) {
 	 */
 	function lift(f) {
 		return function() {
-			return _apply(f, this, slice.call(arguments));
+			return _apply(f, this, list.copy(arguments));
 		};
 	}
 
@@ -120,7 +119,7 @@ define(function (require) {
 	 */
 	function attempt(f /*, args... */) {
 		/*jshint validthis:true */
-		return _apply(f, this, slice.call(arguments, 1));
+		return _apply(f, this, list.tail(arguments, 1));
 	}
 
 	/**
@@ -242,7 +241,7 @@ define(function (require) {
 	 */
 	function reduce(promises, f /*, initialValue */) {
 		/*jshint unused:false*/
-		var args = slice.call(arguments, 1);
+		var args = list.tail(arguments);
 		return when(promises, function(array) {
 			args.unshift(array);
 			return Promise.reduce.apply(Promise, args);
@@ -261,7 +260,7 @@ define(function (require) {
 	 */
 	function reduceRight(promises, f /*, initialValue */) {
 		/*jshint unused:false*/
-		var args = slice.call(arguments, 1);
+		var args = list.tail(arguments);
 		return when(promises, function(array) {
 			args.unshift(array);
 			return Promise.reduceRight.apply(Promise, args);
