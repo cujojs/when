@@ -1,3 +1,8 @@
+### 3.5.2
+
+* Prevent minifiers from clobbering unhandled rejection reporting if they remove `console.*` calls.  Unhandled rejections will be reported even when using Uglify `drop_console`.
+* `when/function.apply` now handles passing an Arguments object directly, e.g. `fn.apply(f, arguments);`. Use with care: v8 will deoptimize any function where you pass `arguments` to another function.
+
 ### 3.5.1
 
 * `when.race` & `Promise.race` now reject with a `TypeError` if you pass something that is not iterable.
