@@ -33,7 +33,8 @@ define(function(require) {
 	 * @returns {Promise} promise for the return value of func
 	 */
 	function apply(f, args) {
-		return _apply(f, this, args || []);
+		// slice args just in case the caller passed an Arguments instance
+		return _apply(f, this, args == null ? [] : slice.call(args));
 	}
 
 	/**
@@ -60,6 +61,7 @@ define(function(require) {
 	 * @private
 	 */
 	function _apply(f, thisArg, args) {
+		// args MUST be an Array
 		return args.length === 0
 			? attempt.call(thisArg, f)
 			: attempt.apply(thisArg, [f].concat(args));

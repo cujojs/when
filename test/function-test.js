@@ -87,6 +87,20 @@ buster.testCase('when/function', {
 			fn.apply(returnsPromise, [5]).then(function(value) {
 				assert.equals(value, 15);
 			}, fail).ensure(done);
+		},
+
+		'should accept Arguments instance': function() {
+			var expected = [1, 2, 3];
+
+			function f() {
+				assert.equals(slice.call(arguments), expected);
+			}
+
+			function run() {
+				return fn.apply(f, arguments);
+			}
+
+			return run.apply(void 0, expected);
 		}
 	},
 
