@@ -243,8 +243,7 @@ define(function (require) {
 		/*jshint unused:false*/
 		var args = list.tail(arguments);
 		return when(promises, function(array) {
-			args.unshift(array);
-			return Promise.reduce.apply(Promise, args);
+			return Promise.reduce.apply(Promise, list.cons(array, args));
 		});
 	}
 
@@ -262,8 +261,7 @@ define(function (require) {
 		/*jshint unused:false*/
 		var args = list.tail(arguments);
 		return when(promises, function(array) {
-			args.unshift(array);
-			return Promise.reduceRight.apply(Promise, args);
+			return Promise.reduceRight.apply(Promise, list.cons(array, args));
 		});
 	}
 
