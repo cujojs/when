@@ -12,7 +12,7 @@
 define(function(require) {
 
 	var when = require('./when');
-	var slice = Array.prototype.slice;
+	var list = require('./lib/list');
 
 	guard.n = n;
 
@@ -28,7 +28,7 @@ define(function(require) {
 	 */
 	function guard(condition, f) {
 		return function() {
-			var args = slice.call(arguments);
+			var args = list.copy(arguments);
 
 			return when(condition()).withThis(this).then(function(exit) {
 				return when(f.apply(this, args))['finally'](exit);

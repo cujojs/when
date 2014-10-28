@@ -6,7 +6,7 @@
 define(function(require) {
 
 	var when = require('./when');
-	var slice = Array.prototype.slice;
+	var list = require('./lib/list');
 
 	/**
 	 * Lift a generator to create a function that can suspend and
@@ -31,7 +31,7 @@ define(function(require) {
 	 */
 	function call(generator /*x, y, z...*/) {
 		/*jshint validthis:true*/
-		return run(generator, this, slice.call(arguments, 1));
+		return run(generator, this, list.tail(arguments));
 	}
 
 	/**

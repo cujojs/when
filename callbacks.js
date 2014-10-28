@@ -14,7 +14,7 @@ define(function(require) {
 	var when = require('./when');
 	var Promise = when.Promise;
 	var _liftAll = require('./lib/liftAll');
-	var slice = Array.prototype.slice;
+	var list = require('./lib/list');
 
 	return {
 		lift: lift,
@@ -94,7 +94,7 @@ define(function(require) {
 	 * @returns {Promise} promise for the callback value of asyncFunction
 	 */
 	function call(asyncFunction/*, arg1, arg2...*/) {
-		return _apply(asyncFunction, this, slice.call(arguments, 1));
+		return _apply(asyncFunction, this, list.tail(arguments));
 	}
 
 	/**
@@ -131,9 +131,9 @@ define(function(require) {
 	 * @returns {Function} a promise-returning function
 	 */
 	function lift(f/*, args...*/) {
-		var args = arguments.length > 1 ? slice.call(arguments, 1) : [];
+		var args = list.tail(arguments);
 		return function() {
-			return _apply(f, this, args.concat(slice.call(arguments)));
+			return _apply(f, this, list.concat(args, arguments));
 		};
 	}
 
@@ -251,7 +251,7 @@ define(function(require) {
 	function alwaysUnary(fn, thisArg) {
 		return function() {
 			if (arguments.length > 1) {
-				fn.call(thisArg, slice.call(arguments));
+				fn.call(thisArg, list.copy(arguments));
 			} else {
 				fn.apply(thisArg, arguments);
 			}
