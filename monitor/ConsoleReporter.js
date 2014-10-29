@@ -46,29 +46,33 @@ define(function(require) {
 		if(typeof console === 'undefined') {
 			log = warn = consoleNotAvailable;
 		} else {
-			if(typeof console.error === 'function'
-				&& typeof console.dir === 'function') {
+			// Alias console to prevent things like uglify's drop_console option from
+			// removing console.log/error. Unhandled rejections fall into the same
+			// category as uncaught exceptions, and build tools shouldn't silence them.
+			var localConsole = console;
+			if(typeof localConsole.error === 'function'
+				&& typeof localConsole.dir === 'function') {
 				warn = function(s) {
-					console.error(s);
+					localConsole.error(s);
 				};
 
 				log = function(s) {
-					console.log(s);
+					localConsole.log(s);
 				};
 
-				if(typeof console.groupCollapsed === 'function') {
+				if(typeof localConsole.groupCollapsed === 'function') {
 					groupStart = function(s) {
-						console.groupCollapsed(s);
+						localConsole.groupCollapsed(s);
 					};
 					groupEnd = function() {
-						console.groupEnd();
+						localConsole.groupEnd();
 					};
 				}
 			} else {
 				// IE8 has console.log and JSON, so we can make a
 				// reasonably useful warn() from those.
 				// Credit to webpro (https://github.com/webpro) for this idea
-				if (typeof console.log ==='function'
+				if (typeof localConsole.log ==='function'
 					&& typeof JSON !== 'undefined') {
 					log = warn = function (x) {
 						if(typeof x !== 'string') {
@@ -76,7 +80,7 @@ define(function(require) {
 								x = JSON.stringify(x);
 							} catch(e) {}
 						}
-						console.log(x);
+						localConsole.log(x);
 					};
 				}
 			}
