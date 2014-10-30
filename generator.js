@@ -16,7 +16,7 @@ define(function(require) {
 	 */
 	function lift(generator) {
 		return function() {
-			return run(generator, this, arguments);
+			return run(generator, this, slice.call(arguments));
 		};
 	}
 
