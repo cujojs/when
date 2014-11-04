@@ -62,39 +62,46 @@ define(function(require) {
 	}
 
 	/**
-	 * Apply helper that allows specifying thisArg
+	 * Execute the supplied node-style async function with the provided
+	 * thisArg and arguments, returning a promise for the outcome.
 	 * @private
+	 * @param {function} f
+	 * @param {object} thisArg
+	 * @param {Array} args
+	 * @returns {Promise}
 	 */
 	function run(f, thisArg, args) {
 		var p = Promise._defer();
-		switch(args.length) {
-			case 2:  apply2(p._handler, f, thisArg, args); break;
-			case 1:  apply1(p._handler, f, thisArg, args); break;
-			default: applyN(p._handler, f, thisArg, args);
-		}
+		var l = args.length;
+		var params = new Array(l);
+		callAndResolve({ f:f, thisArg:thisArg, args:args, params:params, i:l-1 }, p._handler);
 
 		return p;
 	}
 
-	function applyN(resolver, f, thisArg, args) {
-		Promise.all(args)._handler.fold(function(f, args, resolver) {
-			args.push(createCallback(resolver));
-			f.apply(this, args);
-		}, f, thisArg, resolver);
+	function callAndResolve(c, h) {
+		if(c.i < 0) {
+			return dispatch(c.f, c.thisArg, c.params, createCallback(h));
+		}
+
+		Promise._handler(c.args[c.i]).fold(callAndResolveNext, c, void 0, h);
 	}
 
-	function apply2(resolver, f, thisArg, args) {
-		Promise._handler(args[0]).fold(function(x, y, resolver) {
-			Promise._handler(x).fold(function(x, y, resolver) {
-				f.call(this, x, y, createCallback(resolver));
-			}, y, this, resolver);
-		}, args[1], thisArg, resolver);
+	function callAndResolveNext(c, x, h) {
+		c.params[c.i] = x;
+		c.i -= 1;
+		callAndResolve(c, h);
 	}
 
-	function apply1(resolver, f, thisArg, args) {
-		Promise._handler(args[0]).fold(function(f, x, resolver) {
-			f.call(this, x, createCallback(resolver));
-		}, f, thisArg, resolver);
+	function dispatch(f, thisArg, args, cb) {
+		switch(args.length) {
+			case 2: f.call(thisArg, args[0], args[1], cb); break;
+			case 1: f.call(thisArg, args[0], cb); break;
+			case 0: f.call(thisArg, cb); break;
+			default:
+				args.push(cb);
+				f.apply(thisArg, args);
+		}
 	}
 
 	/**
