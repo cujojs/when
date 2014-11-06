@@ -7,6 +7,8 @@ define(function(require) {
 
 	var when = require('./when');
 	var slice = Array.prototype.slice;
+	var Promise = when.Promise;
+	var reject = Promise.reject;
 
 	/**
 	 * Lift a generator to create a function that can suspend and
@@ -16,7 +18,7 @@ define(function(require) {
 	 */
 	function lift(generator) {
 		return function() {
-			return run(generator, this, slice.call(arguments));
+			return run(generator, this, arguments);
 		};
 	}
 
@@ -53,36 +55,45 @@ define(function(require) {
 	 * @returns {*}
 	 */
 	function run(generator, thisArg, args) {
-		var stepper = new Stepper(next, error, generator.apply(thisArg, args));
-
-		return stepper.step('next', void 0);
-
-		function next(x) { return stepper.step('next', x); }
-		function error(e) { return stepper.step('throw', e); }
+		return runNext(void 0, generator.apply(thisArg, args));
 	}
 
-	/**
-	 * Manages the process of stepping the provided iterator
-	 * @constructor
-	 */
-	function Stepper(next, error, iterator) {
-		this.next = next;
-		this.error = error;
-		this.iterator = iterator;
-	}
-
-	Stepper.prototype.step = function(action, x) {
+	function runNext(x, iterator) {
 		try {
-			return this._continue(action, x);
-		} catch (e) {
-			return when.reject(e);
+			return handle(iterator.next(x), iterator);
+		} catch(e) {
+			return reject(e);
 		}
-	};
+	}
 
-	Stepper.prototype._continue = function(action, x) {
-		var result = this.iterator[action](x);
-		return result.done ? result.value : when(result.value, this.next, this.error);
-	};
+	function next(x) {
+		/*jshint validthis:true*/
+		return runNext(x, this);
+	}
+
+	function error(e) {
+		/*jshint validthis:true*/
+		try {
+			return handle(this.throw(e), this);
+		} catch(e) {
+			return reject(e);
+		}
+	}
+
+	function handle(result, iterator) {
+		if(result.done) {
+			return result.value;
+		}
+
+		var h = Promise._handler(result.value);
+		if(h.state() > 0) {
+			return runNext(h.value, iterator);
+		}
+
+		var p = Promise._defer();
+		h.chain(p._handler, iterator, next, error);
+		return p;
+	}
 
 	return {
 		lift: lift,
