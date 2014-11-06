@@ -1,3 +1,8 @@
+### 3.6.0
+
+* Significant (10x or more) performance improvements to `when.map`, especially for large arrays.
+* Performance and memory improvements to `when.reduce` and `promise.fold`.
+
 ### 3.5.2
 
 * Prevent minifiers from clobbering unhandled rejection reporting if they remove `console.*` calls.  Unhandled rejections will be reported even when using Uglify `drop_console`.
