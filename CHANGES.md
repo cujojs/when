@@ -1,7 +1,10 @@
 ### 3.6.0
 
-* Significant (10x or more) performance improvements to `when.map`, especially for large arrays.
-* Performance and memory improvements to `when.reduce` and `promise.fold`.
+* Significant performance improvements:
+	* 10x or more for `when.map`, especially for large arrays
+	* ~2x for `when.reduce` and `promise.fold`
+	* ~1.5-2x for generators using `when/generator` `lift`, `call`, and/or `apply`.
+* Memory use reductions for `when.reduce` and `promise.fold`.
 
 ### 3.5.2
 
