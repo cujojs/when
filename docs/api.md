@@ -1971,7 +1971,7 @@ var TimeoutError = require('when/lib/TimeoutError');
 
 # Debugging promises
 
-Errors in an asynchronous operation always occur in a different call stack than the the one that initiated the operation.  Because of that, such errors cannot be caught using synchronous `try/catch`.  Promises help to manage that process by capturing the error and rejecting the associated promise, so that application code can handle the error using promise error handling features, such as [`promise.catch`](#promisecatch).  This is generally a good thing.  If promises *didn't* do this, *any* thrown exception would be uncatchable, even those errors that could have been handled by the application, would instead cause a crash.
+Errors in an asynchronous operation always occur in a different call stack than the the one that initiated the operation.  Because of that, such errors cannot be caught using synchronous `try/catch`.  Promises help to manage that process by capturing the error and rejecting the associated promise, so that application code can handle the error using promise error handling features, such as [`promise.catch`](#promisecatch).  This is generally a good thing.  If promises *didn't* do this, *any* thrown exception would be uncatchable, even those errors that could have been handled by the application, and would instead cause a crash.
 
 However, this also means that errors captured in rejected promises often go silent until observed by calling `promise.catch`.  In nearly all promise implementations, if application code never calls `promise.catch`, the error will be silent.
 
