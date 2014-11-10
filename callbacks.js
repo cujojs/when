@@ -211,11 +211,11 @@ define(function(require) {
 
 				var callbackPos, errbackPos;
 
-				if('callback' in positions) {
+				if(typeof positions.callback === 'number') {
 					callbackPos = normalizePosition(args, positions.callback);
 				}
 
-				if('errback' in positions) {
+				if(typeof positions.errback === 'number') {
 					errbackPos = normalizePosition(args, positions.errback);
 				}
 
@@ -239,12 +239,8 @@ define(function(require) {
 	}
 
 	function insertCallback(args, pos, callback, thisArg) {
-		if(pos != null) {
-			callback = alwaysUnary(callback, thisArg);
-			if(pos < 0) {
-				pos = args.length + pos + 2;
-			}
-			args.splice(pos, 0, callback);
+		if(typeof pos === 'number') {
+			args.splice(pos, 0, alwaysUnary(callback, thisArg));
 		}
 	}
 
