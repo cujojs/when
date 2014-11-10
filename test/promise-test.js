@@ -661,6 +661,12 @@ buster.testCase('promise', {
 			});
 		},
 
+		'should preserve thisArg': function() {
+			return when.resolve([]).withThis(sentinel).spread(function() {
+				assert.equals(this, sentinel);
+			});
+		},
+
 		'should resolve array contents': function() {
 			var expected = [when.resolve(1), 2, when.resolve(3)];
 			return when.resolve(expected).spread(function() {
