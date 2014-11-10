@@ -14,6 +14,7 @@ define(function(require) {
 	var when = require('./when');
 	var attempt = when['try'];
 	var _liftAll = require('./lib/liftAll');
+	var _apply = require('./lib/apply')(when.Promise);
 	var slice = Array.prototype.slice;
 
 	return {
@@ -54,17 +55,6 @@ define(function(require) {
 		return function() {
 			return _apply(f, this, args.concat(slice.call(arguments)));
 		};
-	}
-
-	/**
-	 * Apply helper that allows specifying thisArg
-	 * @private
-	 */
-	function _apply(f, thisArg, args) {
-		// args MUST be an Array
-		return args.length === 0
-			? attempt.call(thisArg, f)
-			: attempt.apply(thisArg, [f].concat(args));
 	}
 
 	/**
