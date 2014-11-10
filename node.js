@@ -12,10 +12,11 @@
 define(function(require) {
 
 	var when = require('./when');
-	var Promise = when.Promise;
 	var _liftAll = require('./lib/liftAll');
 	var setTimer = require('./lib/env').setTimer;
 	var slice = Array.prototype.slice;
+
+	var _apply = require('./lib/apply')(when.Promise, dispatch);
 
 	return {
 		lift: lift,
@@ -58,49 +59,22 @@ define(function(require) {
 	 * @returns {Promise} promise for the value func passes to its callback
 	 */
 	function apply(f, args) {
-		return run(f, this, args || []);
+		return _apply(f, this, args || []);
 	}
 
-	/**
-	 * Execute the supplied node-style async function with the provided
-	 * thisArg and arguments, returning a promise for the outcome.
-	 * @private
-	 * @param {function} f
-	 * @param {object} thisArg
-	 * @param {Array} args
-	 * @returns {Promise}
-	 */
-	function run(f, thisArg, args) {
-		var p = Promise._defer();
-		var l = args.length;
-		var params = new Array(l);
-		callAndResolve({ f:f, thisArg:thisArg, args:args, params:params, i:l-1 }, p._handler);
-
-		return p;
-	}
-
-	function callAndResolve(c, h) {
-		if(c.i < 0) {
-			return dispatch(c.f, c.thisArg, c.params, createCallback(h));
-		}
-
-		Promise._handler(c.args[c.i]).fold(callAndResolveNext, c, void 0, h);
-	}
-
-	function callAndResolveNext(c, x, h) {
-		c.params[c.i] = x;
-		c.i -= 1;
-		callAndResolve(c, h);
-	}
-
-	function dispatch(f, thisArg, args, cb) {
-		switch(args.length) {
-			case 2: f.call(thisArg, args[0], args[1], cb); break;
-			case 1: f.call(thisArg, args[0], cb); break;
-			case 0: f.call(thisArg, cb); break;
-			default:
-				args.push(cb);
-				f.apply(thisArg, args);
+	function dispatch(f, thisArg, args, h) {
+		var cb = createCallback(h);
+		try {
+			switch(args.length) {
+				case 2: f.call(thisArg, args[0], args[1], cb); break;
+				case 1: f.call(thisArg, args[0], cb); break;
+				case 0: f.call(thisArg, cb); break;
+				default:
+					args.push(cb);
+					f.apply(thisArg, args);
+			}
+		} catch(e) {
+			h.reject(e);
 		}
 	}
 
@@ -130,7 +104,7 @@ define(function(require) {
 	 * @returns {Promise} promise for the value func passes to its callback
 	 */
 	function call(f /*, args... */) {
-		return run(f, this, slice.call(arguments, 1));
+		return _apply(f, this, slice.call(arguments, 1));
 	}
 
 	/**
@@ -177,7 +151,7 @@ define(function(require) {
 			for(i=0; i<al; ++i) {
 				args[i+l] = arguments[i];
 			}
-			return run(f, this, args);
+			return _apply(f, this, args);
 		};
 	}
 

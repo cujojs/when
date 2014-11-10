@@ -27,7 +27,7 @@ define(function (require) {
 			return feature(Promise);
 		}, require('./lib/Promise'));
 
-	var slice = Array.prototype.slice;
+	var apply = require('./lib/apply')(Promise);
 
 	// Public API
 
@@ -53,8 +53,8 @@ define(function (require) {
 
 	when.map         = map;                  // Array.map() for promises
 	when.filter      = filter;               // Array.filter() for promises
-	when.reduce      = reduce;               // Array.reduce() for promises
-	when.reduceRight = reduceRight;          // Array.reduceRight() for promises
+	when.reduce      = lift(Promise.reduce);       // Array.reduce() for promises
+	when.reduceRight = lift(Promise.reduceRight);  // Array.reduceRight() for promises
 
 	when.isPromiseLike = isPromiseLike;      // Is something promise-like, aka thenable
 
@@ -108,7 +108,10 @@ define(function (require) {
 	 */
 	function lift(f) {
 		return function() {
-			return _apply(f, this, slice.call(arguments));
+			for(var i=0, l=arguments.length, a=new Array(l); i<l; ++i) {
+				a[i] = arguments[i];
+			}
+			return apply(f, this, a);
 		};
 	}
 
@@ -120,17 +123,10 @@ define(function (require) {
 	 */
 	function attempt(f /*, args... */) {
 		/*jshint validthis:true */
-		return _apply(f, this, slice.call(arguments, 1));
-	}
-
-	/**
-	 * try/lift helper that allows specifying thisArg
-	 * @private
-	 */
-	function _apply(f, thisArg, args) {
-		return Promise.all(args).then(function(args) {
-			return f.apply(thisArg, args);
-		});
+		for(var i=0, l=arguments.length-1, a=new Array(l); i<l; ++i) {
+			a[i] = arguments[i+1];
+		}
+		return apply(f, this, a);
 	}
 
 	/**
@@ -227,44 +223,6 @@ define(function (require) {
 	function filter(promises, predicate) {
 		return when(promises, function(promises) {
 			return Promise.filter(promises, predicate);
-		});
-	}
-
-	/**
-	 * Traditional reduce function, similar to `Array.prototype.reduce()`, but
-	 * input may contain promises and/or values, and reduceFunc
-	 * may return either a value or a promise, *and* initialValue may
-	 * be a promise for the starting value.
-	 * @param {Array|Promise} promises array or promise for an array of anything,
-	 *      may contain a mix of promises and values.
-	 * @param {function(accumulated:*, x:*, index:Number):*} f reduce function
-	 * @returns {Promise} that will resolve to the final reduced value
-	 */
-	function reduce(promises, f /*, initialValue */) {
-		/*jshint unused:false*/
-		var args = slice.call(arguments, 1);
-		return when(promises, function(array) {
-			args.unshift(array);
-			return Promise.reduce.apply(Promise, args);
-		});
-	}
-
-	/**
-	 * Traditional reduce function, similar to `Array.prototype.reduceRight()`, but
-	 * input may contain promises and/or values, and reduceFunc
-	 * may return either a value or a promise, *and* initialValue may
-	 * be a promise for the starting value.
-	 * @param {Array|Promise} promises array or promise for an array of anything,
-	 *      may contain a mix of promises and values.
-	 * @param {function(accumulated:*, x:*, index:Number):*} f reduce function
-	 * @returns {Promise} that will resolve to the final reduced value
-	 */
-	function reduceRight(promises, f /*, initialValue */) {
-		/*jshint unused:false*/
-		var args = slice.call(arguments, 1);
-		return when(promises, function(array) {
-			args.unshift(array);
-			return Promise.reduceRight.apply(Promise, args);
 		});
 	}
 

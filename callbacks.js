@@ -16,6 +16,10 @@ define(function(require) {
 	var _liftAll = require('./lib/liftAll');
 	var slice = Array.prototype.slice;
 
+	var makeApply = require('./lib/apply');
+	var _apply = makeApply(Promise, dispatch);
+	var tryCatchResolve = makeApply.tryCatchResolve;
+
 	return {
 		lift: lift,
 		liftAll: liftAll,
@@ -62,15 +66,9 @@ define(function(require) {
 	 * Apply helper that allows specifying thisArg
 	 * @private
 	 */
-	function _apply(asyncFunction, thisArg, extraAsyncArgs) {
-		return Promise.all(extraAsyncArgs).then(function(args) {
-			var p = Promise._defer();
-			args.push(alwaysUnary(p._handler.resolve, p._handler),
-				alwaysUnary(p._handler.reject, p._handler));
-			asyncFunction.apply(thisArg, args);
-
-			return p;
-		});
+	function dispatch(f, thisArg, args, h) {
+		args.push(alwaysUnary(h.resolve, h), alwaysUnary(h.reject, h));
+		tryCatchResolve(f, thisArg, args, h);
 	}
 
 	/**
