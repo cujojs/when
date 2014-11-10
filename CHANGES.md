@@ -1,5 +1,11 @@
 ### 3.6.0
 
+* Further performance improvements:
+	* up to 2x for `when.reduce` with large arrays
+	* 4x `when.try` and `when.lift`
+
+### 3.6.0
+
 * Significant performance improvements:
 	* 10x or more for `when.map`, especially for large arrays
 	* ~2x for `when.reduce` and `promise.fold`
