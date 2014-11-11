@@ -1,8 +1,7 @@
 ### 3.6.0
 
-* Further performance improvements:
-	* up to 2x for `when.reduce` with large arrays
-	* 4x `when.try` and `when.lift`
+* Further performance improvements: `when.try`, `when.lift`, `when.reduce`, `when.any`, and `when.some`.
+* Improved handling of early bail-out cases in `when.all`, `when.map`, and `when.any`
 
 ### 3.6.0
 
