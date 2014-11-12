@@ -80,15 +80,13 @@ define(function (require) {
 	 *   value of callback or errback or the completion value of promiseOrValue if
 	 *   callback and/or errback is not supplied.
 	 */
-	function when(x, onFulfilled, onRejected) {
+	function when(x, onFulfilled, onRejected, onProgress) {
 		var p = Promise.resolve(x);
-		if(arguments.length < 2) {
+		if (arguments.length < 2) {
 			return p;
 		}
 
-		return arguments.length > 3
-			? p.then(onFulfilled, onRejected, arguments[3])
-			: p.then(onFulfilled, onRejected);
+		return p.then(onFulfilled, onRejected, onProgress);
 	}
 
 	/**
