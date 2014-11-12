@@ -73,6 +73,24 @@ buster.testCase('when.filter', {
 			function(e) {
 				assert.same(e, sentinel);
 			});
+	},
+
+	'should match Array.prototype.filter behavior when predicate modifies array': function() {
+		// Test to match Array.prototype.filter behavior
+		var a = [1, 2, 3, 4];
+		var b = a.slice();
+		var expected = b.filter(makePredicate(b));
+
+		function makePredicate(a) {
+			return function (n, i){
+				a[i] = 'fail';
+				return n % 2 === 0;
+			};
+		}
+
+		return when.filter(a, makePredicate(a)).then(function(results) {
+			assert.equals(results, expected);
+		});
 	}
 
 });
