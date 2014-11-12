@@ -4,6 +4,8 @@ var assert = buster.assert;
 var when = require('../when');
 var sequence = require('../sequence');
 
+var sentinel = { value: 'sentinel' };
+
 function createTask(y) {
 	return function() {
 		return y;
@@ -52,5 +54,15 @@ buster.testCase('when/sequence', {
 
 		expected = [when(1), when(2), when(3)];
 		return sequence.apply(null, [tasks].concat(expected)).ensure(done);
+	},
+
+	'should reject if task throws': function() {
+		return sequence([function () {
+			return 1;
+		}, function () {
+			throw sentinel;
+		}])['catch'](function (e) {
+			assert.same(e, sentinel);
+		});
 	}
 });
