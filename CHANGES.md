@@ -1,3 +1,8 @@
+### 3.6.2
+
+* Worked around [v8 optimizing compiler bug](https://code.google.com/p/v8/issues/detail?id=3692) with some *truly amazing* help from community members. Thank you [@anodynos](https://github.com/anodynos), [@jefflage](https://github.com/jefflage), [@pbarnes](https://github.com/pbarnes), [@spion](https://github.com/spion), [@tsouza](https://github.com/tsouza).
+* Fixed regressions in `when.filter` and `when.reduce` (which also affected `when/sequence`).
+
 ### 3.6.1
 
 * Significant improvements to `when.try`, and `when.lift`.

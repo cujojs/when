@@ -424,10 +424,10 @@ define(function() {
 		 * this promise's fulfillment.
 		 * @param {function=} onFulfilled fulfillment handler
 		 * @param {function=} onRejected rejection handler
-		 * @deprecated @param {function=} onProgress progress handler
+		 * @param {function=} onProgress @deprecated progress handler
 		 * @return {Promise} new promise
 		 */
-		Promise.prototype.then = function(onFulfilled, onRejected) {
+		Promise.prototype.then = function(onFulfilled, onRejected, onProgress) {
 			var parent = this._handler;
 			var state = parent.join().state();
 
@@ -440,8 +440,7 @@ define(function() {
 			var p = this._beget();
 			var child = p._handler;
 
-			parent.chain(child, parent.receiver, onFulfilled, onRejected,
-					arguments.length > 2 ? arguments[2] : void 0);
+			parent.chain(child, parent.receiver, onFulfilled, onRejected, onProgress);
 
 			return p;
 		};
@@ -462,10 +461,13 @@ define(function() {
 		 * @returns {Promise}
 		 */
 		Promise.prototype._beget = function() {
-			var parent = this._handler;
-			var child = new Pending(parent.receiver, parent.join().context);
-			return new this.constructor(Handler, child);
+			return begetFrom(this._handler, this.constructor);
 		};
+
+		function begetFrom(parent, Promise) {
+			var child = new Pending(parent.receiver, parent.join().context);
+			return new Promise(Handler, child);
+		}
 
 		// Array combinators
 
