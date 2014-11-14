@@ -1,3 +1,7 @@
+### 3.6.3
+
+* Fix regression in `when/callbacks` introduced in 3.6.1
+
 ### 3.6.2
 
 * Work around [v8 optimizing compiler bug](https://code.google.com/p/v8/issues/detail?id=3692) with some *truly amazing* help from community members. Thank you [@anodynos](https://github.com/anodynos), [@jefflage](https://github.com/jefflage), [@pbarnes](https://github.com/pbarnes), [@spion](https://github.com/spion), [@tsouza](https://github.com/tsouza).
