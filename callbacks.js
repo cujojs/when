@@ -18,7 +18,6 @@ define(function(require) {
 
 	var makeApply = require('./lib/apply');
 	var _apply = makeApply(Promise, dispatch);
-	var tryCatchResolve = makeApply.tryCatchResolve;
 
 	return {
 		lift: lift,
@@ -69,6 +68,14 @@ define(function(require) {
 	function dispatch(f, thisArg, args, h) {
 		args.push(alwaysUnary(h.resolve, h), alwaysUnary(h.reject, h));
 		tryCatchResolve(f, thisArg, args, h);
+	}
+
+	function tryCatchResolve(f, thisArg, args, resolver) {
+		try {
+			f.apply(thisArg, args);
+		} catch(e) {
+			resolver.reject(e);
+		}
 	}
 
 	/**
