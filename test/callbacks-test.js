@@ -11,6 +11,12 @@ function assertIsPromise(arg) {
 	assert(when.isPromiseLike(arg));
 }
 
+function async(f, x, thisArg) {
+	setTimeout(function() {
+		f.call(thisArg, x);
+	});
+}
+
 buster.testCase('when/callbacks', {
 	'apply': {
 		'should return a promise': function() {
@@ -34,9 +40,29 @@ buster.testCase('when/callbacks', {
 			}, fail).ensure(done);
 		},
 
+		'should resolve with the callback arguments when async': function(done) {
+			var promise = callbacks.apply(function(cb) {
+				async(cb, sentinel);
+			});
+
+			promise.then(function(val) {
+				assert.same(val, sentinel);
+			}, fail).ensure(done);
+		},
+
 		'should reject with the errback arguments': function(done) {
 			var promise = callbacks.apply(function(cb, eb){
 				eb(sentinel);
+			});
+
+			promise.then(fail, function(reason) {
+				assert.same(reason, sentinel);
+			}).ensure(done);
+		},
+
+		'should reject with the errback arguments when async': function(done) {
+			var promise = callbacks.apply(function(cb, eb){
+				async(eb, sentinel);
 			});
 
 			promise.then(fail, function(reason) {
@@ -104,7 +130,7 @@ buster.testCase('when/callbacks', {
 		},
 
 		'should resolve with the callback arguments': function(done) {
-			var promise = callbacks.apply(function(cb) {
+			var promise = callbacks.call(function(cb) {
 				cb(sentinel);
 			});
 
@@ -113,9 +139,29 @@ buster.testCase('when/callbacks', {
 			}, fail).ensure(done);
 		},
 
+		'should resolve with the callback arguments when async': function(done) {
+			var promise = callbacks.call(function(cb) {
+				async(cb, sentinel);
+			});
+
+			promise.then(function(val) {
+				assert.same(val, sentinel);
+			}, fail).ensure(done);
+		},
+
 		'should reject with the errback arguments': function(done) {
-			var promise = callbacks.apply(function(cb, eb){
+			var promise = callbacks.call(function(cb, eb){
 				eb(sentinel);
+			});
+
+			promise.then(fail, function(reason) {
+				assert.same(reason, sentinel);
+			}).ensure(done);
+		},
+
+		'should reject with the errback arguments when async': function(done) {
+			var promise = callbacks.call(function(cb, eb){
+				async(eb, sentinel);
 			});
 
 			promise.then(fail, function(reason) {
@@ -198,6 +244,16 @@ buster.testCase('when/callbacks', {
 				}, fail).ensure(done);
 			},
 
+			'should resolve the promise with the callback value when async': function(done) {
+				var result = callbacks.lift(function(cb) {
+					async(cb, sentinel);
+				});
+
+				result().then(function(value) {
+					assert.same(value, sentinel);
+				}, fail).ensure(done);
+			},
+
 			'should forward arguments to the original function': function(done) {
 				var result = callbacks.lift(function(a, b, cb) {
 					cb(a + b);
@@ -212,6 +268,17 @@ buster.testCase('when/callbacks', {
 				var error = new Error();
 				var result = callbacks.lift(function(cb, eb) {
 					eb(error);
+				});
+
+				result().then(fail, function(reason) {
+					assert.same(reason, error);
+				}).ensure(done);
+			},
+
+			'should reject the promise with the errback value when async': function(done) {
+				var error = new Error();
+				var result = callbacks.lift(function(cb, eb) {
+					async(eb, error);
 				});
 
 				result().then(fail, function(reason) {
