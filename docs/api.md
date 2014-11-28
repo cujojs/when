@@ -1634,7 +1634,7 @@ deferred.promise.then(function(interestingValue) {
 
 ## Support Promises and Node-style callback Functions
 
-Sometimes you may want to support both promises and node-style callbacks from within a method, rather than [`lift`](#nodelift) or [`liftAll`](#nodeliftall). To do this you can use the [`bindCallback`](#nodebindcallback) which returns the promise you pass to it, and also checks whether a callback is provided or not.
+Sometimes you may want to support both promises and node-style callbacks from within a method, rather than [`lift`](#nodelift) or [`liftAll`](#nodeliftall). To do this you can use [`bindCallback`](#nodebindcallback) which returns the promise you pass to it, and also checks whether a callback is provided or not.
 
 ```js
 var when = require('when');
