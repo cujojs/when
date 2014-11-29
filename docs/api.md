@@ -58,6 +58,7 @@ API
 		* [node.bindCallback(promise, nodeback)](#nodebindcallback)
 		* [node.liftCallback(callback)](#nodeliftcallback)
 		* [node.createCallback(resolver)](#nodecreatecallback)
+		* [Support promises and node-style functions](#support-promises-and-node-style-callback-functions)
 	* when/callbacks
 		* [callbacks.lift(asyncFunction)](#callbackslift)
 		* [callbacks.liftAll(object)](#callbacksliftall)
@@ -1629,6 +1630,29 @@ deferred.promise.then(function(interestingValue) {
 },function(err) {
   console.error(err)
 });
+```
+
+## Support Promises and Node-style callback Functions
+
+Sometimes you may want to support both promises and node-style callbacks from within a method, rather than [`lift`](#nodelift) or [`liftAll`](#nodeliftall). To do this you can use [`bindCallback`](#nodebindcallback) which returns the promise you pass to it, and also checks whether a callback is provided or not.
+
+```js
+var when = require('when');
+var bindCallback = require('when/node').bindCallback;
+
+module.exports = {
+    getFullName: function (firstName, lastName, callback) {
+        return bindCallback(when.promise(function(resolve, reject) {
+            if (firstName && lastName) {
+                var fullName = firstName + " " + lastName;
+                resolve(fullName);
+            }
+            else {
+                reject("First and last name must be passed.");
+            }
+        }, callback);
+    }
+};
 ```
 
 # Asynchronous functions
