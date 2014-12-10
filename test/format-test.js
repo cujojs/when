@@ -16,7 +16,7 @@ buster.testCase('format', {
 			assert.equals(typeof s, 'string');
 		},
 
-		'should include stack trace if present': function() {
+		'should be the contents of the stack property of an error': function() {
 			var expected = 'ok';
 			var e = new Error();
 			e.stack = expected;
