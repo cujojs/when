@@ -535,9 +535,20 @@ define(function() {
 		}
 
 		function traverseWith(tryMap, f, promises) {
-			var handler = typeof f === 'function' ? mapAt : settleAt;
 
 			var resolver = new Pending();
+
+			if (isIterable(promises)) {
+				traverseIterable(tryMap, f, promises, resolver);
+			} else {
+				traverseArray(tryMap, f, promises, resolver);
+			}
+
+			return new Promise(Handler, resolver);
+		}
+
+		function traverseArray(tryMap, f, promises, resolver) {
+			var handler = typeof f === 'function' ? mapAt : settleAt;
 			var pending = promises.length >>> 0;
 			var results = new Array(pending);
 
@@ -556,8 +567,6 @@ define(function() {
 				resolver.become(new Fulfilled(results));
 			}
 
-			return new Promise(Handler, resolver);
-
 			function mapAt(i, x, resolver) {
 				if(!resolver.resolved) {
 					traverseAt(promises, settleAt, i, tryMap(f, x, i), resolver);
@@ -570,6 +579,45 @@ define(function() {
 					resolver.become(new Fulfilled(results));
 				}
 			}
+		}
+
+		function traverseIterable(tryMap, f, promises, resolver) {
+			var handler = typeof f === 'function' ? mapAt : settleAt;
+			var pending = 0;
+			var done = false;
+			var results = new Array(pending);
+
+			var iterator = getIterator(promises);
+			var iteration, index = 0;
+			while(true) {
+				iteration = iterator.next();
+				done = iteration.done;
+				if(done) {
+					break;
+				}
+
+				++pending;
+				traverseAt(promises, handler, index, iteration.value, resolver);
+				++index;
+			}
+
+			if(pending === 0) {
+				resolver.become(new Fulfilled(results));
+			}
+
+			function mapAt(i, x, resolver) {
+				if(!resolver.resolved) {
+					traverseAt(promises, settleAt, i, tryMap(f, x, i), resolver);
+				}
+			}
+
+			function settleAt(i, x, resolver) {
+				results[i] = x;
+				if(--pending === 0 && done) {
+					resolver.become(new Fulfilled(results));
+				}
+			}
+
 		}
 
 		function traverseAt(promises, handler, i, x, resolver) {
@@ -608,6 +656,23 @@ define(function() {
 			} else if(s < 0) {
 				h._unreport();
 			}
+		}
+
+		/*global Set, Symbol*/
+		var iteratorSymbol = typeof Symbol === 'function' && Symbol.iterator ||
+			'_es6shim_iterator_';
+		// Firefox ships a partial implementation using the name @@iterator.
+		// https://bugzilla.mozilla.org/show_bug.cgi?id=907077#c14
+		if (typeof Set === 'function' && typeof new Set()['@@iterator'] === 'function') {
+			iteratorSymbol = '@@iterator';
+		}
+
+		function isIterable(o) {
+			return o != null && typeof o[iteratorSymbol] === 'function';
+		}
+
+		function getIterator(o) {
+			return o[iteratorSymbol]();
 		}
 
 		/**
@@ -811,7 +876,8 @@ define(function() {
 
 		Pending.prototype.run = function() {
 			var q = this.consumers;
-			var handler = this.join();
+			var handler = this.handler;
+			this.handler = this.handler.join();
 			this.consumers = void 0;
 
 			for (var i = 0; i < q.length; ++i) {
