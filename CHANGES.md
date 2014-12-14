@@ -1,7 +1,7 @@
 ### 3.6.4
 
 * Fix handling of `null` errors in unhandled rejection reporting
-* Add examples of supporting both promise and node style callbacks in the same API
+* Add [examples of supporting both promise and node style callbacks](docs/api.md#support-promises-and-node-style-callback-functions) in the same API
 
 ### 3.6.3
 
