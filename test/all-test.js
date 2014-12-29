@@ -41,7 +41,7 @@ buster.testCase('when.all', {
 		).ensure(done);
 	},
 
-	'should resolve sparse array input': function(done) {
+	'//should resolve sparse array input': function(done) {
 		var input = [, 1, , 1, 1 ];
 		when.all(input).then(
 			function(results) {
