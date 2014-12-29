@@ -55,6 +55,43 @@ buster.testCase('when.resolve', {
 		).ensure(done);
 	},
 
+	'should preserve implicit order': function() {
+		var result = [];
+		var resolveA;
+		var a = new when.Promise(function() {
+			resolveA = arguments[0];
+		});
+
+		var c = a.then(function() {
+			result.push(1);
+		});
+
+		var resolveB;
+		var b = new when.Promise(function() {
+			resolveB = arguments[0];
+		});
+
+		// There is a very subtle implicit ordering between
+		// resolving a with b, a's handlers, and b's handlers.
+		// It seems that a reasonable order should be:
+		// b handlers run before a handlers added in the same stack
+		b.then(function() {
+			result.push(2);
+		});
+
+		resolveA(b);
+
+		b.then(function() {
+			result.push(3);
+		});
+
+		resolveB();
+
+		return c.then(function() {
+			assert.equals(result, [2,3,1]);
+		});
+	},
+
 	'when assimilating untrusted thenables': {
 
 		'should trap exceptions during assimilation': function(done) {

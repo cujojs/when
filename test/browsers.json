@@ -10,6 +10,5 @@
 	{ browserName: 'safari',            version: '7',   platform: 'OS X 10.9' },
 	{ browserName: 'safari',            version: '6',   platform: 'OS X 10.8' },
 	{ browserName: 'ipad',              version: '7.1', platform: 'OS X 10.9' },
-	{ browserName: 'ipad',              version: '7',   platform: 'OS X 10.9' },
-	{ browserName: 'ipad',              version: '6',   platform: 'OS X 10.8' }
+	{ browserName: 'ipad',              version: '7',   platform: 'OS X 10.9' }
 ]
