@@ -6,14 +6,13 @@ var CorePromise = require('../lib/Promise');
 
 var sentinel = { value: 'sentinel' };
 var fulfilled = CorePromise.resolve(sentinel);
-var rejected = CorePromise.reject(sentinel);
 var never = CorePromise.never();
 
 function delayReject(ms) {
 	/*global setTimeout*/
-	return new CorePromise(function(resolve) {
+	return new CorePromise(function(resolve, reject) {
 		setTimeout(function() {
-			resolve(rejected);
+			reject(sentinel);
 		}, ms);
 	});
 }
@@ -43,6 +42,7 @@ buster.testCase('CorePromise.race', {
 		},
 
 		'when rejected': function() {
+			var rejected = CorePromise.reject(sentinel);
 			return CorePromise.race([rejected])
 				.then(void 0, function(x) {
 					assert.same(x, sentinel);
@@ -60,6 +60,7 @@ buster.testCase('CorePromise.race', {
 		},
 
 		'when rejected': function() {
+			var rejected = CorePromise.reject(sentinel);
 			return CorePromise.race([rejected, never]).then(void 0, function(x) {
 				return CorePromise.race([never, rejected]).then(void 0, function(y) {
 					assert.same(x, y);
@@ -76,6 +77,7 @@ buster.testCase('CorePromise.race', {
 	},
 
 	'should reject when winner rejects': function() {
+		var rejected = CorePromise.reject(sentinel);
 		return CorePromise.race([fulfilled.delay(1), fulfilled.delay(1), rejected])
 			.then(fail, function(x) {
 				assert.same(x, sentinel);
