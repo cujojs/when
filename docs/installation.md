@@ -76,10 +76,13 @@ Since when.js primarily targets modular environments, it doesn't export to the g
   1. `when` will be available as `window.when`
   1. Other modules will be available as sub-objects/functions, e.g. `window.when.fn.lift`, `window.when.sequence`.  See the [full sub-namespace list in the browserify build file](../build/when.browserify.js)
 
-Or if you want to do this from your project's package.json:
+If you would prefer to install the source via npm.  Note that this will install the full when.js source, including tests, etc., into `node_modules` rather than the smaller, published when.js npm package.
 
-1. `npm install cujojs/when browserify --save`
-1. Add `cd node_modules/when && npm run browserify` to your postinstall script in package.json
+1. `npm install --save cujojs/when`
+1. `npm install --save-dev browserify`
+1. Add `cd node_modules/when && npm run browserify` to your `postinstall` script in your project's package.json
+1. `<script src="path/to/when/build/when.js"></script>`
+  1. See above for usage, `window.when`, etc.
 
 #### Web Worker (via browserify)
 
