@@ -10,7 +10,8 @@
 
 	"boss": true,
 	"curly": true,
-	"eqnull": true,
+    "elision": true,
+    "eqnull": true,
 	"expr": true,
 	"globalstrict": false,
 	"laxbreak": true,
