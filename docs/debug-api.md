@@ -8,7 +8,7 @@ A debugger could use them to do any number of things, such as display a list of 
 
 ## Global rejection events
 
-when.js &lt;= 3.7.0 supports global `window` events in browsers, and `process` events in Node, similar to Node's `'uncaughtException'` event. This allows applications to register a handler to receive events from all promise implementations that support these global process events.
+when.js &gt;= 3.7.0 supports global `window` events in browsers, and `process` events in Node, similar to Node's `'uncaughtException'` event. This allows applications to register a handler to receive events from all promise implementations that support these global process events.
 
 The events are:
 
