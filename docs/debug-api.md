@@ -1,12 +1,84 @@
 # Debug APIs
 
-**NOTE:** This document describes APIs that provide support to external debugging tools. Do not use these APIs in application code.  For info and help on debugging promises in your application, see [Debugging Promises](api.md#debugging-promises).
+**NOTE:** This document describes APIs that provide support to external debugging tools. Do not use these APIs in normal application logic.  For info and help on debugging promises in your application, see [Debugging Promises](api.md#debugging-promises).
 
 These APIs allow debugging tools to receive information about promise errors.  For example, when.js's default [builtin unhandled rejection reporting](#debugging-promises) is built using these APIs, as is the long async stack trace support in [`when/monitor/console`](#whenmonitorconsole).
 
 A debugger could use them to do any number of things, such as display a list of "currently unhandled promise rejections", or send error reports to an error aggregation service.
 
-## Examples
+## Global rejection events
+
+when.js &lt;= 3.7.0 supports global `window` events in browsers, and `process` events in Node, similar to Node's `'uncaughtException'` event. This allows applications to register a handler to receive events from all promise implementations that support these global process events.
+
+The events are:
+
+* `'unhandledRejection'`: fired when an unhandled rejection is detected
+* `'rejectionHandled'`: fired when rejection previously reported via an '`unhandledRejection'` event becomes handled
+
+## Browser window events
+
+The following example shows how to use global `window` events in browsers to implement simple debug output.  The `event` object has the following extra properties:
+
+* `event.detail.reason` - the rejection reason (typically an `Error` instance)
+* `event.detail.key` - opaque unique key representing the promise that was rejected.  This key can be used to correlate corresponding `unhandledRejection` and `rejectionHandled` events for the same promise.
+
+```js
+window.addEventListener('unhandledRejection', function(event) {
+	// Calling preventDefault() suppresses when.js's default rejection logging
+	// in favor of your own.
+	event.preventDefault();
+	reportRejection(event.detail.reason, event.detail.key);
+}, false);
+
+window.addEventListener('rejectionHandled', function(event) {
+	// Calling preventDefault() suppresses when.js's default rejection logging
+	// in favor of your own.
+	event.preventDefault();
+	reportHandled(event.detail.key);
+}, false);
+
+function reportRejection(error, key) {
+	// Implement whatever logic your application requires
+	// Log or record error state, etc.
+}
+
+function reportHandled(key) {
+	// Implement whatever logic your application requires
+	// Log that error has been handled, etc.
+}
+```
+
+## Node global process events
+
+The following example shows how to use global `process` events in Node.js to implement simple debug output.  The parameters passed to the `process` event handlers:
+
+* `reason` - the rejection reason (typically an `Error` instance)
+* `key` - opaque unique key representing the promise that was rejected.  This key can be used to correlate corresponding `unhandledRejection` and `rejectionHandled` events for the same promise.
+
+
+```js
+process.on('unhandledRejection', function(reason, key) {
+	reportRejection(reason, key);
+});
+
+process.on('rejectionHandled', function(key) {
+	reportHandled(key);
+});
+
+function reportRejection(error, key) {
+	// Implement whatever logic your application requires
+	// Log or record error state, etc.
+}
+
+function reportHandled(key) {
+	// Implement whatever logic your application requires
+	// Log that error has been handled, etc.
+}
+```
+
+## Local when.js instance API
+
+### Example
 
 A good example is the default implementation in `when/lib/decorators/unhandledRejection`, which logs unhandled rejections to the `console`.
 
@@ -31,8 +103,6 @@ function removeFromDebugDisplay(id) {
 	// Remove from custom debug UI here
 }
 ```
-
-## API
 
 ### Promise.onPotentiallyUnhandledRejection
 

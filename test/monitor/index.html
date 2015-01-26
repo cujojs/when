@@ -3,15 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title></title>
-    <script type="text/javascript" src="../../bower_components/curl/src/curl.js"></script>
+    <script type="text/javascript" src="../../es6-shim/Promise.js"></script>
     <script type="text/javascript">
-        curl.config({
-            packages: {
-                when: { location: '../..', main: 'when' }
-            }
-        });
-
-        curl(['./done']);
+		window.addEventListener('unhandledRejection', function(event) {
+			console.log(event);
+		}, false);
+		Promise.reject(new Error('foo'));
     </script>
 </head>
 <body>
