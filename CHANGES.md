@@ -1,3 +1,9 @@
+### 3.7.0
+
+* Add [`process` and `window` unhandled rejection events](#docs/debug-api.md) for cross-library debugging tools.
+* Improve internal task queueing performance and memory usage.
+* Stabilize handler ordering in the face of multiple promise implementations.
+
 ### 3.6.4
 
 * Fix handling of `null` errors in unhandled rejection reporting
