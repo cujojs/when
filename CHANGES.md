@@ -1,3 +1,7 @@
+### 3.7.1
+
+* Fix `when.settle` unhandled rejection reporting case.
+
 ### 3.7.0
 
 * Add [`process` and `window` unhandled rejection events](#docs/debug-api.md) for cross-library debugging tools.
