@@ -1,5 +1,6 @@
 var buster = typeof window !== 'undefined' ? window.buster : require('buster');
 var assert = buster.assert;
+var refute = buster.refute;
 var fail = buster.referee.fail;
 
 var when = require('../when');
@@ -66,5 +67,16 @@ buster.testCase('when.settle', {
 			assertFulfilled(settled[1], sentinel);
 			assertRejected(settled[2], sentinel);
 		});
+	},
+
+	'should not report unhandled rejection for rejected inputs': function(done) {
+		var P = when.Promise;
+		var spy = P.onPotentiallyUnhandledRejection = this.spy();
+		when.settle([when.reject()]);
+
+		setTimeout(function() {
+			refute.called(spy);
+			done();
+		}, 10);
 	}
 });
