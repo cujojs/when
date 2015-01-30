@@ -1,3 +1,8 @@
+### 3.7.2
+
+* Republish 3.7.1 npm package: for some reason, `npm publish` did not include the file `poll.js` when publishing 3.7.1
+* No functional changes
+
 ### 3.7.1
 
 * Fix `when.settle` unhandled rejection reporting case.
