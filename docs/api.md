@@ -537,14 +537,14 @@ originalPromise.then(function() {
 **ALIAS:** `orElse()` for non-ES5 environments
 
 ```js
-var p1 = doAyncOperationThatMightFail();
+var p1 = doAsyncOperationThatMightFail();
 return p1.else(defaultValue);
 ```
 
 If a promise is rejected, `else` catches the rejection and resolves the returned promise with a default value. This is a shortcut for manually `catch`ing a promise and returning a different value, as such:
 
 ```js
-var p1 = doAyncOperationThatMightFail();
+var p1 = doAsyncOperationThatMightFail();
 return p1.catch(function() {
     return defaultValue;
 });
