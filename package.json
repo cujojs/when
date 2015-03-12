@@ -65,7 +65,7 @@
 		"poly": "git://github.com/cujojs/poly#0.6.0"
 	},
 	"main": "when",
-	"ender": { "files": ["*.js", "lib/decorators/*.js", "lib/*.js", "node/*.js", "unfold/*.js", "monitor/*.js"] },
+	"ender": { "files": ["*.js", "lib/*.js", "node/*.js", "unfold/*.js", "monitor/*.js", "lib/decorators/*.js"] },
 	"browser": {
 		"vertx": false
 	},
