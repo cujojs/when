@@ -1650,7 +1650,7 @@ module.exports = {
             else {
                 reject("First and last name must be passed.");
             }
-        }, callback);
+        }), callback);
     }
 };
 ```
