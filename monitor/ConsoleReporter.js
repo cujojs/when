@@ -86,15 +86,18 @@ define(function(require) {
 							localConsole.log(x);
 						};
 					} else {
+						// when.js 3.x requires ES5 environment thus JSON should be available.
+						// This is just safe guard to ensure some messages will be logged instead of throwing null ref.
 						log = warn = function(x) {
 							if (typeof x !== 'string') {
-								// Most likely x will be an Error and it has message property in IE8 too.
-								// For anything else, well, good luck. Have tried my best.
+								// Most likely x will be an Error. For anything else, well, good luck, have tried my best.
 								x = x.message || x;
 							}
 							localConsole.log(x);
 						}
 					}
+				} else {
+					log = warn = consoleNotAvailable;
 				}
 			}
 		}
