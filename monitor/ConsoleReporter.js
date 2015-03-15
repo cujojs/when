@@ -72,17 +72,29 @@ define(function(require) {
 				// IE8 has console.log and JSON, so we can make a
 				// reasonably useful warn() from those.
 				// Credit to webpro (https://github.com/webpro) for this idea
-				// IE8 reports typeof func as 'object'
-				if ((typeof localConsole.log ==='function' || typeof localConsole.log === 'object')
-					&& typeof JSON !== 'undefined') {
-					log = warn = function (x) {
-						if(typeof x !== 'string') {
-							try {
-								x = JSON.stringify(x);
-							} catch(e) {}
+				// typeof localConsole.log will return 'object' in IE8, so can't test it with === 'function'
+				// Since this is more of a corner case for IE8, I'm ok to check it with !== 'undefined' to reduce complexity
+				if (typeof localConsole.log !== "undefined") {
+					if (typeof JSON !== 'undefined') {
+						log = warn = function(x) {
+							if (typeof x !== 'string') {
+								try {
+									x = JSON.stringify(x);
+								} catch (e) {
+								}
+							}
+							localConsole.log(x);
+						};
+					} else {
+						log = warn = function(x) {
+							if (typeof x !== 'string') {
+								// Most likely x will be an Error and it has message property in IE8 too.
+								// For anything else, well, good luck. Have tried my best.
+								x = x.message || x;
+							}
+							localConsole.log(x);
 						}
-						localConsole.log(x);
-					};
+					}
 				}
 			}
 		}
