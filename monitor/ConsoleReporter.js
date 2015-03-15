@@ -74,28 +74,16 @@ define(function(require) {
 				// Credit to webpro (https://github.com/webpro) for this idea
 				// typeof localConsole.log will return 'object' in IE8, so can't test it with === 'function'
 				// Since this is more of a corner case for IE8, I'm ok to check it with !== 'undefined' to reduce complexity
-				if (typeof localConsole.log !== "undefined") {
-					if (typeof JSON !== 'undefined') {
-						log = warn = function(x) {
-							if (typeof x !== 'string') {
-								try {
-									x = JSON.stringify(x);
-								} catch (e) {
-								}
+				if (typeof localConsole.log !== 'undefined' && typeof JSON !== 'undefined') {
+					log = warn = function(x) {
+						if (typeof x !== 'string') {
+							try {
+								x = JSON.stringify(x);
+							} catch (e) {
 							}
-							localConsole.log(x);
-						};
-					} else {
-						// when.js 3.x requires ES5 environment thus JSON should be available.
-						// This is just safe guard to ensure some messages will be logged instead of throwing null ref.
-						log = warn = function(x) {
-							if (typeof x !== 'string') {
-								// Most likely x will be an Error. For anything else, well, good luck, have tried my best.
-								x = x.message || x;
-							}
-							localConsole.log(x);
 						}
-					}
+						localConsole.log(x);
+					};
 				} else {
 					log = warn = consoleNotAvailable;
 				}
