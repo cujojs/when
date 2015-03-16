@@ -1623,7 +1623,7 @@ function nodeStyleAsyncFunction(callback) {
 }
 
 var deferred = when.defer();
-nodeStyleAsyncFunction(nodefn.createCallback(deferred.resolver));
+nodeStyleAsyncFunction(nodefn.createCallback(deferred));
 
 deferred.promise.then(function(interestingValue) {
   console.log(interestingValue)
