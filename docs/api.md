@@ -1248,12 +1248,12 @@ var resultPromise = poll(task, interval, condition /*, initialDelay */);
 
 Where:
 
-* `work` - function to be called periodically
-* `interval` - interval between calls to `work`. It may be a number *or* a function that returns a promise. If it's a function, the next polling iteration will wait until the promise fulfills.
-* `condition` - function that evaluates each result of `work`. Polling will continue until it returns a truthy value.
-* `initialDelay` - if provided and truthy, the first execution of `work` will be delayed by `interval`.  If not provided, or falsey, the first execution of `work` will happen as soon as possible.
+* `task` - function to be called periodically
+* `interval` - interval between calls to `task`. It may be a number *or* a function that returns a promise. If it's a function, the next polling iteration will wait until the promise fulfills.
+* `condition` - function that evaluates each result of `task`. Polling will continue until it returns a truthy value.
+* `initialDelay` - if provided and truthy, the first execution of `task` will be delayed by `interval`.  If not provided, or falsey, the first execution of `task` will happen as soon as possible.
 
-Execute a task (`work`) repeatedly at the specified `interval`, until the `condition` function returns true.  The `resultPromise` will be resolved with the most recent value returned from `work`.  If `work` fails (throws an exception or returns a rejected promise) before `condition` returns true, the `resultPromise` will be rejected.
+Execute a task (`task`) repeatedly at the specified `interval`, until the `condition` function returns true.  The `resultPromise` will be resolved with the most recent value returned from `task`.  If `task` fails (throws an exception or returns a rejected promise) before `condition` returns true, the `resultPromise` will be rejected.
 
 # Interacting with non-promise code
 
