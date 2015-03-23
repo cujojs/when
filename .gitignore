@@ -4,3 +4,4 @@ node_modules/
 build/when.js
 test/browser/*.js
 bower_components/
+*.swp
