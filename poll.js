@@ -16,8 +16,8 @@ define(function(require) {
 	var cancelable = require('./cancelable');
 
 	/**
-	 * Periodically execute the work function on the msec delay. The result of
-	 * the work may be verified by watching for a condition to become true. The
+	 * Periodically execute the task function on the msec delay. The result of
+	 * the task may be verified by watching for a condition to become true. The
 	 * returned deferred is cancellable if the polling needs to be cancelled
 	 * externally before reaching a resolved state.
 	 *
@@ -25,7 +25,7 @@ define(function(require) {
 	 * verified and rejected.
 	 *
 	 * Polling may be terminated by the verifier returning a truthy value,
-	 * invoking cancel() on the returned promise, or the work function returning
+	 * invoking cancel() on the returned promise, or the task function returning
 	 * a rejected promise.
 	 *
 	 * Usage:
@@ -45,17 +45,17 @@ define(function(require) {
 	 * // delay first vote
 	 * poll(doSomething, 1000, anyFunc, true);
 	 *
-	 * @param work {Function} function that is executed after every timeout
+	 * @param task {Function} function that is executed after every timeout
 	 * @param interval {number|Function} timeout in milliseconds
 	 * @param [verifier] {Function} function to evaluate the result of the vote.
 	 *     May return a {Promise} or a {Boolean}. Rejecting the promise or a
 	 *     falsey value will schedule the next vote.
-	 * @param [delayInitialWork] {boolean} if truthy, the first vote is scheduled
+	 * @param [delayInitialTask] {boolean} if truthy, the first vote is scheduled
 	 *     instead of immediate
 	 *
 	 * @returns {Promise}
 	 */
-	return function poll(work, interval, verifier, delayInitialWork) {
+	return function poll(task, interval, verifier, delayInitialTask) {
 		var deferred, canceled, reject;
 
 		canceled = false;
@@ -83,7 +83,7 @@ define(function(require) {
 
 		function vote() {
 			if (canceled) { return; }
-			when(work(),
+			when(task(),
 				function (result) {
 					when(verifier(result),
 						function (verification) {
@@ -96,10 +96,10 @@ define(function(require) {
 			);
 		}
 
-		if (delayInitialWork) {
+		if (delayInitialTask) {
 			schedule();
 		} else {
-			// if work() is blocking, vote will also block
+			// if task() is blocking, vote will also block
 			vote();
 		}
 
