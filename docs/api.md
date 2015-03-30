@@ -417,7 +417,7 @@ function get(key, object) {
 when({ name: 'Bob' })
 	.fold(get, 'name')
 	.done(console.log); // logs 'Bob'
- 
+
 when(['a', 'b', 'c'])
 	.fold(get, 1)
 	.done(console.log); // logs 'b'
@@ -803,7 +803,7 @@ Where:
 
 * array is an Array or promise for an Array, which may contain promises and/or values
 
-Traditional array map function, similar to `Array.prototype.map()`, but allows input to contain promises and/or values, and mapFunc may return either a value or a promise.
+Traditional array map function, similar to `Array.prototype.map()`, but allows input to contain promises and/or values, and mapFunc may return either a value or a promise. The order of items in the input array and the results will match, however, `when.map` allows mapping to proceed opportunistically as promises in the array fulfill, making it extremely efficient.
 
 If any of the promises is rejected, the returned promise will be rejected with the rejection reason of the first promise that was rejected.
 
@@ -855,7 +855,7 @@ Where:
 
 * array is an Array *or a promise for an array*, which may contain promises and/or values.
 
-Traditional array reduce function, similar to `Array.prototype.reduce()` and `Array.prototype.reduceRight()`, but input may contain promises and/or values, and reduceFunc may return either a value or a promise, *and* initialValue may be a promise for the starting value.
+Traditional array reduce function, similar to `Array.prototype.reduce()` and `Array.prototype.reduceRight()`, but input may contain promises and/or values, and reduceFunc may return either a value or a promise, *and* initialValue may be a promise for the starting value.  Both `when.reduce` and `when.reduceRight` proceed in index order (ascending or descending, respectively), without any overlapping--in contrast to [`when.map`](#whenmap) which proceeds opportunistically.
 
 The reduce function should have the signature:
 
@@ -2083,7 +2083,7 @@ Potentially unhandled rejection [1] Error: this rejection will be handled later
     at Function.Module.runMain (module.js:499:11)
     at startup (node.js:119:16)
     at node.js:906:3
-    
+
 ... one second later ...
 
 Handled previous rejection [1] Error: this rejection will be handled later
@@ -2110,7 +2110,7 @@ The intent of `done` is to *consume* a promise's value, transferring *responsibi
 
 In addition to transforming a value, `then` allows you to recover from, or propagate, *intermediate* errors.  Any errors that are not handled will be caught by the promise machinery and used to reject the promise returned by `then`.
 
-**Note:** [`catch`](#promisecatch) is almost always a better choice for handling errors than `then`. It is more readable, and accepts a `predicate` for matching particular error types. 
+**Note:** [`catch`](#promisecatch) is almost always a better choice for handling errors than `then`. It is more readable, and accepts a `predicate` for matching particular error types.
 
 Calling `done` transfers all responsibility for errors to your code.  If an error (either a thrown exception or returned rejection) escapes the `handleValue`, or `handleError` you provide to `done`, it will be rethrown in an uncatchable way to the host environment, causing a loud stack trace or a crash.
 
