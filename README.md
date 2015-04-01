@@ -25,7 +25,7 @@ Installation
 
 #### AMD
 
-Availble as `when` through [bower](http://bower.io), or just clone the repo and load `when.js` from the root.
+Available as `when` through [bower](http://bower.io), or just clone the repo and load `when.js` from the root.
 
 ```
 bower install --save when
