@@ -91,7 +91,7 @@ Promise.onPotentiallyUnhandledRejection = function(rejection) {
 	addToDebugDisplay(rejection.id, rejection.value);
 }
 
-Promise.onPotentiallyUnhandledRejection = function(rejection) {
+Promise.onPotentiallyUnhandledRejectionHandled = function(rejection) {
 	removeFromDebugDisplay(rejection.id);
 }
 
