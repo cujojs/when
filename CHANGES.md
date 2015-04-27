@@ -1,3 +1,9 @@
+### 3.7.3
+
+* Fix console.log check when using `monitor/console` in IE8.
+* Fix issues with webpack environment and fake timers.
+* Several community-contributed doc fixes.  Thanks!
+
 ### 3.7.2
 
 * Republish 3.7.1 npm package: for some reason, `npm publish` did not include the file `poll.js` when publishing 3.7.1
