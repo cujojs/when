@@ -3,11 +3,18 @@
 /** @author John Hann */
 
 /**
- * ES6 global Promise shim
+ * ES6 Promise shim with unhandled rejection logging enabled
  */
 var unhandledRejections = require('../lib/decorators/unhandledRejection');
 var PromiseConstructor = unhandledRejections(require('../lib/Promise'));
 
-module.exports = typeof global != 'undefined' ? (global.Promise = PromiseConstructor)
-	           : typeof self   != 'undefined' ? (self.Promise   = PromiseConstructor)
-	           : PromiseConstructor;
+module.exports = PromiseConstructor;
+
+if(typeof Promise == 'undefined') {
+	if(typeof self != 'undefined') {
+		self.Promise = PromiseConstructor;
+	} else if(typeof global != 'undefined') {
+		global.Promise  = PromiseConstructor;
+	}
+}
+

@@ -1,17 +1,24 @@
-!function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.Promise=e():"undefined"!=typeof global?global.Promise=e():"undefined"!=typeof self&&(self.Promise=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.WhenPromise=e():"undefined"!=typeof global?global.WhenPromise=e():"undefined"!=typeof self&&(self.WhenPromise=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /** @license MIT License (c) copyright 2010-2014 original author or authors */
 /** @author Brian Cavalier */
 /** @author John Hann */
 
 /**
- * ES6 global Promise shim
+ * ES6 Promise shim with unhandled rejection logging enabled
  */
 var unhandledRejections = require('../lib/decorators/unhandledRejection');
 var PromiseConstructor = unhandledRejections(require('../lib/Promise'));
 
-module.exports = typeof global != 'undefined' ? (global.Promise = PromiseConstructor)
-	           : typeof self   != 'undefined' ? (self.Promise   = PromiseConstructor)
-	           : PromiseConstructor;
+module.exports = PromiseConstructor;
+
+if(typeof Promise == 'undefined') {
+	if(typeof self != 'undefined') {
+		self.Promise = PromiseConstructor;
+	} else if(typeof global != 'undefined') {
+		global.Promise  = PromiseConstructor;
+	}
+}
+
 
 },{"../lib/Promise":2,"../lib/decorators/unhandledRejection":4}],2:[function(require,module,exports){
 /** @license MIT License (c) copyright 2010-2014 original author or authors */

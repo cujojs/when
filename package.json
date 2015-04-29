@@ -80,7 +80,7 @@
 		"tunnel": "node test/sauce.js -m",
 		"start": "buster-static -e browser",
 		"benchmark": "node benchmark/promise && node benchmark/map",
-		"browserify-es6": "browserify -s Promise es6-shim/Promise.browserify-es6.js --no-detect-globals -o es6-shim/Promise.js",
+		"browserify-es6": "browserify -s WhenPromise es6-shim/Promise.browserify-es6.js --no-detect-globals -o es6-shim/Promise.js",
 		"browserify": "browserify -s when build/when.browserify.js --no-detect-globals -o build/when.js",
 		"browserify-debug": "browserify -s when build/when.browserify-debug.js --no-detect-globals -o build/when.js"
 	}
