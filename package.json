@@ -16,12 +16,7 @@
 		"ender"
 	],
 	"homepage": "http://cujojs.com",
-	"licenses": [
-		{
-			"type": "MIT",
-			"url": "http://www.opensource.org/licenses/mit-license.php"
-		}
-	],
+	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/cujojs/when"
