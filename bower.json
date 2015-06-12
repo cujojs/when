@@ -1,6 +1,5 @@
 {
   "name": "when",
-  "version": "3.7.3",
   "main": "when.js",
   "moduleType": ["amd", "node"],
   "description": "A lightweight Promises/A+ and when() implementation, plus other async goodies.",
