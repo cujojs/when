@@ -373,14 +373,19 @@ A promise makes the following guarantees about handlers registered in the same c
 var transformedPromise = promise.spread(onFulfilledArray);
 ```
 
-Similar to [`then`](#promisethen), but calls `onFulfilledArray` with promise's value, which is assumed to be an array, as its argument list.  It's essentially a shortcut for:
+Similar to [`then`](#promisethen), but calls `onFulfilledArray` with promise's value, which is assumed to be an array, as its argument list.  It will also deeply resolve promises within the array.
+  
+It's equivalent to:
 
 ```js
 // Wrapping onFulfilledArray
-promise.then(function(array) {
+when.all(promise).then(function(array) {
 	return onFulfilledArray.apply(undefined, array);
 });
 ```
+
+### See also
+* [when.all](#whenall)
 
 ## promise.fold
 
