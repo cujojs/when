@@ -1724,10 +1724,23 @@ Takes a callback-taking function and returns a promise for its final value, forw
 ```js
 var domIsLoaded = callbacks.call($);
 domIsLoaded.then(doMyDomStuff);
+```
 
-var waitFiveSeconds = callbacks.call(setTimeout, 5000);
-waitFiveSeconds.then(function() {
-	console.log("Five seconds have passed");
+```js
+// Fictional ajax library function
+function traditionalAjax(method, url, callback, errback) {
+	var xhr = new XMLHttpRequest();
+	xhr.open(method, url);
+
+	xhr.onload = callback;
+	xhr.onerror = errback;
+
+	xhr.send();
+}
+
+var xhrResult = callbacks.call(traditionalAjax, 'GET', url);
+xhrResult.then(function(result) {
+	console.log("Got result", result);
 });
 ```
 
