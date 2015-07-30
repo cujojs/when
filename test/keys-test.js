@@ -174,5 +174,62 @@ buster.testCase('when/keys', {
 				}
 			).ensure(done);
 		}
+	},
+
+	'settle': {
+		'should resolve empty input': function() {
+			return keys.settle({}).then(assertNoKeys);
+		},
+
+		'should resolve promise for keys': function(done) {
+			var input = { a:1, b:2, c:3 };
+			return keys.settle(input).then(
+				function(results) {
+					assert.equals(
+						results,
+						{
+							a: { state: 'fulfilled', value: 1 },
+							b: { state: 'fulfilled', value: 2 },
+							c: { state: 'fulfilled', value: 3 }
+						}
+					);
+				},
+				fail
+			).ensure(done);
+		},
+
+		'should resolve promised keys': function(done) {
+			var input = { a: resolve(1), b: 2, c: resolve(3) };
+			keys.settle(input).then(
+				function(results) {
+					assert.equals(
+						results,
+						{
+							a: { state: 'fulfilled', value: 1 },
+							b: { state: 'fulfilled', value: 2 },
+							c: { state: 'fulfilled', value: 3 }
+						}
+					);
+				},
+				fail
+			).ensure(done);
+		},
+
+		'should not reject if key rejects': function(done) {
+			var input = { a: 1, b: reject('reason'), c: 3 };
+			keys.settle(input).then(
+				function(results) {
+					assert.equals(
+						results,
+						{
+							a: { state: 'fulfilled', value: 1 },
+							b: { state: 'rejected', reason: 'reason' },
+							c: { state: 'fulfilled', value: 3 }
+						}
+					);
+				},
+				fail
+			).ensure(done);
+		}
 	}
 });

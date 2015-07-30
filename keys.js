@@ -16,7 +16,8 @@ define(function(require) {
 
 	return {
 		all: when.lift(all),
-		map: map
+		map: map,
+		settle: settle
 	};
 
 	/**
@@ -75,6 +76,38 @@ define(function(require) {
 			return f(x, k);
 		}
 	}
+
+	/**
+	 * Resolve all key-value pairs in the supplied object and return a promise
+	 * that will always fulfill with the outcome states of all input promises.
+	 * @param {object} object whose key-value pairs will be settled
+	 * @returns {Promise} promise for an object with the mapped and fully
+	 *  settled key-value pairs
+	 */
+	 function settle(object) {
+			var p = Promise._defer();
+			var resolver = Promise._handler(p);
+
+			var results = {};
+			var keys = Object.keys(object);
+			var promises = keys.map(function(k) { return object[k]; });
+			var pending = keys.length;
+
+			when.settle(promises).then(function(d) {
+				for(var i=0; i<keys.length; i++) {
+					results[keys[i]] = d[i];
+					if(--pending === 0) {
+						resolver.resolve(results);
+					}
+				}
+			});
+
+			if(pending === 0) {
+				resolver.resolve(results);
+			}
+
+			return p;
+	 }
 
 });
 })(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
