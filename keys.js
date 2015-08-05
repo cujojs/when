@@ -85,28 +85,29 @@ define(function(require) {
 	 *  settled key-value pairs
 	 */
 	 function settle(object) {
-			var p = Promise._defer();
-			var resolver = Promise._handler(p);
-
-			var results = {};
 			var keys = Object.keys(object);
-			var promises = keys.map(function(k) { return object[k]; });
-			var pending = keys.length;
+			var results = {};
 
-			when.settle(promises).then(function(d) {
-				for(var i=0; i<keys.length; i++) {
-					results[keys[i]] = d[i];
-					if(--pending === 0) {
-						resolver.resolve(results);
-					}
-				}
-			});
-
-			if(pending === 0) {
-				resolver.resolve(results);
+			if(keys.length === 0) {
+				return toPromise(results);
 			}
 
+			var p = Promise._defer();
+			var resolver = Promise._handler(p);
+			var promises = keys.map(function(k) { return object[k]; });
+
+			when.settle(promises).then(function(states) {
+				populateResults(keys, states, results, resolver);
+			});
+
 			return p;
+
+			function populateResults(key, states, results, resolver) {
+				for(var i=0; i<keys.length; i++) {
+					results[keys[i]] = states[i];
+				}
+				resolver.resolve(results);
+			}
 	 }
 
 });
