@@ -44,6 +44,7 @@ API
 	* when/keys
 		* [keys.all(object)](#whenkeys-all)
 		* [keys.map(object, mapper)](#whenkeys-map)
+		* [keys.settle(object)](#whenkeys-settle)
 1. Functions
 	* when/function
 		* [fn.lift(f)](#fnlift)
@@ -920,6 +921,7 @@ settled.then(function(descriptors) {
 ### See also:
 * [when.all](#whenall)
 * [promise.inspect](#inspect)
+* [keys.settle](#whenkeys-settle)
 
 # Objects
 
@@ -969,6 +971,20 @@ Where:
 
 ### See also:
 * [when.map](#whenmap)
+
+## when/keys settle
+
+```js
+var promise = keys.settle(object)
+```
+
+Where
+* object is an Object whose keys represent promises and/or values.
+
+Similar to `when.settle`, but for object keys, returns a promise for the key-value pairs with a resultant descriptor object for each key. The returned promise should always fulfill.
+
+### See also:
+* [when.settle](#whensettle)
 
 # Array Races
 
