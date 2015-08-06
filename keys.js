@@ -84,24 +84,24 @@ define(function(require) {
 	 * @returns {Promise} promise for an object with the mapped and fully
 	 *  settled key-value pairs
 	 */
-	 function settle(object) {
-			var keys = Object.keys(object);
-			var results = {};
+	function settle(object) {
+		var keys = Object.keys(object);
+		var results = {};
 
-			if(keys.length === 0) {
-				return toPromise(results);
-			}
+		if(keys.length === 0) {
+			return toPromise(results);
+		}
 
-			var p = Promise._defer();
-			var resolver = Promise._handler(p);
-			var promises = keys.map(function(k) { return object[k]; });
+		var p = Promise._defer();
+		var resolver = Promise._handler(p);
+		var promises = keys.map(function(k) { return object[k]; });
 
-			when.settle(promises).then(function(states) {
-				populateResults(keys, states, results, resolver);
-			});
+		when.settle(promises).then(function(states) {
+			populateResults(keys, states, results, resolver);
+		});
 
-			return p;
-	 }
+		return p;
+	}
 
 		function populateResults(keys, states, results, resolver) {
 			for(var i=0; i<keys.length; i++) {
