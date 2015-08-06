@@ -103,12 +103,12 @@ define(function(require) {
 		return p;
 	}
 
-		function populateResults(keys, states, results, resolver) {
-			for(var i=0; i<keys.length; i++) {
-				results[keys[i]] = states[i];
-			}
-			resolver.resolve(results);
+	function populateResults(keys, states, results, resolver) {
+		for(var i=0; i<keys.length; i++) {
+			results[keys[i]] = states[i];
 		}
+		resolver.resolve(results);
+	}
 
 });
 })(typeof define === 'function' && define.amd ? define : function (factory) { module.exports = factory(require); });
