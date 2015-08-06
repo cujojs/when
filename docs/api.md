@@ -1674,7 +1674,7 @@ var promiseFunc = callbacks.lift(callbackTakingFunc);
 var promiseFunc = callbacks.lift(callbackTakingFunc, arg1, arg2/* ...more args */);
 ```
 
-Much like [`fn.lift()`](#fnlift), `callbacks.lift` creates a promise-friendly function, based on an existing function, but following the asynchronous resolution patters from [`callbacks.call()`](#callbackscall) and [`callbacks.apply()`](#callbacksapply). It can be useful when a particular function needs no be called on multiple places, or for creating an alternative API for a library.
+Much like [`fn.lift()`](#fnlift), `callbacks.lift` creates a promise-friendly function, based on an existing function, but following the asynchronous resolution patterns from [`callbacks.call()`](#callbackscall) and [`callbacks.apply()`](#callbacksapply). It can be useful when a particular function needs to be called in multiple places, or for creating an alternative API for a library.
 
 Like `Function.prototype.bind`, additional arguments will be partially applied to the new function.
 
