@@ -1067,7 +1067,7 @@ Generates a potentially infinite stream of promises by repeatedly calling `f` un
 
 Where:
 * `f` - function that, given a seed, returns the next value or a promise for it.
-* `predicate` - function that receives the current iteration value, and should return truthy when the unfold should stop
+* `predicate` - function that receives the current iteration value, and should return truthy when the iterating should stop
 * `handler` - function that receives each value as it is produced by `f`. It may return a promise to delay the next iteration.
 * `seed` - initial value provided to the handler, and first `f` invocation. May be a promise.
 
