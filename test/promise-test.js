@@ -723,7 +723,7 @@ buster.testCase('promise', {
 					.then(fail, function () {
 						assert(true);
 					});
-			}
+			};
 		},
 
 		'should return a promise': function () {
@@ -735,6 +735,22 @@ buster.testCase('promise', {
 				expected = [2, 4, 6];
 
 			return this.runExpectResolve(input, expected);
+		},
+
+		'should pass index to mapper as second param': function () {
+			return when.resolve(['a', 'b', 'c'])
+				.map(function (x, i) {
+					assert(typeof i === 'number');
+					return x;
+				});
+		},
+
+		'should resolve to empty array when promise does not resolve to an array': function () {
+			return when.resolve(123)
+				.map(fail)
+				.then(function (result) {
+					assert.equals(result, []);
+				});
 		},
 
 		'should preserve thisArg': function () {
@@ -781,6 +797,33 @@ buster.testCase('promise', {
 
 				return this.runExpectReject(input);
 			}
+		},
+
+		'when mapper returns a promise': {
+			'should resolve to mapped array': function () {
+				var input = [1, 2, 3],
+					expected = [2, 4, 6];
+
+				return when.resolve(input)
+					.map(function (x) {
+						return when.resolve(2 * x);
+					})
+					.then(function (result) {
+						assert.equals(result, expected);
+					});
+			},
+
+			'should reject if mapper rejects': function () {
+				var input = [1, 2, 3];
+
+				return when.resolve(input)
+					.map(function (x) {
+						return when.reject(2 * x);
+					})
+					.then(fail, function () {
+						assert(true);
+					});
+			}
 		}
 	},
 
@@ -802,11 +845,11 @@ buster.testCase('promise', {
 					.then(fail, function () {
 						assert(true);
 					});
-			}
+			};
 		},
 
 		'should return a promise': function () {
-			assert.isFunction(when.defer().promise.map().then);
+			assert.isFunction(when.defer().promise.filter().then);
 		},
 
 		'should preserve thisArg': function () {
@@ -820,7 +863,23 @@ buster.testCase('promise', {
 				});
 		},
 
-		'should resolve to mapped array': function () {
+		'should pass index to predicate as second param': function () {
+			return when.resolve(['a', 'b', 'c'])
+				.filter(function (x, i) {
+					assert(typeof i === 'number');
+					return x;
+				});
+		},
+
+		'should resolve to empty array when promise does not resolve to an array': function () {
+			return when.resolve(123)
+				.filter(fail)
+				.then(function (result) {
+					assert.equals(result, []);
+				});
+		},
+
+		'should resolve to filtered array': function () {
 			var input = [1, 2, 3],
 				expected = [1, 3];
 
@@ -841,7 +900,7 @@ buster.testCase('promise', {
 		},
 
 		'when input is a promise': {
-			'should resolve to mapped array': function () {
+			'should resolve to filtered array': function () {
 				var input = when.resolve([1, 2, 3]),
 					expected = [1, 3];
 
@@ -859,6 +918,279 @@ buster.testCase('promise', {
 				var input = when.reject([1, 2, 3]);
 
 				return this.runExpectReject(input);
+			}
+		},
+
+		'when predicate returns a promise': {
+			'should resolve to filtered array': function () {
+				var input = [1, 2, 3],
+					expected = [1, 3];
+
+				return when.resolve(input)
+					.filter(function (x) {
+						return when.resolve(x % 2);
+					})
+					.then(function (result) {
+						assert.equals(result, expected);
+					});
+			},
+
+			'should reject if predicate rejects': function () {
+				var input = [1, 2, 3];
+
+				return when.resolve(input)
+					.filter(function (x) {
+						return when.reject(x % 2);
+					})
+					.then(fail, function () {
+						assert(true);
+					});
+			}
+		}
+	},
+
+	'reduce': {
+		setUp: function () {
+			this.runExpectResolve = function (input, expected) {
+				return when.resolve(input)
+					.reduce(function (currentValue, value) {
+						return currentValue + value;
+					}, 0)
+					.then(function (result) {
+						assert.equals(result, expected);
+					});
+			};
+
+			this.runExpectReject = function (input) {
+				return when.resolve(input)
+					.reduce(fail)
+					.then(fail, function () {
+						assert(true);
+					});
+			};
+		},
+
+		'should return a promise': function () {
+			assert.isFunction(when.defer().promise.reduce().then);
+		},
+
+		'should preserve thisArg': function () {
+			return when.resolve([])
+				.withThis(sentinel)
+				.reduce(function (currentValue, value) {
+					assert.equals(this, sentinel);
+					return currentValue + value;
+				}, 0)
+				.then(function () {
+					assert.equals(this, sentinel);
+				});
+		},
+
+		'should pass index to reducer as third param': function () {
+			return when.resolve(['a', 'b', 'c'])
+				.reduce(function (currentValue, value, i) {
+					assert(typeof i === 'number');
+					return currentValue;
+				});
+		},
+
+		'should resolve to initial value when promise does not resolve to an array': function () {
+			return when.resolve(123)
+				.reduce(fail, sentinel)
+				.then(function (result) {
+					assert.equals(result, sentinel);
+				});
+		},
+
+		'should resolve to reduced value': function () {
+			var input = [1, 2, 3],
+				expected = 6;
+
+			return this.runExpectResolve(input, expected);
+		},
+
+		'should resolve array contents': function () {
+			var input = [when.resolve(1), 2, when.resolve(3)],
+				expected = 6;
+
+			return this.runExpectResolve(input, expected);
+		},
+
+		'should reject if any item in array rejects': function () {
+			var input = [when.resolve(1), 2, when.reject(3)];
+
+			return this.runExpectReject(input);
+		},
+
+		'when input is a promise': {
+			'should resolve to reduced array': function () {
+				var input = when.resolve([1, 2, 3]),
+					expected = 6;
+
+				return this.runExpectResolve(input, expected);
+			},
+
+			'should resolve array contents': function () {
+				var input = when.resolve([when.resolve(1), 2, when.resolve(3)]),
+					expected = 6;
+
+				return this.runExpectResolve(input, expected);
+			},
+
+			'should reject if input is a rejected promise': function () {
+				var input = when.reject([1, 2, 3]);
+
+				return this.runExpectReject(input);
+			}
+		},
+
+		'when reducer returns a promise': {
+			'should resolve to reduced value': function () {
+				var input = [1, 2, 3],
+					expected = 6;
+
+				return when.resolve(input)
+					.reduce(function (currentResult, value) {
+						return when.resolve(currentResult + value);
+					}, 0)
+					.then(function (result) {
+						assert.equals(result, expected);
+					});
+			},
+
+			'should reject if reducer rejects': function () {
+				var input = [1, 2, 3];
+
+				return when.resolve(input)
+					.reduce(function () {
+						return when.reject();
+					})
+					.then(fail, function () {
+						assert(true);
+					});
+			}
+		}
+	},
+
+	'reduceRight': {
+		setUp: function () {
+			this.runExpectResolve = function (input, expected) {
+				return when.resolve(input)
+					.reduceRight(function (currentValue, value) {
+						return currentValue + value;
+					}, '0')
+					.then(function (result) {
+						assert.equals(result, expected);
+					});
+			};
+
+			this.runExpectReject = function (input) {
+				return when.resolve(input)
+					.reduceRight(fail)
+					.then(fail, function () {
+						assert(true);
+					});
+			};
+		},
+
+		'should return a promise': function () {
+			assert.isFunction(when.defer().promise.reduceRight().then);
+		},
+
+		'should preserve thisArg': function () {
+			return when.resolve([])
+				.withThis(sentinel)
+				.reduceRight(function (currentValue, value) {
+					assert.equals(this, sentinel);
+					return currentValue + value;
+				}, 0)
+				.then(function () {
+					assert.equals(this, sentinel);
+				});
+		},
+
+		'should pass index to reducer as third param': function () {
+			return when.resolve(['a', 'b', 'c'])
+				.reduceRight(function (currentValue, value, i) {
+					assert(typeof i === 'number');
+					return currentValue;
+				});
+		},
+
+		'should resolve to initial value when promise does not resolve to an array': function () {
+			return when.resolve(123)
+				.reduceRight(fail, sentinel)
+				.then(function (result) {
+					assert.equals(result, sentinel);
+				});
+		},
+
+		'should resolve to reduced value': function () {
+			var input = ['1', '2', '3'],
+				expected = '0321';
+
+			return this.runExpectResolve(input, expected);
+		},
+
+		'should resolve array contents': function () {
+			var input = [when.resolve('1'), '2', when.resolve('3')],
+				expected = '0321';
+
+			return this.runExpectResolve(input, expected);
+		},
+
+		'should reject if any item in array rejects': function () {
+			var input = [when.resolve(1), 2, when.reject(3)];
+
+			return this.runExpectReject(input);
+		},
+
+		'when input is a promise': {
+			'should resolve to reduced array': function () {
+				var input = when.resolve(['1', '2', '3']),
+					expected = '0321';
+
+				return this.runExpectResolve(input, expected);
+			},
+
+			'should resolve array contents': function () {
+				var input = when.resolve([when.resolve('1'), '2', when.resolve('3')]),
+					expected = '0321';
+
+				return this.runExpectResolve(input, expected);
+			},
+
+			'should reject if input is a rejected promise': function () {
+				var input = when.reject([1, 2, 3]);
+
+				return this.runExpectReject(input);
+			}
+		},
+
+		'when reducer returns a promise': {
+			'should resolve to reduced value': function () {
+				var input = ['1', '2', '3'],
+					expected = '0321';
+
+				return when.resolve(input)
+					.reduceRight(function (currentResult, value) {
+						return when.resolve(currentResult + value);
+					}, '0')
+					.then(function (result) {
+						assert.equals(result, expected);
+					});
+			},
+
+			'should reject if reducer rejects': function () {
+				var input = [1, 2, 3];
+
+				return when.resolve(input)
+					.reduceRight(function () {
+						return when.reject();
+					})
+					.then(fail, function () {
+						assert(true);
+					});
 			}
 		}
 	},
