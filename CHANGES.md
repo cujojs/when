@@ -1,3 +1,13 @@
+### 3.7.5
+
+* Improve unhandled rejection formatting in ie8
+
+### 3.7.4
+
+* Add `when/keys settle`, for settling a hash of promises.
+* Use `poly` from npm instead of a git link in package.json. No need for git to be available to npm install when.
+* Various community-contributed documentation updates. Thanks!
+
 ### 3.7.3
 
 * Fix console.log check when using `monitor/console` in IE8.
