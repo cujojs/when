@@ -8,3 +8,4 @@ build/
 *~
 bower.json
 bower_components/
+.idea
