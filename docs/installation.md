@@ -66,32 +66,24 @@ If you're already using [RaveJS](https://github.com/RaveJS/rave), just install w
 
 #### Browser environments (via browserify)
 
-Since when.js primarily targets modular environments, it doesn't export to the global object (`window` in browsers) by default. You can create your own build of when.js using browserify, if you prefer not to use an AMD or CommonJS loader in your project.
+If you prefer not to use an AMD or CommonJS loader in your project, you can use a pre-built UMD module available in `dist/browser/when[.min|.debug].js` to have a global `when` available.
 
-1. `git clone https://github.com/cujojs/when`
-1. `npm install`
-1. `npm run browserify` to generate `build/when.js`
-  1. Or `npm run browserify-debug` to build with [when/monitor/console](api.md#debugging-promises) enabled
-1. `<script src="path/to/when/build/when.js"></script>`
-  1. `when` will be available as `window.when`
+1. `npm install --save when`
+1. `<script src="path/to/when/dist/browser/when.js"></script>`
+  1. Or `<script src="path/to/when/dist/browser/when.min.js"></script>` for minified version
+  1. Or `<script src="path/to/when/dist/browser/when.debug.js"></script>` with [when/monitor/console](api.md#debugging-promises) enabled 
+1. `when` will be available as `window.when`
   1. Other modules will be available as sub-objects/functions, e.g. `window.when.fn.lift`, `window.when.sequence`.  See the [full sub-namespace list in the browserify build file](../build/when.browserify.js)
 
-If you would prefer to install the source via npm.  Note that this will install the full when.js source, including tests, etc., into `node_modules` rather than the smaller, published when.js npm package.
-
-1. `npm install --save cujojs/when`
-1. `npm install --save-dev browserify`
-1. Add `cd node_modules/when && npm run browserify` to your `postinstall` script in your project's package.json
-1. `<script src="path/to/when/build/when.js"></script>`
-  1. See above for usage, `window.when`, etc.
+If you expose the whole `dist/browser` folder in your application (or make sure that `when[.min|.debug].js` has its corresponding `*.map` file available next to it), you will have the [source maps](https://developer.chrome.com/devtools/docs/javascript-debugging#source-maps) available for debugging in the browser.
 
 #### Web Worker (via browserify)
 
 Similarly to browser global environments:
 
-1. `git clone https://github.com/cujojs/when`
-1. `npm install`
-1. `npm run browserify` to generate `build/when.js`
-  1. Or `npm run browserify-debug` to build with [when/monitor/console](api.md#debugging-promises) enabled
-1. `importScripts('path/to/when/build/when.js');`
-  1. `when` will be available as `self.when`
+1. `npm install --save when`
+1. `importScripts('path/to/when/dist/browser/when.js');`
+  1. Or `importScripts('path/to/when/dist/browser/when.min.js');` for minified version
+  1. Or `importScripts('path/to/when/dist/browser/when.debug.js');` with [when/monitor/console](api.md#debugging-promises) enabled
+1. `when` will be available as `self.when`
   1. Other modules will be available as sub-objects/functions, e.g. `self.when.fn.lift`, `self.when.sequence`.  See the [full sub-namespace list in the browserify build file](../build/when.browserify.js)
