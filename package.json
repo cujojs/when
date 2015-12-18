@@ -46,18 +46,20 @@
     }
   ],
   "devDependencies": {
-    "promises-aplus-tests": "~2",
     "benchmark": "~1",
-    "microtime": "~0",
     "browserify": "~2",
     "buster": "~0.7",
+    "exorcist": "~0.4",
     "jshint": "~2",
-    "rest": "1.1.x",
+    "json5": "~0.2",
+    "microtime": "~0",
     "optimist": "~0.6",
     "poly": "^0.6.1",
+    "promises-aplus-tests": "~2",
+    "rest": "1.1.x",
     "sauce-connect-launcher": "~0.4",
-    "wd": "~0.2",
-    "json5": "~0.2"
+    "uglify-js": "~2",
+    "wd": "~0.2"
   },
   "main": "when",
   "ender": {
@@ -71,6 +73,7 @@
     ]
   },
   "browser": {
+    "when": "./dist/browser/when.js",
     "vertx": false
   },
   "directories": {
@@ -84,10 +87,14 @@
     "tunnel": "node test/sauce.js -m",
     "start": "buster-static -e browser",
     "benchmark": "node benchmark/promise && node benchmark/map",
-    "prepublish": "npm run browserify-es6",
-    "preversion": "npm run browserify-es6",
-    "browserify-es6": "browserify -s Promise es6-shim/Promise.browserify-es6.js --no-detect-globals -o es6-shim/Promise.js",
-    "browserify": "browserify -s when build/when.browserify.js --no-detect-globals -o build/when.js",
-    "browserify-debug": "browserify -s when build/when.browserify-debug.js --no-detect-globals -o build/when.js"
+    "prepublish": "npm run browserify && npm run uglify",
+    "preversion": "npm run browserify && npm run uglify",
+    "browserify": "npm run browserify-es6 && npm run browserify-when && npm run browserify-debug",
+    "browserify-es6": "browserify -s Promise es6-shim/Promise.browserify-es6.js --no-detect-globals --debug | exorcist -b . -r https://raw.githubusercontent.com/cujojs/when/`git rev-parse HEAD` es6-shim/Promise.js.map >es6-shim/Promise.js",
+    "browserify-when": "mkdir -p dist/browser && browserify -s when build/when.browserify.js --no-detect-globals --debug | exorcist -b . -r https://raw.githubusercontent.com/cujojs/when/`git rev-parse HEAD` dist/browser/when.js.map >dist/browser/when.js",
+    "browserify-debug": "mkdir -p dist/browser && browserify -s when build/when.browserify-debug.js --no-detect-globals --debug | exorcist -b . -r https://raw.githubusercontent.com/cujojs/when/`git rev-parse HEAD` dist/browser/when.debug.js.map >dist/browser/when.debug.js",
+    "uglify": "npm run uglify-es6 && npm run uglify-when",
+    "uglify-es6": "cd es6-shim; uglifyjs Promise.js --compress --mangle  --in-source-map Promise.js.map --source-map Promise.min.js.map -o Promise.min.js; cd ../..",
+    "uglify-when": "cd dist/browser; uglifyjs when.js --compress --mangle  --in-source-map when.js.map --source-map when.min.js.map -o when.min.js; cd ../.."
   }
 }
