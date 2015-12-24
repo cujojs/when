@@ -61,7 +61,7 @@
     "uglify-js": "~2",
     "wd": "~0.2"
   },
-  "main": "when",
+  "main": "when.js",
   "ender": {
     "files": [
       "*.js",
