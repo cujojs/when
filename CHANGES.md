@@ -1,3 +1,11 @@
+### 3.7.7
+
+* Fix browserify
+
+### 3.7.6
+
+* Add browser dist version to npm package
+
 ### 3.7.5
 
 * Improve unhandled rejection formatting in ie8
