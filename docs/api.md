@@ -579,8 +579,7 @@ These are equivalent:
 ```js
 // Using only .then()
 promise.then(function(x) {
-	doSideEffectsHere(x);
-	return x;
+	return when(doSideEffectsHere(x)).yield(x);
 });
 
 // Using .tap()
