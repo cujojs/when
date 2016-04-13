@@ -52,7 +52,7 @@
     "exorcist": "~0.4",
     "jshint": "~2",
     "json5": "~0.2",
-    "microtime": "~0",
+    "microtime": "~2",
     "optimist": "~0.6",
     "poly": "^0.6.1",
     "promises-aplus-tests": "~2",
