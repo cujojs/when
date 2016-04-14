@@ -2,13 +2,22 @@ language: node_js
 node_js:
   - '0.10'
   - '0.12'
+  - '4'
+  - '5'
 sudo: false
 script: npm run ci
 branches:
   only:
     - dev
     - master
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
 env:
   global:
     - SAUCE_USERNAME="cujojs-when"
     - SAUCE_ACCESS_KEY="e5d3d1a5-bc49-4607-8a7e-702a512c7f60"
+    - CXX=g++-4.8
