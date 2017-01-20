@@ -50,6 +50,7 @@
     "browserify": "~2",
     "buster": "~0.7",
     "exorcist": "~0.4",
+    "glob": "^7.1.1",
     "jshint": "~2",
     "json5": "~0.2",
     "microtime": "~2",
@@ -82,7 +83,7 @@
   },
   "scripts": {
     "test": "jshint . && buster-test -e node && promises-aplus-tests test/promises-aplus-adapter.js",
-    "build-browser-test": "browserify ./node_modules/poly/es5.js -o test/browser/es5.js && browserify ./test/*-test.js ./test/**/*-test.js -o test/browser/tests.js -x buster ",
+    "build-browser-test": "browserify ./node_modules/poly/es5.js -o test/browser/es5.js && node scripts/browserify-tests",
     "browser-test": "npm run build-browser-test && buster-static -e browser -p 8080",
     "ci": "npm test && node test/sauce.js",
     "tunnel": "node test/sauce.js -m",

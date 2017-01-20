@@ -8,9 +8,12 @@ exports.node = {
 
 exports.browser = {
 	environment: 'browser',
-	rootPath: '../',
+	rootPath: '..',
 	tests: [
 		'test/browser/tests.js'
+	],
+	resources: [
+		'test/browser/es5.js'
 	],
 	testbed: 'test/browser/index.html'
 };
