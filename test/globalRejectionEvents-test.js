@@ -9,7 +9,7 @@ buster.testCase('global rejection events', {
 
 	'on Node': {
 		'tearDown': function() {
-			if(typeof process === 'undefined') {
+			if(typeof window !== 'undefined') {
 				return;
 			}
 
@@ -20,6 +20,7 @@ buster.testCase('global rejection events', {
 		'should emit unhandledRejection': function(done) {
 			if(typeof window !== 'undefined') {
 				buster.assert(true);
+				done();
 				return;
 			}
 
@@ -36,6 +37,7 @@ buster.testCase('global rejection events', {
 		'should emit rejectionHandled': function(done) {
 			if(typeof window !== 'undefined') {
 				buster.assert(true);
+				done();
 				return;
 			}
 

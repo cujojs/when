@@ -50,9 +50,11 @@
     "browserify": "~2",
     "buster": "~0.7",
     "exorcist": "~0.4",
+    "glob": "^7.1.1",
     "jshint": "~2",
     "json5": "~0.2",
     "microtime": "~2",
+    "mkdirp": "^0.5.1",
     "optimist": "~0.6",
     "poly": "^0.6.1",
     "promises-aplus-tests": "~2",
@@ -81,7 +83,7 @@
   },
   "scripts": {
     "test": "jshint . && buster-test -e node && promises-aplus-tests test/promises-aplus-adapter.js",
-    "build-browser-test": "browserify ./node_modules/poly/es5.js -o test/browser/es5.js && browserify ./test/*-test.js ./test/**/*-test.js -o test/browser/tests.js -x buster ",
+    "build-browser-test": "browserify ./node_modules/poly/es5.js -o test/browser/es5.js && node scripts/browserify-tests",
     "browser-test": "npm run build-browser-test && buster-static -e browser -p 8080",
     "ci": "npm test && node test/sauce.js",
     "tunnel": "node test/sauce.js -m",
@@ -90,11 +92,11 @@
     "prepublish": "npm run browserify && npm run uglify",
     "preversion": "npm run browserify && npm run uglify",
     "browserify": "npm run browserify-es6 && npm run browserify-when && npm run browserify-debug",
-    "browserify-es6": "browserify -s Promise es6-shim/Promise.browserify-es6.js --no-detect-globals --debug | exorcist -b . -r https://raw.githubusercontent.com/cujojs/when/`git rev-parse HEAD` es6-shim/Promise.js.map >es6-shim/Promise.js",
-    "browserify-when": "mkdir -p dist/browser && browserify -s when build/when.browserify.js --no-detect-globals --debug | exorcist -b . -r https://raw.githubusercontent.com/cujojs/when/`git rev-parse HEAD` dist/browser/when.js.map >dist/browser/when.js",
-    "browserify-debug": "mkdir -p dist/browser && browserify -s when build/when.browserify-debug.js --no-detect-globals --debug | exorcist -b . -r https://raw.githubusercontent.com/cujojs/when/`git rev-parse HEAD` dist/browser/when.debug.js.map >dist/browser/when.debug.js",
+    "browserify-es6": "node scripts/browserify.js es6",
+    "browserify-when": "node scripts/browserify.js when",
+    "browserify-debug": "node scripts/browserify.js debug",
     "uglify": "npm run uglify-es6 && npm run uglify-when",
-    "uglify-es6": "cd es6-shim; uglifyjs Promise.js --compress --mangle  --in-source-map Promise.js.map --source-map Promise.min.js.map -o Promise.min.js; cd ../..",
-    "uglify-when": "cd dist/browser; uglifyjs when.js --compress --mangle  --in-source-map when.js.map --source-map when.min.js.map -o when.min.js; cd ../.."
+    "uglify-es6": "uglifyjs es6-shim/Promise.js --compress --mangle  --in-source-map es6-shim/Promise.js.map --source-map es6-shim/Promise.min.js.map -o es6-shim/Promise.min.js",
+    "uglify-when": "uglifyjs dist/browser/when.js --compress --mangle  --in-source-map dist/browser/when.js.map --source-map dist/browser/when.min.js.map -o dist/browser/when.min.js"
   }
 }
