@@ -15,6 +15,7 @@ define(function(require) {
 	var slice = Array.prototype.slice;
 
 	guard.n = n;
+	guard.join = join;
 
 	return guard;
 
@@ -31,7 +32,9 @@ define(function(require) {
 			var args = slice.call(arguments);
 
 			return when(condition()).withThis(this).then(function(exit) {
-				return when(f.apply(this, args))['finally'](exit);
+				return when(f.apply(this, args)).tap(exit);
+			}, function (exit) {
+				return exit;
 			});
 		};
 	}
@@ -65,6 +68,39 @@ define(function(require) {
 			if(waiting.length > 0) {
 				waiting.shift()(exit);
 			}
+		}
+	}
+
+	/**
+	 * Creates a condition that allows only one concurrent execution of a guarded function
+	 */
+	function join() {
+		var first = false;
+		var value;
+		var waiting = [];
+
+		return function enter() {
+			return when.promise(function(resolve, reject) {
+				if (!first) {
+					resolve(exit);
+					first = true;
+				} else {
+					waiting.push([ resolve, reject ]);
+				}
+			});
+		};
+
+		function exit(result) {
+			waiting.forEach(function (waiting) {
+				waiting[1](result);
+			});
+			reset();
+		}
+
+		function reset() {
+			first = false;
+			value = undefined;
+			waiting = [];
 		}
 	}
 
