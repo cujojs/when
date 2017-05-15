@@ -30,9 +30,9 @@ define(function(require) {
 		return function() {
 			var args = slice.call(arguments);
 
-			return when(condition()).withThis(this).then(function(exit) {
-				return when(f.apply(this, args))['finally'](exit);
-			});
+			return when(condition.enter()).withThis(this).then(function () {
+				return when(f.apply(this, args));
+			}).tap(condition.resolved, condition.rejected).tap(condition.exit);
 		};
 	}
 
@@ -48,24 +48,28 @@ define(function(require) {
 	function n(allowed) {
 		var count = 0;
 		var waiting = [];
-
-		return function enter() {
-			return when.promise(function(resolve) {
-				if(count < allowed) {
-					resolve(exit);
-				} else {
-					waiting.push(resolve);
+		return {
+			enter: function () {
+				return when.promise(function(resolve) {
+					if(count < allowed) {
+						resolve();
+					} else {
+						waiting.push(resolve);
+					}
+					count += 1;
+				});
+			},
+			resolved: function () {
+			},
+			rejected: function () {
+			},
+			exit: function () {
+				count = Math.max(count - 1, 0);
+				if(waiting.length > 0) {
+					waiting.shift()();
 				}
-				count += 1;
-			});
-		};
-
-		function exit() {
-			count = Math.max(count - 1, 0);
-			if(waiting.length > 0) {
-				waiting.shift()(exit);
 			}
-		}
+		};
 	}
 
 });
