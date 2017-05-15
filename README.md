@@ -12,7 +12,7 @@ When.js is a rock solid, battle-tested [Promises/A+](http://promises-aplus.githu
 * Execute tasks in parallel or sequentially
 * Transform Node-style and other callback-based APIs into promise-based APIs
 
-When.js is one of the many stand-alone components of [cujoJS](http://cujojs.com), the JavaScript Architectural Toolkit. 
+When.js is one of the many stand-alone components of [cujoJS](http://cujojs.com), the JavaScript Architectural Toolkit.
 
 Check it out:
 
@@ -57,8 +57,9 @@ fetchRemoteGreeting()
     });
 
 function fetchRemoteGreeting() {
-    // returns a when.js promise for 'hello world'
-    return rest('http://example.com/greeting');
+    // convert native Promise to a when.js promise for 'hello world'
+    var result = rest('http://example.com/greeting');
+    return when(result)
 }
 
 function addExclamation(greeting) {
