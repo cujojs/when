@@ -48,7 +48,7 @@
   "devDependencies": {
     "benchmark": "~1",
     "browserify": "~2",
-    "buster": "~0.7",
+    "buster": "git://github.com/busterjs/buster.git#update-deps",
     "exorcist": "~0.4",
     "glob": "^7.1.1",
     "jshint": "~2",
