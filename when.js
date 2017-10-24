@@ -175,7 +175,7 @@ define(function (require) {
 	/**
 	 * Return a promise that will fulfill once all input promises have
 	 * fulfilled, or reject when any one input promise rejects.
-	 * @param {array|Promise} promises array (or promise for an array) of promises
+	 * @param {Array<Promise>|Promise} promises array (or promise for an array) of promises
 	 * @returns {Promise}
 	 */
 	function all(promises) {
@@ -186,7 +186,7 @@ define(function (require) {
 	 * Return a promise that will always fulfill with an array containing
 	 * the outcome states of all input promises.  The returned promise
 	 * will only reject if `promises` itself is a rejected promise.
-	 * @param {array|Promise} promises array (or promise for an array) of promises
+	 * @param {Array<Promise>|Promise} promises array (or promise for an array) of promises
 	 * @returns {Promise} promise for array of settled state descriptors
 	 */
 	function settle(promises) {
