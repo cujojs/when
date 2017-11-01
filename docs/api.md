@@ -1070,6 +1070,8 @@ Where:
 * `handler` - function that receives each value as it is produced by `f`. It may return a promise to delay the next iteration.
 * `seed` - initial value provided to the handler, and first `f` invocation. May be a promise.
 
+Note: `handler` does **not** receive the result of the last invocation of `f`. If you would like to handle the last result too, use `when.iterate(...).then(lastResult => ...)`
+
 ### Examples
 
 Here is a trivial example of counting up to any arbitrary number using promises and delays. Note that this "iteration" is asynchronous and will not block other code.  It stores no intermediate arrays in memory, and will never blow the call stack.
@@ -1081,12 +1083,12 @@ Here is a trivial example of counting up to any arbitrary number using promises 
 // 1
 // 2
 // ...
-// 100000000000
+// 99
 when.iterate(function(x) {
 	return x+1;
 }, function(x) {
-	// Stop when x >= 100000000000
-	return x >= 100000000000;
+	// Stop when x >= 100
+	return x >= 100;
 }, function(x) {
 	console.log(x);
 }, 0).done();
@@ -1095,7 +1097,7 @@ when.iterate(function(x) {
 Which becomes even nicer with [ES6 arrow functions](http://tc39wiki.calculist.org/es6/arrow-functions/):
 
 ```js
-when.iterate(x => x+1, x => x >= 100000000000, x => console.log(x), 0).done();
+when.iterate(x => x+1, x => x >= 100, x => console.log(x), 0).done();
 ```
 
 ## when.unfold
