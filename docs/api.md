@@ -1960,7 +1960,7 @@ Where:
 
 * `condition` is a concurrency limiting condition, such as [guard.n](#guardn)
 
-Limit the concurrency of a function.  Creates a new function whose concurrency is limited by `condition`.  This can be useful with operations such as [when.map](#whenmap), [when/parallel](#whenparallel), etc. that allow tasks to execute in "parallel", to limit the number which can be inflight simultanously.
+Limit the concurrency of a function.  Creates a new function whose concurrency is limited by `condition`.  This can be useful with operations such as [when.map](#whenmap), [when/parallel](#whenparallel), etc. that allow tasks to execute in "parallel", to limit the number which can be inflight simultaneously.
 
 ```js
 // Using when/guard with when.map to limit concurrency
