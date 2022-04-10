@@ -113,7 +113,7 @@ define(function(require) {
 	 * knows how to handle promises given as arguments, waiting for their
 	 * resolution before executing.
 	 *
-	 * Upon execution, the orginal function is executed as well. If it passes
+	 * Upon execution, the original function is executed as well. If it passes
 	 * a truthy value as the first argument to the callback, it will be
 	 * interpreted as an error condition, and the promise will be rejected
 	 * with it. Otherwise, the call is considered a resolution, and the promise
