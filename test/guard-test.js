@@ -16,21 +16,28 @@ buster.testCase('when/guard', {
 		assert.isFunction(guard());
 	},
 
-	'should invoke condition': function() {
+	'should invoke condition': function(done) {
 		var condition, guarded;
 
-		condition = this.spy();
+		condition = {
+			enter: this.spy(),
+			exit: this.spy(),
+		};
 		guarded = guard(condition, noop);
 
-		guarded();
-
-		assert.called(condition);
+		when(guarded()).then(function () {
+			assert.called(condition.enter);
+			assert.called(condition.exit);
+			done();
+		});
 	},
 
 	'should invoke guarded function after condition promise fulfills': function(done) {
 		var condition, f, guarded;
 
-		condition = function() { return noop; };
+		condition = {
+			enter: function() { return noop; }
+		};
 		f = this.spy();
 		guarded = guard(condition, f);
 
@@ -44,15 +51,16 @@ buster.testCase('when/guard', {
 	},
 
 	'should notify condition once guarded function settles': function(done) {
-		var condition, notify, guarded;
+		var condition, guarded;
 
-		notify = this.spy();
-		condition = function() { return notify; };
+		condition = {
+			enter: this.spy()
+		};
 		guarded = guard(condition, noop);
 
 		guarded().then(
 			function() {
-				assert.calledOnce(notify);
+				assert.calledOnce(condition.enter);
 			},
 			fail
 		).ensure(done);
@@ -62,7 +70,9 @@ buster.testCase('when/guard', {
 		var condition, f, guarded;
 
 		f = this.spy();
-		condition = function() { return noop; };
+		condition = {
+			enter: function() { return noop; }
+		};
 		guarded = guard(condition, f);
 
 		guarded(other).then(
@@ -78,47 +88,33 @@ buster.testCase('when/guard', {
 	},
 
 	'n': {
-		'should create a function': function() {
-			assert.isFunction(guard.n(1));
+		'should create an object': function() {
+			assert.isObject(guard.n(1));
 		},
 
 		'should return a promise': function() {
 			var c = guard.n(1);
-			assert.isFunction(c().then);
-		},
-
-		'returned promise should resolve to a function': function(done) {
-			var enter = guard.n(1);
-			enter().then(
-				function(exit) {
-					assert.isFunction(exit);
-				},
-				fail
-			).ensure(done);
+			assert.isFunction(c.enter().then);
 		},
 
 		'should allow one execution': function(done) {
-			var enter, value, first, second;
+			var c, value, first, second;
 
-			enter = guard.n(1);
+			c = guard.n(1);
 			value = sentinel;
 
-			first = enter();
-			second = enter();
+			first = c.enter();
+			second = c.enter();
 
 			first.then(
-				function(exit) {
-					return when().delay(100).then(function() {
+				function() {
+					return when().delay(5).then(function() {
 						assert.same(value, sentinel);
-						exit();
+						done();
 					});
 				},
 				fail
 			);
-
-			second.then(
-				function() { value = other; }
-			).ensure(done);
 		},
 
 		'should allow two executions': function(done) {
@@ -127,9 +123,9 @@ buster.testCase('when/guard', {
 			one = guard.n(2);
 			value = sentinel;
 
-			first = one();
-			second = one();
-			third = one();
+			first = one.enter();
+			second = one.enter();
+			third = one.enter();
 
 			first.then(
 				function() {
@@ -139,18 +135,14 @@ buster.testCase('when/guard', {
 			);
 
 			second.then(
-				function(exit) {
-					return when().delay(100).then(function() {
+				function() {
+					return when().delay(5).then(function() {
 						assert.same(value, sentinel);
-						exit();
+						done();
 					});
 				},
 				fail
 			);
-
-			third.then(
-				function() { value = other; }
-			).ensure(done);
 		}
 	}
 

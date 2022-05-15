@@ -5,3 +5,4 @@ build/when.js
 dist/
 test/browser/*.js
 bower_components/
+*.swp
